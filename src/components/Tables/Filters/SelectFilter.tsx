@@ -37,7 +37,7 @@ export default observer(function SelectFilter({
                 Teams
               </SelectLabel>
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Not Assigned">Not Asigned</SelectItem>
+              <SelectItem value="Not Assigned">Not Assigned</SelectItem>
               {teams.map((t) => (
                 <SelectItem value={t.name} key={t._id}>
                   {t.name}

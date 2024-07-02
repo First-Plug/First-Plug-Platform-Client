@@ -125,7 +125,7 @@ export function ChangePassword() {
             type="submit"
             disabled={isLoading || !form.formState.isValid}
           >
-            SAVE
+            Save
           </Button>
         </section>
       </form>
