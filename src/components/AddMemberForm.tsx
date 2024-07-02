@@ -135,8 +135,8 @@ export const AddMemberForm = observer(function ({
         {showNoneOption && (
           <section className="flex flex-col gap-2">
             <span className="text-dark-grey font-medium">
-              If you want to <strong>return</strong> this prouct, please select
-              the new Loaction.
+              If you want to <strong>return</strong> this product, please select
+              the new Location.
             </span>
             <Select
               onValueChange={(value) =>

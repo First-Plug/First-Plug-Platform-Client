@@ -6,6 +6,9 @@ import { useStore } from "@/models";
 import { observer } from "mobx-react-lite";
 import { Location, CATEGORIES, Category } from "@/types";
 import { FieldValues, useFormContext } from "react-hook-form";
+import { setAuthInterceptor } from "@/config/axios.config";
+import { Memberservices } from "@/services";
+import { Skeleton } from "../ui/skeleton";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -33,36 +36,48 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const [selectedAssignedMember, setSelectedAssignedMember] =
     useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );
 
   useEffect(() => {
-    if (isUpdate) {
-      const assignedMember = formState.assignedMember as string;
-      const assignedEmail = formState.assignedEmail as string;
+    const fetchAllData = async () => {
+      if (sessionStorage.getItem("accessToken")) {
+        try {
+          setAuthInterceptor(sessionStorage.getItem("accessToken"));
+          const members = await Memberservices.getAllMembers();
+          if (isUpdate) {
+            const assignedMember = formState.assignedMember as string;
+            const assignedEmail = formState.assignedEmail as string;
 
-      const selectedMember = members.members.find(
-        (member) => `${member.firstName} ${member.lastName}` === assignedMember
-      );
+            const selectedMember = members.find(
+              (member) =>
+                `${member.firstName} ${member.lastName}` === assignedMember
+            );
 
-      setSelectedAssignedMember(
-        selectedMember ? assignedMember : assignedEmail ? assignedEmail : "None"
-      );
-      setValue("assignedMember", assignedMember);
+            setSelectedAssignedMember(
+              selectedMember
+                ? assignedMember
+                : assignedEmail
+                ? assignedEmail
+                : "None"
+            );
+            setValue("assignedMember", assignedMember);
 
-      setAssignedEmail(selectedMember?.email || assignedEmail || "");
+            setAssignedEmail(selectedMember?.email || assignedEmail || "");
 
-      const location = formState.location as string;
-      setSelectedLocation(location);
-      setValue("location", location);
+            const location = formState.location as string;
+            setSelectedLocation(location);
+            setValue("location", location);
 
-      const memberFullNames = [
-        "None",
-        ...members.members.map(
-          (member) => `${member.firstName} ${member.lastName}`
-        ),
-      ];
+            const memberFullNames = [
+              "None",
+              ...members.map(
+                (member) => `${member.firstName} ${member.lastName}`
+              ),
+            ];
 
       if (
         assignedEmail &&
@@ -72,8 +87,25 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         memberFullNames.push(assignedEmail);
       }
 
-      setAssignedEmailOptions(memberFullNames);
-    }
+            setAssignedEmailOptions(memberFullNames);
+          } else {
+            const memberFullNames = [
+              "None",
+              ...members.map(
+                (member) => `${member.firstName} ${member.lastName}`
+              ),
+            ];
+
+            setAssignedEmailOptions(memberFullNames);
+          }
+        } catch (error) {
+          console.log(error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchAllData();
   }, [isUpdate, formState, members.members, setValue, setAssignedEmail]);
 
   const handleInputChange = (name: keyof FieldValues, value: string) => {
@@ -105,6 +137,15 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     clearErrors("assignedEmail");
   };
 
+  if (loading) {
+    return (
+      <div className="h-full w-full flex flex-col gap-2">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="flex-grow w-full" />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       <div
@@ -132,7 +173,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             )}
           </div>
         </div>
-        <div className="w-full">
+        <div className="w-full ">
           <DropdownInputProductForm
             options={assignedEmailOptions}
             placeholder="Assigned Email"

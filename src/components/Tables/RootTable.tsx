@@ -8,6 +8,8 @@ import {
   getFilteredRowModel,
   useReactTable,
   RowData,
+  PaginationState,
+  getPaginationRowModel,
 } from "@tanstack/react-table";
 
 import {
@@ -29,6 +31,16 @@ import { Fragment, ReactNode, useState } from "react";
 import { TableType } from "@/types";
 import { TableActions } from "./TableActions";
 import HeaderFilter from "./Filters/HeaderFilter";
+import { Button } from "../ui/button";
+import { ArrowLeft, ArrowRight } from "@/common";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+  SelectGroup,
+  SelectTrigger,
+} from "../ui/select";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -36,6 +48,7 @@ interface DataTableProps<TData, TValue> {
   getRowCanExpand?: () => boolean;
   renderSubComponent?: (row: TData) => ReactNode;
   tableType: TableType;
+  pageSize?: number;
 }
 
 export function RootTable<TData, TValue>({
@@ -44,38 +57,47 @@ export function RootTable<TData, TValue>({
   getRowCanExpand,
   renderSubComponent,
   tableType,
+  pageSize = 5,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: pageSize,
+  });
   const table = useReactTable({
     data,
     columns,
-    getRowCanExpand,
-    getExpandedRowModel: getExpandedRowModel(),
-    getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    columnResizeMode: "onChange",
     defaultColumn: {
       size: 200,
       minSize: 50,
       maxSize: 500,
     },
     state: {
+      pagination,
       sorting,
       columnFilters,
     },
+    autoResetPageIndex: true,
+    debugTable: true,
+    columnResizeMode: "onChange",
+    onPaginationChange: setPagination,
+    getRowCanExpand,
+    getExpandedRowModel: getExpandedRowModel(),
+    getCoreRowModel: getCoreRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
-    <div className="h-full flex-grow  flex flex-col gap-2 ">
+    <div className="h-full flex-grow  flex flex-col  gap-2 relative  ">
       {tableType !== "subRow" && (
         <div className="   max-h-[50%] flex items-center   ">
           <TableActions table={table} type={tableType} />
         </div>
       )}
-      <div className="rounded-md border     w-full  mx-auto max-h-[95%] overflow-y-auto ">
+      <div className="rounded-md border     w-full  mx-auto max-h-[85%] overflow-y-auto ">
         <Table className="table ">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -161,6 +183,68 @@ export function RootTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+
+      <section className=" flex justify-center absolute w-full bottom-0 z-30 ">
+        <div className=" flex items-center gap-10">
+          <Button
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <ArrowLeft className="w-5" />
+          </Button>
+          <span className="flex items-center gap-4">
+            {new Array(parseInt(table.getPageCount().toLocaleString()))
+              .fill("1")
+              .map((pos, i) => (
+                <Button
+                  key={i}
+                  onClick={() =>
+                    table.setPagination({
+                      pageIndex: i,
+                      pageSize: 5,
+                    })
+                  }
+                  className={`border rounded-full grid place-items-center transition-all duration-300 ${
+                    table.getState().pagination.pageIndex === i
+                      ? "bg-blue/80 text-white"
+                      : ""
+                  }`}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+          </span>
+          <Button
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            <ArrowRight className="w-5" />
+          </Button>
+        </div>
+        <div className=" absolute right-0">
+          <Select
+            value={table.getState().pagination.pageSize.toString()}
+            onValueChange={(value) => {
+              table.setPageSize(Number(value));
+            }}
+          >
+            <SelectTrigger>
+              <span className="">
+                Table size: {table.getState().pagination.pageSize}
+              </span>
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              <SelectGroup>
+                {[5, 10, 20].map((pageSize) => (
+                  <SelectItem key={pageSize} value={pageSize.toString()}>
+                    Show {pageSize}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+      </section>
     </div>
   );
 }

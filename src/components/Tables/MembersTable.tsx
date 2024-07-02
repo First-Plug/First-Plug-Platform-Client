@@ -146,6 +146,7 @@ export function MembersTable({ members }: TableMembersProps) {
       tableType="members"
       columns={membersColumns(handleEdit, handleDelete, handleViewDetail)}
       data={members}
+      pageSize={12}
     />
   );
 }
