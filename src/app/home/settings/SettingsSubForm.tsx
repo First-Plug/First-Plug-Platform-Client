@@ -38,8 +38,15 @@ export function SettingsSubForm({
             {data.tpye === "select" ? (
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <SelectTrigger className=" w-full  h-14 py-2 text-lg ">
-                    <SelectValue placeholder="Select Country" />
+                  <SelectTrigger className=" w-full  h-14 py-2 text-lg  ">
+                    {field.value ? (
+                      <SelectValue
+                        placeholder="Select Country"
+                        className="opacity-10"
+                      />
+                    ) : (
+                      <span className="text-grey">Select Country</span>
+                    )}
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent className="bg-white">
