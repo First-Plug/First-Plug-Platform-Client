@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { Product, TeamMember } from "@/types";
 import { observer } from "mobx-react-lite";
 import { Memberservices, ProductServices } from "@/services";
-import { LoaderSpinner } from "@/common";
 import { setAuthInterceptor } from "@/config/axios.config";
+import { Skeleton } from "../ui/skeleton";
 
 export const AssignProduct = observer(() => {
   const {
@@ -58,9 +58,9 @@ export const AssignProduct = observer(() => {
 
   if (loading) {
     return (
-      <div className="h-full w-full flex flex-col justify-center items-center gap-2">
-        <LoaderSpinner size="bg" />
-        <p>Loading.. </p>
+      <div className="h-full w-full flex flex-col gap-2">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="flex-grow w-full" />
       </div>
     );
   }
