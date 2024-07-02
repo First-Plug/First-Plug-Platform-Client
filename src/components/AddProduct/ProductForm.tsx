@@ -44,7 +44,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   isUpdate = false,
 }) => {
   const {
-    products: { addProduct, updateProduct, setTable },
     aside: { setAside },
     alerts: { setAlert },
   } = useStore();
