@@ -10,6 +10,7 @@ import {
 } from "./";
 import {
   AssignProduct,
+  ChangePassword,
   EditProductAside,
   RelacoteProducts,
 } from "./AsideContents";
@@ -38,5 +39,7 @@ export var AsideContent = observer(function () {
       return <LoadAside />;
     case "OrderDetails":
       return <OrderAsideDetails />;
+    case "ChangePassword":
+      return <ChangePassword />;
   }
 });

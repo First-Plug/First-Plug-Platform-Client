@@ -126,14 +126,14 @@ export const MemberAsideDetails = observer(function ({
                 variant={"secondary"}
                 disabled={selectedProducts.length === 0}
                 onClick={() => handleReturn("open")}
-                className="px-6"
+                className="px-6 w-1/4"
               />
               <Button
                 body={"Relocate"}
                 variant={"secondary"}
                 disabled={selectedProducts.length === 0}
                 onClick={() => handleRealocate("open")}
-                className="px-6"
+                className="px-6 w-1/4"
               />
             </div>
           </aside>

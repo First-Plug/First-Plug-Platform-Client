@@ -3,9 +3,10 @@ import { ChangeEvent, FocusEvent, useState } from "react";
 import { EyeIcon, EyeSlashIcon } from "@/common/Icons";
 
 type InputProps = {
-  title: string;
+  title?: string;
   placeholder?: string;
   type?: string;
+  readonly?: boolean;
   defaultValue?: string;
   className?: string;
   value?: string;
@@ -24,6 +25,7 @@ export function Input({
   type,
   defaultValue,
   className,
+  readonly,
   value = "",
   onChange,
   onBlur,
@@ -60,6 +62,7 @@ export function Input({
           onClick={() => {
             setShowPassword(!showPassword);
           }}
+          disabled={readonly}
         >
           {showPassword ? (
             <EyeSlashIcon className="h-5 w-5 text-grey " />

@@ -174,7 +174,6 @@ export default function ProductDetail({
     >
       <div className="flex items-center  justify-between  ">
         <section className="flex items-center  gap-2  ">
-          {handleSelect && <input type="checkbox" checked={isChecked} />}
           <section className="flex gap-2 items-start">
             <div className="flex gap-2 items-start">
               <ProductImage category={product.category} />

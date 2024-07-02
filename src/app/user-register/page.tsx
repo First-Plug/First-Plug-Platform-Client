@@ -61,14 +61,6 @@ export default function UserRegister() {
               Please complete all the required fields to create your account.
             </p>
           </section>
-          <section className=" flex flex-col gap-4    ">
-            <div className="flex gap-4">
-              <CompanyForm handleInput={handleInput} />
-              <AccessForm handleInput={handleInput} />
-            </div>
-            <hr />
-            <BillingForm handleInput={handleInput} />
-          </section>
         </div>
       </section>
 

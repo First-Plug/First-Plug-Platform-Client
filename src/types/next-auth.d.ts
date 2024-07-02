@@ -13,11 +13,10 @@ declare module "next-auth" {
 }
 
 import { JWT } from "next-auth/jwt";
-import { UserZod } from "./user";
 
 declare module "next-auth/jwt" {
   interface JWT {
-    user: UserZod;
+    user: User;
 
     backendTokens: {
       accessToken: string;

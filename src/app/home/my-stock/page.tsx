@@ -7,6 +7,7 @@ import { PageLayout } from "@/common";
 import { BarLoader } from "@/components/Loader/BarLoader";
 import useFetch from "@/hooks/useFetch";
 import { useEffect } from "react";
+import { setAuthInterceptor } from "@/config/axios.config";
 
 export default observer(function MyStock() {
   const {
@@ -15,7 +16,10 @@ export default observer(function MyStock() {
 
   const { fetchStock } = useFetch();
   useEffect(() => {
-    fetchStock();
+    if (sessionStorage.getItem("accessToken")) {
+      setAuthInterceptor(sessionStorage.getItem("accessToken"));
+      fetchStock();
+    }
   }, []);
   return (
     <PageLayout>

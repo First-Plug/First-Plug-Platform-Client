@@ -20,6 +20,21 @@ const TEAM_COLORS = [
   "bg-team8",
   "bg-team9",
   "bg-team10",
+  "bg-team11",
+  "bg-team12",
+  "bg-team13",
+  "bg-team14",
+  "bg-team15",
+  "bg-team16",
+  "bg-team17",
+  "bg-team18",
+  "bg-team19",
+  "bg-team20",
+  "bg-team21",
+  "bg-team22",
+  "bg-team23",
+  "bg-team24",
+  "bg-team25",
 ];
 
 const getTeamColor = (team: string) => {

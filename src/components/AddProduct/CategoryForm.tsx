@@ -24,7 +24,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   clearErrors,
   isUpdate,
 }) {
-  const { members, products } = useStore();
+  const { members } = useStore();
   const {
     setValue,
     watch,
@@ -33,47 +33,44 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const [selectedAssignedMember, setSelectedAssignedMember] =
     useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
+    []
+  );
 
   useEffect(() => {
     if (isUpdate) {
       const assignedMember = formState.assignedMember as string;
       const assignedEmail = formState.assignedEmail as string;
 
-      if (
-        assignedEmail &&
-        !members.members.some((member) => member.email === assignedEmail)
-      ) {
-        setSelectedAssignedMember(assignedEmail);
-      } else {
-        setSelectedAssignedMember(assignedMember || "None");
-      }
-
-      setValue("assignedMember", assignedMember);
-
       const selectedMember = members.members.find(
         (member) => `${member.firstName} ${member.lastName}` === assignedMember
       );
+
+      setSelectedAssignedMember(
+        selectedMember ? assignedMember : assignedEmail ? assignedEmail : "None"
+      );
+      setValue("assignedMember", assignedMember);
+
       setAssignedEmail(selectedMember?.email || assignedEmail || "");
 
       const location = formState.location as string;
       setSelectedLocation(location);
       setValue("location", location);
+
+      const memberFullNames = [
+        "None",
+        ...members.members.map(
+          (member) => `${member.firstName} ${member.lastName}`
+        ),
+      ];
+
+      if (assignedEmail && !memberFullNames.includes(assignedEmail)) {
+        memberFullNames.push(assignedEmail);
+      }
+
+      setAssignedEmailOptions(memberFullNames);
     }
   }, [isUpdate, formState, members.members, setValue, setAssignedEmail]);
-
-  const memberFullNames = [
-    "None",
-    ...members.members.map(
-      (member) => `${member.firstName} ${member.lastName}`
-    ),
-  ];
-
-  const unknownAssignedEmails = products.products
-    .map((product) => product.assignedEmail)
-    .filter(
-      (email) =>
-        email && !members.members.some((member) => member.email === email)
-    );
 
   const handleInputChange = (name: keyof FieldValues, value: string) => {
     setValue(name, value);
@@ -104,14 +101,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     clearErrors("assignedEmail");
   };
 
-  const dropdownOptions = [
-    "None",
-    ...members.members.map(
-      (member) => `${member.firstName} ${member.lastName}`
-    ),
-    ...unknownAssignedEmails,
-  ];
-
   return (
     <div className="w-full">
       <div
@@ -141,7 +130,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         </div>
         <div className="w-full">
           <DropdownInputProductForm
-            options={dropdownOptions as string[]}
+            options={assignedEmailOptions}
             placeholder="Assigned Email"
             title="Assigned Member*"
             name="assignedMember"

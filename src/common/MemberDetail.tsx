@@ -8,6 +8,8 @@ import { useStore } from "@/models/root.store";
 import memberImage from "../../public/member.png";
 import { DeleteAction } from "@/components/Alerts";
 import FormatedDate from "@/components/Tables/helpers/FormatedDate";
+import { ImgPorfile } from "./ImgPorfile";
+import Avvvatars from "avvvatars-react";
 
 interface MemberDetailProps {
   className?: string;
@@ -22,19 +24,20 @@ export function MemberDetail({ className }: MemberDetailProps) {
 
   return (
     <div className={`flex flex-col gap-4   ${className || ""}`}>
-      <div className="flex gap-4">
-        <div className="h-[150px] relative aspect-square">
-          <Image
-            src={memberImage || Photo}
-            alt="member"
-            fill
-            className="object-cover rounded-md"
+      <div className="flex gap-4 ">
+        <div className=" flex justify-center items-center  ">
+          <Avvvatars
+            value={`${selectedMember.firstName[0]}${selectedMember.lastName[0]}`}
+            style={"character"}
+            size={150}
           />
         </div>
-        <div className="flex flex-col w-full justify-start text-md">
+        <div className="flex flex-col w-full justify-start text-md ">
           <div className="flex w-full justify-between items-center">
             <div className="flex items-center gap-1">
-              <TeamCard team={selectedMember.team || ""} />
+              {selectedMember.team && (
+                <TeamCard team={selectedMember.team || ""} />
+              )}
             </div>
             <div className="flex text-dark-grey font-semibold gap-2">
               <Button variant="text">
