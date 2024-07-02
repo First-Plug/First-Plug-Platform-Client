@@ -79,9 +79,13 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               ),
             ];
 
-            if (assignedEmail && !memberFullNames.includes(assignedEmail)) {
-              memberFullNames.push(assignedEmail);
-            }
+      if (
+        assignedEmail &&
+        !selectedMember &&
+        !memberFullNames.includes(assignedEmail)
+      ) {
+        memberFullNames.push(assignedEmail);
+      }
 
             setAssignedEmailOptions(memberFullNames);
           } else {
