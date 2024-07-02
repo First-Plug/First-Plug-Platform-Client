@@ -17,6 +17,7 @@ export const ProductsStore = types
     onlyAvaliable: types.optional(types.boolean, false),
     members: types.array(types.frozen()),
     currentProduct: types.maybeNull(ProductModel),
+    currentProductId: types.maybe(types.string),
     currentMember: types.maybeNull(types.frozen()),
   })
   .views((store) => ({
@@ -46,6 +47,11 @@ export const ProductsStore = types
         (product) => product._id === store.selectedTableId
       );
     },
+    get productToAssign() {
+      return store.products.find(
+        (product) => product._id === store.currentProductId
+      );
+    },
 
     productById(productId: string) {
       return store.products.find((product) => product._id === productId);
@@ -72,6 +78,9 @@ export const ProductsStore = types
     },
     addProduct(product: Product) {
       store.products.push(product);
+    },
+    setProductToAssing(product: Product) {
+      store.currentProductId = product._id;
     },
     deleteProduct(id: string) {
       const product = store.products.find((product) => product._id === id);

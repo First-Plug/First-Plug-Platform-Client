@@ -2,60 +2,71 @@
 import { useStore } from "@/models";
 import { AddMemberForm } from "../AddMemberForm";
 import { useEffect, useState } from "react";
-import { TeamMember } from "@/types";
+import { Product, TeamMember } from "@/types";
 import { observer } from "mobx-react-lite";
-import ProductDetail from "@/common/ProductDetail";
+import { Memberservices, ProductServices } from "@/services";
+import { LoaderSpinner } from "@/common";
+import { setAuthInterceptor } from "@/config/axios.config";
 
 export const AssignProduct = observer(() => {
   const {
-    members: { members },
-    products: { currentProduct, getProductForAssign },
+    products: { currentProductId },
+    aside: { type },
   } = useStore();
   const [member, setMember] = useState<TeamMember | null>(null);
+  const [selectedProdcut, setSelectedPrduct] = useState<Product>();
   const [filteredMembers, setFilteredMembers] = useState<TeamMember[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      if (!currentProduct || !currentProduct._id) return;
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
-      try {
-        await getProductForAssign(currentProduct._id);
-      } catch (err) {
-        console.error("Failed to get product for assign", err);
-        setError("Failed to load product data. Please try again.");
-      } finally {
-        setLoading(false);
+      if (sessionStorage.getItem("accessToken")) {
+        setAuthInterceptor(sessionStorage.getItem("accessToken"));
+        try {
+          const productRes = await ProductServices.getProductById(
+            currentProductId
+          );
+          setSelectedPrduct(productRes);
+
+          if (!productRes || !productRes._id) return;
+
+          const members = await Memberservices.getAllMembers();
+
+          const filteredMembers = members.filter(
+            (member) => member.email !== productRes.assignedEmail
+          );
+          setFilteredMembers(filteredMembers);
+        } catch (err) {
+          console.log(err);
+          console.error("Failed to get product for assign", err);
+          setError("Failed to load product data. Please try again.");
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
-    fetchProduct();
-  }, [getProductForAssign, currentProduct]);
-
-  useEffect(() => {
-    if (members.length > 0 && currentProduct) {
-      if (
-        currentProduct.assignedEmail === "" &&
-        currentProduct.assignedMember === ""
-      ) {
-        setFilteredMembers(members);
-      }
-    }
-  }, [members, currentProduct]);
+    fetchData();
+  }, []);
 
   const handleSelectedMembers = (selectedMember: TeamMember | null) => {
     setMember(selectedMember);
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="h-full w-full flex flex-col justify-center items-center gap-2">
+        <LoaderSpinner size="bg" />
+        <p>Loading.. </p>
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col gap-2 h-full">
-      {/* <ProductDetail product={currentProduct} /> */}
       {error ? (
         <div className="text-red-500">{error}</div>
       ) : (
@@ -63,7 +74,8 @@ export const AssignProduct = observer(() => {
           selectedMember={member}
           handleSelectedMembers={handleSelectedMembers}
           members={filteredMembers}
-          currentProduct={currentProduct}
+          currentProduct={selectedProdcut}
+          showNoneOption={type === "ReassignProduct"}
         />
       )}
     </div>

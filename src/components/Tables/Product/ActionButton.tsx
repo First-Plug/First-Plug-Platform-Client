@@ -15,19 +15,23 @@ export function ActionButton({ product }: ActionButtonProps) {
   const {
     aside: { setAside },
     members: { setSelectedMemberEmail },
-    products,
+    products: {
+      getProductForAssign,
+      getProductForReassign,
+      setProductToAssing,
+    },
   } = useStore();
 
-  const handleAssignAction = async () => {
+  const handleAssignAction = () => {
     setAside("AssignProduct");
     setSelectedMemberEmail("");
-    await products.getProductForAssign(product._id);
+    setProductToAssing(product);
   };
 
-  const handleReassignAction = async () => {
+  const handleReassignAction = () => {
     setAside("ReassignProduct");
     setSelectedMemberEmail(product.assignedEmail);
-    await products.getProductForReassign(product._id);
+    setProductToAssing(product);
   };
 
   const ActionConfig: Record<Product["status"], ActionType> = {
