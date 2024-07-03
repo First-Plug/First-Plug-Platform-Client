@@ -97,7 +97,11 @@ export function RootTable<TData, TValue>({
           <TableActions table={table} type={tableType} />
         </div>
       )}
-      <div className="rounded-md border     w-full  mx-auto max-h-[85%] overflow-y-auto ">
+      <div
+        className={`rounded-md border     w-full  mx-auto ${
+          tableType === "members" ? "max-h-[80%]" : "max-h-[85%]"
+        }  overflow-y-auto `}
+      >
         <Table className="table ">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -184,67 +188,69 @@ export function RootTable<TData, TValue>({
         </Table>
       </div>
 
-      <section className=" flex justify-center absolute w-full bottom-0 z-30 ">
-        <div className=" flex items-center gap-10">
-          <Button
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            <ArrowLeft className="w-5" />
-          </Button>
-          <span className="flex items-center gap-4">
-            {new Array(parseInt(table.getPageCount().toLocaleString()))
-              .fill("1")
-              .map((pos, i) => (
-                <Button
-                  key={i}
-                  onClick={() =>
-                    table.setPagination({
-                      pageIndex: i,
-                      pageSize: 5,
-                    })
-                  }
-                  className={`border rounded-full grid place-items-center transition-all duration-300 ${
-                    table.getState().pagination.pageIndex === i
-                      ? "bg-blue/80 text-white"
-                      : ""
-                  }`}
-                >
-                  {i + 1}
-                </Button>
-              ))}
-          </span>
-          <Button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            <ArrowRight className="w-5" />
-          </Button>
-        </div>
-        <div className=" absolute right-0">
-          <Select
-            value={table.getState().pagination.pageSize.toString()}
-            onValueChange={(value) => {
-              table.setPageSize(Number(value));
-            }}
-          >
-            <SelectTrigger>
-              <span className="">
-                Table size: {table.getState().pagination.pageSize}
-              </span>
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              <SelectGroup>
-                {[5, 10, 20].map((pageSize) => (
-                  <SelectItem key={pageSize} value={pageSize.toString()}>
-                    Show {pageSize}
-                  </SelectItem>
+      {tableType !== "subRow" && (
+        <section className=" flex justify-center absolute w-full bottom-0 z-30 ">
+          <div className=" flex items-center gap-10">
+            <Button
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <ArrowLeft className="w-5" />
+            </Button>
+            <span className="flex items-center gap-4">
+              {new Array(parseInt(table.getPageCount().toLocaleString()))
+                .fill("1")
+                .map((pos, i) => (
+                  <Button
+                    key={i}
+                    onClick={() =>
+                      table.setPagination({
+                        pageIndex: i,
+                        pageSize: 5,
+                      })
+                    }
+                    className={`border rounded-full grid place-items-center transition-all duration-300 ${
+                      table.getState().pagination.pageIndex === i
+                        ? "bg-blue/80 text-white"
+                        : ""
+                    }`}
+                  >
+                    {i + 1}
+                  </Button>
                 ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-      </section>
+            </span>
+            <Button
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <ArrowRight className="w-5" />
+            </Button>
+          </div>
+          <div className=" absolute right-0">
+            <Select
+              value={table.getState().pagination.pageSize.toString()}
+              onValueChange={(value) => {
+                table.setPageSize(Number(value));
+              }}
+            >
+              <SelectTrigger>
+                <span className="">
+                  Table size: {table.getState().pagination.pageSize}
+                </span>
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                <SelectGroup>
+                  {[5, 10, 20].map((pageSize) => (
+                    <SelectItem key={pageSize} value={pageSize.toString()}>
+                      Show {pageSize}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

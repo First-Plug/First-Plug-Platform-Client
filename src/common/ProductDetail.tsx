@@ -101,7 +101,7 @@ const MembersList = observer(function MembersList({
           )}
         </section>
       ) : (
-        <div className="flex flex-col gap-2 items-start ">
+        <div className="flex flex-col gap-2 items-start h-full">
           <p className="text-dark-grey mx-2">
             Please select the employee to whom this item will be assigned
           </p>
@@ -109,7 +109,7 @@ const MembersList = observer(function MembersList({
           <div>
             <SearchInput placeholder="Search Member" onSearch={handleSearch} />
           </div>
-          <div className="flex flex-col gap-2 w-full">
+          <div className="flex flex-col gap-2 w-full max-h-[250px] h-[250px] overflow-y-auto">
             {displayedMembers
               .filter((m) => m._id !== currentMember._id)
               .map((member) => (
@@ -202,6 +202,7 @@ export default function ProductDetail({
         </section>
       </div>
       {isRelocating && showList && <hr />}
+
       {isRelocating && showList && (
         <MembersList product={product} setRelocateStauts={setRelocateStauts} />
       )}
