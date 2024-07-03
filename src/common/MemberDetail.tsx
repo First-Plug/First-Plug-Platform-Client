@@ -2,6 +2,7 @@ import { TeamCard } from "./TeamCard";
 import { useStore } from "@/models/root.store";
 import FormatedDate from "@/components/Tables/helpers/FormatedDate";
 import Avvvatars from "avvvatars-react";
+import { Team } from "@/types/teams";
 
 interface MemberDetailProps {
   className?: string;
@@ -13,6 +14,8 @@ export function MemberDetail({ className }: MemberDetailProps) {
   } = useStore();
 
   if (!selectedMember) return null;
+  const team = selectedMember.team as Team;
+  const teamData = team && typeof team === "object" ? team : "Not Assigned";
 
   return (
     <div className={`flex flex-col gap-4   ${className || ""}`}>
@@ -27,9 +30,7 @@ export function MemberDetail({ className }: MemberDetailProps) {
         <div className="flex flex-col w-full justify-start text-md ">
           <div className="flex w-full justify-between items-center">
             <div className="flex items-center gap-1">
-              {selectedMember.team && (
-                <TeamCard team={selectedMember.team || ""} />
-              )}
+              {selectedMember.team && <TeamCard team={teamData} />}
             </div>
           </div>
           <div className="flex items-center gap-2 ">

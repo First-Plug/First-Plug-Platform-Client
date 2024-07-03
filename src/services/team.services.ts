@@ -8,7 +8,6 @@ const http = new HTTPRequests();
 export class TeamServices {
   static async getAllTeams(): Promise<Team[]> {
     const response = await HTTPRequests.get(`${BASE_URL}/api/teams`);
-    console.log("TeamServices.getAllTeams response:", response.data);
     return response.data;
   }
 

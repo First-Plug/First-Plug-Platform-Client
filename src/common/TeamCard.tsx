@@ -13,13 +13,16 @@ export var TeamCard = observer(function TeamCard({
   className,
 }: TeamCardProps) {
   let teamName = "Not Assigned";
-  let teamColor = "#d3d3d3";
+  let teamColor = "#FFC6D3";
 
   if (typeof team === "string") {
     teamName = team;
   } else if (team) {
     teamName = team.name || "Not Assigned";
     teamColor = team.color || "#d3d3d3";
+  }
+  if (teamName === "Not Assigned") {
+    teamColor = "#FFC6D3";
   }
 
   return (

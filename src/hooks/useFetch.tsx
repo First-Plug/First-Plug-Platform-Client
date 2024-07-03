@@ -15,7 +15,6 @@ export default function useFetch() {
       const membersResponse = await Memberservices.getAllMembers();
       await fetchTeams();
       const teamsResponse = await TeamServices.getAllTeams();
-      console.log("Fetched teams response:", teamsResponse);
       setTeams(teamsResponse);
       const transformedMembers = transformData(membersResponse, teamsResponse);
       setMembers(transformedMembers);
