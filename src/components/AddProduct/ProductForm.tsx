@@ -68,6 +68,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     initialData?.assignedEmail
   );
   const [attributes, setAttributes] = useState(initialData?.attributes || []);
+  const [customErrors, setCustomErrors] = useState({});
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -81,14 +82,24 @@ const ProductForm: React.FC<ProductFormProps> = ({
   );
 
   const validateAttributes = (attributes) => {
+    let hasError = false;
+    const newErrors = {};
+
     const brand = attributes.find((attr) => attr.key === "brand")?.value;
     const model = attributes.find((attr) => attr.key === "model")?.value;
 
-    if (!brand || !model) {
-      setAlert("missingBrandOrModel");
-      return false;
+    if (!brand) {
+      newErrors["brand"] = "Brand is required.";
+      hasError = true;
     }
-    return true;
+
+    if (!model) {
+      newErrors["model"] = "Model is required.";
+      hasError = true;
+    }
+
+    setCustomErrors(newErrors);
+    return !hasError;
   };
 
   const handleSaveProduct = async (data: Product) => {
@@ -199,6 +210,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                       handleAttributesChange={setAttributes}
                       isUpdate={isUpdate}
                       initialValues={initialData}
+                      customErrors={customErrors}
+                      setCustomErrors={setCustomErrors}
                     />
                   </section>
                 </div>
