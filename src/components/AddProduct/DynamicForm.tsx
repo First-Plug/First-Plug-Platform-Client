@@ -50,11 +50,12 @@ const DynamicForm = ({
   };
 
   const getAttributeError = (key) => {
-    if (errors.attributes && Array.isArray(errors.attributes)) {
-      const attributeError = errors.attributes.find(
-        (attrError) => attrError.key === key || attrError.path?.[1] === key
+    const attributeErrors = errors.attributes;
+    if (attributeErrors && Array.isArray(attributeErrors)) {
+      const error = attributeErrors.find(
+        (error) => error.path && error.path[1] === key
       );
-      return attributeError ? attributeError.message : null;
+      return error ? error.message : null;
     }
     return null;
   };

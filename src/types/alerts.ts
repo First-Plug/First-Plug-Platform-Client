@@ -24,5 +24,6 @@ export const ALERTS_TYPES = [
   "userUpdatedSuccesfully",
   "passwordChange",
   "ErorPasswordChange",
+  "missingBrandOrModel",
 ] as const;
 export type AlertType = (typeof ALERTS_TYPES)[number];

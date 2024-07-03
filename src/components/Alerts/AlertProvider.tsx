@@ -44,6 +44,14 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    missingBrandOrModel: {
+      title: "Error",
+      type: "error",
+      description: "Brand and Model are required.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     userUpdatedSuccesfully: {
       title: "Success",
       type: "succes",

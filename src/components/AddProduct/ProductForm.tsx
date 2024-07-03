@@ -80,6 +80,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
     [isUpdate, setValue]
   );
 
+  const validateAttributes = (attributes) => {
+    const brand = attributes.find((attr) => attr.key === "brand")?.value;
+    const model = attributes.find((attr) => attr.key === "model")?.value;
+
+    if (!brand || !model) {
+      setAlert("missingBrandOrModel");
+      return false;
+    }
+    return true;
+  };
+
   const handleSaveProduct = async (data: Product) => {
     setShowSuccessDialog(false);
     setShowErrorDialog(false);
@@ -108,6 +119,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
       ),
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
+
+    if (!validateAttributes(formatData.attributes)) {
+      return;
+    }
 
     try {
       if (isUpdate && initialData) {
