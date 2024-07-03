@@ -81,21 +81,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
     [isUpdate, setValue]
   );
 
-  const validateAttributes = (attributes) => {
+  const validateAttributes = (attributes, category) => {
     let hasError = false;
     const newErrors = {};
+    if (category !== "Merchandising") {
+      const brand = attributes.find((attr) => attr.key === "brand")?.value;
+      const model = attributes.find((attr) => attr.key === "model")?.value;
 
-    const brand = attributes.find((attr) => attr.key === "brand")?.value;
-    const model = attributes.find((attr) => attr.key === "model")?.value;
+      if (!brand) {
+        newErrors["brand"] = "Brand is required.";
+        hasError = true;
+      }
 
-    if (!brand) {
-      newErrors["brand"] = "Brand is required.";
-      hasError = true;
-    }
-
-    if (!model) {
-      newErrors["model"] = "Model is required.";
-      hasError = true;
+      if (!model) {
+        newErrors["model"] = "Model is required.";
+        hasError = true;
+      }
     }
 
     setCustomErrors(newErrors);
@@ -131,7 +132,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
 
-    if (!validateAttributes(formatData.attributes)) {
+    if (!validateAttributes(formatData.attributes, selectedCategory)) {
       return;
     }
 
