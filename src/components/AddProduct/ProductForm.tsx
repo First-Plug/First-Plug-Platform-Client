@@ -135,7 +135,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     if (!validateAttributes(formatData.attributes, selectedCategory)) {
       return;
     }
-
+    if (formatData.assignedEmail === "") {
+      delete formatData.assignedEmail;
+    }
     try {
       if (isUpdate && initialData) {
         const changes: Partial<Product> = {};

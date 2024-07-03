@@ -9,7 +9,7 @@ export default observer(function DataTeam() {
   } = useStore();
   return (
     <div className=" h-full max-h-full ">
-      {members.length ? <MembersTable members={members} /> : <BarLoader />}
+      <MembersTable members={members} />
     </div>
   );
 });

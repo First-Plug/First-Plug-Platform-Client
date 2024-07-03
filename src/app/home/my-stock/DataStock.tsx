@@ -12,7 +12,7 @@ export default observer(function DataStock() {
 
   return (
     <div className=" h-full max-h-full ">
-      {tableProducts.length ? <ProductsTable /> : <BarLoader />}
+      <ProductsTable />
     </div>
   );
 });

@@ -6,30 +6,30 @@ import EmptyStock from "./EmptyStock";
 import { PageLayout } from "@/common";
 import { BarLoader } from "@/components/Loader/BarLoader";
 import useFetch from "@/hooks/useFetch";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { setAuthInterceptor } from "@/config/axios.config";
 
 export default observer(function MyStock() {
+  const [loading, setLoading] = useState(true);
   const {
     products: { tableProducts, fetchingStock },
   } = useStore();
-
   const { fetchStock } = useFetch();
   useEffect(() => {
     if (sessionStorage.getItem("accessToken")) {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
-      fetchStock();
+      if (!tableProducts.length) {
+        fetchStock();
+      }
     }
+    setLoading(false);
   }, []);
+
   return (
     <PageLayout>
-      {fetchingStock ? (
-        <BarLoader />
-      ) : tableProducts.length ? (
-        <DataStock />
-      ) : (
-        <EmptyStock />
-      )}
+      {!fetchingStock && tableProducts?.length ? <DataStock /> : null}
+      {!fetchingStock && !tableProducts.length && !loading && <EmptyStock />}
+      {fetchingStock && <BarLoader />}
     </PageLayout>
   );
 });
