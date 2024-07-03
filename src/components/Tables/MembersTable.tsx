@@ -50,6 +50,7 @@ const membersColumns: (
     size: 150,
     cell: ({ getValue }) => {
       const team = getValue<Team>();
+      console.log("Team object:", team);
       if (!team) {
         return null;
       }
