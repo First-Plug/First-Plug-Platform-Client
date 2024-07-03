@@ -9,6 +9,8 @@ const DynamicForm = ({
   handleAttributesChange,
   isUpdate,
   initialValues,
+  customErrors,
+  setCustomErrors,
 }) => {
   const {
     setValue,
@@ -47,16 +49,19 @@ const DynamicForm = ({
     );
     setAttributes(updatedAttributes);
     handleAttributesChange(updatedAttributes);
+
+    setCustomErrors((prev) => ({ ...prev, [fieldKey]: undefined }));
   };
 
   const getAttributeError = (key) => {
-    if (errors.attributes && Array.isArray(errors.attributes)) {
-      const attributeError = errors.attributes.find(
-        (attrError) => attrError.key === key || attrError.path?.[1] === key
+    const attributeErrors = errors.attributes;
+    if (attributeErrors && Array.isArray(attributeErrors)) {
+      const error = attributeErrors.find(
+        (error) => error.path && error.path.includes(key)
       );
-      return attributeError ? attributeError.message : null;
+      return error ? error.message : null;
     }
-    return null;
+    return customErrors[key] || null;
   };
 
   return (
