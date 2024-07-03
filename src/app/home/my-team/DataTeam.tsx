@@ -8,7 +8,7 @@ export default observer(function DataTeam() {
     members: { members },
   } = useStore();
   return (
-    <div className="h-full max-h-full   ">
+    <div className=" h-full max-h-full ">
       {members.length ? <MembersTable members={members} /> : <BarLoader />}
     </div>
   );

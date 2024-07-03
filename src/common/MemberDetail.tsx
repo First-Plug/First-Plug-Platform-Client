@@ -1,14 +1,6 @@
-import React from "react";
-import { PenIcon, TrashIcon } from "./Icons";
-import { Button } from "./Button";
 import { TeamCard } from "./TeamCard";
-import Image from "next/image";
-import Photo from "../../public/employees/member.jpg";
 import { useStore } from "@/models/root.store";
-import memberImage from "../../public/member.png";
-import { DeleteAction } from "@/components/Alerts";
 import FormatedDate from "@/components/Tables/helpers/FormatedDate";
-import { ImgPorfile } from "./ImgPorfile";
 import Avvvatars from "avvvatars-react";
 
 interface MemberDetailProps {
@@ -38,15 +30,6 @@ export function MemberDetail({ className }: MemberDetailProps) {
               {selectedMember.team && (
                 <TeamCard team={selectedMember.team || ""} />
               )}
-            </div>
-            <div className="flex text-dark-grey font-semibold gap-2">
-              <Button variant="text">
-                <PenIcon
-                  className="w-4 text-dark-grey font-semibold"
-                  strokeWidth={2}
-                />
-              </Button>
-              <DeleteAction id={selectedMember._id} type="member" />
             </div>
           </div>
           <div className="flex items-center gap-2 ">

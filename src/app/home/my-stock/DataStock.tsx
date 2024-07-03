@@ -10,11 +10,9 @@ export default observer(function DataStock() {
     products: { tableProducts },
   } = useStore();
 
-  return tableProducts.length ? (
+  return (
     <div className=" h-full max-h-full ">
-      <ProductsTable />
+      {tableProducts.length ? <ProductsTable /> : <BarLoader />}
     </div>
-  ) : (
-    <BarLoader />
   );
 });
