@@ -12,8 +12,8 @@ export const transformData = (
   return members.map((member) => ({
     ...member,
     team:
-      member.team && typeof member.team === "object" && member.team._id
-        ? teamMap[member.team._id]
+      member.team && typeof member.team === "string"
+        ? teamMap[member.team]
         : member.team,
   }));
 };

@@ -56,7 +56,7 @@ export const EditTeamsAsideDetails = observer(function ({
           (member) =>
             member.team &&
             typeof member.team === "object" &&
-            member.team._id === team._id
+            (member.team as Team)._id === team._id
         ) || []
       );
     } else {
@@ -87,7 +87,9 @@ export const EditTeamsAsideDetails = observer(function ({
     if (!expandedTeamId) return;
 
     try {
-      const teamToUpdate = teams.find((team) => team._id === expandedTeamId);
+      const teamToUpdate = teams.find(
+        (team) => team._id === expandedTeamId
+      ) as Team;
       if (!teamToUpdate) return;
 
       const updatedTeam = { ...teamToUpdate, name: newName };

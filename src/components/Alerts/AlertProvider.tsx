@@ -190,6 +190,14 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    errorDeleteTeamWithMembers: {
+      title: " Error",
+      type: "error",
+      description: " Cannot delete a team with members. Please unassign the members first.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     errorUpdateTeam: {
       title: " Error",
       type: "error",
@@ -243,8 +251,7 @@ export default observer(function AlertProvider() {
     errorDeleteMember: {
       title: " Error",
       type: "error",
-      description:
-        "There was an error deleting this memeber. Please try again.",
+      description: "There was an error deleting this member. Please try again.",
       closeAction: () => {
         setAlert(undefined);
       },
