@@ -10,12 +10,14 @@ interface TeamInfoProps {
   team: Team;
   setNewName: (name: string) => void;
   setSelectedMembers: (members: TeamMember[]) => void;
+  closeExpand: () => void;
 }
 
 export const TeamInfo = observer(function ({
   team,
   setNewName,
   setSelectedMembers,
+  closeExpand,
 }: TeamInfoProps) {
   const {
     members: { members },
@@ -48,7 +50,7 @@ export const TeamInfo = observer(function ({
   };
 
   return (
-    <article className="flex flex-col justify-between gap-4 w-[95%] m-auto mt-2">
+    <article className="flex flex-col justify-between gap-2 w-[95%] m-auto my-2 text-md">
       <header className="flex flex-col gap-2 flex-grow">
         <span className="text-grey">Team Name</span>
         <input
@@ -67,6 +69,7 @@ export const TeamInfo = observer(function ({
         selectedMembers={selectedMembers}
         isEditFlow={true}
         teamId={team._id.toString()}
+        closeExpand={closeExpand}
       />
     </article>
   );

@@ -10,7 +10,7 @@ interface IReturnPage {
 
 export function ReturnPage({ handleBack, products }: IReturnPage) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2  h-full max-h-[100%]">
       <div
         className="flex items-center gap-1 font-medium select-none cursor-pointer"
         onClick={() => handleBack("close")}
@@ -25,9 +25,11 @@ export function ReturnPage({ handleBack, products }: IReturnPage) {
           <strong>{products[0].assignedMember}</strong>?
         </h2>
       </div>
-      {products.map((product) => (
-        <ReturnProduct product={product} key={product._id} />
-      ))}
+      <div className=" max-h-[90%] h-[90%] overflow-y-auto">
+        {products.map((product) => (
+          <ReturnProduct product={product} key={product._id} />
+        ))}
+      </div>
     </div>
   );
 }

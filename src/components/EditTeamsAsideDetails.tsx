@@ -9,6 +9,7 @@ import { TeamDetails } from ".";
 import { TeamMember } from "@/types";
 import { transformData } from "@/utils/dataTransformUtil";
 import { DeleteAction } from "./Alerts";
+import useFetch from "@/hooks/useFetch";
 
 interface EditTeamsAsideDetailsProps {
   className?: string | "";
@@ -25,6 +26,8 @@ export const EditTeamsAsideDetails = observer(function ({
     members: { setMembers },
     aside: { setAside },
   } = useStore();
+
+  const { fetchMembers } = useFetch();
 
   const [selectedTeams, setSelectedTeams] = useState<Team[]>([]);
   const [newName, setNewName] = useState("");
@@ -65,21 +68,23 @@ export const EditTeamsAsideDetails = observer(function ({
   };
 
   const handleDeleteSelectedTeams = async () => {
+    setIsUpdating(true);
     try {
       await TeamServices.bulkDeleteTeams(selectedTeams.map((team) => team._id));
 
       const updatedMembers = await Memberservices.getAllMembers();
       const updatedTeams = await TeamServices.getAllTeams();
       const transformedMembers = transformData(updatedMembers, updatedTeams);
-
-      setMembers(transformedMembers);
+      await fetchMembers();
       setTeams(updatedTeams);
-
+      setMembers(transformedMembers);
       setAlert("deleteTeam");
       setSelectedTeams([]);
     } catch (error) {
       console.error("Error deleting teams:", error);
       setAlert("errorDeleteTeam");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -97,12 +102,13 @@ export const EditTeamsAsideDetails = observer(function ({
         TeamServices.associateTeamToMember(updatedTeam._id, member._id)
       );
       await Promise.all(memberUpdates);
-
-      updateTeam(updatedTeam);
       const updatedTeams = await TeamServices.getAllTeams();
-      setTeams(updatedTeams);
       const updatedMembers = await Memberservices.getAllMembers();
+
       const transformedMembers = transformData(updatedMembers, updatedTeams);
+      await fetchMembers();
+      updateTeam(updatedTeam);
+      setTeams(updatedTeams);
       setMembers(transformedMembers);
       setTeams(updatedTeams);
       setAlert("updateTeam");
@@ -116,7 +122,7 @@ export const EditTeamsAsideDetails = observer(function ({
 
   return (
     <div className={` ${className} flex flex-col justify-between h-full `}>
-      <div className="flex flex-col gap-2 h-[70vh] overflow-y-auto">
+      <div className="flex flex-col gap-2 h-full overflow-y-auto">
         {teams.map((team) => (
           <TeamDetails
             key={team._id}
@@ -131,31 +137,33 @@ export const EditTeamsAsideDetails = observer(function ({
         ))}
       </div>
 
-      <div className="flex gap-2 w-full">
-        <DeleteAction
-          type="team"
-          id={selectedTeams.map((team) => team._id).join(",")}
-          onConfirm={handleDeleteSelectedTeams}
-          trigger={
-            <Button
-              variant="delete"
-              disabled={selectedTeams.length === 0}
-              size="big"
-              className="flex-grow w-full rounded-md"
-            >
-              Delete
-            </Button>
-          }
-        />
-        <Button
-          variant="primary"
-          size="big"
-          className="flex-grow w-full rounded-md"
-          onClick={handleUpdateTeam}
-          disabled={isUpdating}
-        >
-          {isUpdating ? <LoaderSpinner /> : "Save"}
-        </Button>
+      <div className="flex gap-2  absolute  bg-white  py-2    bottom-0   left-0 w-full border-t px-4">
+        <div className="flex    w-5/6 mx-auto gap-2 justify-end">
+          <DeleteAction
+            type="team"
+            id={selectedTeams.map((team) => team._id).join(",")}
+            onConfirm={handleDeleteSelectedTeams}
+            trigger={
+              <Button
+                variant="delete"
+                disabled={selectedTeams.length === 0 || isUpdating}
+                size="big"
+                className="flex-grow w-full rounded-md"
+              >
+                {isUpdating ? <LoaderSpinner /> : "Delete"}
+              </Button>
+            }
+          />
+          <Button
+            variant="primary"
+            size="big"
+            className="flex-grow w-full rounded-md"
+            onClick={handleUpdateTeam}
+            disabled={isUpdating}
+          >
+            {isUpdating ? <LoaderSpinner /> : "Save"}
+          </Button>
+        </div>
       </div>
     </div>
   );

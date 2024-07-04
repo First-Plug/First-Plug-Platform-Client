@@ -115,6 +115,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         setOpen(false);
         setAlert("memberUnassigned");
         setLoading(false);
+        onConfirm();
       } catch (error) {
         setOpen(false);
         setLoading(false);
@@ -157,10 +158,6 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
                 strokeWidth={2}
               />
             )}
-            {/* <TrashIcon
-              className=" text-dark-grey w-[1.2rem] h-[1.2rem] hover:text-error"
-              strokeWidth={2}
-            /> */}
           </DialogTrigger>
           {!loading ? (
             <DialogContent>
