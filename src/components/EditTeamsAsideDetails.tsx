@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Button } from "@/common";
+import { Button, LoaderSpinner } from "@/common";
 import { Memberservices, TeamServices } from "../services";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
@@ -30,7 +30,7 @@ export const EditTeamsAsideDetails = observer(function ({
   const [newName, setNewName] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<TeamMember[]>([]);
   const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
-
+  const [isUpdating, setIsUpdating] = useState(false);
   const handleCheckbox = (team: Team) => {
     setSelectedTeams((prevSelectedTeams) => {
       const isSelected = prevSelectedTeams.some(
@@ -85,7 +85,7 @@ export const EditTeamsAsideDetails = observer(function ({
 
   const handleUpdateTeam = async () => {
     if (!expandedTeamId) return;
-
+    setIsUpdating(true);
     try {
       const teamToUpdate = teams.find((team) => team._id === expandedTeamId);
       if (!teamToUpdate) return;
@@ -109,6 +109,8 @@ export const EditTeamsAsideDetails = observer(function ({
       setAside(undefined);
     } catch (error) {
       setAlert("errorUpdateTeam");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -150,8 +152,9 @@ export const EditTeamsAsideDetails = observer(function ({
           size="big"
           className="flex-grow w-full rounded-md"
           onClick={handleUpdateTeam}
+          disabled={isUpdating}
         >
-          Save
+          {isUpdating ? <LoaderSpinner /> : "Save"}
         </Button>
       </div>
     </div>
