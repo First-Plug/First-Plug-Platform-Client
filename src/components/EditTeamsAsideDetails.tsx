@@ -116,7 +116,7 @@ export const EditTeamsAsideDetails = observer(function ({
 
   return (
     <div className={` ${className} flex flex-col justify-between h-full `}>
-      <div className="flex flex-col gap-2 h-[70vh] overflow-y-auto">
+      <div className="flex flex-col gap-2 h-[70vh] overflow-y-auto scrollbar-custom">
         {teams.map((team) => (
           <TeamDetails
             key={team._id}
