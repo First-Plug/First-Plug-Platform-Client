@@ -40,6 +40,7 @@ export const TeamDetails = function ({
 
         <Button
           className="cursor-pointer"
+          variant="text"
           onClick={() => handleExpandTeam(team)}
         >
           <DropDownArrow
