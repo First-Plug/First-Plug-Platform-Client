@@ -14,20 +14,30 @@ export const MemberStore = types
   })
   .views((store) => ({
     get membersTable(): TeamMemberTable[] {
-      return store.members.map((member) => ({
-        _id: member._id,
-        fullName: `${member.firstName} ${member.lastName}`,
-        birthDate: member.birthDate || "",
-        position: member.position || "",
-        startDate: member.startDate || "",
-        team: member.team,
-        products: member.products,
-      }));
+      return store.members.map((member) => {
+        let teamName: string;
+        if (typeof member.team === "string") {
+          teamName = member.team;
+        } else if (member.team && member.team.name) {
+          teamName = member.team.name;
+        } else {
+          teamName = "Not Assigned";
+        }
+
+        return {
+          _id: member._id,
+          fullName: `${member.firstName} ${member.lastName}`,
+          birthDate: member.birthDate || "",
+          position: member.position || "",
+          startDate: member.startDate || "",
+          team: teamName,
+          products: member.products,
+        };
+      });
     },
     get memberCount() {
       return store.members.length;
     },
-
     get selectedMember() {
       return store.members.find((member) => member._id === store.memberId);
     },

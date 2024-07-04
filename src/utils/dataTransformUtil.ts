@@ -13,7 +13,7 @@ export const transformData = (
     ...member,
     team:
       member.team && typeof member.team === "object" && member.team._id
-        ? teamMap[member.team._id]?.name
+        ? teamMap[member.team._id]
         : member.team,
   }));
 };
