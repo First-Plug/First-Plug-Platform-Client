@@ -8,7 +8,7 @@ interface IRelacoteProducts {
 
 export function RelacoteProducts({ products, handleBack }: IRelacoteProducts) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 h-full max-h-[100%]">
       <div
         className="flex items-center gap-1 font-medium select-none cursor-pointer"
         onClick={() => handleBack("close")}
@@ -16,9 +16,11 @@ export function RelacoteProducts({ products, handleBack }: IRelacoteProducts) {
         <ArrowLeft />
         <p>Back</p>
       </div>
-      {products.map((product) => (
-        <ProductDetail product={product} isRelocating key={product._id} />
-      ))}
+      <div className=" max-h-[100%] h-[100%] overflow-y-auto">
+        {products.map((product) => (
+          <ProductDetail product={product} isRelocating key={product._id} />
+        ))}
+      </div>
     </div>
   );
 }

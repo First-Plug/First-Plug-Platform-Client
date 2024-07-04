@@ -97,7 +97,7 @@ export default observer(function AlertProvider() {
       title: "Congratulations!",
       type: "succes",
       description: " The csv file has been uploaded successfully.",
-      closeAction: async () => {
+      closeAction: () => {
         setAlert(undefined);
       },
     },
@@ -105,11 +105,8 @@ export default observer(function AlertProvider() {
       title: " Success",
       type: "succes",
       description: " Your Member has been successfully updated to your team.",
-      closeAction: async () => {
-        await fetchMembers();
-        await fetchStock();
+      closeAction: () => {
         setAlert(undefined);
-        setAside(undefined);
       },
     },
     updateStock: {
@@ -125,8 +122,7 @@ export default observer(function AlertProvider() {
       title: " Success",
       type: "succes",
       description: " Your team has been successfully updated.",
-      closeAction: async () => {
-        await fetchMembers();
+      closeAction: () => {
         setAlert(undefined);
       },
     },
@@ -176,8 +172,7 @@ export default observer(function AlertProvider() {
       title: " Success",
       type: "succes",
       description: " The team has been successfully deleted.",
-      closeAction: async () => {
-        await fetchMembers();
+      closeAction: () => {
         setAlert(undefined);
         router.push("/home/my-team");
       },

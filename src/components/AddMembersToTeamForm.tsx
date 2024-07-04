@@ -11,6 +11,7 @@ interface AddMembersToTeamFormProps {
   handleSelectedMembers: (member: TeamMember[]) => void;
   isEditFlow?: boolean;
   teamId: string;
+  closeExpand?: () => void;
 }
 
 export const AddMembersToTeamForm = observer(function ({
@@ -19,6 +20,7 @@ export const AddMembersToTeamForm = observer(function ({
   handleSelectedMembers,
   isEditFlow,
   teamId,
+  closeExpand,
 }: AddMembersToTeamFormProps) {
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
 
@@ -53,40 +55,39 @@ export const AddMembersToTeamForm = observer(function ({
   };
 
   return (
-    <section className="flex flex-col gap-6 h-full">
+    <section className="flex flex-col gap-4 h-full">
       <SearchInput placeholder="Search Member" onSearch={handleSearch} />
-      <div className="flex flex-col gap-3 mt-3 flex-grow overflow-y-auto">
+      <div className="flex flex-col gap-2 flex-grow overflow-y-auto">
         {searchedMembers.map((member) => {
           const isSelected = selectedMembers.some(
             (selected) => selected._id === member._id
           );
           return (
             <div
-              className={`flex gap-2 items-center justify-between py-2 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue ${
-                isSelected && "bg-hoverBlue"
-              }`}
               key={member._id}
-              onClick={() => toggleMemberSelection(member)}
+              className={`flex items-center gap-2 justify-between rounded-md border px-2  py-1  transition-all duration-300 hover:bg-hoverBlue ${
+                isSelected && "bg-hoverBlue"
+              } `}
             >
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => toggleMemberSelection(member)}
-                  className="form-checkbox"
-                />
-                <div className="flex gap-2">
-                  <p className="text-black font-bold">
-                    {member.firstName} {member.lastName}
-                  </p>
-                  {member.team && (
-                    <span className="text-dark-grey">
-                      Current Team:{" "}
-                      {typeof member.team === "string"
-                        ? member.team
-                        : member.team?.name}
-                    </span>
-                  )}
+              <div
+                className={`flex gap-2 items-center flex-grow  justify-between cursor-pointer `}
+                onClick={() => toggleMemberSelection(member)}
+              >
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" checked={isSelected} />
+                  <div className="flex gap-2">
+                    <p className="text-black font-bold">
+                      {member.firstName} {member.lastName}
+                    </p>
+                    {member.team && (
+                      <span className="text-dark-grey">
+                        Current Team:{" "}
+                        {typeof member.team === "string"
+                          ? member.team
+                          : member.team?.name}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               {isEditFlow && member.team && (
@@ -94,13 +95,14 @@ export const AddMembersToTeamForm = observer(function ({
                   type="memberUnassign"
                   id={member._id}
                   teamId={teamId}
-                  onConfirm={() =>
+                  onConfirm={() => {
                     handleSelectedMembers(
                       selectedMembers.filter(
                         (selected) => selected._id !== member._id
                       )
-                    )
-                  }
+                    );
+                    closeExpand();
+                  }}
                   trigger={
                     <button className="text-error hover:text-dark-error">
                       <TrashIcon />
