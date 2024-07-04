@@ -96,11 +96,33 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
       }
     };
 
+    const checkIfTeamHasMembers = async (teamId: string) => {
+      const members = await Memberservices.getAllMembers();
+      const teamMembers = members?.filter(
+        (member) =>
+          member.team &&
+          typeof member.team === "object" &&
+          member.team._id === teamId
+      );
+      return teamMembers && teamMembers.length > 0;
+    };
+
     const handleDeleteTeam = async () => {
       if (onConfirm) {
         onConfirm();
         setOpen(false);
       }
+    };
+
+    const handleTriggerClick = async () => {
+      if (type === "team") {
+        const hasMembers = await checkIfTeamHasMembers(id);
+        if (hasMembers) {
+          setAlert("errorDeleteTeamWithMembers");
+          return;
+        }
+      }
+      setOpen(true);
     };
 
     const handleUnassignMember = async () => {
@@ -149,7 +171,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
     return (
       <>
         <Dialog open={open}>
-          <DialogTrigger onClick={() => setOpen(true)}>
+          <DialogTrigger onClick={handleTriggerClick}>
             {trigger ? (
               trigger
             ) : (
@@ -162,17 +184,17 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
           {!loading ? (
             <DialogContent>
               <DialogHeader>
-                <DialogTitle className="text-xl   ">{title}</DialogTitle>
+                <DialogTitle className="text-xl">{title}</DialogTitle>
                 <DialogTitle className="text-md font-normal">
                   {description}
                 </DialogTitle>
               </DialogHeader>
-              <DialogDescription className="text-md   ">
+              <DialogDescription className="text-md">
                 <div className="flex items-center gap-2">
                   <Button
                     variant="secondary"
                     onClick={() => setOpen(false)}
-                    className="w-full "
+                    className="w-full"
                   >
                     <p>Cancel</p>
                   </Button>

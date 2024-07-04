@@ -111,8 +111,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const formatData: Product = {
       ...emptyProduct,
       ...data,
-      status: data.assignedEmail ? "Delivered" : "Available",
+      status:
+        data.assignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
+      assignedEmail,
       attributes: cast(
         attributes.map((attr) => {
           const initialAttr = initialData?.attributes.find(

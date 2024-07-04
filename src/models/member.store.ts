@@ -105,7 +105,7 @@ export const MemberStore = types
     deleteMember(member: TeamMember) {
       const index = store.members.findIndex((m) => m._id === member._id);
       if (index > -1) {
-        store.members[index] = member;
+        store.members.splice(index, 1);
       }
     },
   }));

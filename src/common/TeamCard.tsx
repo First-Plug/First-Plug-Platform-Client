@@ -4,7 +4,7 @@ import { Team } from "@/types";
 import { observer } from "mobx-react-lite";
 
 interface TeamCardProps {
-  team?: Team | string;
+  team?: Team | string | null;
   className?: string;
 }
 
@@ -17,12 +17,9 @@ export var TeamCard = observer(function TeamCard({
 
   if (typeof team === "string") {
     teamName = team;
-  } else if (team) {
+  } else if (team && typeof team === "object") {
     teamName = team.name || "Not Assigned";
     teamColor = team.color || "#d3d3d3";
-  }
-  if (teamName === "Not Assigned") {
-    teamColor = "#FFC6D3";
   }
 
   return (
