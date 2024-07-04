@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { XCircleIcon } from "lucide-react";
 import { CheckIcon } from "@/common";
 import useFetch from "@/hooks/useFetch";
+import { set } from "zod";
 
 function XIcon() {
   return <XCircleIcon className="text-white " size={40} />;
@@ -105,7 +106,9 @@ export default observer(function AlertProvider() {
       title: " Success",
       type: "succes",
       description: " Your Member has been successfully updated to your team.",
-      closeAction: () => {
+      closeAction: async () => {
+        await fetchMembers();
+        setAside(undefined);
         setAlert(undefined);
       },
     },
@@ -188,7 +191,8 @@ export default observer(function AlertProvider() {
     errorDeleteTeamWithMembers: {
       title: " Error",
       type: "error",
-      description: " Cannot delete a team with members. Please unassign the members first.",
+      description:
+        " Cannot delete a team with members. Please unassign the members first.",
       closeAction: () => {
         setAlert(undefined);
       },
