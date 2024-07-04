@@ -11,16 +11,16 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      <DataProvider>
+    <DataProvider>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar />
         <section className="flex flex-col w-[90%] flex-grow   h-[100vh] max-h-[100vh]  ">
           <Navbar />
           <Layout>{children}</Layout>
           <Aside />
           <AlertProvider />
         </section>
-      </DataProvider>
-    </div>
+      </div>
+    </DataProvider>
   );
 }

@@ -137,6 +137,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         setOpen(false);
         setAlert("memberUnassigned");
         setLoading(false);
+        onConfirm();
       } catch (error) {
         setOpen(false);
         setLoading(false);

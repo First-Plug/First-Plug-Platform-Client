@@ -1,7 +1,7 @@
 "use client";
 /*global.css*/
 import React, { useState } from "react";
-import { Button } from "@/common";
+import { Button, LoaderSpinner } from "@/common";
 import { Memberservices, TeamServices } from "../services";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
@@ -25,12 +25,14 @@ export const CreateTeamAside = observer(function ({
 
   const [name, setName] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<TeamMember[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleSelectedMembers = (selectedMembers: TeamMember[]) => {
     setSelectedMembers(selectedMembers);
   };
 
   const handleCreateTeam = async () => {
+    setIsCreating(true);
     try {
       const newTeam = await createTeam({ name });
       const memberUpdates = selectedMembers.map(async (member) => {
@@ -51,6 +53,8 @@ export const CreateTeamAside = observer(function ({
     } catch (error) {
       console.error("Error creating team:", error);
       setAlert("errorCreateTeam");
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -89,6 +93,7 @@ export const CreateTeamAside = observer(function ({
           size="big"
           className="flex-grow rounded-md"
           onClick={() => setAside(undefined)}
+          disabled={isCreating}
         >
           Cancel
         </Button>
@@ -96,10 +101,10 @@ export const CreateTeamAside = observer(function ({
           variant="primary"
           size="big"
           className="flex-grow rounded-md"
-          disabled={!name}
+          disabled={!name || isCreating}
           onClick={handleCreateTeam}
         >
-          Save
+          {isCreating ? <LoaderSpinner /> : "Save"}
         </Button>
       </div>
     </div>
