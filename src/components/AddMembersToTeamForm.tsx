@@ -11,7 +11,7 @@ interface AddMembersToTeamFormProps {
   handleSelectedMembers: (member: TeamMember[]) => void;
   isEditFlow?: boolean;
   teamId: string;
-  closeExpand: () => void;
+  closeExpand?: () => void;
 }
 
 export const AddMembersToTeamForm = observer(function ({
@@ -64,13 +64,13 @@ export const AddMembersToTeamForm = observer(function ({
           );
           return (
             <div
+              key={member._id}
               className={`flex items-center gap-2 justify-between rounded-md border px-2  py-1  transition-all duration-300 hover:bg-hoverBlue ${
                 isSelected && "bg-hoverBlue"
               } `}
             >
               <div
                 className={`flex gap-2 items-center flex-grow  justify-between cursor-pointer `}
-                key={member._id}
                 onClick={() => toggleMemberSelection(member)}
               >
                 <div className="flex items-center gap-2">
