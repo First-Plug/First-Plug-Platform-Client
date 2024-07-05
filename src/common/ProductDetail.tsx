@@ -30,9 +30,11 @@ const MembersList = observer(function MembersList({
     useState<RelocateStatus>(undefined);
   const [selectedMember, setSelectedMember] = useState<TeamMember>();
   const { handleReassignProduct } = useActions();
+
   const handleSelectMember = (member: TeamMember) => {
     setSelectedMember(member);
   };
+
   const handleSearch = (query: string) => {
     setSearchedMembers(
       members.filter(
@@ -47,14 +49,18 @@ const MembersList = observer(function MembersList({
   const displayedMembers = searchedMembers.filter(
     (member) => member.email !== currentMember?.email
   );
+
   const { fetchMembers } = useFetch();
+
   const handleRelocateProduct = async () => {
     setRelocating(true);
     try {
-      await handleReassignProduct({ currentMember, selectedMember, product });
-      await fetchMembers();
-      setRelocateResult("success");
-      setRelocateStauts("success");
+      if (selectedMember) {
+        await handleReassignProduct({ currentMember, selectedMember, product });
+        await fetchMembers();
+        setRelocateResult("success");
+        setRelocateStauts("success");
+      }
     } catch (error) {
       setRelocateResult("error");
       setRelocateStauts("error");

@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ProductServices } from "@/services";
 interface AddMemberFormProps {
   members: TeamMember[];
   selectedMember?: TeamMember | null;
@@ -103,7 +104,7 @@ export const AddMemberForm = observer(function ({
             currentMember?.firstName + " " + currentMember?.lastName || "";
         }
 
-        await reassignProduct(currentProduct._id, updatedProduct);
+        await ProductServices.updateProduct(currentProduct._id, updatedProduct);
         await fetchMembers();
         await fetchStock();
         setAside(undefined);

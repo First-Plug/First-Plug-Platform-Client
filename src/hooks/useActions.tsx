@@ -1,4 +1,5 @@
 import { useStore } from "@/models";
+import { ProductServices } from "@/services";
 import { Location, Product, TeamMember } from "@/types";
 export default function useActions() {
   const {
@@ -29,7 +30,7 @@ export default function useActions() {
     }
 
     try {
-      await reassignProduct(product._id, updatedProduct);
+      await ProductServices.updateProduct(product._id, updatedProduct);
     } catch (error) {
       return error;
     }
