@@ -91,9 +91,9 @@ export function RootTable<TData, TValue>({
   });
 
   return (
-    <div className="h-full flex-grow  flex flex-col  gap-2 relative  ">
+    <div className="h-full flex-grow  flex flex-col  gap-1 relative   ">
       {tableType !== "subRow" && (
-        <div className="   max-h-[50%] flex items-center   ">
+        <div className="   max-h-[50%]  flex items-center   ">
           <TableActions table={table} type={tableType} />
         </div>
       )}
@@ -206,7 +206,7 @@ export function RootTable<TData, TValue>({
                     onClick={() =>
                       table.setPagination({
                         pageIndex: i,
-                        pageSize: 5,
+                        pageSize: table.getState().pagination.pageSize,
                       })
                     }
                     className={`border rounded-full grid place-items-center transition-all duration-300 ${
