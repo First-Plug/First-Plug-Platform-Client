@@ -57,7 +57,7 @@ export const AddMembersToTeamForm = observer(function ({
   return (
     <section className="flex flex-col gap-4 h-full">
       <SearchInput placeholder="Search Member" onSearch={handleSearch} />
-      <div className="flex flex-col gap-2 flex-grow overflow-y-auto">
+      <div className="flex flex-col gap-2 flex-grow overflow-y-auto scrollbar-custom">
         {searchedMembers.map((member) => {
           const isSelected = selectedMembers.some(
             (selected) => selected._id === member._id
