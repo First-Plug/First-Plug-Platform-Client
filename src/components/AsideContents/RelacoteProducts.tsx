@@ -16,7 +16,7 @@ export function RelacoteProducts({ products, handleBack }: IRelacoteProducts) {
         <ArrowLeft />
         <p>Back</p>
       </div>
-      <div className=" max-h-[100%] h-[100%] overflow-y-auto">
+      <div className=" max-h-[100%] h-[100%] overflow-y-auto scrollbar-custom">
         {products.map((product) => (
           <ProductDetail product={product} isRelocating key={product._id} />
         ))}
