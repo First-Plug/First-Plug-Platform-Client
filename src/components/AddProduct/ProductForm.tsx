@@ -57,6 +57,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setValue,
     clearErrors,
     formState: { isSubmitting },
+    watch,
   } = methods;
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -108,13 +109,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setShowErrorDialog(false);
     setErrorMessage("");
 
+    const finalAssignedEmail = watch("assignedEmail");
+
     const formatData: Product = {
       ...emptyProduct,
       ...data,
       status:
-        data.assignedEmail || data.assignedMember ? "Delivered" : "Available",
+        finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
-      assignedEmail,
+      assignedEmail: finalAssignedEmail,
       attributes: cast(
         attributes.map((attr) => {
           const initialAttr = initialData?.attributes.find(
@@ -137,9 +140,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
     if (!validateAttributes(formatData.attributes, selectedCategory)) {
       return;
     }
-    if (formatData.assignedEmail === "") {
+
+    if (isUpdate && formatData.assignedEmail === "") {
       delete formatData.assignedEmail;
     }
+
     try {
       if (isUpdate && initialData) {
         const changes: Partial<Product> = {};

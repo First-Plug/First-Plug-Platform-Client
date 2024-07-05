@@ -47,12 +47,17 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       if (sessionStorage.getItem("accessToken")) {
         try {
           setAuthInterceptor(sessionStorage.getItem("accessToken"));
-          const members = await Memberservices.getAllMembers();
+          const fetchedMembers = await Memberservices.getAllMembers();
+
+          if (fetchedMembers && fetchedMembers.length > 0) {
+            members.setMembers(fetchedMembers);
+          }
+
           if (isUpdate) {
             const assignedMember = formState.assignedMember as string;
             const assignedEmail = formState.assignedEmail as string;
 
-            const selectedMember = members.find(
+            const selectedMember = fetchedMembers.find(
               (member) =>
                 `${member.firstName} ${member.lastName}` === assignedMember
             );
@@ -74,24 +79,24 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 
             const memberFullNames = [
               "None",
-              ...members.map(
+              ...fetchedMembers.map(
                 (member) => `${member.firstName} ${member.lastName}`
               ),
             ];
 
-      if (
-        assignedEmail &&
-        !selectedMember &&
-        !memberFullNames.includes(assignedEmail)
-      ) {
-        memberFullNames.push(assignedEmail);
-      }
+            if (
+              assignedEmail &&
+              !selectedMember &&
+              !memberFullNames.includes(assignedEmail)
+            ) {
+              memberFullNames.push(assignedEmail);
+            }
 
             setAssignedEmailOptions(memberFullNames);
           } else {
             const memberFullNames = [
               "None",
-              ...members.map(
+              ...fetchedMembers.map(
                 (member) => `${member.firstName} ${member.lastName}`
               ),
             ];
@@ -106,7 +111,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       }
     };
     fetchAllData();
-  }, [isUpdate, formState, members.members, setValue, setAssignedEmail]);
+  }, [isUpdate, formState, members, setValue, setAssignedEmail]);
 
   const handleInputChange = (name: keyof FieldValues, value: string) => {
     setValue(name, value);
@@ -127,7 +132,9 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         (member) =>
           `${member.firstName} ${member.lastName}` === selectedFullName
       );
-      setAssignedEmail(selectedMember?.email || "");
+      const email = selectedMember?.email || "";
+      setAssignedEmail(email);
+      setValue("assignedEmail", email);
       setValue("assignedMember", selectedFullName);
       setSelectedLocation("Employee");
       setValue("location", "Employee");
@@ -176,7 +183,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         <div className="w-full ">
           <DropdownInputProductForm
             options={assignedEmailOptions}
-            placeholder="Assigned Email"
+            placeholder="Assigned Member"
             title="Assigned Member*"
             name="assignedMember"
             selectedOption={selectedAssignedMember}
