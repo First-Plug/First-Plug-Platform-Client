@@ -100,7 +100,7 @@ export function RootTable<TData, TValue>({
       <div
         className={`rounded-md border     w-full  mx-auto ${
           tableType === "members" ? "max-h-[80%]" : "max-h-[85%]"
-        }  overflow-y-auto `}
+        }  overflow-y-auto scrollbar-custom `}
       >
         <Table className="table ">
           <TableHeader>

@@ -25,7 +25,7 @@ export function ReturnPage({ handleBack, products }: IReturnPage) {
           <strong>{products[0].assignedMember}</strong>?
         </h2>
       </div>
-      <div className=" max-h-[90%] h-[90%] overflow-y-auto">
+      <div className=" max-h-[90%] h-[90%] overflow-y-auto scrollbar-custom">
         {products.map((product) => (
           <ReturnProduct product={product} key={product._id} />
         ))}
