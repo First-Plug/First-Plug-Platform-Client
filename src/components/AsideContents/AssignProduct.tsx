@@ -50,7 +50,7 @@ export const AssignProduct = observer(() => {
     };
 
     fetchData();
-  }, []);
+  }, [currentProductId]);
 
   const handleSelectedMembers = (selectedMember: TeamMember | null) => {
     setMember(selectedMember);
