@@ -119,7 +119,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
     <PageLayout>
       <FormProvider {...methods}>
         <div className=" h-full w-full flex flex-col  ">
-          <div className=" absolute h-[90%] w-[80%]  flex-grow overflow-y-auto p-4 ">
+          <div className=" absolute h-[90%] w-[80%]  flex-grow overflow-y-auto p-4 scrollbar-custom ">
             <div className=" px-4 py-5 rounded-3xl  border  ">
               <SectionTitle className="text-[20px]">
                 {isUpdate ? "" : "Add Team Member"}

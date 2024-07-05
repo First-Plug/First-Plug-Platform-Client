@@ -193,7 +193,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     <FormProvider {...methods}>
       <PageLayout>
         <div className="h-full w-full ">
-          <div className="absolute h-[90%] w-[80%] overflow-y-auto pr-4">
+          <div className="absolute h-[90%] w-[80%] overflow-y-auto scrollbar-custom pr-4">
             <div className="px-4 py-2 rounded-3xl border">
               <SectionTitle className="text-[20px]">
                 {isUpdate ? "" : "Add Product"}
@@ -213,7 +213,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </div>
             {selectedCategory && (
               <div className="flex flex-col lg:flex:row gap-4 max-h-[100%] h-[90%] w-full  mt-4">
-                <div className="px-4 py-6 rounded-3xl border overflow-y-auto max-h-[500px] pb-40">
+                <div className="px-4 py-6 rounded-3xl border overflow-y-auto max-h-[500px] pb-40 scrollbar-custom">
                   <section>
                     <DynamicForm
                       fields={FormConfig.fields}
