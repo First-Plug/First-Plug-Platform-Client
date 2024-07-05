@@ -21,7 +21,7 @@ export const MyTeamActions = observer(function <TData>({
   };
 
   return (
-    <section className="flex flex-col gap-4 w-full h-full">
+    <section className="flex flex-col gap-1 w-full h-full">
       <MyTeamViewHeader />
 
       <div className="w-full flex justify-between  items-center    gap-2  ">
