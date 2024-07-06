@@ -8,6 +8,7 @@ import { useStore } from "@/models/root.store";
 import { TeamMember } from "@/types";
 import { AddMembersToTeamForm } from "./AddMembersToTeamForm";
 import { transformData } from "@/utils/dataTransformUtil";
+import useFetch from "@/hooks/useFetch";
 
 interface CreateTeamAsideProps {
   className?: string;
@@ -27,27 +28,27 @@ export const CreateTeamAside = observer(function ({
   const [selectedMembers, setSelectedMembers] = useState<TeamMember[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
-  const handleSelectedMembers = (selectedMembers: TeamMember[]) => {
-    setSelectedMembers(selectedMembers);
+  const handleSelectedMembers = (member: TeamMember) => {
+    if (selectedMembers.some((m) => m._id === member._id)) {
+      return setSelectedMembers(
+        selectedMembers.filter((m) => m._id !== member._id)
+      );
+    }
+    setSelectedMembers([...selectedMembers, member]);
   };
 
+  const { fetchMembers } = useFetch();
   const handleCreateTeam = async () => {
     setIsCreating(true);
     try {
       const newTeam = await createTeam({ name });
-      const memberUpdates = selectedMembers.map(async (member) => {
-        return await addToTeam(newTeam._id, member._id);
-      });
-      await Promise.all(memberUpdates);
-
-      const membersResponse = await Memberservices.getAllMembers();
-      const teamsResponse = await TeamServices.getAllTeams();
-
-      const transformedMembers = transformData(membersResponse, teamsResponse);
-
-      setMembers(transformedMembers);
-      setTeams(teamsResponse);
-
+      if (selectedMembers.length) {
+        const memberUpdates = selectedMembers.map(async (member) => {
+          return await addToTeam(newTeam._id, member._id);
+        });
+        await Promise.all(memberUpdates);
+      }
+      await fetchMembers();
       setAlert("createTeam");
       setAside(undefined);
     } catch (error) {
@@ -60,7 +61,7 @@ export const CreateTeamAside = observer(function ({
 
   return (
     <div className={` ${className} flex flex-col justify-between h-full `}>
-      <div className="flex flex-col gap-2 h-[60vh] overflow-y-auto scrollbar-custom">
+      <div className="flex flex-col gap-2  h-full max-h-[100%] overflow-y-auto scrollbar-custom">
         <div className="flex flex-col">
           <span className="text-dark-grey">Team Name</span>
 
@@ -80,32 +81,34 @@ export const CreateTeamAside = observer(function ({
 
           <AddMembersToTeamForm
             handleSelectedMembers={handleSelectedMembers}
-            members={members}
             selectedMembers={selectedMembers}
-            teamId="createTeam"
+            createAside
+            newTeamName={name}
           />
         </div>
       </div>
 
-      <div className="flex gap-2">
-        <Button
-          variant="secondary"
-          size="big"
-          className="flex-grow rounded-md"
-          onClick={() => setAside(undefined)}
-          disabled={isCreating}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="primary"
-          size="big"
-          className="flex-grow rounded-md"
-          disabled={!name || isCreating}
-          onClick={handleCreateTeam}
-        >
-          {isCreating ? <LoaderSpinner /> : "Save"}
-        </Button>
+      <div className="flex gap-2  absolute  bg-white  py-2    bottom-0   left-0 w-full border-t px-4">
+        <div className="flex  justify-end  w-full gap-2 ">
+          <Button
+            variant="secondary"
+            size="big"
+            className="flex-grow rounded-md w-1/3"
+            onClick={() => setAside(undefined)}
+            disabled={isCreating}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="big"
+            className="flex-grow rounded-md w-1/3"
+            disabled={!name || isCreating}
+            onClick={handleCreateTeam}
+          >
+            {isCreating ? <LoaderSpinner /> : "Save"}
+          </Button>
+        </div>
       </div>
     </div>
   );

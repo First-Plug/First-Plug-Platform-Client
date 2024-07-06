@@ -9,7 +9,7 @@ export * from "./TeamMemberCard";
 export * from "./CreateTeamAside";
 export * from "./Download";
 export * from "./EditMemberAside";
-export * from "./EditTeamsAsideDetails";
+export * from "./AsideContents/EditTeamsAside";
 export * from "./FilterModal";
 export * from "./Form";
 export * from "./FormInput";

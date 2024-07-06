@@ -6,13 +6,12 @@ import {
   CreateTeamAside,
   LoadAside,
   OrderAsideDetails,
-  EditTeamsAsideDetails,
 } from "./";
 import {
   AssignProduct,
   ChangePassword,
   EditProductAside,
-  RelacoteProducts,
+  EditTeamsAside,
 } from "./AsideContents";
 import EditMemberAside from "./EditMemberAside";
 
@@ -22,7 +21,7 @@ export var AsideContent = observer(function () {
     case "MemberDetails":
       return <MemberAsideDetails />;
     case "EditTeam":
-      return <EditTeamsAsideDetails />;
+      return <EditTeamsAside />;
     case "EditMember":
       return <EditMemberAside />;
     case "EditProduct":

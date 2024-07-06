@@ -4,12 +4,16 @@ import { AsideContent } from "./";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
 import { AsideTitle } from "@/common";
+import useFetch from "@/hooks/useFetch";
 
 export var Aside = observer(function Aside() {
   const {
     aside: { type, setAside },
   } = useStore();
 
+  const handleCloseAside = () => {
+    setAside(undefined);
+  };
   return (
     <>
       <div
@@ -27,7 +31,7 @@ export var Aside = observer(function Aside() {
           <h2 className="text-2xl font-sans text-black font-semibold">
             <AsideTitle />
           </h2>
-          <button onClick={() => setAside(undefined)}>
+          <button onClick={handleCloseAside}>
             <IconX className="h-8 w-8" />
           </button>
         </header>

@@ -29,14 +29,6 @@ export class TeamServices {
     return response.data;
   }
 
-  static async removeFromTeam(teamId: string, memberId: string): Promise<Team> {
-    const response = await HTTPRequests.put(
-      `${BASE_URL}/api/teams/${memberId}/unassign-member`,
-      { teamId }
-    );
-    return response.data;
-  }
-
   static async bulkDeleteTeams(teamIds: string[]): Promise<void> {
     await HTTPRequests.delete(`${BASE_URL}/api/teams/bulk-delete`, {
       data: { ids: teamIds },
@@ -57,6 +49,13 @@ export class TeamServices {
     const response = await HTTPRequests.put(
       `${BASE_URL}/api/teams/${teamId}/members/${memberId}`,
       {}
+    );
+    return response.data;
+  }
+  static async removeFromTeam(teamId: string, memberId: string): Promise<Team> {
+    const response = await HTTPRequests.put(
+      `${BASE_URL}/api/teams/${memberId}/unassign-member`,
+      { teamId }
     );
     return response.data;
   }
