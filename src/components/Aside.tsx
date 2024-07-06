@@ -11,15 +11,8 @@ export var Aside = observer(function Aside() {
     aside: { type, setAside },
   } = useStore();
 
-  const { fetchMembers } = useFetch();
-  const handleCloseAside = async () => {
-    return setAside(undefined);
-    if (type === "EditTeam") {
-      await fetchMembers();
-      setAside(undefined);
-    } else {
-      setAside(undefined);
-    }
+  const handleCloseAside = () => {
+    setAside(undefined);
   };
   return (
     <>
