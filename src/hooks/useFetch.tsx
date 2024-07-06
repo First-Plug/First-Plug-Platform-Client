@@ -9,11 +9,12 @@ export default function useFetch() {
     teams: { setTeams },
   } = useStore();
 
-  const fetchMembers = async () => {
-    setFetchMembers(true);
+  const fetchMembers = async (skipLoader?: boolean) => {
+    if (!skipLoader) {
+      setFetchMembers(true);
+    }
     try {
       const membersResponse = await Memberservices.getAllMembers();
-      // await fetchTeams();
       const teamsResponse = await TeamServices.getAllTeams();
       setTeams(teamsResponse);
       const transformedMembers = transformData(membersResponse, teamsResponse);

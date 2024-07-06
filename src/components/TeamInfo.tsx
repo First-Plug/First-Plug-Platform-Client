@@ -5,70 +5,70 @@ import { useStore } from "@/models/root.store";
 import { TeamMember, Team } from "@/types";
 import { AddMembersToTeamForm } from "./AddMembersToTeamForm";
 import { transformData } from "@/utils/dataTransformUtil";
+import { Button, LoaderSpinner } from "@/common";
+import { TeamServices } from "@/services";
+import useFetch from "@/hooks/useFetch";
+import { Input } from "./ui/input";
 
 interface TeamInfoProps {
   team: Team;
-  setNewName: (name: string) => void;
-  setSelectedMembers: (members: TeamMember[]) => void;
   closeExpand: () => void;
 }
 
 export const TeamInfo = observer(function ({
   team,
-  setNewName,
-  setSelectedMembers,
   closeExpand,
 }: TeamInfoProps) {
-  const {
-    members: { members },
-    teams: { teams },
-  } = useStore();
-
   const [newTeamName, setNewTeamName] = useState(team.name);
-  const [selectedMembers, setSelectedMembersState] = useState<TeamMember[]>([]);
-
-  useEffect(() => {
-    const initialSelectedMembers = members.filter(
-      (member) =>
-        member.team &&
-        typeof member.team === "object" &&
-        member.team._id === team._id
-    );
-    const transformedMembers = transformData(initialSelectedMembers, teams);
-    setSelectedMembersState(transformedMembers);
-    setSelectedMembers(transformedMembers);
-  }, [team, members, teams, setSelectedMembers]);
+  const [updating, setUpdating] = useState(false);
+  const { fetchMembers } = useFetch();
 
   const handleNewNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewTeamName(e.target.value);
-    setNewName(e.target.value);
   };
 
-  const handleSelectedMembersChange = (selectedMembers: TeamMember[]) => {
-    setSelectedMembersState(selectedMembers);
-    setSelectedMembers(selectedMembers);
+  const handleUpdateTeamName = async () => {
+    setUpdating(true);
+    try {
+      await TeamServices.updateTeam(team._id, { ...team, name: newTeamName });
+      await fetchMembers();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setUpdating(false);
+    }
   };
 
   return (
     <article className="flex flex-col justify-between gap-2 w-[95%] m-auto my-2 text-md">
-      <header className="flex flex-col gap-2 flex-grow">
+      <header className="flex flex-col gap-2 flex-grow ">
         <span className="text-grey">Team Name</span>
-        <input
-          type="text"
-          value={newTeamName}
-          className="border-2 rounded-xl p-2 flex-grow w-full"
-          onChange={handleNewNameChange}
-        />
+        <div className="relative flex items-center ">
+          <div className="w-full">
+            <Input
+              type="text"
+              className="text-md"
+              value={newTeamName}
+              onChange={handleNewNameChange}
+            />
+          </div>
+          <div className="absolute right-2 flex items-center ">
+            <Button
+              variant="text"
+              disabled={newTeamName === team.name || updating}
+              onClick={handleUpdateTeamName}
+            >
+              {updating ? <LoaderSpinner /> : "save"}
+            </Button>
+          </div>
+        </div>
       </header>
 
       <hr className="my-2" />
 
       <AddMembersToTeamForm
-        handleSelectedMembers={handleSelectedMembersChange}
-        members={members}
-        selectedMembers={selectedMembers}
         isEditFlow={true}
-        teamId={team._id.toString()}
+        team={team}
         closeExpand={closeExpand}
       />
     </article>

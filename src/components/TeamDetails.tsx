@@ -10,10 +10,7 @@ interface TeamDetailsProps {
   className?: string;
   handleCheckbox: (team: Team) => void;
   handleExpandTeam: (team: Team) => void;
-  members: TeamMember[];
   isExpanded: boolean;
-  setNewName: (name: string) => void;
-  setSelectedMembers: (members: TeamMember[]) => void;
 }
 
 export const TeamDetails = function ({
@@ -21,10 +18,7 @@ export const TeamDetails = function ({
   className,
   handleCheckbox,
   handleExpandTeam,
-  members,
   isExpanded,
-  setNewName,
-  setSelectedMembers,
 }: TeamDetailsProps) {
   return (
     <section className={` ${className} border border-border rounded-md px-2 `}>
@@ -52,12 +46,7 @@ export const TeamDetails = function ({
       </div>
 
       {isExpanded && (
-        <TeamInfo
-          team={team}
-          setNewName={setNewName}
-          setSelectedMembers={setSelectedMembers}
-          closeExpand={() => handleExpandTeam(team)}
-        />
+        <TeamInfo team={team} closeExpand={() => handleExpandTeam(team)} />
       )}
     </section>
   );
