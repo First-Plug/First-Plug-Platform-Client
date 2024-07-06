@@ -145,6 +145,7 @@ export const AddMembersToTeamForm = observer(function ({
       <div className="flex flex-col gap-2 flex-grow overflow-y-auto scrollbar-custom">
         {searchedMembers.map((member) => (
           <MemberItem
+            key={member._id}
             isChanging={loading}
             member={member}
             adding={membersToAdd.some(
