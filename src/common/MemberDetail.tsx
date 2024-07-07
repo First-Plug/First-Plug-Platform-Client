@@ -1,12 +1,8 @@
-import React from "react";
-import { PenIcon, TrashIcon } from "./Icons";
-import { Button } from "./Button";
 import { TeamCard } from "./TeamCard";
-import Image from "next/image";
-import Photo from "../../public/employees/member.jpg";
-import { ShipmentStatusCard } from "./ShipmentStatus";
-import { dateTo_DDMMYY } from "@/utils/dateFormat";
 import { useStore } from "@/models/root.store";
+import FormatedDate from "@/components/Tables/helpers/FormatedDate";
+import Avvvatars from "avvvatars-react";
+import { Team } from "@/types/teams";
 
 interface MemberDetailProps {
   className?: string;
@@ -17,48 +13,41 @@ export function MemberDetail({ className }: MemberDetailProps) {
     members: { selectedMember },
   } = useStore();
 
+  if (!selectedMember) return null;
+  const team = selectedMember.team as Team;
+  const teamData = team && typeof team === "object" ? team : "Not Assigned";
+
   return (
-    <div className={`flex gap-2 ${className || ""}`}>
-      <Image
-        src={Photo}
-        alt="member"
-        className="w-1/4 object-cover rounded-md"
-      />
-      <div className="flex flex-col w-full  justify-start gap-2  ">
-        <div className="flex w-full justify-between items-center">
-          <TeamCard team={selectedMember.teams[0]} />
-
-          <div className="flex gap-2">
-            <Button
-              icon={<PenIcon className={"h-[1.2rem]"} strokeWidth={2} />}
-            />
-            <Button icon={<TrashIcon className={" h-[1.2rem]"} />} />
-          </div>
+    <div className={`flex flex-col gap-4   ${className || ""}`}>
+      <div className="flex gap-4 ">
+        <div className=" flex justify-center items-center  ">
+          <Avvvatars
+            value={`${selectedMember.firstName[0]}${selectedMember.lastName[0]}`}
+            style={"character"}
+            size={150}
+          />
         </div>
-
-        <b className="text-xl">
-          {selectedMember.firstName} {selectedMember.lastName}
-        </b>
-        <div className="flex  items-center justify-between  gap-1 text-[.9rem]">
-          <div className="flex items-center gap-1 ">
-            <span className="font-semibold "> Date Of Birth: </span>
-            <span className="font-normal">
-              {dateTo_DDMMYY(selectedMember.dateOfBirth)}{" "}
-            </span>
+        <div className="flex flex-col w-full justify-start text-md ">
+          <div className="flex w-full justify-between items-center">
+            <div className="flex items-center gap-1">
+              {selectedMember.team && <TeamCard team={teamData} />}
+            </div>
           </div>
-          <span className="text-grey">|</span>
-          <div className="flex items-center gap-1 ">
-            <span className="font-semibold ">Joining Date:</span>
-            <span className="font-normal">
-              {dateTo_DDMMYY(selectedMember.joiningDate)}
-            </span>
+          <div className="flex items-center gap-2 ">
+            <span className="font-semibold">Job Position: </span>
+            <span className="font-normal">{selectedMember.position || ""}</span>
           </div>
-        </div>
-        <div className="flex justify-between">
-          <div className="flex gap-1">
-            <span className="font-normal"> Shipment Details: </span>
-            {/* TODO: Review fetched data and endpoint to catch this shipment status information*/}
-            <ShipmentStatusCard status={"Available"} />
+          <div className="flex items-center gap-2 ">
+            <span className="font-semibold">Joining Date: </span>
+            <FormatedDate date={selectedMember.startDate} />
+          </div>
+          <div className="flex items-center gap-2 ">
+            <span className="font-semibold">Birth Date: </span>
+            <FormatedDate date={selectedMember.birthDate} />
+          </div>
+          <div className="flex items-center gap-2 ">
+            <span className="font-semibold">Email: </span>
+            <span className="font-normal">{selectedMember.email || ""}</span>
           </div>
         </div>
       </div>

@@ -24,10 +24,10 @@ export const Form = function ({
 }: FormProps) {
   return (
     <form
-      className={`py-40 min-w-[400px] w-[500px] h-screen flex flex-col justify-center gap-6 my-4${className}`}
+      className={`py-40 min-w-1/2 w-2/3  h-screen flex flex-col justify-center gap-6 my-4 text-md ${className}`}
       onSubmit={onSubmit}
     >
-      <h2 className="text-black font-bold text-3xl font-montserrat">{title}</h2>
+      <h2 className="text-black font-bold text-2xl font-montserrat">{title}</h2>
 
       {children}
 
@@ -42,7 +42,7 @@ export const Form = function ({
           onClick={(e) => {
             e.preventDefault();
             return signIn("google", {
-              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/home/dashboard`,
+              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/home/my-team`,
             });
           }}
           variant="secondary"
@@ -54,7 +54,7 @@ export const Form = function ({
           onClick={(e) => {
             e.preventDefault();
             return signIn("azure-ad", {
-              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/home/dashboard`,
+              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/home/my-team`,
             });
           }}
           variant="secondary"

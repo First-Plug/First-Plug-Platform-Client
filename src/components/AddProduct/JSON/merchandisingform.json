@@ -1,0 +1,23 @@
+{
+  "fields": [
+    {
+      "name": "color",
+      "title": "Color",
+      "options": [
+        "Gris Espacial",
+        "Plata",
+        "Medianoche",
+        "Blanco Estelar",
+        "Dorado",
+        "Negro Espacial",
+        "Negro",
+        "Blanco",
+        "Azul",
+        "Amarillo",
+        "Rojo",
+        "Verde",
+        "Other"
+      ]
+    }
+  ]
+}

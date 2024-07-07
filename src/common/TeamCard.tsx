@@ -1,31 +1,35 @@
-import React from "react";
+"use client";
+
+import { Team } from "@/types";
+import { observer } from "mobx-react-lite";
 
 interface TeamCardProps {
-  team?: string;
+  team?: Team | string | null;
   className?: string;
 }
 
-export function TeamCard({ team, className }: TeamCardProps) {
-  // TODO: Settear los colores en otro lugar y tiparlo. Los teams son particulares
-  // a cada user (empresa). En el modelo de Teams, agrear el campo "color".
-  const colors_role = {
-    Designer: "bg-design",
-    HR: "bg-hr",
-    QA: "bg-purple",
-    Sales: "bg-sales",
-    Devs: "bg-dev",
-    Finance: "bg-finance",
-    unset: "bg-grey",
-  };
+export var TeamCard = observer(function TeamCard({
+  team,
+  className,
+}: TeamCardProps) {
+  let teamName = "Not Assigned";
+  let teamColor = "#FFC6D3";
+
+  if (typeof team === "string") {
+    teamName = team;
+  } else if (team && typeof team === "object") {
+    teamName = team.name || "Not Assigned";
+    teamColor = team.color || "#d3d3d3";
+  }
+
   return (
     <span
-      className={`  ${
+      className={`py-0.5 px-2 rounded text-black font-medium ${
         className || ""
-      } py-0.5 px-1 rounded text-md text-black font-medium border ${
-        team && colors_role[team] ? colors_role[team] : "bg-grey"
-      } `}
+      }`}
+      style={{ backgroundColor: teamColor }}
     >
-      {team || "Assing to a Team"}
+      {teamName}
     </span>
   );
-}
+});

@@ -31,7 +31,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${inter.variable} ${montserrat.variable}`}>
-      <body>
+      <body className="font-inter">
         <Providers>{children}</Providers>
         <Toaster />
       </body>

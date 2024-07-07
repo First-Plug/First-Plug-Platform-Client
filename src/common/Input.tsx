@@ -3,9 +3,10 @@ import { ChangeEvent, FocusEvent, useState } from "react";
 import { EyeIcon, EyeSlashIcon } from "@/common/Icons";
 
 type InputProps = {
-  title: string;
+  title?: string;
   placeholder?: string;
   type?: string;
+  readonly?: boolean;
   defaultValue?: string;
   className?: string;
   value?: string;
@@ -24,7 +25,8 @@ export function Input({
   type,
   defaultValue,
   className,
-  value,
+  readonly,
+  value = "",
   onChange,
   onBlur,
   onFocus,
@@ -39,7 +41,7 @@ export function Input({
 
   return (
     <div className={`relative   h-24  font-inter  ${className}`}>
-      <label className="block text-dark-grey ml-2 font-sans">{title}</label>
+      <label className="block text-dark-grey ml-2 ">{title}</label>
       <input
         value={value}
         onChange={onChange}
@@ -50,7 +52,7 @@ export function Input({
         defaultValue={value}
         className={`w-full  h-14 py-2 rounded-xl border ${
           value.length && touched && error && !isLogin ? "border-error" : ""
-        } text-black p-4  font-sans focus:outline-none`}
+        } text-black p-4   focus:outline-none`}
       />
 
       {type === "password" && (
@@ -60,6 +62,7 @@ export function Input({
           onClick={() => {
             setShowPassword(!showPassword);
           }}
+          disabled={readonly}
         >
           {showPassword ? (
             <EyeSlashIcon className="h-5 w-5 text-grey " />

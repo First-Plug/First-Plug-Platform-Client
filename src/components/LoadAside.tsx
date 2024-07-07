@@ -1,27 +1,38 @@
 "use client";
 import Image from "next/image";
 import React, { ChangeEvent, useState } from "react";
-import { AddStockCard, Button, CustomLink, DownloadIcon } from "@/common";
+import { AddStockCard, Button, LoaderSpinner } from "@/common";
 import Papa from "papaparse";
 import { useStore } from "@/models";
-import { CsvInfo, Product, TeamMember, csvSquema } from "@/types";
-import { CsvServices } from "@/services";
-import { saveAs } from "file-saver";
-import { parseProduct } from "@/utils";
-const EMPTY_FILE_INFO: CsvInfo = {
-  title: "",
-  file: "",
-  currentDate: "",
-} as const;
+import {
+  CreateMemberZodModel,
+  CsvInfo,
+  CsvMember,
+  CsvProduct,
+  EMPTY_FILE_INFO,
+  PrdouctModelZod,
+  csvMemberSchema,
+  csvPrdocutSchema,
+  csvSquema,
+} from "@/types";
+import { CsvServices, Memberservices, ProductServices } from "@/services";
+import { isCsvCompleted, parseProduct } from "@/utils";
+import { useToast } from "./ui/use-toast";
+import { DownloadStock } from "./Download";
+import { parseMembers } from "@/utils/parseMembers";
+import useFetch from "@/hooks/useFetch";
 
-export const LoadStock = function () {
+export const LoadAside = function () {
   const [csvInfo, setCsvInfo] = useState(EMPTY_FILE_INFO);
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   const {
-    aside: { type },
+    aside: { type, setAside },
+    alerts: { setAlert },
   } = useStore();
 
+  const { fetchMembers, fetchStock } = useFetch();
   const clearCsvData = () => {
     setCsvInfo(EMPTY_FILE_INFO);
     setCsvFile(null);
@@ -31,10 +42,9 @@ export const LoadStock = function () {
 
   const postCsvToDatabase = async (parsedData) => {
     setIsLoading(true);
-
     try {
       if (type === "LoadStock") {
-        const filteredData = parsedData.filter((prod) => prod.category);
+        const filteredData = parsedData.filter((prod) => prod["category*"]);
         const prdoucts = filteredData.map((product) => ({
           ...product,
           acquisitionDate: product.acquisitionDate
@@ -42,75 +52,152 @@ export const LoadStock = function () {
             : product.acquisitionDate,
         }));
 
-        const parsedProducts = prdoucts.map((product) => parseProduct(product));
+        const parsedProducts: PrdouctModelZod = prdoucts.map((product) =>
+          parseProduct(product)
+        );
 
-        const { success, data, error } = csvSquema.safeParse({
-          parsedProducts,
+        const { success, data } = csvSquema.safeParse({
+          prdoucts: parsedProducts,
         });
 
         if (success) {
-          await CsvServices.bulkCreateProducts(data.prdoucts);
-          clearCsvData();
-          // TODO: add pretty alert
-          return alert("csv Loaded succesfully");
+          try {
+            await CsvServices.bulkCreateProducts(data.prdoucts);
+            await fetchStock();
+            await fetchMembers();
+            setAside(undefined);
+            setAlert("csvSuccess");
+            clearCsvData();
+          } catch (error) {
+            toast({
+              title:
+                "The uploaded file is not correct. Please verify it and try again.  ",
+              variant: "destructive",
+              duration: 1500,
+            });
+          }
         } else {
-          throw new Error("error en el tipo de archivo");
+          toast({
+            title:
+              "The uploaded file is not correct. Please verify it and try again.  ",
+            variant: "destructive",
+            duration: 1500,
+          });
         }
       }
 
       if (type === "LoadMembers") {
-        const members = parsedData.map((member) => {
-          return {
-            ...member,
-            dateOfBirth: new Date(member.dateOfBirth).toISOString(),
-            joiningDate: new Date(member.joiningDate).toISOString(),
-            teams: member.teams.split(","),
-          };
+        const members = parsedData
+          .map((member) => {
+            return {
+              ...member,
+            };
+          })
+          .filter((e) => isCsvCompleted(e));
+
+        const parsedMembers: CreateMemberZodModel[] = members.map((member) =>
+          parseMembers(member)
+        );
+        const { success, data, error } = csvSquema.safeParse({
+          members: parsedMembers,
         });
-        const { success, data } = csvSquema.safeParse({ members });
-
         if (success) {
-          await CsvServices.bulkCreateTeams(data.members);
-
-          clearCsvData();
-          // TODO: add pretty alert
-          return alert("csv Loaded succesfully");
+          try {
+            await CsvServices.bulkCreateTeams(data.members);
+            await fetchStock();
+            await fetchMembers();
+            clearCsvData();
+            setAside(undefined);
+            setAlert("csvSuccess");
+          } catch (error) {
+            console.error({ error: error.response.data });
+            toast({
+              title:
+                "The uploaded file is not correct. Please verify it and try again.  ",
+              variant: "destructive",
+              duration: 1500,
+            });
+          }
         } else {
-          throw new Error("Error en el tipo de archivos");
+          console.log({ error });
+          toast({
+            title:
+              "The uploaded file is not correct. Please verify it and try again.  ",
+            variant: "destructive",
+            duration: 1500,
+          });
         }
       }
     } catch (error) {
-      alert(error.message);
-      console.error(error);
+      console.log({ error });
+      return toast({
+        title:
+          "The uploaded file is not correct. Please verify it and try again.  ",
+        variant: "destructive",
+        duration: 1500,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const downloadTemplate = async () => {
-    try {
-      const filePath = "/excel/stock.xlsm";
-      const response = await fetch(filePath);
-      const blob = await response.blob();
-      saveAs(blob, "stock.xlsm");
-    } catch (error) {
-      console.error("Error al descargar el archivo:", error);
-    }
-  };
-
   const onFileChangeHandler = (csvFile: File) => {
-    setCsvFile(csvFile);
-
     Papa.parse(csvFile, {
       skipEmptyLines: true,
       header: true,
-      complete: function () {
-        const { name, size } = csvFile;
-        setCsvInfo({
-          title: name,
-          file: `${(size / 1024).toFixed(2)}kb`,
-          currentDate: new Date().toLocaleString(),
-        });
+      complete: function (results) {
+        // Here is the UPLOAD  🗃️⬆️  file validation:
+        if (type === "LoadStock") {
+          const fileData: CsvProduct[] = results.data.filter((p) =>
+            isCsvCompleted(p)
+          );
+          const { name, size } = csvFile;
+          const { success } = csvPrdocutSchema.safeParse(fileData);
+
+          if (success) {
+            setCsvFile(csvFile);
+            setCsvInfo({
+              title: name,
+              file: `${(size / 1024).toFixed(2)}kb`,
+              currentDate: new Date().toLocaleString(),
+            });
+          } else {
+            setCsvFile(null);
+            toast({
+              title:
+                "The uploaded file is not correct. Please verify it and try again.  ",
+              variant: "destructive",
+              duration: 15000,
+            });
+          }
+        }
+
+        if (type === "LoadMembers") {
+          const fileData: CsvMember[] = results.data.filter((p) =>
+            isCsvCompleted(p)
+          );
+
+          const { name, size } = csvFile;
+          const { success, error } = csvMemberSchema.safeParse(fileData);
+
+          if (success) {
+            setCsvFile(csvFile);
+            setCsvInfo({
+              title: name,
+              file: `${(size / 1024).toFixed(2)}kb`,
+              currentDate: new Date().toLocaleString(),
+            });
+          } else {
+            console.log("ERROR EN LA SUBIDAD DE CSV MEMBERS", error);
+            setCsvFile(null);
+            toast({
+              title:
+                "The uploaded file is not correct. Please verify it and try again.  ",
+              variant: "destructive",
+              duration: 15000,
+            });
+          }
+        }
       },
     });
   };
@@ -120,7 +207,7 @@ export const LoadStock = function () {
       Papa.parse(csvFile, {
         skipEmptyLines: true,
         header: true,
-        complete: function (results: { data: Product[] | TeamMember[] }) {
+        complete: function (results) {
           const { name, size } = csvFile;
           setCsvInfo({
             title: name,
@@ -166,19 +253,8 @@ export const LoadStock = function () {
                 onChange={handleFileSelect}
               />
             </div>
-            <div>
-              <Button
-                variant="text"
-                className="rounded-md p-1"
-                size="small"
-                onClick={downloadTemplate}
-              >
-                <div className="text-xs flex items-center">
-                  <DownloadIcon />
-                  <p>Download Template</p>
-                </div>
-              </Button>
-            </div>
+
+            <DownloadStock />
           </section>
         </div>
         {csvInfo.title && (
@@ -191,18 +267,18 @@ export const LoadStock = function () {
           />
         )}
       </div>
-
       <div className="fixed bottom-5 w-[85%] flex">
         <Button
           disabled={csvFile === null}
-          variant="primary"
-          body="Upload File"
+          variant={isLoading ? "secondary" : "primary"}
           size="big"
           className="p-3 rounded-md w-full"
           onClick={() => {
             handleAttachFileClick();
           }}
-        />
+        >
+          {isLoading ? <LoaderSpinner /> : "Upload file"}
+        </Button>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+"use client";
 import { CustomLink, Layout } from "@/common";
 import Image from "next/image";
 import notFound from "../../public/svg/not-found.svg";
@@ -5,10 +6,10 @@ import { Navbar } from "@/components";
 
 export default function NotFount() {
   return (
-    <>
+    <Layout>
       <Navbar title="logo" />
 
-      <div className="flex flex-col justify-center items-center  h-[100vh] gap-8 mx-[40px] my-[32px] border border-boder rounded-lg shadow-md">
+      <div className="flex flex-col justify-center items-center   gap-8 mx-[40px] my-[32px] border border-boder rounded-lg shadow-md">
         <Image src={notFound} alt="alerts" width={221} height={220} />
         <h2 className="font-montserrat font-bold text-[64px] text-dark-grey">
           404
@@ -25,6 +26,6 @@ export default function NotFount() {
           Go Home
         </CustomLink>
       </div>
-    </>
+    </Layout>
   );
 }

@@ -1,5 +1,5 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
-import { MembersModelZod, PrdouctModelZod } from "@/types";
+import { CreateMemberZodModel, PrdouctModelZod } from "@/types";
 
 export class CsvServices {
   static async bulkCreateProducts(data: PrdouctModelZod[]) {
@@ -9,7 +9,7 @@ export class CsvServices {
     );
     return response.data;
   }
-  static async bulkCreateTeams(data: MembersModelZod[]) {
+  static async bulkCreateTeams(data: CreateMemberZodModel[]) {
     const response = await HTTPRequests.post(
       `${BASE_URL}/api/members/bulkcreate`,
       data

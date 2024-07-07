@@ -9,17 +9,27 @@ import {
   ProductsStore,
   MemberStore,
   UserStore,
+  FetchStore,
+  AlertStore,
 } from "./";
 
-export const RootStore = types.model({
-  orders: types.late(() => OrderStore),
-  shipments: types.late(() => ShipmentStore),
-  teams: types.late(() => TeamStore),
-  products: types.late(() => ProductsStore),
-  members: types.late(() => MemberStore),
-  aside: types.late(() => AsideStore),
-  user: types.late(() => UserStore),
-});
+export const RootStore = types
+  .model({
+    orders: types.late(() => OrderStore),
+    shipments: types.late(() => ShipmentStore),
+    teams: types.late(() => TeamStore),
+    products: types.late(() => ProductsStore),
+    members: types.late(() => MemberStore),
+    aside: types.late(() => AsideStore),
+    user: types.late(() => UserStore),
+    alerts: types.late(() => AlertStore),
+    mainLoader: types.optional(types.boolean, true),
+  })
+  .actions((store) => ({
+    setMainLoader(status: boolean) {
+      store.mainLoader = status;
+    },
+  }));
 
 export type RootStoreInstance = Instance<typeof RootStore>;
 export type RootStoreSnapshot = SnapshotOut<typeof RootStore>;

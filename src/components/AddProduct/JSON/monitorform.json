@@ -1,0 +1,66 @@
+{
+  "fields": [
+    {
+      "name": "brand",
+      "title": "Brand*",
+      "options": ["LG", "Samsung", "Other"]
+    },
+    {
+      "name": "model",
+      "title": "Model*",
+      "options": [
+        "Bussines Monitor",
+        "FHD Monitor",
+        "High Resolution Monitor",
+        "Lifestyle Monitor",
+        "OLED Gaming Monitor",
+        "QHD Monitor",
+        "Smart Monitor",
+        "UltraFine Monitor",
+        "UltraGear Monitor",
+        "UltraWide Monitor",
+        "Other"
+      ]
+    },
+    {
+      "name": "screen",
+      "title": "Screen",
+      "options": [
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "19",
+        "20",
+        "21",
+        "22",
+        "24",
+        "27",
+        "32",
+        "34",
+        "40",
+        "49"
+      ]
+    },
+    {
+      "name": "color",
+      "title": "Color",
+      "options": [
+        "Gris Espacial",
+        "Plata",
+        "Medianoche",
+        "Blanco Estelar",
+        "Dorado",
+        "Negro Espacial",
+        "Negro",
+        "Blanco",
+        "Azul",
+        "Amarillo",
+        "Rojo",
+        "Verde",
+        "Other"
+      ]
+    }
+  ]
+}

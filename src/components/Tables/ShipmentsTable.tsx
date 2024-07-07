@@ -1,5 +1,5 @@
 "use client";
-import { Table } from "../Table";
+
 import { Product, Shipment, IShipmentTable } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { DMY_Date } from "@/utils";
@@ -7,6 +7,7 @@ import { ArrowRight, Button, CustomLink } from "@/common";
 import { useStore } from "@/models";
 import { ProductsTable } from ".";
 import { observer } from "mobx-react-lite";
+import { RootTable } from "./RootTable";
 const shipmentsColumns: (
   handleSelect: (shipmentId: Shipment["_id"]) => void
 ) => ColumnDef<IShipmentTable>[] = (handleSelect) => [
@@ -24,7 +25,7 @@ const shipmentsColumns: (
   },
   {
     accessorKey: "productsQuantity",
-    header: "Quantity Prodcuts",
+    header: "Quantity Products",
     cell: ({ getValue }) => getValue<Product[]>(),
   },
   {
@@ -95,15 +96,16 @@ export const ShipmentsTable = observer(function ({
     setSelectedShipmentId(shipmentId);
 
   return (
-    <Table<IShipmentTable>
+    <RootTable
+      tableType="shipments"
       columns={shipmentsColumns(handleSelectShipment)}
       data={shipments}
       getRowCanExpand={() => true}
-      subComponent={
-        selectedShipment ? (
-          <ProductsTable products={selectedShipment.products} />
-        ) : null
-      }
+      // subComponent={
+      //   selectedShipment ? (
+      //     <ProductsTable products={selectedShipment.products} />
+      //   ) : null
+      // }
     />
   );
 });

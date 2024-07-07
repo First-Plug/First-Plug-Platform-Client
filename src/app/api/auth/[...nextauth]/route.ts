@@ -114,7 +114,9 @@ const authOptions: NextAuthOptions = {
       if (token.backendTokens && token.backendTokens.expiresIn) {
         if (new Date().getTime() < token.backendTokens.expiresIn) return token;
 
-        return await AuthServices.refreshToken(token);
+        return await AuthServices.refreshToken(
+          token.backendTokens.refreshToken
+        );
       }
 
       return { ...token, ...user };

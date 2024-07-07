@@ -1,9 +1,7 @@
 import axios from "axios";
 
-let baseURL: string = process.env.NEXT_PUBLIC_API;
-
-export const BASE_URL = baseURL;
-export const axiosInstance = axios.create({ baseURL });
+export const BASE_URL: string = process.env.NEXT_PUBLIC_API;
+export const axiosInstance = axios.create({ baseURL: BASE_URL });
 
 export const setAuthInterceptor = (token: string | null) => {
   return axiosInstance.interceptors.request.use(
@@ -23,14 +21,16 @@ export class HTTPRequests {
   }
 
   static async post<T>(url: string, payload: T) {
-    console.log("url", url);
     return await axiosInstance.post(url, payload);
   }
 
   static async put<T>(url: string, payload: T) {
     return await axiosInstance.put(url, payload);
   }
-  static async delete(url: string) {
-    return await axiosInstance.put(url);
+  static async delete(url: string, config?: any) {
+    return await axiosInstance.delete(url, config);
+  }
+  static async patch<T>(url: string, payload: T) {
+    return await axiosInstance.patch(url, payload);
   }
 }

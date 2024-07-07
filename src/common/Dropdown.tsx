@@ -1,61 +1,60 @@
 "use client";
-import React, { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { NavButtonIcon } from "./Icons";
 import { useRouter } from "next/navigation";
+import { LogOut, Mail, Users } from "lucide-react";
 
-interface DropdownButtonProps {
-  className?: string;
-}
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
-export function DropdownButton({ className }: DropdownButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function SessionDropdownButton() {
   const router = useRouter();
   const session = useSession();
 
+  const handleLogOut = () => {
+    if (!!localStorage.getItem("token")) {
+      localStorage.removeItem("token");
+      router.push("/login");
+    }
+    if (session.status === "authenticated") {
+      signOut({ callbackUrl: "http://localhost:3000/login" });
+    }
+  };
   return (
-    <div className="relative inline-block text-left">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        type="button"
-        className="px-4 py-2 text-sm font-medium text-gray-700 rounded-md bg-white flex items-center"
-      >
-        <NavButtonIcon />
-      </button>
-
-      {isOpen && (
-        <div className="absolute right-0 mt-2  rounded-md shadow-lg bg-white ring-1 z-10">
-          <div
-            className="py-1"
-            role="menu"
-            aria-orientation="vertical"
-            aria-labelledby="options-menu"
-          >
-            <div className="text-sm text-gray-500 pl-4 pb-2 font-inter font-semibold mt-2">
-              {session?.data?.user?.name || session?.data?.user?.name}
-            </div>
-            <div className="text-sm text-gray-500 pl-4 pb-4 font-inter font-medium mr-4">
-              {session?.data?.user?.email || "mailChill@gmail.com"}
-            </div>
-            <button
-              onClick={() => {
-                if (!!localStorage.getItem("token")) {
-                  localStorage.removeItem("token");
-                  router.push("/login");
-                }
-                if (session.status === "authenticated") {
-                  signOut({ callbackUrl: "http://localhost:3000/login" });
-                }
-              }}
-              type="button"
-              className="block px-4 py-2 text-sm text-red-500 font-bold"
-              role="menuitem"
-            >
-              Log Out
-            </button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="p-0">
+          <NavButtonIcon />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 bg-white mr-4">
+        <DropdownMenuLabel>
+          <div className="text-md  flex items-center  ">
+            <Users className="h-4" />{" "}
+            {session?.data?.user?.name || session?.data?.user?.name}
           </div>
-        </div>
-      )}
-    </div>
+          <div className="text-sm flex items-center ">
+            <Mail className="h-3" />
+            {session?.data?.user?.email}
+          </div>
+        </DropdownMenuLabel>
+
+        <DropdownMenuLabel className=" p-0 hover:bg-light-grey transition-all duration-150 text-red-600">
+          <Button
+            variant="ghost"
+            className="h-full w-full text-start"
+            onClick={handleLogOut}
+          >
+            <LogOut className="mr-2 h-4 w-4 " />
+            <span>Log out</span>
+          </Button>
+        </DropdownMenuLabel>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

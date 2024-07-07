@@ -10,7 +10,10 @@ const envZodModel = z.object({
   AZURE_AD_TENANT_ID: z.string(),
 });
 
-envZodModel.parse(process.env);
+/*
+ |TODO For the moment prevent this from passing deployment into production.
+ |------>  envZodModel.parse(process.env);
+*/
 
 type EnvType = z.infer<typeof envZodModel>;
 declare global {

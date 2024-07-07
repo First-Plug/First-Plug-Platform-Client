@@ -194,7 +194,26 @@ export function AlertCheck({ className }: AlertCheckProps) {
     </svg>
   );
 }
-
+export function CheckIcon() {
+  return (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="48" height="48" rx="24" fill="#15CC8A" />
+      <path
+        d="M14.6665 25.3334L19.9998 30.6667L33.3332 17.3334"
+        stroke="#FEFEFF"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  );
+}
 export function ShopBag({ className }) {
   return (
     <svg
@@ -348,7 +367,7 @@ export function SearchIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       strokeWidth={2}
       stroke="currentColor"
-      className={`w-6 h-6 ${className || ""}`}
+      className={`w-4  ${className || ""}`}
     >
       <path
         strokeLinecap="round"
@@ -502,6 +521,28 @@ export function ArrowLeft({ className, color, strokeWidth }: ArrowLeftProps) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M15.75 19.5L8.25 12l7.5-7.5"
+      />
+    </svg>
+  );
+}
+export function ElipsisVertical({
+  className,
+  color,
+  strokeWidth,
+}: ArrowLeftProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={strokeWidth || 1.5}
+      stroke={color || "currentColor"}
+      className={`w-3 ${className || ""}`}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
       />
     </svg>
   );
@@ -695,7 +736,7 @@ export function PenIcon({ className, strokeWidth }: PenIconProps) {
       viewBox="0 0 24 24"
       strokeWidth={strokeWidth}
       stroke="currentColor"
-      className={`w-6 h-6 ${className || ""}`}
+      className={`w-4 ${className || ""}`}
     >
       <path
         strokeLinecap="round"

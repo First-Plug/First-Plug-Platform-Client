@@ -1,7 +1,6 @@
 import { ShipmentByMonthTable } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
-import React from "react";
-import { Table } from "../Table";
+import { RootTable } from "./RootTable";
 const ordersLogisticColumns: ColumnDef<ShipmentByMonthTable>[] = [
   {
     accessorKey: "month",
@@ -31,7 +30,8 @@ interface TableLogisticsProps {
 }
 export function LogisticsTable({ shipmentsByMonth }: TableLogisticsProps) {
   return (
-    <Table<ShipmentByMonthTable>
+    <RootTable
+      tableType="orders"
       columns={ordersLogisticColumns}
       data={shipmentsByMonth}
     />

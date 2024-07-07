@@ -9,14 +9,9 @@ export const GridTeam = observer(function () {
   } = useStore();
 
   return (
-    <div className="grid w-full grid-cols-3 gap-2  ">
+    <div className="grid w-full grid-cols-4 gap-2  ">
       {filterMembersByTeam.map((member) => (
-        <TeamMemberCard
-          key={member._id}
-          {...member}
-          className={"w-full shadow-md"}
-          member={member}
-        />
+        <TeamMemberCard key={member._id} {...member} member={member} />
       ))}
     </div>
   );

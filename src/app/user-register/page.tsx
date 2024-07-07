@@ -9,19 +9,22 @@ import { AccessForm, BillingForm, CompanyForm } from "@/components";
 export default function UserRegister() {
   const [state, setState] = useState<CreationTeamMember>({
     firstName: "",
-    img: "",
+    picture: "",
     lastName: "",
-    dateOfBirth: "",
+    birthDate: "",
     phone: "",
     email: "",
-    jobPosition: "",
+    position: "",
     city: "",
     zipCode: "",
     address: "",
-    appartment: "",
-    joiningDate: "",
-    timeSlotForDelivery: "",
+    apartment: "",
+    startDate: "",
+    team: "",
+    personalEmail: "",
+    country: "",
     additionalInfo: "",
+    isDeleted: false,
   });
   const handleInput = useCallback((key: string, value: unknown) => {
     setState((prev) => ({
@@ -57,14 +60,6 @@ export default function UserRegister() {
             <p className="font-inter text-[20px] font-normal text-black">
               Please complete all the required fields to create your account.
             </p>
-          </section>
-          <section className=" flex flex-col gap-4    ">
-            <div className="flex gap-4">
-              <CompanyForm handleInput={handleInput} />
-              <AccessForm handleInput={handleInput} />
-            </div>
-            <hr />
-            <BillingForm handleInput={handleInput} />
           </section>
         </div>
       </section>

@@ -4,11 +4,8 @@ import Image from "next/image";
 import { Button, SidebarLink } from "@/common";
 import {
   ComputerIcon,
-  DashboardIcon,
-  NotebookOrdersIcon,
   PersonsGroupIcon,
   SettingsIcon,
-  TruckIcon,
   ArrowLeft,
   ArrowRight,
 } from "@/common/Icons";
@@ -65,19 +62,27 @@ export const Sidebar = function () {
             )
           }
           onClick={toggleSidebarSize}
-          className={`w-10 h-10 bg-white border border-grey rounded-full relative bottom-5 ${
+          variant="outline"
+          className={`w-10 h-10 bg-white border border-grey rounded-full  relative bottom-5 ${
             isSidebarSmall ? "left-[70%]" : "left-[90%]"
           }`}
         />
       </div>
 
       <section className="flex flex-col flex-[2] gap-4">
-        <SidebarLink
+        {/* <SidebarLink
           isSmall={isSidebarSmall}
           icon={<DashboardIcon />}
           title="Dashboard"
           href="/home/dashboard"
           isActive={pathArray.includes("dashboard")}
+        /> */}
+        <SidebarLink
+          isSmall={isSidebarSmall}
+          icon={<PersonsGroupIcon />}
+          title="My Team"
+          href="/home/my-team"
+          isActive={pathArray.includes("my-team")}
         />
 
         <SidebarLink
@@ -88,15 +93,7 @@ export const Sidebar = function () {
           isActive={pathArray.includes("my-stock")}
         />
 
-        <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<PersonsGroupIcon />}
-          title="My Team"
-          href="/home/my-team"
-          isActive={pathArray.includes("my-team")}
-        />
-
-        <SidebarLink
+        {/* <SidebarLink
           isSmall={isSidebarSmall}
           icon={<NotebookOrdersIcon />}
           title="Orders"
@@ -110,7 +107,7 @@ export const Sidebar = function () {
           title="Shipments"
           href="/home/shipments"
           isActive={pathArray.includes("shipments")}
-        />
+        /> */}
       </section>
 
       <hr className="my-2" />
