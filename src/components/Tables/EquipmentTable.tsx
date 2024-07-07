@@ -1,10 +1,9 @@
 import { Button, OrderState } from "@/common";
-import { Order, OrderStatus, Product } from "@/types";
+import { Order, OrderStatus } from "@/types";
 import { DMY_Date } from "@/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import React from "react";
-import { Table } from "../Table";
 import { useStore } from "@/models";
+import { RootTable } from "./RootTable";
 const ordersEquipmentColumns: (
   handleClick: (orderId: Order["_id"]) => void
 ) => ColumnDef<Order>[] = (handleClick) => [
@@ -57,6 +56,10 @@ export function EquipmentTable({ orders }: TableEquipmentProps) {
     setAside("OrderDetails");
   };
   return (
-    <Table<Order> columns={ordersEquipmentColumns(handleClick)} data={orders} />
+    <RootTable
+      tableType="orders"
+      columns={ordersEquipmentColumns(handleClick)}
+      data={orders}
+    />
   );
 }

@@ -25,11 +25,9 @@ export const StockCard = observer(function () {
             } `}
             onClick={() => setInfo(equipment)}
           >
-            {equipment.category === "Notebook" ||
-            equipment.category === "Escritorio" ? (
+            {equipment.category === "Computer" ||
+            equipment.category === "Monitor" ? (
               <MonitorIcon />
-            ) : equipment.category === "Accesorios" ? (
-              <PencilAccesories />
             ) : (
               <DeviceTablet />
             )}

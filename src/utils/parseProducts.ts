@@ -1,26 +1,31 @@
-import { AtrributeZod, CsvProduct, PrdouctModelZod } from "@/types";
+import {
+  AtrributeZod,
+  CATEGORY_KEYS,
+  CsvProduct,
+  PrdouctModelZod,
+} from "@/types";
 
-export function parseProduct(product: CsvProduct) {
+export function parseProduct(product: CsvProduct): PrdouctModelZod {
   const arrayOfAttributes: AtrributeZod[] = [
     {
       key: "brand",
-      value: product.brand,
+      value: product["brand*"] || "",
     },
     {
       key: "model",
-      value: product.model,
+      value: product["model*"] || "",
     },
     {
       key: "color",
-      value: product.color,
+      value: product.color || "",
     },
     {
       key: "screen",
       value: product.screen,
     },
     {
-      key: "keyboardLenguage",
-      value: product.keyboardLenguage,
+      key: "keyboardLanguage",
+      value: product.keyboardLanguage,
     },
     {
       key: "processor",
@@ -40,14 +45,21 @@ export function parseProduct(product: CsvProduct) {
       value: product.gpu,
     },
   ];
+
+  const attributes = arrayOfAttributes.filter((atribute) =>
+    CATEGORY_KEYS[product["category*"]].includes(atribute.key)
+  );
+
   const response: PrdouctModelZod = {
-    category: product.category,
+    category: product["category*"],
     acquisitionDate: product.acquisitionDate,
-    assignedEmail: product.assignedEmail,
     name: product.name,
-    location: product.location,
+    location: product["location*"],
+    attributes,
+    assignedEmail: product.assignedEmail,
     serialNumber: product.serialNumber,
-    attributes: arrayOfAttributes,
+    status: product.assignedEmail ? "Delivered" : "Available",
+    // recoverable: false,
   };
 
   return response;

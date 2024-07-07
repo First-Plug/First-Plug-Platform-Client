@@ -1,18 +1,15 @@
 "use client";
-import React, { useState } from "react";
-import { MyTeamActions, MyTeamViewHeader, TeamMembers } from "@/components";
-import { DisplayView } from "@/types";
-export default function DataTeam() {
-  const [display, setDisplay] = useState<DisplayView>("grid");
-
-  const toggleView = () =>
-    setDisplay((prev) => (prev === "grid" ? "table" : "grid"));
+import { BarLoader } from "@/components/Loader/BarLoader";
+import { MembersTable } from "@/components/Tables";
+import { useStore } from "@/models";
+import { observer } from "mobx-react-lite";
+export default observer(function DataTeam() {
+  const {
+    members: { members },
+  } = useStore();
   return (
-    <div className="flex flex-col gap-4 w-full h-full  relative">
-      <MyTeamViewHeader />
-      <hr />
-      <MyTeamActions toggleView={toggleView} display={display} />
-      <TeamMembers display={display} />
+    <div className=" h-full max-h-full ">
+      <MembersTable members={members} />
     </div>
   );
-}
+});

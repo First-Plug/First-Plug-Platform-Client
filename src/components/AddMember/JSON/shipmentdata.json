@@ -1,0 +1,56 @@
+{
+  "fields": [
+    {
+      "name": "country",
+      "title": "Country",
+      "type": "dropdown",
+      "placeholder": "Country",
+      "options": [
+        "Argentina",
+        "Bolivia",
+        "Brasil",
+        "Chile",
+        "Colombia",
+        "Costa Rica",
+        "Ecuador",
+        "El Salvador",
+        "Guatemala",
+        "Honduras",
+        "Israel",
+        "Mexico",
+        "Nicaragua",
+        "Panama",
+        "Paraguay",
+        "Perú",
+        "Spain",
+        "United States",
+        "Uruguay",
+        "Venezuela"
+      ]
+    },
+    {
+      "name": "city",
+      "title": "City",
+      "type": "text",
+      "placeholder": "City"
+    },
+    {
+      "name": "zipCode",
+      "title": "Zip Code",
+      "type": "text",
+      "placeholder": "zip code"
+    },
+    {
+      "name": "address",
+      "title": "Address",
+      "type": "text",
+      "placeholder": "Street, number"
+    },
+    {
+      "name": "apartment",
+      "title": "Apartment, Suite, etc.",
+      "type": "text",
+      "placeholder": "PB B"
+    }
+  ]
+}

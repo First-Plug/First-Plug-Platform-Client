@@ -4,26 +4,41 @@ import { observer } from "mobx-react-lite";
 import {
   MemberAsideDetails,
   CreateTeamAside,
-  MemberEditAside,
-  LoadStock,
+  LoadAside,
   OrderAsideDetails,
-  EditTeamsAsideDetails,
 } from "./";
+import {
+  AssignProduct,
+  ChangePassword,
+  EditProductAside,
+  EditTeamsAside,
+} from "./AsideContents";
+import EditMemberAside from "./EditMemberAside";
 
-export const AsideContent = observer(function () {
+export var AsideContent = observer(function () {
   const { aside } = useStore();
   switch (aside.type) {
     case "MemberDetails":
       return <MemberAsideDetails />;
     case "EditTeam":
-      return <EditTeamsAsideDetails />;
+      return <EditTeamsAside />;
+    case "EditMember":
+      return <EditMemberAside />;
+    case "EditProduct":
+      return <EditProductAside />;
     case "NewTeam":
       return <CreateTeamAside />;
-    case "EditMember":
-      return <MemberEditAside />;
+    case "AssignProduct":
+      return <AssignProduct />;
+    case "ReassignProduct":
+      return <AssignProduct />;
     case "LoadStock":
-      return <LoadStock />;
+      return <LoadAside />;
+    case "LoadMembers":
+      return <LoadAside />;
     case "OrderDetails":
       return <OrderAsideDetails />;
+    case "ChangePassword":
+      return <ChangePassword />;
   }
 });

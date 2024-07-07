@@ -1,0 +1,61 @@
+{
+  "fields": [
+    {
+      "name": "brand",
+      "title": "Brand*",
+      "options": ["Apple", "Logitech", "Sony", "Other"]
+    },
+    {
+      "name": "model",
+      "title": "Model*",
+      "options": [
+        "AirPods 2nd Gen",
+        "AirPods 3nd Gen",
+        "AirPods Max",
+        "AirPods Pro 1st Gen",
+        "AirPods Pro 2nd Gen",
+        "H111",
+        "H151",
+        "H340",
+        "H390",
+        "H540",
+        "Headphones CH720N inalambrico con cancelacion de sonido",
+        "Headphones CH520 inalambrico",
+        "Headphones INZONE H3 con cable",
+        "Headphones INZONE H3 inalambrico",
+        "Headphones RF400 inalambrico",
+        "Headphones ZH110 con cable",
+        "Headphones ZH110AP con cable",
+        "Headphones ZH110NC con cable y cancelacion de sonido",
+        "Headphones ZH310AP con cable",
+        "Zone 300",
+        "Zone 750",
+        "Zone 900",
+        "Zone 950",
+        "Zone Learn",
+        "Zone Vibe 100",
+        "Zone Vibe 125",
+        "Other"
+      ]
+    },
+    {
+      "name": "color",
+      "title": "Color",
+      "options": [
+        "Gris Espacial",
+        "Plata",
+        "Medianoche",
+        "Blanco Estelar",
+        "Dorado",
+        "Negro Espacial",
+        "Negro",
+        "Blanco",
+        "Azul",
+        "Amarillo",
+        "Rojo",
+        "Verde",
+        "Other"
+      ]
+    }
+  ]
+}

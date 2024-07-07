@@ -18,7 +18,9 @@ type EmptyCardType =
   | "orders"
   | "registerok"
   | "loginerror"
-  | "registererror";
+  | "registererror"
+  | "noStockMember";
+
 type TConfig = {
   image: string;
   paragraph: string;
@@ -36,6 +38,17 @@ type TConfig = {
 };
 
 const Config: Record<EmptyCardType, TConfig> = {
+  noStockMember: {
+    image: "/office.svg",
+    paragraph: "This member doesn't have any items.",
+    // ButtonIcon: () => <div>🔗</div>,
+    // buttonText: "Stock",
+    LinkIcon: () => <div>🔗</div>,
+    link: "/home/my-stock",
+    linkText: "Stock",
+    additionalButtonText: "Add Product",
+    // additionalButtonIcon: AddIcon,
+  },
   stock: {
     image: "/office.svg",
     paragraph: "You don't have any items.",
@@ -46,6 +59,9 @@ const Config: Record<EmptyCardType, TConfig> = {
     linkText: "Shop Now",
     additionalButtonText: "Add Product",
     additionalButtonIcon: AddIcon,
+    additionalOnClick: () => {
+      window.location.href = "/home/my-stock/addOneProduct";
+    },
   },
   members: {
     image: "/girl.svg",
@@ -53,8 +69,8 @@ const Config: Record<EmptyCardType, TConfig> = {
     ButtonIcon: UploadIcon,
     buttonText: "Load Team Members",
     LinkIcon: AddIcon,
-    link: "/home/addTeam",
-    linkText: "Add Team Memeber",
+    link: "/home/my-team/addTeam",
+    linkText: "Add Team Member",
   },
   orders: {
     image: "/orders.svg",
@@ -116,6 +132,7 @@ export function EmptyCard({ type }: EmptyCardProps) {
     paragraph2,
     additionalButtonIcon,
     additionalButtonText,
+    additionalOnClick,
   } = Config[type];
 
   const {
@@ -127,13 +144,17 @@ export function EmptyCard({ type }: EmptyCardProps) {
       setAside("LoadStock", "MyStock");
     }
 
-    // if(type === "members") setAside("LoadMembers")
+    if (type === "members") setAside("LoadMembers");
   };
 
   return (
     <div className="flex flex-col items-center gap-3 ">
       <div className="flex flex-col items-center mt-[-50px]">
-        <div className="w-52 h-52 relative">
+        <div
+          className={` ${
+            type === "noStockMember" ? "w-32 h-32" : "w-52 h-52"
+          } relative`}
+        >
           <Image src={image} alt={paragraph} fill />
         </div>
         {paragraphstrong && (
@@ -152,7 +173,7 @@ export function EmptyCard({ type }: EmptyCardProps) {
             size="big"
             icon={additionalButtonIcon()}
             className="p-3 rounded-md gap-2"
-            onClick={() => {}}
+            onClick={additionalOnClick}
           />
         )}
         {ButtonIcon && (

@@ -1,46 +1,53 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { Button, TeamCard } from "@/common";
 import { DropDownArrow } from "@/common/Icons";
 import { TeamInfo } from ".";
-import { Team } from "@/types";
+import { Team, TeamMember } from "@/types";
 
 interface TeamDetailsProps {
   team: Team;
   className?: string;
-  handleSelectedTeams: (selectedTeam: Team) => void;
-  members: string[];
-  onDelete: (teamId: string) => Promise<void>;
+  handleCheckbox: (team: Team) => void;
+  handleExpandTeam: (team: Team) => void;
+  isExpanded: boolean;
 }
 
 export const TeamDetails = function ({
   team,
   className,
-  handleSelectedTeams,
+  handleCheckbox,
+  handleExpandTeam,
+  isExpanded,
 }: TeamDetailsProps) {
-  const [showDetails, setShowDetails] = useState<Boolean>(false);
-
   return (
-    <section className={` ${className} border rounded-md p-3 `}>
+    <section className={` ${className} border border-border rounded-md px-2 `}>
       <div className="flex justify-between items-center">
-        <div className="flex gap-2">
-          <input type="checkbox" onChange={() => handleSelectedTeams(team)} />
+        <div className="flex gap-2 items-center">
+          <input
+            type="checkbox"
+            onChange={() => handleCheckbox(team)}
+            onClick={(e) => e.stopPropagation()}
+          />
           <TeamCard team={team} />
         </div>
 
         <Button
           className="cursor-pointer"
-          onClick={() => setShowDetails(!showDetails)}
+          variant="outline"
+          onClick={() => handleExpandTeam(team)}
         >
           <DropDownArrow
             className={`${
-              showDetails ? "rotate-180 " : " rotate-360"
-            } transition-all duration-300`}
+              isExpanded ? "rotate-180 " : " rotate-360"
+            } transition-all duration-500`}
           />
         </Button>
       </div>
 
-      {showDetails && <TeamInfo team={team} />}
+      {isExpanded && (
+        <TeamInfo team={team} closeExpand={() => handleExpandTeam(team)} />
+      )}
     </section>
   );
 };

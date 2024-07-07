@@ -1,18 +1,20 @@
 "use client";
 import { DropdownInput, Input } from "@/common";
+import { PhoneInput } from "@/common/Inputs";
 import useInput from "@/hooks/useInput";
 import React, { useEffect } from "react";
 
 interface FormInputProps {
   title: string;
   placeholder: string;
-  type: "text" | "number" | "password" | "options" | "date" | "email";
+  type: "text" | "number" | "password" | "options" | "date" | "email" | "phone";
   className?: string;
   prop: string;
   handleInput: (prop: string, value: unknown) => void;
   options?: any[];
   required?: string;
   clear?: boolean;
+  value?: string;
 }
 
 export const FormInput = function ({
@@ -25,9 +27,14 @@ export const FormInput = function ({
   options = [],
   required,
   clear,
+  value,
 }: FormInputProps) {
-  const input = useInput("", (required = "required"), type === "options");
-  const { value, selectedOption, clearInput } = input;
+  const input = useInput(
+    value || "",
+    (required = "required"),
+    type === "options"
+  );
+  const { value: InputValue, selectedOption, clearInput } = input;
 
   useEffect(() => {
     if (clear) {
@@ -45,13 +52,15 @@ export const FormInput = function ({
           options={options}
           placeholder={placeholder}
           title={title}
+          defaultValue={value}
           className="w-full"
           {...input}
         />
       ) : (
         <Input
           type={type}
-          value={input.value}
+          // defaultValue={value}
+          value={InputValue}
           className={` w-full ${className}`}
           placeholder={placeholder}
           title={title}

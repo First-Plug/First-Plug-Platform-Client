@@ -1,0 +1,101 @@
+import { LOCATION, Location, Product } from "@/types";
+import React, { useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import ProductDetail, { RelocateStatus } from "@/common/ProductDetail";
+import { Button, LoaderSpinner } from "@/common";
+import useActions from "@/hooks/useActions";
+import { useStore } from "@/models";
+import useFetch from "@/hooks/useFetch";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge, badgeVariants } from "../ui/badge";
+
+interface IRemoveItems {
+  product: Product;
+}
+export function ReturnProduct({ product }: IRemoveItems) {
+  const {
+    alerts: { setAlert },
+    aside: { setAside },
+  } = useStore();
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [newLocation, setNewLocation] = useState<Location>(null);
+
+  const [returnStatus, setReturnStatus] = useState<RelocateStatus>(undefined);
+  const { unassignProduct } = useActions();
+  const { fetchMembers } = useFetch();
+
+  const {
+    members: { selectedMember },
+  } = useStore();
+
+  const handleRemoveItems = async () => {
+    setIsRemoving(true);
+    try {
+      await unassignProduct({
+        location: newLocation,
+        product,
+        currentMember: selectedMember,
+      });
+      await fetchMembers();
+      setReturnStatus("success");
+    } catch (error) {
+      console.log("error", error);
+      setReturnStatus("error");
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col border-b pb-2 mb-2 rounded-sm items-start gap-1">
+      <div className="w-full">
+        <ProductDetail product={product} />
+      </div>
+
+      <section className="flex justify-between  items-center w-full gap-10 ">
+        <Select onValueChange={(value) => setNewLocation(value as Location)}>
+          <SelectTrigger
+            className="font-semibold text-md w-1/2"
+            disabled={returnStatus === "success"}
+          >
+            <SelectValue placeholder="Please select the new location" />
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            <SelectGroup>
+              <SelectLabel>Location</SelectLabel>
+              {LOCATION.filter((e) => e !== "Employee").map((location) => (
+                <SelectItem value={location} key={location}>
+                  {location}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <div>
+          {returnStatus === "success" ? (
+            <Badge className={badgeVariants({ variant: returnStatus })}>
+              Returned Succesfully ✅
+            </Badge>
+          ) : (
+            <Button
+              onClick={handleRemoveItems}
+              variant="delete"
+              size="small"
+              disabled={isRemoving || !newLocation}
+            >
+              {!isRemoving ? <span>Remove</span> : <LoaderSpinner />}
+            </Button>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}

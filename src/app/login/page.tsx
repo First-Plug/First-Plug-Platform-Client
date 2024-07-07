@@ -29,7 +29,7 @@ export default function Login() {
     setIsLoading(true);
     try {
       const res = await signIn("credentials", {
-        email: emailInput.value,
+        email: emailInput.value.toLowerCase(),
         password: passWordInput.value,
         redirect: false,
       });
@@ -37,7 +37,7 @@ export default function Login() {
       if (!res.ok) {
         throw new Error(res.error);
       }
-      router.push("/home/dashboard");
+      router.push("/home/my-team");
     } catch (error) {
       toast({
         variant: "destructive",
@@ -53,7 +53,7 @@ export default function Login() {
   return (
     <section className="flex">
       <Image
-        src="/firstpluig.png"
+        src="/svg/loginSvg.svg"
         alt="img"
         width={540}
         height={960}
@@ -61,9 +61,9 @@ export default function Login() {
         priority
       />
 
-      <article className="w-[50%] h-screen flex justify-center">
+      <article className="w-[50%] h-screen flex justify-center ">
         <Form title="Welcome Back!" login onSubmit={handleSumbit}>
-          <div>
+          <div className="text-md">
             <Input
               title="Email"
               placeholder="user@mail.com"
@@ -122,7 +122,6 @@ export default function Login() {
             }
             variant={isLoading ? "text" : "primary"}
             className="rounded-md "
-            size="big"
           >
             {isLoading && <LoaderSpinner />}
             Log In

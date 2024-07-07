@@ -18,23 +18,26 @@ interface ButtonProps {
 
 const btnStyle = {
   variant: {
-    primary: "bg-blue text-white from-blue to-green ",
-    secondary: "bg-white border border-blue hover:bg-hoverBlue  text-blue ",
-    delete: "bg-white border border-red-500 hover:bg-hoverRed  text-red-500 ",
+    primary: "bg-blue rounded-md text-white from-blue to-green hover:bg ",
+    secondary:
+      "bg-white border border-blue hover:bg-hoverBlue  text-blue  rounded-md",
+    delete:
+      "bg-error text-white border border-red-500 hover:bg-error/80 rounded-md ",
     text: "bg-white text-blue hover:bg-hoverBlue rounded-full",
+    outline: "bg-white text-blue  rounded-full",
     alert: "text-error  hover:bg-hoverRed",
   },
   size: {
     default: "p-2",
     big: "text-lg py-3 px-6",
-    small: "text-sm",
+    small: "text-sm py-1 px-3",
   },
   disabled: {
-    primary: "bg-light-grey    text-grey ",
+    primary: "bg-light-grey border border-disabled   text-grey ",
     delete: "bg-light-grey    text-grey ",
-    secondary: "bg-white   text-grey ",
+    secondary: "bg-white  border border-disabled rounded-md  text-grey ",
     text: "bg-white    text-grey   ",
-    alert: "bg-white   text-grey ",
+    alert: "bg-white border border-disabled  text-grey ",
   },
 } as const;
 
@@ -54,11 +57,11 @@ export function Button({
     <button
       type={type}
       onClick={onClick}
-      className={`text-center flex items-center justify-center gap-2 font-bold leading-5 capitalize transition-all duration-150 ease-in ${
+      className={`text-center flex items-center justify-center gap-2  font-bold leading-5 capitalize transition-all duration-150 ease-in    ${
         disabled
           ? `${btnStyle.disabled[variant]} ${btnStyle.size[size]}`
           : `${btnStyle.variant[variant]} ${btnStyle.size[size]}`
-      } ${className || ""} `}
+      } ${className} `}
       {...buttonProps}
       disabled={disabled}
     >

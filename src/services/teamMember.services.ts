@@ -23,7 +23,7 @@ export class Memberservices {
     id: TeamMember["_id"],
     data: Partial<CreationMember>
   ): Promise<TeamMember> {
-    const response = await HTTPRequests.put(
+    const response = await HTTPRequests.patch(
       `${BASE_URL}/api/members/${id}`,
       data
     );
@@ -32,6 +32,13 @@ export class Memberservices {
 
   static async deleteMember(id: TeamMember["_id"]): Promise<TeamMember> {
     const response = await HTTPRequests.delete(`${BASE_URL}/api/members/${id}`);
+    return response.data;
+  }
+
+  static async getAllMembersByTeam(teamId: string): Promise<TeamMember[]> {
+    const response = await HTTPRequests.get(
+      `${BASE_URL}/api/members/team/${teamId}`
+    );
     return response.data;
   }
 }

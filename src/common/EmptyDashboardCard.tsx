@@ -32,8 +32,8 @@ const Config: Record<EmptyCardType, TConfig> = {
     ButtonIcon: UploadIcon,
     buttonText: "Load Team Members",
     LinkIcon: AddIcon,
-    link: "/home/addTeam",
-    linkText: "Add Team Memeber",
+    link: "/home/my-team/addTeam",
+    linkText: "Add Team Member",
   },
 };
 

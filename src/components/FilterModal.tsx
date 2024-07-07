@@ -49,7 +49,7 @@ export const FilterModal = function ({
   };
 
   return (
-    <div className="relative  text-left  h-full z-10  ">
+    <div className="relative  text-left  h-10   ">
       <button
         onClick={() => setIsOpen(!isOpen)}
         type="button"
@@ -63,7 +63,7 @@ export const FilterModal = function ({
         />
       </button>
       {isOpen && (
-        <div className="absolute bg-white w-[20vw] p-4 border-2 rounded-md flex flex-col gap-2 ">
+        <div className="absolute bg-white w-[20vw] p-4 border-2 rounded-md flex flex-col gap-2 z-10 ">
           <SearchInput />
           <div className="p-0 max-h-[7rem] overflow-y-auto flex flex-col gap-2">
             <div className="flex items-center gap-2 my-1">

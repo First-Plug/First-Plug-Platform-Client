@@ -21,7 +21,7 @@ export const MemberEditAside = observer(function ({
       <div className="flex gap-4">
         <div className="relative w-36 h-36">
           <Image
-            src={member.img || Photo}
+            src={member.picture || Photo}
             alt="Colaborator"
             fill
             className="object-cover"
