@@ -56,7 +56,7 @@ export default observer(function AlertProvider() {
     userUpdatedSuccesfully: {
       title: "Success",
       type: "succes",
-      description: " User has been updated  successfully.",
+      description: " User has been successfully updated.",
       closeAction: () => {
         setAlert(undefined);
       },
@@ -64,7 +64,7 @@ export default observer(function AlertProvider() {
     removeItemSuccesfully: {
       title: "Success",
       type: "succes",
-      description: " Product has been removed  successfully.",
+      description: " Product has been successfully removed.",
       closeAction: () => {
         setAlert(undefined);
         router.push("/home/my-stock");
@@ -73,7 +73,7 @@ export default observer(function AlertProvider() {
     memberUnassigned: {
       title: "Success",
       type: "succes",
-      description: " Member unassigned successfully.",
+      description: " Member  successfully unassigned.",
       closeAction: () => {
         setAlert(undefined);
       },
@@ -81,7 +81,7 @@ export default observer(function AlertProvider() {
     assignedProductSuccess: {
       title: "Success",
       type: "succes",
-      description: " Product assigned successfully.",
+      description: " Product successfully assigned.",
       closeAction: () => {
         setAlert(undefined);
       },
@@ -97,7 +97,7 @@ export default observer(function AlertProvider() {
     csvSuccess: {
       title: "Congratulations!",
       type: "succes",
-      description: " The csv file has been uploaded successfully.",
+      description: " The csv file has been successfully uploaded.",
       closeAction: () => {
         setAlert(undefined);
       },
@@ -115,7 +115,7 @@ export default observer(function AlertProvider() {
     updateStock: {
       title: " Success",
       type: "succes",
-      description: " Your product has been successfully updated to your stock.",
+      description: " Your product has been successfully updated.",
       closeAction: async () => {
         await fetchStock();
         setAlert(undefined);
@@ -142,7 +142,7 @@ export default observer(function AlertProvider() {
     createProduct: {
       title: " Success",
       type: "succes",
-      description: " Your product has been created successfully.",
+      description: " Your product has been successfully created.",
       closeAction: async () => {
         await fetchStock();
         setAlert(undefined);
@@ -152,7 +152,7 @@ export default observer(function AlertProvider() {
     createTeam: {
       title: " Success",
       type: "succes",
-      description: " Your team has been created successfully.",
+      description: " Your team has been successfully created.",
       closeAction: async () => {
         await fetchMembers();
         setAlert(undefined);
