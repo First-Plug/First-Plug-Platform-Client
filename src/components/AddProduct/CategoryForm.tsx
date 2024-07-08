@@ -92,7 +92,11 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               memberFullNames.push(assignedEmail);
             }
 
-            setAssignedEmailOptions(memberFullNames);
+            const filteredEmailOptions = memberFullNames.filter(
+              (email) => email !== assignedEmail
+            );
+
+            setAssignedEmailOptions(filteredEmailOptions);
           } else {
             const memberFullNames = [
               "None",
