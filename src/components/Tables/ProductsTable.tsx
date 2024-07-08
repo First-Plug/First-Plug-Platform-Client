@@ -88,6 +88,7 @@ export var ProductsTable = observer(function ProductsTable() {
   return (
     <RootTable
       tableType="stock"
+      tableNameRef="productsTable"
       data={onlyAvaliable ? availableProducts : tableProducts}
       columns={productColumns}
       getRowCanExpand={() => true}
