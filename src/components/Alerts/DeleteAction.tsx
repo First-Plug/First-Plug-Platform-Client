@@ -153,7 +153,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
       member: {
         title:
           " Are you sure you want to delete this member from your team? 🗑️",
-        description: " This member will be permanetly deleted",
+        description: " This member will be permanently deleted",
         deleteAction: handleDeleteMember,
       },
       team: {
