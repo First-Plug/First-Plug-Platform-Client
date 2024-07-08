@@ -8,6 +8,7 @@ import { MemberItem } from "./AsideContents/EditTeamAside";
 import { useStore } from "@/models";
 import { transformData } from "@/utils/dataTransformUtil";
 import useFetch from "@/hooks/useFetch";
+import { Skeleton } from "./ui/skeleton";
 
 interface AddMembersToTeamFormProps {
   selectedMembers?: TeamMember[];
@@ -46,6 +47,8 @@ export const AddMembersToTeamForm = observer(function ({
     const transformedMembers = transformData(initialSelectedMembers, teams);
     setCurrentMembers(transformedMembers);
     setSearchedMembers(members);
+    setMembersToAdd([]);
+    setMembersToDelete([]);
   };
   useEffect(() => {
     setInitialData();
@@ -91,14 +94,12 @@ export const AddMembersToTeamForm = observer(function ({
           TeamServices.addToTeam(team._id, member._id)
         );
         await Promise.all(allMembersToAdd);
-        setMembersToAdd([]);
       }
       if (memberToDelete.length > 0) {
         const allMembersToDelete = memberToDelete.map((member) =>
           TeamServices.removeFromTeam(team._id, member._id)
         );
         await Promise.all(allMembersToDelete);
-        setMembersToDelete([]);
       }
 
       await fetchMembers();
@@ -112,10 +113,11 @@ export const AddMembersToTeamForm = observer(function ({
     try {
       await editTeam();
       await fetchMembers();
-      setInitialData();
     } catch (error) {
+      setLoading(false);
       return error;
     } finally {
+      setInitialData();
       setLoading(false);
     }
   };
