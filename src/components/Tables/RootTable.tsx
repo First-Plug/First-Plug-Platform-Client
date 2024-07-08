@@ -63,7 +63,7 @@ export function RootTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: pageSize,
+    pageSize: parseInt(localStorage.getItem("tablesize")) || pageSize,
   });
   const table = useReactTable({
     data,
@@ -230,6 +230,7 @@ export function RootTable<TData, TValue>({
             <Select
               value={table.getState().pagination.pageSize.toString()}
               onValueChange={(value) => {
+                localStorage.setItem("tablesize", value);
                 table.setPageSize(Number(value));
               }}
             >
