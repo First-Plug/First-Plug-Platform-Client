@@ -24,6 +24,7 @@ export default function UserRegister() {
     personalEmail: "",
     country: "",
     additionalInfo: "",
+    teamId: "",
     isDeleted: false,
   });
   const handleInput = useCallback((key: string, value: unknown) => {
