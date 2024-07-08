@@ -1,10 +1,10 @@
 "use client";
 
-import { Team } from "@/types";
+import { Team, TeamMember } from "@/types";
 import { observer } from "mobx-react-lite";
 
 interface TeamCardProps {
-  team?: Team | string | null;
+  team?: TeamMember["team"];
   className?: string;
 }
 
