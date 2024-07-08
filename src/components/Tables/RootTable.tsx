@@ -49,6 +49,7 @@ interface DataTableProps<TData, TValue> {
   renderSubComponent?: (row: TData) => ReactNode;
   tableType: TableType;
   pageSize?: number;
+  tableNameRef?: string;
 }
 
 export function RootTable<TData, TValue>({
@@ -58,12 +59,13 @@ export function RootTable<TData, TValue>({
   renderSubComponent,
   tableType,
   pageSize = 5,
+  tableNameRef,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: parseInt(localStorage.getItem("tablesize")) || pageSize,
+    pageSize: parseInt(localStorage.getItem(tableNameRef)) || pageSize,
   });
   const table = useReactTable({
     data,
@@ -230,7 +232,9 @@ export function RootTable<TData, TValue>({
             <Select
               value={table.getState().pagination.pageSize.toString()}
               onValueChange={(value) => {
-                localStorage.setItem("tablesize", value);
+                if (tableNameRef) {
+                  localStorage.setItem(tableNameRef, value);
+                }
                 table.setPageSize(Number(value));
               }}
             >
