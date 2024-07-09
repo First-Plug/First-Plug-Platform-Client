@@ -66,7 +66,13 @@ export const MemberStore = types
       store.fetchingMembers = fetchValue;
     },
     setMembers(members: TeamMember[]) {
-      store.members.replace(members);
+      const membersG = members.map((member) => ({
+        ...member,
+        //@ts-ignore
+        teamId: member.team ? member.team._id : "Not Assigned",
+      }));
+
+      store.members.replace(membersG);
     },
     setTeams(teams: Team[]) {
       store.members.forEach((member) => {

@@ -45,11 +45,11 @@ const membersColumns: (
     ),
   },
   {
-    accessorKey: "team",
+    accessorKey: "teamId",
     header: "Team",
     size: 150,
-    cell: ({ getValue }) => {
-      const team = getValue<Team>();
+    cell: ({ cell }) => {
+      const team = cell.row.original.team;
       if (!team) {
         return null;
       }
@@ -147,6 +147,7 @@ export function MembersTable({ members }: TableMembersProps) {
       columns={membersColumns(handleEdit, handleDelete, handleViewDetail)}
       data={members}
       pageSize={12}
+      tableNameRef="membersTable"
     />
   );
 }

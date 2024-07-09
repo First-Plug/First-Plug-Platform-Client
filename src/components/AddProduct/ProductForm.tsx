@@ -141,9 +141,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
       return;
     }
 
-    if (isUpdate && formatData.assignedEmail === "") {
-      delete formatData.assignedEmail;
-    }
+    // if (isUpdate && formatData.assignedEmail === "") {
+    //   delete formatData.assignedEmail;
+    // }
 
     try {
       if (isUpdate && initialData) {

@@ -1,4 +1,6 @@
 import { LoaderSpinner } from "@/common";
+import { BarLoader } from "@/components/Loader/BarLoader";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TeamMember } from "@/types";
 
 interface MemberItemProp {
@@ -19,16 +21,17 @@ export function MemberItem({
 }: MemberItemProp) {
   const statuses = {
     current: "bg-hoverBlue",
-    deleting: "bg-hoverRed",
-    adding: "bg-lightYellow",
+    deleting: "bg-transparent",
+    adding: "bg-hoverBlue",
   };
   return (
     <div
       key={member._id}
-      className={`flex items-center gap-2 justify-between rounded-md border px-2  py-1  transition-all duration-300 hover:border-blue ${
+      className={`flex items-center gap-2 justify-between rounded-md border px-2  py-1  transition-all duration-300 hover:border-blue relative ${
         isCurrent && statuses.current
       } ${adding && statuses.adding} ${deleting && statuses.deleting}`}
     >
+      {isChanging && (adding || deleting) && <BarLoader />}
       <div
         className={`flex gap-2 items-center flex-grow  justify-between cursor-pointer `}
         onClick={() => handleSelectMember(member)}
@@ -36,7 +39,7 @@ export function MemberItem({
         <div className="flex items-center gap-2">
           <input
             type="checkbox"
-            checked={isCurrent}
+            checked={(isCurrent && !deleting) || adding}
             className={`${adding && statuses.adding} ${
               deleting && statuses.deleting
             }`}
@@ -49,7 +52,7 @@ export function MemberItem({
               <span className="text-dark-grey flex items-center gap-2 ">
                 <p>Current Team</p>
                 {isChanging && (adding || deleting) ? (
-                  <LoaderSpinner size="sm" />
+                  <p className="animate-pulse ">...</p>
                 ) : typeof member.team === "string" ? (
                   member.team
                 ) : (
