@@ -54,7 +54,7 @@ export default function Register() {
   return (
     <section className="flex">
       <Image
-        src="/firstpluig.png"
+        src="/svg/loginSvg.svg"
         alt="img"
         width={540}
         height={960}
