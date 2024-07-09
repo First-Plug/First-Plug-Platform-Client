@@ -1,6 +1,5 @@
 import { TableType } from "@/types";
 import { Column, Table } from "@tanstack/react-table";
-import { useStore } from "@/models";
 import SelectFilter from "./SelectFilter";
 import { Fragment } from "react";
 interface IHeaderFilter<TData> {
@@ -14,9 +13,6 @@ export default function HeaderFilter<TData>({
   tableType,
   table,
 }: IHeaderFilter<TData>) {
-  const {
-    teams: { teams },
-  } = useStore();
   const columnFilterValue = column.getFilterValue();
   const { filterVariant } = column.columnDef.meta ?? {};
 
