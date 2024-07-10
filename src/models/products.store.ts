@@ -26,7 +26,9 @@ export const ProductsStore = types
       const result: ProductTable[] = store.tableProducts
         .map((table) => ({
           category: table.category,
-          products: table.products.filter((p) => p.status === "Available"),
+          products: table.products.filter(
+            (p) => p.status === "Available" && !p.deleted
+          ),
         }))
         .filter((table) => table.products.length);
 
@@ -34,7 +36,7 @@ export const ProductsStore = types
     },
     get uniqueProducts() {
       const groupedProducts = store.products.reduce((result, product) => {
-        if (!result[product.category]) {
+        if (product.deleted && !result[product.category]) {
           result[product.category] = product;
         }
         return result;
@@ -44,17 +46,19 @@ export const ProductsStore = types
     },
     get selectedTableProducts() {
       return store.products.find(
-        (product) => product._id === store.selectedTableId
+        (product) => product._id === store.selectedTableId && !product.deleted
       );
     },
     get productToAssign() {
       return store.products.find(
-        (product) => product._id === store.currentProductId
+        (product) => product._id === store.currentProductId && !product.deleted
       );
     },
 
     productById(productId: string) {
-      return store.products.find((product) => product._id === productId);
+      return store.products.find(
+        (product) => product._id === productId && !product.deleted
+      );
     },
   }))
   .actions((store) => ({
