@@ -65,7 +65,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
       const changes: Partial<TeamMember> = {};
       Object.keys(data).forEach((key) => {
         if (data[key] !== initialData?.[key]) {
-          if (key === "acquisitionDate") {
+          if (key === "acquisitionDate" || key === "birthDate") {
             changes[key] = formatAcquisitionDate(data[key]);
           } else {
             changes[key] = data[key];
@@ -73,9 +73,13 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
-      if (Array.isArray(changes.products) && changes.products.length === 0) {
+      if (changes.products) {
         delete changes.products;
       }
+
+      // if (Array.isArray(changes.products) && changes.products.length === 0) {
+      //   delete changes.products;
+      // }
 
       let response;
       if (isUpdate && initialData) {
@@ -147,7 +151,9 @@ const MemberForm: React.FC<MemberFormProps> = ({
               variant="primary"
               className="  rounded-lg"
               size={"big"}
-              onClick={handleSubmit(handleSaveMember)}
+              onClick={() => {
+                handleSubmit(handleSaveMember)();
+              }}
               disabled={isSubmitting}
             />
           </aside>
