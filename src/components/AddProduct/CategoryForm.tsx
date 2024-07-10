@@ -239,6 +239,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               value="Employee"
               onChange={(e) => handleInputChange("location", e.target.value)}
               className="w-full"
+              readOnly={selectedLocation === "Employee"}
             />
           )}
         </div>
