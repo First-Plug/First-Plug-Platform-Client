@@ -19,15 +19,16 @@ export class Memberservices {
     return response.data;
   }
 
-  static async updateMember(
-    id: TeamMember["_id"],
-    data: Partial<CreationMember>
-  ): Promise<TeamMember> {
-    const response = await HTTPRequests.patch(
-      `${BASE_URL}/api/members/${id}`,
-      data
-    );
-    return response.data;
+  static async updateMember(id, data) {
+    try {
+      const response = await HTTPRequests.patch(
+        `${BASE_URL}/api/members/${id}`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   static async deleteMember(id: TeamMember["_id"]): Promise<TeamMember> {
