@@ -51,7 +51,7 @@ const Config: Record<EmptyCardType, TConfig> = {
   },
   stock: {
     image: "/office.svg",
-    paragraph: "You don't have any items.",
+    paragraph: "You don't have any products.",
     ButtonIcon: UploadIcon,
     buttonText: "Load Stock",
     LinkIcon: ShopIcon,
