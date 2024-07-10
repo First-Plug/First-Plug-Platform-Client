@@ -71,7 +71,6 @@ export const MemberStore = types
         //@ts-ignore
         teamId: member.team ? member.team._id : "Not Assigned",
       }));
-
       store.members.replace(membersG);
     },
     setTeams(teams: Team[]) {
@@ -96,10 +95,15 @@ export const MemberStore = types
     setSelectedMemberEmail(memberEmail?: TeamMember["email"]) {
       store.selectedMemberEmail = memberEmail;
     },
-    updateMember(member: TeamMember) {
+    updateMember(member) {
       const index = store.members.findIndex((m) => m._id === member._id);
       if (index !== -1) {
         store.members[index] = member;
+      } else {
+        console.error(
+          "No se encontró el miembro a actualizar en el estado:",
+          member._id
+        );
       }
     },
     setMemberToEdit(memberId: string) {
