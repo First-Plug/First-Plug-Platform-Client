@@ -65,7 +65,10 @@ export function RootTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: parseInt(localStorage.getItem(tableNameRef)) || pageSize,
+    pageSize:
+      tableType === "subRow"
+        ? 1000
+        : parseInt(localStorage.getItem(tableNameRef)) || pageSize,
   });
   const table = useReactTable({
     data,
