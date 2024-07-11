@@ -1,10 +1,10 @@
 import { OrderStatus, ShipmentStatus } from "@/types";
 
 export const StatusColors = {
-  pending: "bg-lightPurple",
+  pending: "bg-lightGreen",
   info: "bg-lightBlue",
   warn: "bg-lightRed",
-  success: "bg-lightGreen",
+  success: "bg-lightPurple",
   error: "bg-red",
   disabled: "bg-disabled",
   preparing: "bg-lightYellow",
