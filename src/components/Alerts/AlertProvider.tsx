@@ -153,8 +153,7 @@ export default observer(function AlertProvider() {
       title: " Success",
       type: "succes",
       description: " Your team has been successfully created.",
-      closeAction: async () => {
-        await fetchMembers();
+      closeAction: () => {
         setAlert(undefined);
         router.push("/home/my-team");
       },
