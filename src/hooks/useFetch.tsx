@@ -1,7 +1,7 @@
 import { useStore } from "@/models";
 import { Memberservices, ProductServices, TeamServices } from "@/services";
 import { transformData } from "@/utils/dataTransformUtil";
-
+import { signOut } from "next-auth/react";
 export default function useFetch() {
   const {
     members: { setMembers, setFetchMembers },
@@ -22,6 +22,11 @@ export default function useFetch() {
 
       return transformedMembers;
     } catch (error) {
+      if (error.response.data.message === "Unauthorized") {
+        sessionStorage.clear();
+        localStorage.removeItem("token");
+        signOut({ callbackUrl: "http://localhost:3000/login" });
+      }
       console.error("Error fetching members:", error);
     } finally {
       setFetchMembers(false);
@@ -36,6 +41,11 @@ export default function useFetch() {
 
       return response;
     } catch (error) {
+      if (error.response.data.message === "Unauthorized") {
+        sessionStorage.clear();
+        localStorage.removeItem("token");
+        signOut({ callbackUrl: "http://localhost:3000/login" });
+      }
       console.log("Error fetching stock:", error);
     } finally {
       setFetchStock(false);
@@ -47,7 +57,13 @@ export default function useFetch() {
       const response = await TeamServices.getAllTeams();
       setTeams(response);
       return response;
-    } catch (error) {}
+    } catch (error) {
+      if (error.response.data.message === "Unauthorized") {
+        sessionStorage.clear();
+        localStorage.removeItem("token");
+        signOut({ callbackUrl: "http://localhost:3000/login" });
+      }
+    }
   };
   return { fetchMembers, fetchStock, fetchTeams };
 }

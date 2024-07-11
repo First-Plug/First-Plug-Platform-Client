@@ -79,10 +79,13 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
 export default function ProdcutsDetailsTable({
   products,
 }: IProdcutsDetailsTable) {
+  const fiteredProducts = products.filter(
+    (product) => product.status !== "Deprecated"
+  );
   return (
     <RootTable
       tableType="subRow"
-      data={products}
+      data={fiteredProducts}
       columns={InternalProductsColumns}
     />
   );

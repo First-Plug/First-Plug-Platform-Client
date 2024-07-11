@@ -135,9 +135,9 @@ export const AddMembersToTeamForm = observer(function ({
         />
         {!createAside && (
           <Button
-            variant="text"
+            variant="primary"
             disabled={confirmBtnStatus || loading}
-            className="text-xs"
+            className="text-xs "
             onClick={handleConfirmChanges}
           >
             {loading ? <LoaderSpinner /> : "Confirm changes"}

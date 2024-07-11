@@ -63,7 +63,9 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
 
         setLoading(true);
         await ProductServices.deleteProduct(id);
+        deleteProduct(id);
         await fetchStock();
+        await fetchMembers();
         deleteProduct(id);
         setOpen(false);
         setLoading(false);

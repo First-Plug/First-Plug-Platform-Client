@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { XCircleIcon } from "lucide-react";
 import { CheckIcon } from "@/common";
 import useFetch from "@/hooks/useFetch";
-import { set } from "zod";
 
 function XIcon() {
   return <XCircleIcon className="text-white " size={40} />;
@@ -105,7 +104,7 @@ export default observer(function AlertProvider() {
     updateMember: {
       title: " Success",
       type: "succes",
-      description: " Your Member has been successfully updated to your team.",
+      description: " This member has been successfully updated.",
       closeAction: async () => {
         await fetchMembers();
         setAside(undefined);
@@ -132,7 +131,7 @@ export default observer(function AlertProvider() {
     createMember: {
       title: " Success",
       type: "succes",
-      description: " Your Member has been successfully added to your team.",
+      description: " This Member has been successfully added to your team.",
       closeAction: async () => {
         await fetchMembers();
         setAlert(undefined);
@@ -153,22 +152,17 @@ export default observer(function AlertProvider() {
       title: " Success",
       type: "succes",
       description: " Your team has been successfully created.",
-      closeAction: async () => {
-        await fetchMembers();
+      closeAction: () => {
         setAlert(undefined);
-        router.push("/home/my-team");
       },
     },
     deleteMember: {
       title: " Success",
       type: "succes",
       description: " The member has been successfully deleted.",
-      closeAction: async () => {
-        await fetchMembers();
+      closeAction: () => {
         setAside(undefined);
         setAlert(undefined);
-
-        router.push("/home/my-team");
       },
     },
     deleteTeam: {
@@ -177,7 +171,6 @@ export default observer(function AlertProvider() {
       description: " The team has been successfully deleted.",
       closeAction: () => {
         setAlert(undefined);
-        router.push("/home/my-team");
       },
     },
     deleteStock: {
