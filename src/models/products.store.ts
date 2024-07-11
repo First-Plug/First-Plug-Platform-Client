@@ -90,6 +90,7 @@ export const ProductsStore = types
       const product = store.products.find((product) => product._id === id);
       if (product) {
         product.deleted = true;
+        product.status = "Deprecated";
       }
     },
     updateProduct(product: Product) {
