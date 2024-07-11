@@ -68,9 +68,11 @@ const Config: Record<EmptyCardType, TConfig> = {
     paragraph: "You haven't loaded any employees yet.",
     ButtonIcon: UploadIcon,
     buttonText: "Load Team Members",
-    LinkIcon: AddIcon,
-    link: "/home/my-team/addTeam",
-    linkText: "Add Team Member",
+    additionalButtonIcon: AddIcon,
+    additionalOnClick: () => {
+      window.location.href = "/home/my-team/addTeam";
+    },
+    additionalButtonText: "Add Team Member",
   },
   orders: {
     image: "/orders.svg",
