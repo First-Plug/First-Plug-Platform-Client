@@ -228,7 +228,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 }}
                 required="required"
                 className="w-full"
-                disabled={!isLocationEnabled}
+                disabled={!isLocationEnabled && !isUpdate}
               />
               <div className="min-h-[24px]">
                 {errors.location && (
