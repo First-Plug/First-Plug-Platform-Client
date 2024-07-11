@@ -1,26 +1,30 @@
 import { AddIcon, Button, CustomLink, UploadIcon } from "@/common";
 import { useStore } from "@/models";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 export function MyTeamViewHeader() {
   const {
     aside: { setAside },
   } = useStore();
+  const router = useRouter();
   return (
     <div className="w-full flex   justify-end gap-2 ">
-      <CustomLink
-        className={"rounded-md text-sm p-2 flex items-center gap-2"}
-        variant={"secondary"}
-        href="/home/my-team/addTeam"
-      >
-        <AddIcon /> Add Team Member
-      </CustomLink>
+      <Button
+        size="small"
+        variant="secondary"
+        body="Add Team Member"
+        icon={<AddIcon />}
+        onClick={() => {
+          router.push("/home/my-team/addTeam");
+        }}
+      />
 
       <Button
-        body={"Load Team Member"}
+        size="small"
+        variant="primary"
+        body="Load Team Member"
         icon={<UploadIcon />}
-        className={"rounded-md text-sm p-2"}
-        variant={"primary"}
         onClick={() => setAside("LoadMembers")}
       />
     </div>
