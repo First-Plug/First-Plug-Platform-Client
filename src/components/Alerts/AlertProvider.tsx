@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { XCircleIcon } from "lucide-react";
 import { CheckIcon } from "@/common";
 import useFetch from "@/hooks/useFetch";
-import { set } from "zod";
 
 function XIcon() {
   return <XCircleIcon className="text-white " size={40} />;
@@ -155,19 +154,15 @@ export default observer(function AlertProvider() {
       description: " Your team has been successfully created.",
       closeAction: () => {
         setAlert(undefined);
-        router.push("/home/my-team");
       },
     },
     deleteMember: {
       title: " Success",
       type: "succes",
       description: " The member has been successfully deleted.",
-      closeAction: async () => {
-        await fetchMembers();
+      closeAction: () => {
         setAside(undefined);
         setAlert(undefined);
-
-        router.push("/home/my-team");
       },
     },
     deleteTeam: {
@@ -176,7 +171,6 @@ export default observer(function AlertProvider() {
       description: " The team has been successfully deleted.",
       closeAction: () => {
         setAlert(undefined);
-        router.push("/home/my-team");
       },
     },
     deleteStock: {
