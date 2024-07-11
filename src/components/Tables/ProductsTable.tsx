@@ -55,7 +55,7 @@ export const productColumns: ColumnDef<ProductTable>[] = [
           </span>
           <span className="flex justify-between shadow-sm rounded-md p-1 px-2">
             <span>Available</span>
-            <span className="font-semibold bg-lightGreen rounded-md h-6 px-2 grid place-items-center">
+            <span className="font-semibold bg-lightGreen rounded-md h-6 w-6 px-2 grid place-items-center">
               {available}
             </span>
           </span>

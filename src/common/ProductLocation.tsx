@@ -7,8 +7,8 @@ export function ProductLocation({ location }: { location: Location }) {
       className={`p-1 px-2  text-xs ${
         location
           ? location === "Employee"
-            ? "bg-lightGreen"
-            : "bg-lightPurple"
+            ? "bg-lightPurple"
+            : "bg-lightGreen"
           : "bg-light-grey"
       } rounded-md `}
     >
