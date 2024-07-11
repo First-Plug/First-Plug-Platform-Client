@@ -105,7 +105,7 @@ export default observer(function AlertProvider() {
     updateMember: {
       title: " Success",
       type: "succes",
-      description: " Your Member has been successfully updated to your team.",
+      description: " This member has been successfully updated.",
       closeAction: async () => {
         await fetchMembers();
         setAside(undefined);
@@ -132,7 +132,7 @@ export default observer(function AlertProvider() {
     createMember: {
       title: " Success",
       type: "succes",
-      description: " Your Member has been successfully added to your team.",
+      description: " This Member has been successfully added to your team.",
       closeAction: async () => {
         await fetchMembers();
         setAlert(undefined);
