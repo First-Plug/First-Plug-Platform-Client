@@ -141,10 +141,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       return;
     }
 
-    // if (isUpdate && formatData.assignedEmail === "") {
-    //   delete formatData.assignedEmail;
-    // }
-
     try {
       if (isUpdate && initialData) {
         const changes: Partial<Product> = {};
@@ -173,6 +169,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       methods.reset();
       setSelectedCategory(undefined);
       setAssignedEmail(undefined);
+      setShowSuccessDialog(true);
     } catch (error) {
       if (error.response?.data?.message === "Serial Number already exists") {
         setErrorMessage("Serial Number already exists");
