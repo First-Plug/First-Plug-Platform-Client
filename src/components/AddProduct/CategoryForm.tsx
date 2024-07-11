@@ -37,6 +37,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [isLocationEnabled, setIsLocationEnabled] = useState(false);
 
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
@@ -132,6 +133,9 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       setSelectedLocation(undefined);
       setValue("location", undefined);
       setValue("status", "Available");
+      if (!isUpdate) {
+        setIsLocationEnabled(true);
+      }
     } else {
       const selectedMember = members.members.find(
         (member) =>
@@ -144,6 +148,9 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       setSelectedLocation("Employee");
       setValue("location", "Employee");
       setValue("status", "Delivered");
+      if (!isUpdate) {
+        setIsLocationEnabled(false);
+      }
     }
     clearErrors("assignedMember");
     clearErrors("assignedEmail");
@@ -221,6 +228,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 }}
                 required="required"
                 className="w-full"
+                disabled={!isLocationEnabled}
               />
               <div className="min-h-[24px]">
                 {errors.location && (
