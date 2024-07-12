@@ -39,7 +39,7 @@ export default observer(function AlertProvider() {
     passwordChange: {
       title: "Success",
       type: "succes",
-      description: "Password has been changed successfully.",
+      description: "Password has been successfully changed.",
       closeAction: () => {
         setAlert(undefined);
       },
