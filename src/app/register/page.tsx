@@ -33,10 +33,11 @@ export default function Register() {
         email: emailInput.value,
         password: passwordInput.value,
         tenantName: "",
+        accountProvider: "credentials",
       });
-      router.push("/register/success");
+      router.push("/login");
     } catch (error) {
-      router.push("/register/error");
+      console.log(error);
     } finally {
       setIsLoading(false);
     }

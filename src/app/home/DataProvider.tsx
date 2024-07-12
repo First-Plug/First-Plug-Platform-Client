@@ -11,6 +11,7 @@ interface DataProvidersProps {
 
 export default function DataProvider({ children }: DataProvidersProps) {
   const session = useSession();
+  console.log(session);
   const {
     user: { setUser },
   } = useStore();
