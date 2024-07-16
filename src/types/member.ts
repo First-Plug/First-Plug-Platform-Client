@@ -57,16 +57,8 @@ const isAdult = (date: string) => {
 };
 
 export const zodCreateMembertModel = z.object({
-  firstName: z
-    .string()
-    .min(1, { message: "First name is required" })
-    .regex(nameRegex, { message: "First name must only contain letters" })
-    .trim(),
-  lastName: z
-    .string()
-    .min(1, { message: "Last name is required" })
-    .regex(nameRegex, { message: "Last name must only contain letters" })
-    .trim(),
+  firstName: z.string().min(1, { message: "First name is required" }).trim(),
+  lastName: z.string().min(1, { message: "Last name is required" }).trim(),
   email: z
     .string()
     .email({ message: "Invalid email address" })
