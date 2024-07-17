@@ -9,6 +9,7 @@ const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      encoding: "algop",
     }),
     {
       id: "azure-ad",
@@ -27,6 +28,7 @@ const authOptions: NextAuthOptions = {
           name: profile.preferred_username,
           email: profile.email,
           image: "",
+          accountProvider: "azure-ad",
         };
 
         // TODO: Add to the profile photo when we have file management in the back
@@ -80,6 +82,7 @@ const authOptions: NextAuthOptions = {
         image: user.image,
         name: user.name,
         tenantName: "",
+        accountProvider: account.provider,
       };
 
       if (account.provider === "google" || account.provider === "azure-ad") {
@@ -89,7 +92,7 @@ const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async session({ token, session }) {
+    async session({ token, session, user }) {
       if (token.backendTokens) {
         session.user = token.user;
         session.backendTokens = token.backendTokens;
@@ -99,6 +102,7 @@ const authOptions: NextAuthOptions = {
           email: token.email,
           image: token.picture,
           tenantName: "",
+          accountProvider: "google",
         };
 
         const res = await AuthServices.getBackendTokens(payload);

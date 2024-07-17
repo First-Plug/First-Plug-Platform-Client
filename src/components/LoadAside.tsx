@@ -56,7 +56,7 @@ export const LoadAside = function () {
           parseProduct(product)
         );
 
-        const { success, data } = csvSquema.safeParse({
+        const { success, data, error } = csvSquema.safeParse({
           prdoucts: parsedProducts,
         });
 
@@ -69,6 +69,7 @@ export const LoadAside = function () {
             setAlert("csvSuccess");
             clearCsvData();
           } catch (error) {
+            console.log(error.response.data);
             toast({
               title:
                 "The uploaded file is not correct. Please verify it and try again.  ",

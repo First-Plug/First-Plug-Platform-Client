@@ -10,6 +10,7 @@ interface Props {
 export var AccessForm = function AccessForm({ form }: Props) {
   const {
     aside: { setAside },
+    user: { user },
   } = useStore();
   return (
     <section className="w-1/2 flex flex-col gap-5  border rounded-md p-4 ">
@@ -21,6 +22,7 @@ export var AccessForm = function AccessForm({ form }: Props) {
           type="button"
           variant="secondary"
           className="rounded-xs"
+          disabled={user.accountProvider !== "credentials"}
           onClick={() => setAside("ChangePassword")}
         >
           Change Password
