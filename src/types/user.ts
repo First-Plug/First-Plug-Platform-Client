@@ -14,6 +14,7 @@ export const LoggedInUserModel = types.model({
   apartment: types.optional(types.string, ""),
   image: types.maybeNull(types.string),
   tenantName: types.maybeNull(types.string),
+  accountProvider: types.enumeration(["credentials", "google", "azure-ad"]),
 });
 export const UserModel = types.compose(
   LoggedInUserModel,
@@ -27,12 +28,12 @@ export type User = Instance<typeof UserModel>;
 
 export type RegisterUser = Pick<
   User,
-  "name" | "email" | "password" | "tenantName"
+  "name" | "email" | "password" | "tenantName" | "accountProvider"
 >;
 
 export type RegisterUserPlatforms = Pick<
   User,
-  "name" | "email" | "image" | "tenantName"
+  "name" | "email" | "image" | "tenantName" | "accountProvider"
 >;
 
 export type LoginUser = Pick<User, "email" | "password">;
