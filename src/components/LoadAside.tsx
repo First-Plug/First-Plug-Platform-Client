@@ -33,6 +33,7 @@ export const LoadAside = function () {
   } = useStore();
 
   const { fetchMembers, fetchStock } = useFetch();
+
   const clearCsvData = () => {
     setCsvInfo(EMPTY_FILE_INFO);
     setCsvFile(null);
