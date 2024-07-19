@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { SearchIcon } from "./Icons";
+import { Input } from "@/components/ui/input";
 
 type SearchInputProps = {
   placeholder?: string;
@@ -23,17 +24,17 @@ export function SearchInput({
   };
   return (
     <div
-      className={`flex  border border-grey gap-2 items-center py-1 px-2  rounded-md  ${
+      className={`flex  border border-grey gap-2 items-center px-2   rounded-md  ${
         className || ""
       }`}
     >
       <SearchIcon className={" text-grey font-bold  "} />
-      <input
+      <Input
         type="text"
         value={query}
         onChange={handleChange}
         placeholder={placeholder}
-        className={`text-md font-normal leading-5  text-dark-grey border-none outline-none  `}
+        className={`text-md font-normal  w-full text-dark-grey border-none outline-none  `}
       />
     </div>
   );
