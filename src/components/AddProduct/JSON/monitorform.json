@@ -3,7 +3,7 @@
     {
       "name": "brand",
       "title": "Brand*",
-      "options": ["LG", "Samsung", "Other"]
+      "options": ["LG", "Samsung", "Dell", "Other"]
     },
     {
       "name": "model",
