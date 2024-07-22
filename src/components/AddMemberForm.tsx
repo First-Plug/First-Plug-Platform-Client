@@ -176,7 +176,11 @@ export const AddMemberForm = observer(function ({
           )}
 
           <div className="w-full">
-            <SearchInput placeholder="Search Member" onSearch={handleSearch} />
+            <SearchInput
+              placeholder="Search Member"
+              onSearch={handleSearch}
+              className="w-full"
+            />
           </div>
           <div className="flex flex-col gap-2 w-full h-[95%] max-h-[95%] overflow-y-auto scrollbar-custom ">
             {displayedMembers.map((member) => (
