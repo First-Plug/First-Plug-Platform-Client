@@ -10,7 +10,7 @@ import {
 } from "./Icons";
 import { CustomLink } from "./CustomLink";
 import { useStore } from "@/models";
-
+import { signOut } from "next-auth/react";
 type EmptyCardType =
   | "stock"
   | "members"
@@ -93,9 +93,9 @@ const Config: Record<EmptyCardType, TConfig> = {
     paragraphstrong: "Congratulations!",
     paragraph: "Soon you will be able to access the platform.",
     paragraph2: "Your account has been successfully created.",
-    LinkIcon: ComputerIcon,
-    link: "https://firstplug.co/",
-    linkText: "Home Page",
+    buttonText: "Log In",
+    ButtonIcon: ComputerIcon,
+    // link: "/login",
   },
   loginerror: {
     image: "/alert.svg",
@@ -147,6 +147,10 @@ export function EmptyCard({ type }: EmptyCardProps) {
     }
 
     if (type === "members") setAside("LoadMembers");
+    if (type === "registerok") {
+      console.log("a");
+      return signOut({ callbackUrl: "http://localhost:3000/login" });
+    }
   };
 
   return (

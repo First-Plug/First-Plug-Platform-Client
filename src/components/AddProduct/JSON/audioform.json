@@ -3,7 +3,7 @@
     {
       "name": "brand",
       "title": "Brand*",
-      "options": ["Apple", "Logitech", "Sony", "Other"]
+      "options": ["Apple", "Logitech", "Sony", "JBL", "Other"]
     },
     {
       "name": "model",
