@@ -49,13 +49,13 @@ export const productColumns: ColumnDef<ProductTable>[] = [
         <div className="flex flex-col gap-2 justify-center font-normal font-montserrat">
           <span className="flex justify-between rounded-md p-1 px-2">
             <span>Total</span>
-            <span className="font-semibold bg-lightBlue rounded-md h-6 w-6 px-2 grid place-items-center">
+            <span className="font-semibold bg-lightBlue rounded-md h-6 w-6 flex items-center justify-center">
               {total}
             </span>
           </span>
           <span className="flex justify-between shadow-sm rounded-md p-1 px-2">
             <span>Available</span>
-            <span className="font-semibold bg-lightGreen rounded-md h-6 w-6 px-2 grid place-items-center">
+            <span className="font-semibold bg-lightGreen rounded-md h-6 w-6 flex items-center justify-center">
               {available}
             </span>
           </span>
