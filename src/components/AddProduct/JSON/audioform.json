@@ -3,7 +3,7 @@
     {
       "name": "brand",
       "title": "Brand*",
-      "options": ["Apple", "JBL", "Logitech", "Sony", "Other"]
+      "options": ["Apple", "Logitech", "Sony", "JBL", "Other"]
     },
     {
       "name": "model",
@@ -19,8 +19,8 @@
         "H340",
         "H390",
         "H540",
-        "Headphones CH520 inalambrico",
         "Headphones CH720N inalambrico con cancelacion de sonido",
+        "Headphones CH520 inalambrico",
         "Headphones INZONE H3 con cable",
         "Headphones INZONE H3 inalambrico",
         "Headphones RF400 inalambrico",
@@ -42,21 +42,21 @@
       "name": "color",
       "title": "Color",
       "options": [
-        "Black",
-        "Blue",
-        "Gold",
-        "Green",
+        "Space Grey",
+        "Silver",
         "Midnight",
+        "Starlight",
+        "Gold",
+        "Space Black",
+        "Black",
+        "White",
+        "Blue",
+        "Yellow",
+        "Red",
+        "Green",
         "Natural Titanium",
         "Pink",
         "Purple",
-        "Red",
-        "Silver",
-        "Space Black",
-        "Space Grey",
-        "Starlight",
-        "White",
-        "Yellow",
         "Other"
       ]
     }

@@ -3,7 +3,7 @@
     {
       "name": "brand",
       "title": "Brand*",
-      "options": ["Dell", "LG", "Samsung", "Other"]
+      "options": ["LG", "Samsung", "Dell", "Other"]
     },
     {
       "name": "model",
@@ -47,21 +47,21 @@
       "name": "color",
       "title": "Color",
       "options": [
-        "Black",
-        "Blue",
-        "Gold",
-        "Green",
+        "Space Grey",
+        "Silver",
         "Midnight",
+        "Starlight",
+        "Gold",
+        "Space Black",
+        "Black",
+        "White",
+        "Blue",
+        "Yellow",
+        "Red",
+        "Green",
         "Natural Titanium",
         "Pink",
         "Purple",
-        "Red",
-        "Silver",
-        "Space Black",
-        "Space Grey",
-        "Starlight",
-        "White",
-        "Yellow",
         "Other"
       ]
     }
