@@ -3,7 +3,7 @@
     {
       "name": "brand",
       "title": "Brand*",
-      "options": ["Logitech", "Baseus", "Satechi", "Sony", "Other"]
+      "options": ["Baseus", "Logitech", "Satechi", "Sony", "Other"]
     },
     {
       "name": "model",
@@ -13,6 +13,7 @@
         "Cable Thunderbolt 4",
         "Case",
         "Craft Teclado Bluetooth",
+        "C1 Mouse con cable USB-C",
         "Docking Station",
         "HDMI",
         "HUB Thunderbolt 4 Slim",
@@ -73,7 +74,6 @@
         "Slim X3 Teclado Bluetooth",
         "SM1 Slim Teclado Mecanico Bluetooth",
         "Waterproof Laptop Case",
-        "C1 Mouse con cable USB-C",
         "Other",
         ""
       ]
