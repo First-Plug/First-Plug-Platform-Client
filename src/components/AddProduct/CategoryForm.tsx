@@ -9,6 +9,7 @@ import { FieldValues, useFormContext } from "react-hook-form";
 import { setAuthInterceptor } from "@/config/axios.config";
 import { Memberservices } from "@/services";
 import { Skeleton } from "../ui/skeleton";
+import QuantityCounter from "./QuantityCounter";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -17,6 +18,8 @@ interface CategoryFormProps {
   formState: Record<string, unknown>;
   clearErrors: (name?: keyof FieldValues | (keyof FieldValues)[]) => void;
   isUpdate?: boolean;
+  quantity: number;
+  setQuantity: (value: number) => void;
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = function ({
@@ -26,6 +29,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   formState,
   clearErrors,
   isUpdate,
+  quantity,
+  setQuantity,
 }) {
   const { members } = useStore();
   const {
@@ -167,128 +172,243 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 
   return (
     <div className="w-full">
-      <div
-        className={`grid gap-4 ${
-          isUpdate ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 lg:grid-cols-3"
-        }`}
-      >
-        <div className="w-full lg:w-full">
-          <DropdownInputProductForm
-            options={CATEGORIES}
-            placeholder="Category"
-            title="Category*"
-            name="category"
-            selectedOption={selectedCategory}
-            onChange={(category: Category) => {
-              handleCategoryChange(category);
-              clearErrors("category");
-            }}
-            required="required"
-            disabled={isUpdate}
-          />
-          <div className="min-h-[24px]">
-            {errors.category && (
-              <p className="text-red-500">{(errors.category as any).message}</p>
-            )}
+      {isUpdate ? (
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+          <div className="w-full lg:w-full">
+            <DropdownInputProductForm
+              options={CATEGORIES}
+              placeholder="Category"
+              title="Category*"
+              name="category"
+              selectedOption={selectedCategory}
+              onChange={(category: Category) => {
+                handleCategoryChange(category);
+                clearErrors("category");
+              }}
+              required="required"
+              disabled={isUpdate}
+            />
+            <div className="min-h-[24px]">
+              {errors.category && (
+                <p className="text-red-500">
+                  {(errors.category as any).message}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="w-full ">
-          <DropdownInputProductForm
-            options={assignedEmailOptions}
-            placeholder="Assigned Member"
-            title="Assigned Member*"
-            name="assignedMember"
-            selectedOption={selectedAssignedMember}
-            onChange={handleAssignedMemberChange}
-            className="w-full "
-          />
-          <div className="min-h-[24px]">
-            {errors.assignedEmail && (
-              <p className="text-red-500">
-                {(errors.assignedEmail as any).message}
-              </p>
-            )}
+          <div className="w-full ">
+            <DropdownInputProductForm
+              options={assignedEmailOptions}
+              placeholder="Assigned Member"
+              title="Assigned Member*"
+              name="assignedMember"
+              selectedOption={selectedAssignedMember}
+              onChange={handleAssignedMemberChange}
+              className="w-full "
+            />
+            <div className="min-h-[24px]">
+              {errors.assignedEmail && (
+                <p className="text-red-500">
+                  {(errors.assignedEmail as any).message}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="w-full">
-          {selectedAssignedMember === "None" ||
-          selectedAssignedMember === "" ? (
-            <>
-              <DropdownInputProductForm
-                options={["Our office", "FP warehouse"]}
+          <div className="w-full">
+            {selectedAssignedMember === "None" ||
+            selectedAssignedMember === "" ? (
+              <>
+                <DropdownInputProductForm
+                  options={["Our office", "FP warehouse"]}
+                  placeholder="Location"
+                  title="Location*"
+                  name="location"
+                  selectedOption={selectedLocation}
+                  onChange={(value: Location) => {
+                    setSelectedLocation(value);
+                    setValue("location", value);
+                    clearErrors("location");
+                  }}
+                  required="required"
+                  className="w-full"
+                  disabled={!isLocationEnabled && !isUpdate}
+                />
+                <div className="min-h-[24px]">
+                  {errors.location && (
+                    <p className="text-red-500">
+                      {(errors.location as any).message}
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <InputProductForm
                 placeholder="Location"
-                title="Location*"
+                title="Location"
+                type="text"
                 name="location"
-                selectedOption={selectedLocation}
-                onChange={(value: Location) => {
-                  setSelectedLocation(value);
-                  setValue("location", value);
-                  clearErrors("location");
-                }}
-                required="required"
+                value="Employee"
+                onChange={(e) => handleInputChange("location", e.target.value)}
                 className="w-full"
-                disabled={!isLocationEnabled && !isUpdate}
+                readOnly={selectedLocation === "Employee"}
+              />
+            )}
+          </div>
+          <div className="w-full">
+            <InputProductForm
+              placeholder="Acquisition Date"
+              title="Acquisition Date"
+              type="date"
+              value={
+                watch("acquisitionDate")
+                  ? (watch("acquisitionDate") as string).split("T")[0]
+                  : ""
+              }
+              name="acquisitionDate"
+              allowFutureDates={false}
+              onChange={(e) =>
+                handleInputChange(
+                  "acquisitionDate",
+                  new Date(e.target.value).toISOString()
+                )
+              }
+            />
+          </div>
+          <div className="w-full">
+            <InputProductForm
+              placeholder="Serial Number"
+              title="Serial Number"
+              type="text"
+              value={watch("serialNumber") as string}
+              name="serialNumber"
+              onChange={(e) =>
+                handleInputChange("serialNumber", e.target.value)
+              }
+              className="w-full"
+              disabled={quantity > 1 && !isUpdate}
+            />
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center">
+            <DropdownInputProductForm
+              options={CATEGORIES}
+              placeholder="Category"
+              title="Category*"
+              name="category"
+              selectedOption={selectedCategory}
+              onChange={(category: Category) => {
+                handleCategoryChange(category);
+                clearErrors("category");
+              }}
+              required="required"
+            />
+
+            <div>
+              <QuantityCounter quantity={quantity} setQuantity={setQuantity} />
+            </div>
+          </div>
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-4 mt-4">
+            <div className="w-full">
+              <DropdownInputProductForm
+                options={assignedEmailOptions}
+                placeholder="Assigned Member"
+                title="Assigned Member*"
+                name="assignedMember"
+                selectedOption={selectedAssignedMember}
+                onChange={handleAssignedMemberChange}
+                className="w-full"
+                disabled={quantity > 1}
               />
               <div className="min-h-[24px]">
-                {errors.location && (
+                {errors.assignedEmail && (
                   <p className="text-red-500">
-                    {(errors.location as any).message}
+                    {(errors.assignedEmail as any).message}
                   </p>
                 )}
               </div>
-            </>
-          ) : (
-            <InputProductForm
-              placeholder="Location"
-              title="Location"
-              type="text"
-              name="location"
-              value="Employee"
-              onChange={(e) => handleInputChange("location", e.target.value)}
-              className="w-full"
-              readOnly={selectedLocation === "Employee"}
-            />
-          )}
-        </div>
-      </div>
-      <div
-        className={`grid gap-4 mt-4 ${
-          isUpdate ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 lg:grid-cols-4"
-        }`}
-      >
-        <div className="w-full">
-          <InputProductForm
-            placeholder="Acquisition Date"
-            title="Acquisition Date"
-            type="date"
-            value={
-              watch("acquisitionDate")
-                ? (watch("acquisitionDate") as string).split("T")[0]
-                : ""
-            }
-            name="acquisitionDate"
-            allowFutureDates={false}
-            onChange={(e) =>
-              handleInputChange(
-                "acquisitionDate",
-                new Date(e.target.value).toISOString()
-              )
-            }
-          />
-        </div>
-        <div className="w-full">
-          <InputProductForm
-            placeholder="Serial Number"
-            title="Serial Number"
-            type="text"
-            value={watch("serialNumber") as string}
-            name="serialNumber"
-            onChange={(e) => handleInputChange("serialNumber", e.target.value)}
-            className="w-full "
-          />
-        </div>
-      </div>
+            </div>
+            <div className="w-full">
+              {selectedAssignedMember === "None" ||
+              selectedAssignedMember === "" ? (
+                <>
+                  <DropdownInputProductForm
+                    options={["Our office", "FP warehouse"]}
+                    placeholder="Location"
+                    title="Location*"
+                    name="location"
+                    selectedOption={selectedLocation}
+                    onChange={(value: Location) => {
+                      setSelectedLocation(value);
+                      setValue("location", value);
+                      clearErrors("location");
+                    }}
+                    required="required"
+                    className="w-full"
+                    disabled={!isLocationEnabled || quantity > 1}
+                  />
+                  <div className="min-h-[24px]">
+                    {errors.location && (
+                      <p className="text-red-500">
+                        {(errors.location as any).message}
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <InputProductForm
+                  placeholder="Location"
+                  title="Location"
+                  type="text"
+                  name="location"
+                  value="Employee"
+                  onChange={(e) =>
+                    handleInputChange("location", e.target.value)
+                  }
+                  className="w-full"
+                  readOnly={selectedLocation === "Employee"}
+                />
+              )}
+            </div>
+            <div className="w-full">
+              <InputProductForm
+                placeholder="Acquisition Date"
+                title="Acquisition Date"
+                type="date"
+                value={
+                  watch("acquisitionDate")
+                    ? (watch("acquisitionDate") as string).split("T")[0]
+                    : ""
+                }
+                name="acquisitionDate"
+                allowFutureDates={false}
+                onChange={(e) =>
+                  handleInputChange(
+                    "acquisitionDate",
+                    new Date(e.target.value).toISOString()
+                  )
+                }
+              />
+            </div>
+            <div className="w-full">
+              <InputProductForm
+                placeholder="Serial Number"
+                title="Serial Number"
+                type="text"
+                value={watch("serialNumber") as string}
+                name="serialNumber"
+                onChange={(e) =>
+                  handleInputChange("serialNumber", e.target.value)
+                }
+                className="w-full"
+                disabled={quantity > 1 && !isUpdate}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

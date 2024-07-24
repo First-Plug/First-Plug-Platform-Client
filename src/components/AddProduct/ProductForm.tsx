@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { observer } from "mobx-react-lite";
 import { Button, PageLayout, SectionTitle } from "@/common";
 import { useStore } from "@/models/root.store";
@@ -31,12 +31,12 @@ interface ProductFormProps {
 }
 
 const categoryComponents = {
-  Computer: computerData,
-  Monitor: monitorData,
   Audio: audioData,
+  Computer: computerData,
+  Merchandising: merchandisingData,
+  Monitor: monitorData,
   Peripherals: peripheralsData,
   Other: othersData,
-  Merchandising: merchandisingData,
 };
 
 const ProductForm: React.FC<ProductFormProps> = ({
@@ -62,6 +62,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<
     Category | undefined
   >(initialData?.category);
@@ -137,7 +138,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
 
-    if (!validateAttributes(formatData.attributes, selectedCategory)) {
+    if (
+      quantity === 1 &&
+      !validateAttributes(formatData.attributes, selectedCategory)
+    ) {
       return;
     }
 
@@ -163,8 +167,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
         setAlert("updateStock");
         setAside(undefined);
       } else {
-        await ProductServices.createProduct(formatData);
-        setAlert("createProduct");
+        if (quantity > 1) {
+          router.push(
+            `/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(
+              JSON.stringify(formatData)
+            )}`
+          );
+        } else {
+          await ProductServices.createProduct(formatData);
+          setAlert("createProduct");
+        }
       }
       methods.reset();
       setSelectedCategory(undefined);
@@ -186,30 +198,58 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
 
+  const handleNext = () => {
+    const productData = {
+      ...methods.getValues(),
+      category: selectedCategory || "Other",
+      assignedEmail: watch("assignedEmail"),
+      attributes: attributes.map((attr) => ({
+        ...AttributeModel.create(attr),
+        value:
+          attr.value ||
+          initialData?.attributes.find((ia) => ia.key === attr.key)?.value ||
+          "",
+      })),
+      serialNumber: watch("serialNumber")?.trim() || "",
+    };
+
+    router.push(
+      `/home/my-stock/addOneProduct/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(
+        JSON.stringify(productData)
+      )}`
+    );
+  };
+
   return (
     <FormProvider {...methods}>
       <PageLayout>
-        <div className="h-full w-full ">
+        <div className="h-full w-full">
           <div className="absolute h-[90%] w-[80%] overflow-y-auto scrollbar-custom pr-4">
             <div className="px-4 py-2 rounded-3xl border">
               <SectionTitle className="text-[20px]">
                 {isUpdate ? "" : "Add Product"}
               </SectionTitle>
               <section>
-                <CategoryForm
-                  handleCategoryChange={handleCategoryChange}
-                  selectedCategory={selectedCategory}
-                  setAssignedEmail={(email) => setValue("assignedEmail", email)}
-                  formState={methods.getValues()}
-                  clearErrors={
-                    clearErrors as (name?: string | string[]) => void
-                  }
-                  isUpdate={isUpdate}
-                />
+                <div className="flex items-center">
+                  <CategoryForm
+                    handleCategoryChange={handleCategoryChange}
+                    selectedCategory={selectedCategory}
+                    setAssignedEmail={(email) =>
+                      setValue("assignedEmail", email)
+                    }
+                    formState={methods.getValues()}
+                    clearErrors={
+                      clearErrors as (name?: string | string[]) => void
+                    }
+                    isUpdate={isUpdate}
+                    quantity={quantity}
+                    setQuantity={setQuantity}
+                  />
+                </div>
               </section>
             </div>
             {selectedCategory && (
-              <div className="flex flex-col lg:flex:row gap-4 max-h-[100%] h-[90%] w-full  mt-4">
+              <div className="flex flex-col lg:flex:row gap-4 max-h-[100%] h-[90%] w-full mt-4">
                 <div className="px-4 py-6 rounded-3xl border overflow-y-auto max-h-[500px] pb-40 scrollbar-custom">
                   <section>
                     <DynamicForm
@@ -226,14 +266,25 @@ const ProductForm: React.FC<ProductFormProps> = ({
             )}
           </div>
           <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
-            <Button
-              body={isUpdate ? "Update" : "Save"}
-              variant="primary"
-              className="rounded lg"
-              size={"big"}
-              onClick={handleSubmit(handleSaveProduct)}
-              disabled={isSubmitting}
-            />
+            {quantity > 1 ? (
+              <Button
+                body="Next"
+                variant="secondary"
+                className="rounded lg"
+                size="big"
+                onClick={handleNext}
+                disabled={quantity <= 1}
+              />
+            ) : (
+              <Button
+                body={isUpdate ? "Update" : "Save"}
+                variant="primary"
+                className="rounded lg"
+                size="big"
+                onClick={handleSubmit(handleSaveProduct)}
+                disabled={quantity > 1 ? true : isSubmitting}
+              />
+            )}
           </aside>
         </div>
         <div className="z-50">

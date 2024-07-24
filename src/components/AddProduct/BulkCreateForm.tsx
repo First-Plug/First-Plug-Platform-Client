@@ -1,0 +1,228 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useForm, FormProvider } from "react-hook-form";
+import { observer } from "mobx-react-lite";
+import { Button, PageLayout, SectionTitle } from "@/common";
+import { DropdownInputProductForm } from "@/components/AddProduct/DropDownProductForm";
+import { InputProductForm } from "@/components/AddProduct/InputProductForm";
+import { ProductServices } from "@/services/product.services";
+import { Memberservices } from "@/services";
+import { Instance } from "mobx-state-tree";
+import { TeamMemberModel } from "@/types";
+
+const BulkCreateForm = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const quantity = searchParams.get("quantity");
+  const productData = searchParams.get("productData");
+
+  const numProducts = quantity ? parseInt(quantity as string, 10) : 0;
+  const initialData = productData ? JSON.parse(productData as string) : {};
+
+  const methods = useForm({
+    defaultValues: initialData,
+  });
+
+  const {
+    handleSubmit,
+    formState: { isSubmitting },
+    setValue,
+    watch,
+  } = methods;
+
+  const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
+    []
+  );
+  const [members, setMembers] = useState<Instance<typeof TeamMemberModel>[]>(
+    []
+  );
+  const [loading, setLoading] = useState(true);
+  const [isLocationEnabled, setIsLocationEnabled] = useState<boolean[]>(
+    Array(numProducts).fill(false)
+  );
+  const [selectedLocations, setSelectedLocations] = useState<string[]>(
+    Array(numProducts).fill("Location")
+  );
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      const fetchedMembers = await Memberservices.getAllMembers();
+      setMembers(fetchedMembers as Instance<typeof TeamMemberModel>[]);
+      const memberFullNames = [
+        "None",
+        ...fetchedMembers.map(
+          (member: Instance<typeof TeamMemberModel>) =>
+            `${member.firstName} ${member.lastName}`
+        ),
+      ];
+      setAssignedEmailOptions(memberFullNames);
+      setLoading(false);
+    };
+
+    fetchMembers();
+  }, []);
+
+  const handleAssignedMemberChange = (
+    selectedFullName: string,
+    index: number
+  ) => {
+    const selectedMember = members.find(
+      (member) => `${member.firstName} ${member.lastName}` === selectedFullName
+    );
+    const email = selectedMember?.email || "";
+    setValue(`assignedEmail_${index}`, email);
+    setValue(`assignedMember_${index}`, selectedFullName);
+
+    const newSelectedLocations = [...selectedLocations];
+    newSelectedLocations[index] =
+      selectedFullName === "None" ? "Location" : "Employee";
+    setSelectedLocations(newSelectedLocations);
+    setValue(`location_${index}`, newSelectedLocations[index]);
+
+    setIsLocationEnabled((prev) => {
+      const newIsLocationEnabled = [...prev];
+      newIsLocationEnabled[index] = selectedFullName === "None";
+      return newIsLocationEnabled;
+    });
+  };
+
+  const handleBulkCreate = async (data: any) => {
+    const productsData = Array.from({ length: numProducts }, (_, index) => ({
+      ...initialData,
+      assignedMember: data[`assignedMember_${index}`],
+      location: data[`location_${index}`],
+      serialNumber: data[`serialNumber_${index}`],
+    }));
+
+    try {
+      await ProductServices.bulkCreateProducts(productsData);
+      router.push("/my-stock");
+    } catch (error) {
+      console.error("Error creating products:", error);
+    }
+  };
+
+  if (!quantity || !productData || loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <FormProvider {...methods}>
+      <PageLayout>
+        <SectionTitle>Assign Member to Created Products</SectionTitle>
+        <div className="h-full w-full overflow-y-auto scrollbar-custom pr-4">
+          <form onSubmit={handleSubmit(handleBulkCreate)}>
+            {Array.from({ length: numProducts }, (_, index) => (
+              <div key={index} className="mb-4">
+                <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="w-full">
+                    <DropdownInputProductForm
+                      options={assignedEmailOptions}
+                      placeholder="Assigned Member"
+                      title="Assigned Member*"
+                      name={`assignedMember_${index}`}
+                      selectedOption={watch(`assignedMember_${index}`)}
+                      onChange={(selectedFullName: string) =>
+                        handleAssignedMemberChange(selectedFullName, index)
+                      }
+                    />
+                    <div className="min-h-[24px]">
+                      {methods.formState.errors[`assignedEmail_${index}`] && (
+                        <p className="text-red-500">
+                          {
+                            (
+                              methods.formState.errors[
+                                `assignedEmail_${index}`
+                              ] as any
+                            ).message
+                          }
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="w-full">
+                    {watch(`assignedMember_${index}`) === "None" ||
+                    watch(`assignedMember_${index}`) === "" ? (
+                      <>
+                        <DropdownInputProductForm
+                          options={["Our office", "FP warehouse"]}
+                          placeholder="Location"
+                          title="Location*"
+                          name={`location_${index}`}
+                          selectedOption={selectedLocations[index]}
+                          onChange={(value: string) => {
+                            const newSelectedLocations = [...selectedLocations];
+                            newSelectedLocations[index] = value;
+                            setSelectedLocations(newSelectedLocations);
+                            setValue(`location_${index}`, value);
+                            methods.clearErrors(`location_${index}`);
+                          }}
+                          required="required"
+                          className="w-full"
+                          disabled={!isLocationEnabled[index]}
+                        />
+                        <div className="min-h-[24px]">
+                          {methods.formState.errors[`location_${index}`] && (
+                            <p className="text-red-500">
+                              {
+                                (
+                                  methods.formState.errors[
+                                    `location_${index}`
+                                  ] as any
+                                ).message
+                              }
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <InputProductForm
+                        placeholder="Location"
+                        title="Location"
+                        type="text"
+                        name={`location_${index}`}
+                        value="Employee"
+                        onChange={(e) =>
+                          setValue(`location_${index}`, e.target.value)
+                        }
+                        className="w-full"
+                        readOnly
+                      />
+                    )}
+                  </div>
+                  <div className="w-full">
+                    <InputProductForm
+                      placeholder="Serial Number"
+                      title="Serial Number"
+                      type="text"
+                      name={`serialNumber_${index}`}
+                      value={watch(`serialNumber_${index}`)}
+                      onChange={(e) =>
+                        setValue(`serialNumber_${index}`, e.target.value)
+                      }
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
+              <Button
+                body="Create Products"
+                variant="primary"
+                size="big"
+                type="submit"
+                disabled={isSubmitting}
+              />
+            </aside>
+          </form>
+        </div>
+      </PageLayout>
+    </FormProvider>
+  );
+};
+
+export default observer(BulkCreateForm);

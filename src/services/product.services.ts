@@ -79,4 +79,13 @@ export class ProductServices {
     );
     return response.data;
   }
+  static async bulkCreateProducts(
+    products: CreationProduct[]
+  ): Promise<Product[]> {
+    const response = await HTTPRequests.post(
+      `${BASE_URL}/api/products/bulkcreate`,
+      { products }
+    );
+    return response.data;
+  }
 }

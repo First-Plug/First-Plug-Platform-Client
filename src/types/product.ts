@@ -10,10 +10,10 @@ export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
 export const LOCATION = ["Our office", "FP warehouse", "Employee"] as const;
 export type Location = (typeof LOCATION)[number];
 export const CATEGORIES = [
-  "Merchandising",
-  "Computer",
-  "Monitor",
   "Audio",
+  "Computer",
+  "Merchandising",
+  "Monitor",
   "Peripherals",
   "Other",
 ] as const;
