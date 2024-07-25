@@ -103,6 +103,7 @@ export const LoadAside = function () {
         const { success, data, error } = csvSquema.safeParse({
           members: parsedMembers,
         });
+
         if (success) {
           try {
             await CsvServices.bulkCreateTeams(data.members);
@@ -112,7 +113,9 @@ export const LoadAside = function () {
             setAside(undefined);
             setAlert("csvSuccess");
           } catch (error) {
-            console.error({ error: error.response.data });
+            console.error("error en la carga csv member : ", {
+              error: error.response.data,
+            });
             toast({
               title:
                 "The uploaded file is not correct. Please verify it and try again.  ",
