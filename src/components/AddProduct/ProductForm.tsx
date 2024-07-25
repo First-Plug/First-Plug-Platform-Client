@@ -218,7 +218,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const data = methods.getValues();
     console.log("handleNext data:", data);
 
-    // Asegúrate de que los atributos están correctamente en el array de attributes
+    // Crear los atributos utilizando el modelo correcto
     const updatedAttributes = attributes.map((attr) =>
       AttributeModel.create({
         key: attr.key,
@@ -268,7 +268,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
         message: "Name is required for Merchandising.",
       });
     }
-
     console.log("attributeErrors:", attributeErrors);
     setCustomErrors(attributeErrors);
 
@@ -287,7 +286,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       serialNumber: watch("serialNumber"),
     };
     console.log("productData:", productData);
-
     // Corregir la URL de redirección
     router.push(
       `/home/my-stock/addOneProduct/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(

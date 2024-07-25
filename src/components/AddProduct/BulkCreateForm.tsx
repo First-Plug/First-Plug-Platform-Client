@@ -28,10 +28,11 @@ const BulkCreateForm = () => {
 
   const {
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
     clearErrors,
     setValue,
     watch,
+    trigger,
   } = methods;
 
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
@@ -87,15 +88,25 @@ const BulkCreateForm = () => {
       newIsLocationEnabled[index] = selectedFullName === "None";
       return newIsLocationEnabled;
     });
+    clearErrors([`assignedEmail_${index}`, `location_${index}`]);
   };
 
   const handleBulkCreate = async (data: any) => {
-    const productsData = Array.from({ length: numProducts }, (_, index) => ({
-      ...initialData,
-      assignedMember: data[`assignedMember_${index}`],
-      location: data[`location_${index}`],
-      serialNumber: data[`serialNumber_${index}`],
-    }));
+    const productsData = Array.from({ length: numProducts }, (_, index) => {
+      const assignedMember = data[`assignedMember_${index}`];
+      const location = data[`location_${index}`];
+      const status = assignedMember === "None" ? "Available" : "Delivered";
+
+      return {
+        ...initialData,
+        assignedEmail: data[`assignedEmail_${index}`],
+        assignedMember: data[`assignedMember_${index}`],
+        location: data[`location_${index}`],
+        serialNumber: data[`serialNumber_${index}`],
+        status,
+        attributes: initialData.attributes || [],
+      };
+    });
 
     console.log("productsData", productsData);
 
@@ -103,7 +114,7 @@ const BulkCreateForm = () => {
       // Asegúrate de que productsData es un array
       if (Array.isArray(productsData)) {
         await ProductServices.bulkCreateProducts(productsData);
-        router.push("/my-stock");
+        router.push("/home/my-stock");
       } else {
         throw new Error(
           "El formato de los datos de los productos no es un array."
@@ -114,6 +125,16 @@ const BulkCreateForm = () => {
     }
   };
 
+  const onSubmit = async (data: any) => {
+    const isValid = await trigger();
+
+    if (!isValid) {
+      return;
+    }
+
+    handleBulkCreate(data);
+  };
+
   if (!quantity || !productData || loading) {
     return <div>Loading...</div>;
   }
@@ -122,9 +143,9 @@ const BulkCreateForm = () => {
     <FormProvider {...methods}>
       <PageLayout>
         <SectionTitle>Assign Members</SectionTitle>
-        <ProductDetail product={initialData} />
+        {/* <ProductDetail product={initialData} /> */}
         <div className="h-full w-full overflow-y-auto scrollbar-custom pr-4">
-          <form onSubmit={handleSubmit(handleBulkCreate)}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             {Array.from({ length: numProducts }, (_, index) => (
               <div key={index} className="mb-4">
                 <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
@@ -141,15 +162,9 @@ const BulkCreateForm = () => {
                       }
                     />
                     <div className="min-h-[24px]">
-                      {methods.formState.errors[`assignedEmail_${index}`] && (
+                      {errors[`assignedEmail_${index}`] && (
                         <p className="text-red-500">
-                          {
-                            (
-                              methods.formState.errors[
-                                `assignedEmail_${index}`
-                              ] as any
-                            ).message
-                          }
+                          {(errors[`assignedEmail_${index}`] as any).message}
                         </p>
                       )}
                     </div>
@@ -176,15 +191,9 @@ const BulkCreateForm = () => {
                           disabled={!isLocationEnabled[index]}
                         />
                         <div className="min-h-[24px]">
-                          {methods.formState.errors[`location_${index}`] && (
+                          {errors[`location_${index}`] && (
                             <p className="text-red-500">
-                              {
-                                (
-                                  methods.formState.errors[
-                                    `location_${index}`
-                                  ] as any
-                                ).message
-                              }
+                              {(errors[`location_${index}`] as any).message}
                             </p>
                           )}
                         </div>
