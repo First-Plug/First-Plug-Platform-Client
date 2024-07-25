@@ -11,6 +11,7 @@ import { ProductServices } from "@/services/product.services";
 import { Memberservices } from "@/services";
 import { Instance } from "mobx-state-tree";
 import { TeamMemberModel } from "@/types";
+import ProductDetail from "@/common/ProductDetail";
 
 const BulkCreateForm = () => {
   const router = useRouter();
@@ -28,6 +29,7 @@ const BulkCreateForm = () => {
   const {
     handleSubmit,
     formState: { isSubmitting },
+    clearErrors,
     setValue,
     watch,
   } = methods;
@@ -43,7 +45,7 @@ const BulkCreateForm = () => {
     Array(numProducts).fill(false)
   );
   const [selectedLocations, setSelectedLocations] = useState<string[]>(
-    Array(numProducts).fill("Location")
+    Array(numProducts).fill("")
   );
 
   useEffect(() => {
@@ -76,8 +78,7 @@ const BulkCreateForm = () => {
     setValue(`assignedMember_${index}`, selectedFullName);
 
     const newSelectedLocations = [...selectedLocations];
-    newSelectedLocations[index] =
-      selectedFullName === "None" ? "Location" : "Employee";
+    newSelectedLocations[index] = selectedFullName === "None" ? "" : "Employee";
     setSelectedLocations(newSelectedLocations);
     setValue(`location_${index}`, newSelectedLocations[index]);
 
@@ -96,9 +97,18 @@ const BulkCreateForm = () => {
       serialNumber: data[`serialNumber_${index}`],
     }));
 
+    console.log("productsData", productsData);
+
     try {
-      await ProductServices.bulkCreateProducts(productsData);
-      router.push("/my-stock");
+      // Asegúrate de que productsData es un array
+      if (Array.isArray(productsData)) {
+        await ProductServices.bulkCreateProducts(productsData);
+        router.push("/my-stock");
+      } else {
+        throw new Error(
+          "El formato de los datos de los productos no es un array."
+        );
+      }
     } catch (error) {
       console.error("Error creating products:", error);
     }
@@ -111,7 +121,8 @@ const BulkCreateForm = () => {
   return (
     <FormProvider {...methods}>
       <PageLayout>
-        <SectionTitle>Assign Member to Created Products</SectionTitle>
+        <SectionTitle>Assign Members</SectionTitle>
+        <ProductDetail product={initialData} />
         <div className="h-full w-full overflow-y-auto scrollbar-custom pr-4">
           <form onSubmit={handleSubmit(handleBulkCreate)}>
             {Array.from({ length: numProducts }, (_, index) => (
@@ -158,7 +169,7 @@ const BulkCreateForm = () => {
                             newSelectedLocations[index] = value;
                             setSelectedLocations(newSelectedLocations);
                             setValue(`location_${index}`, value);
-                            methods.clearErrors(`location_${index}`);
+                            clearErrors(`location_${index}`);
                           }}
                           required="required"
                           className="w-full"
@@ -211,7 +222,7 @@ const BulkCreateForm = () => {
             ))}
             <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
               <Button
-                body="Create Products"
+                body="Save"
                 variant="primary"
                 size="big"
                 type="submit"

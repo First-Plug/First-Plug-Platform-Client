@@ -22,6 +22,9 @@ const DynamicForm = ({
   const [attributes, setAttributes] = useState(initialValues?.attributes || []);
   const selectedCategory = watch("category");
 
+  console.log("DynamicForm selectedCategory:", selectedCategory);
+  console.log("DynamicForm attributes:", attributes);
+
   useEffect(() => {
     const newAttributes = fields.map((field) => ({
       _id: "",
@@ -30,7 +33,7 @@ const DynamicForm = ({
     }));
     setAttributes(newAttributes);
     handleAttributesChange(newAttributes);
-  }, [fields, setValue, watch, handleAttributesChange]);
+  }, [fields, watch, handleAttributesChange]);
 
   useEffect(() => {
     if (isUpdate && initialValues) {
@@ -50,18 +53,15 @@ const DynamicForm = ({
     setAttributes(updatedAttributes);
     handleAttributesChange(updatedAttributes);
 
+    setValue(fieldKey, value);
+    clearErrors(fieldKey);
     setCustomErrors((prev) => ({ ...prev, [fieldKey]: undefined }));
+
+    console.log("handleChange updatedAttributes:", updatedAttributes);
   };
 
   const getAttributeError = (key) => {
-    const attributeErrors = errors.attributes;
-    if (attributeErrors && Array.isArray(attributeErrors)) {
-      const error = attributeErrors.find(
-        (error) => error.path && error.path.includes(key)
-      );
-      return error ? error.message : null;
-    }
-    return customErrors[key] || null;
+    return errors[key]?.message || customErrors[key] || null;
   };
 
   return (
@@ -105,11 +105,6 @@ const DynamicForm = ({
                 onChange={(option) => {
                   onChange(option);
                   handleChange(field.name, option);
-                  const updatedAttributes = attributes.map((attr) =>
-                    attr.key === field.name ? { ...attr, value: option } : attr
-                  );
-                  setAttributes(updatedAttributes);
-                  handleAttributesChange(updatedAttributes);
                 }}
                 required={
                   selectedCategory !== "Merchandising" &&

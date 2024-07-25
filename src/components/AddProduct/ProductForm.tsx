@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { Button, PageLayout, SectionTitle } from "@/common";
 import { useStore } from "@/models/root.store";
@@ -56,6 +56,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     handleSubmit,
     setValue,
     clearErrors,
+    trigger,
     formState: { isSubmitting },
     watch,
   } = methods;
@@ -85,7 +86,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const validateAttributes = (attributes, category) => {
     let hasError = false;
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
     if (category !== "Merchandising") {
       const brand = attributes.find((attr) => attr.key === "brand")?.value;
       const model = attributes.find((attr) => attr.key === "model")?.value;
@@ -138,10 +139,25 @@ const ProductForm: React.FC<ProductFormProps> = ({
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
 
-    if (
-      quantity === 1 &&
-      !validateAttributes(formatData.attributes, selectedCategory)
-    ) {
+    const isAttributesValid = validateAttributes(
+      formatData.attributes,
+      selectedCategory
+    );
+
+    if (quantity === 1 && !isAttributesValid) {
+      return;
+    }
+
+    if (quantity > 1 && selectedCategory === "Merchandising" && !data.name) {
+      setCustomErrors((prevErrors) => ({
+        ...prevErrors,
+        name: "Name is required for Merchandising.",
+      }));
+      return;
+    }
+
+    const isCategoryValid = await trigger("category");
+    if (!isCategoryValid) {
       return;
     }
 
@@ -169,7 +185,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       } else {
         if (quantity > 1) {
           router.push(
-            `/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(
+            `/home/my-stock/addOneProduct/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(
               JSON.stringify(formatData)
             )}`
           );
@@ -198,27 +214,93 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
 
-  const handleNext = () => {
-    const productData = {
-      ...methods.getValues(),
-      category: selectedCategory || "Other",
-      assignedEmail: watch("assignedEmail"),
-      attributes: attributes.map((attr) => ({
-        ...AttributeModel.create(attr),
-        value:
-          attr.value ||
-          initialData?.attributes.find((ia) => ia.key === attr.key)?.value ||
-          "",
-      })),
-      serialNumber: watch("serialNumber")?.trim() || "",
-    };
+  const handleNext = async () => {
+    const data = methods.getValues();
+    console.log("handleNext data:", data);
 
+    // Asegúrate de que los atributos están correctamente en el array de attributes
+    const updatedAttributes = attributes.map((attr) =>
+      AttributeModel.create({
+        key: attr.key,
+        value: watch(attr.key),
+        _id: attr._id || "",
+      })
+    );
+
+    data.attributes = cast(updatedAttributes);
+
+    console.log("Updated data with attributes:", data);
+
+    // Validar atributos manualmente
+    let hasError = false;
+    const attributeErrors: Record<string, string> = {};
+
+    if (data.category !== "Merchandising") {
+      const brand = data.attributes.find((attr) => attr.key === "brand")?.value;
+      const model = data.attributes.find((attr) => attr.key === "model")?.value;
+
+      console.log("brand:", brand);
+      console.log("model:", model);
+
+      if (!brand) {
+        attributeErrors["brand"] = "Brand is required.";
+        hasError = true;
+        methods.setError("attributes", {
+          type: "manual",
+          message: "Brand is required.",
+        });
+      }
+      if (!model) {
+        attributeErrors["model"] = "Model is required.";
+        hasError = true;
+        methods.setError("attributes", {
+          type: "manual",
+          message: "Model is required.",
+        });
+      }
+    }
+
+    if (data.category === "Merchandising" && !data.name) {
+      attributeErrors["name"] = "Name is required for Merchandising.";
+      hasError = true;
+      methods.setError("name", {
+        type: "manual",
+        message: "Name is required for Merchandising.",
+      });
+    }
+
+    console.log("attributeErrors:", attributeErrors);
+    setCustomErrors(attributeErrors);
+
+    const isValid = await trigger(["category", "name"]);
+    console.log("isValid:", isValid);
+    console.log("hasError:", hasError);
+    if (!isValid || hasError) {
+      return;
+    }
+
+    const productData = {
+      ...data,
+      category: watch("category"),
+      assignedEmail: watch("assignedEmail"),
+      attributes: watch("attributes"),
+      serialNumber: watch("serialNumber"),
+    };
+    console.log("productData:", productData);
+
+    // Corregir la URL de redirección
     router.push(
       `/home/my-stock/addOneProduct/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(
         JSON.stringify(productData)
       )}`
     );
   };
+
+  useEffect(() => {
+    if (quantity > 1) {
+      clearErrors(["assignedEmail", "assignedMember", "location", "name"]);
+    }
+  }, [quantity, clearErrors]);
 
   return (
     <FormProvider {...methods}>
@@ -282,7 +364,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 className="rounded lg"
                 size="big"
                 onClick={handleSubmit(handleSaveProduct)}
-                disabled={quantity > 1 ? true : isSubmitting}
+                disabled={isSubmitting}
               />
             )}
           </aside>
