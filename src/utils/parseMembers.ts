@@ -1,20 +1,11 @@
 import { CreateMemberZodModel, CsvMember } from "@/types";
 function convertToISODate(inputDate: string): string {
-  // Dividir la cadena de entrada en componentes de día, mes y año
-  const [day, month, year] = inputDate.split("/");
-
-  // Reordenar los componentes en el formato YYYY-MM-DD
+  const [month, day, year] = inputDate.split("/");
   const formattedDate = `${year}-${month}-${day}`;
-
-  // Crear una nueva instancia de Date usando la cadena reordenada
   const date = new Date(formattedDate);
-
-  // Verificar si la fecha es válida
   if (isNaN(date.getTime())) {
     throw new Error("Invalid date format");
   }
-
-  // Convertir la fecha a una cadena en formato ISO
   return date.toISOString();
 }
 
