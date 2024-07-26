@@ -95,9 +95,10 @@ const BulkCreateForm = () => {
     let isValid = true;
     for (let index = 0; index < numProducts; index++) {
       const assignedEmail = data[`assignedEmail_${index}`];
+      const assignedMember = data[`assignedMember_${index}`];
       const location = data[`location_${index}`];
 
-      if (!assignedEmail) {
+      if (!assignedEmail && assignedMember !== "None") {
         methods.setError(`assignedEmail_${index}`, {
           type: "manual",
           message: "Assigned Email is required",

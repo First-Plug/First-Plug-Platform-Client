@@ -84,7 +84,7 @@ export class ProductServices {
   ): Promise<Product[]> {
     const response = await HTTPRequests.post(
       `${BASE_URL}/api/products/bulkcreate`,
-      { products }
+      products
     );
     return response.data;
   }
