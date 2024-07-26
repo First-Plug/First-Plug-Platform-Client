@@ -46,7 +46,7 @@ const BulkCreateForm = () => {
     Array(numProducts).fill(false)
   );
   const [selectedLocations, setSelectedLocations] = useState<string[]>(
-    Array(numProducts).fill("")
+    Array(numProducts).fill("Location")
   );
 
   useEffect(() => {
@@ -89,6 +89,31 @@ const BulkCreateForm = () => {
       return newIsLocationEnabled;
     });
     clearErrors([`assignedEmail_${index}`, `location_${index}`]);
+  };
+
+  const validateData = async (data: any) => {
+    let isValid = true;
+    for (let index = 0; index < numProducts; index++) {
+      const assignedEmail = data[`assignedEmail_${index}`];
+      const location = data[`location_${index}`];
+
+      if (!assignedEmail) {
+        methods.setError(`assignedEmail_${index}`, {
+          type: "manual",
+          message: "Assigned Email is required",
+        });
+        isValid = false;
+      }
+
+      if (!location) {
+        methods.setError(`location_${index}`, {
+          type: "manual",
+          message: "Location is required",
+        });
+        isValid = false;
+      }
+    }
+    return isValid;
   };
 
   const handleBulkCreate = async (data: any) => {
@@ -139,8 +164,9 @@ const BulkCreateForm = () => {
 
   const onSubmit = async (data: any) => {
     const isValid = await trigger();
+    const isDataValid = await validateData(data);
 
-    if (!isValid) {
+    if (!isValid || !isDataValid) {
       return;
     }
 

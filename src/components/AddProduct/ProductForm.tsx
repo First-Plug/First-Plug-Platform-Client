@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
+import { getSnapshot } from "mobx-state-tree";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -195,6 +196,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             )}`
           );
         } else {
+          console.log("Create product:", formatData);
           await ProductServices.createProduct(formatData);
           setAlert("createProduct");
         }
@@ -224,23 +226,48 @@ const ProductForm: React.FC<ProductFormProps> = ({
     console.log("handleNext data:", data);
 
     const updatedAttributes = attributes.map((attr) =>
-      AttributeModel.create({
-        key: attr.key,
-        value: watch(attr.key),
-        _id: attr._id || "",
-      })
+      getSnapshot(
+        AttributeModel.create({
+          key: attr.key,
+          value: watch(attr.key),
+          _id: attr._id || "",
+        })
+      )
     );
 
-    data.attributes = cast(updatedAttributes);
+    // Formatear los datos como en handleSaveProduct
+    const formattedData = {
+      ...emptyProduct,
+      ...data,
+      status:
+        data.assignedEmail || data.assignedMember ? "Delivered" : "Available",
+      category: selectedCategory || "Other",
+      assignedEmail: data.assignedEmail,
+      attributes: updatedAttributes,
+      serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
+    };
+
+    Object.keys(formattedData).forEach((key) => {
+      if (
+        key !== "attributes" &&
+        formattedData.attributes.find((attr) => attr.key === key)
+      ) {
+        delete formattedData[key];
+      }
+    });
 
     console.log("Updated data with attributes:", data);
 
     let hasError = false;
     const attributeErrors: Record<string, string> = {};
 
-    if (data.category !== "Merchandising") {
-      const brand = data.attributes.find((attr) => attr.key === "brand")?.value;
-      const model = data.attributes.find((attr) => attr.key === "model")?.value;
+    if (formattedData.category !== "Merchandising") {
+      const brand = formattedData.attributes.find(
+        (attr) => attr.key === "brand"
+      )?.value;
+      const model = formattedData.attributes.find(
+        (attr) => attr.key === "model"
+      )?.value;
 
       console.log("brand:", brand);
       console.log("model:", model);
@@ -263,7 +290,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       }
     }
 
-    if (data.category === "Merchandising" && !data.name) {
+    if (formattedData.category === "Merchandising" && !formattedData.name) {
       attributeErrors["name"] = "Name is required for Merchandising.";
       hasError = true;
       methods.setError("name", {
@@ -286,12 +313,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
 
     const productData = {
-      ...data,
-      category: watch("category"),
-      assignedEmail: watch("assignedEmail"),
-      attributes: watch("attributes"),
-      serialNumber: watch("serialNumber"),
+      ...formattedData,
     };
+
     console.log("productData:", productData);
     router.push(
       `/home/my-stock/addOneProduct/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(
