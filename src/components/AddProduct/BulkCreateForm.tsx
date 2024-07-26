@@ -9,8 +9,8 @@ import { DropdownInputProductForm } from "@/components/AddProduct/DropDownProduc
 import { InputProductForm } from "@/components/AddProduct/InputProductForm";
 import { ProductServices } from "@/services/product.services";
 import { Memberservices } from "@/services";
-import { Instance } from "mobx-state-tree";
-import { TeamMemberModel } from "@/types";
+import { cast, Instance } from "mobx-state-tree";
+import { AttributeModel, TeamMemberModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 
 const BulkCreateForm = () => {
@@ -104,11 +104,24 @@ const BulkCreateForm = () => {
         location: data[`location_${index}`],
         serialNumber: data[`serialNumber_${index}`],
         status,
-        attributes: initialData.attributes || [],
+        attributes: cast(
+          initialData.attributes?.map((attr: any) => {
+            const value = data[attr.key];
+            return {
+              ...attr,
+              value: value !== undefined ? value : attr.value,
+            };
+          }) || []
+        ),
       };
     });
 
     console.log("productsData", productsData);
+
+    const isCategoryValid = await trigger("category");
+    if (!isCategoryValid) {
+      return;
+    }
 
     try {
       // Asegúrate de que productsData es un array

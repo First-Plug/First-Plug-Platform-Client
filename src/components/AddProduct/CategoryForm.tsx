@@ -161,6 +161,17 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     clearErrors("assignedEmail");
   };
 
+  useEffect(() => {
+    if (quantity > 1) {
+      setValue("assignedMember", "");
+      setValue("assignedEmail", "");
+      setSelectedAssignedMember("");
+      setValue("location", "");
+      setSelectedLocation("");
+      clearErrors(["assignedEmail", "assignedMember", "location", "name"]);
+    }
+  }, [quantity, clearErrors, setValue]);
+
   if (loading) {
     return (
       <div className="h-full w-full flex flex-col gap-2">
