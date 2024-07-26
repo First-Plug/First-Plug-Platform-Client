@@ -105,7 +105,7 @@ const BulkCreateForm = () => {
         isValid = false;
       }
 
-      if (!location) {
+      if (!location || location === "Location") {
         methods.setError(`location_${index}`, {
           type: "manual",
           message: "Location is required",
@@ -208,7 +208,7 @@ const BulkCreateForm = () => {
                   </div>
                   <div className="w-full">
                     {watch(`assignedMember_${index}`) === "None" ||
-                    watch(`assignedMember_${index}`) === "" ? (
+                    !watch(`assignedMember_${index}`) ? (
                       <>
                         <DropdownInputProductForm
                           options={["Our office", "FP warehouse"]}
