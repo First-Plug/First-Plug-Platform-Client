@@ -181,7 +181,6 @@ const BulkCreateForm = () => {
     <FormProvider {...methods}>
       <PageLayout>
         <SectionTitle>Assign Members</SectionTitle>
-        {/* <ProductDetail product={initialData} /> */}
         <div className="h-full w-full overflow-y-auto scrollbar-custom pr-4">
           <form onSubmit={handleSubmit(onSubmit)}>
             {Array.from({ length: numProducts }, (_, index) => (
