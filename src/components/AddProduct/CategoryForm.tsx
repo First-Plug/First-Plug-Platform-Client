@@ -168,7 +168,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       setSelectedAssignedMember("");
       setValue("location", "");
       setSelectedLocation("");
-      clearErrors(["assignedEmail", "assignedMember", "location", "name"]);
+      clearErrors(["assignedEmail", "assignedMember", "location"]);
     }
   }, [quantity, clearErrors, setValue]);
 

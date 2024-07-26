@@ -57,7 +57,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setValue,
     clearErrors,
     trigger,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
     watch,
   } = methods;
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -156,8 +156,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
       return;
     }
 
+    console.log("Trigger category validation");
     const isCategoryValid = await trigger("category");
+    console.log("Category validation result:", isCategoryValid);
+
     if (!isCategoryValid) {
+      console.log("Category is not valid");
+      console.log("Errors:", errors);
       return;
     }
 
@@ -218,7 +223,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const data = methods.getValues();
     console.log("handleNext data:", data);
 
-    // Crear los atributos utilizando el modelo correcto
     const updatedAttributes = attributes.map((attr) =>
       AttributeModel.create({
         key: attr.key,
@@ -231,7 +235,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     console.log("Updated data with attributes:", data);
 
-    // Validar atributos manualmente
     let hasError = false;
     const attributeErrors: Record<string, string> = {};
 
@@ -268,13 +271,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
         message: "Name is required for Merchandising.",
       });
     }
+
     console.log("attributeErrors:", attributeErrors);
     setCustomErrors(attributeErrors);
 
-    const isValid = await trigger(["category", "name"]);
-    console.log("isValid:", isValid);
+    console.log("Trigger category validation for Next");
+    const isCategoryValid = await trigger("category");
+    console.log("Category validation result for Next:", isCategoryValid);
+    console.log("Errors:", errors);
     console.log("hasError:", hasError);
-    if (!isValid || hasError) {
+    if (!isCategoryValid || hasError) {
+      console.log("Category is not valid for Next");
       return;
     }
 
@@ -286,7 +293,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       serialNumber: watch("serialNumber"),
     };
     console.log("productData:", productData);
-    // Corregir la URL de redirección
     router.push(
       `/home/my-stock/addOneProduct/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(
         JSON.stringify(productData)
@@ -296,7 +302,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   useEffect(() => {
     if (quantity > 1) {
-      clearErrors(["assignedEmail", "assignedMember", "location", "name"]);
+      clearErrors(["assignedEmail", "assignedMember", "location"]);
     }
   }, [quantity, clearErrors]);
 

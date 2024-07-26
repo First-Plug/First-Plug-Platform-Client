@@ -124,7 +124,6 @@ const BulkCreateForm = () => {
     }
 
     try {
-      // Asegúrate de que productsData es un array
       if (Array.isArray(productsData)) {
         await ProductServices.bulkCreateProducts(productsData);
         router.push("/home/my-stock");
