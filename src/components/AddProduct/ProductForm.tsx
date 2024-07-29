@@ -167,16 +167,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       return;
     }
 
-    // console.log("Trigger category validation");
-    // const isCategoryValid = await trigger("category");
-    // console.log("Category validation result:", isCategoryValid);
-
-    // if (!isCategoryValid) {
-    //   console.log("Category is not valid");
-    //   console.log("Errors:", errors);
-    //   return;
-    // }
-
     const isCategoryValid = await validateCategory();
     if (!isCategoryValid) return;
 
@@ -317,16 +307,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     const isCategoryValid = await validateCategory();
     if (!isCategoryValid || hasError) return;
-
-    // console.log("Trigger category validation for Next");
-    // const isCategoryValid = await trigger("category");
-    // console.log("Category validation result for Next:", isCategoryValid);
-    // console.log("Errors:", errors);
-    // console.log("hasError:", hasError);
-    // if (!isCategoryValid || hasError) {
-    //   console.log("Category is not valid for Next");
-    //   return;
-    // }
 
     const productData = {
       ...formattedData,
