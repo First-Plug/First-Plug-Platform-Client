@@ -12,6 +12,7 @@ import { Memberservices } from "@/services";
 import { cast, Instance } from "mobx-state-tree";
 import { AttributeModel, TeamMemberModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
+import { useStore } from "@/models";
 
 const BulkCreateForm = () => {
   const router = useRouter();
@@ -21,6 +22,10 @@ const BulkCreateForm = () => {
 
   const numProducts = quantity ? parseInt(quantity as string, 10) : 0;
   const initialData = productData ? JSON.parse(productData as string) : {};
+
+  const {
+    alerts: { setAlert },
+  } = useStore();
 
   const methods = useForm({
     defaultValues: initialData,
@@ -152,7 +157,8 @@ const BulkCreateForm = () => {
     try {
       if (Array.isArray(productsData)) {
         await ProductServices.bulkCreateProducts(productsData);
-        router.push("/home/my-stock");
+        setAlert("bulkCreateProductSuccess");
+        // router.push("/home/my-stock");
       } else {
         throw new Error(
           "El formato de los datos de los productos no es un array."
@@ -160,6 +166,11 @@ const BulkCreateForm = () => {
       }
     } catch (error) {
       console.error("Error creating products:", error);
+      if (error.response?.data?.message === "Serial Number already exists") {
+        setAlert("bulkCreateSerialNumberError");
+      } else {
+        setAlert("bulkCreateProductError");
+      }
     }
   };
 
@@ -182,12 +193,12 @@ const BulkCreateForm = () => {
     <FormProvider {...methods}>
       <PageLayout>
         <SectionTitle>Assign Members</SectionTitle>
-        <div className="h-full w-full overflow-y-auto scrollbar-custom pr-4">
+        <div className="h-[70vh] w-full overflow-y-auto scrollbar-custom pr-4">
           <form onSubmit={handleSubmit(onSubmit)}>
             {Array.from({ length: numProducts }, (_, index) => (
               <div key={index} className="mb-4">
                 <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
                   <div className="w-full">
                     <DropdownInputProductForm
                       options={assignedEmailOptions}

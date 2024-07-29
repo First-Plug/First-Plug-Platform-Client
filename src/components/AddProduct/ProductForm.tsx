@@ -85,6 +85,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
     [isUpdate, setValue]
   );
 
+  const validateCategory = async () => {
+    const isCategoryValid = await trigger("category");
+    if (!isCategoryValid) {
+      console.log("Category is not valid");
+      console.log("Errors:", errors);
+      return false;
+    }
+    return true;
+  };
+
   const validateAttributes = (attributes, category) => {
     let hasError = false;
     const newErrors: Record<string, string> = {};
@@ -152,20 +162,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
     if (quantity > 1 && selectedCategory === "Merchandising" && !data.name) {
       setCustomErrors((prevErrors) => ({
         ...prevErrors,
-        name: "Name is required for Merchandising.",
+        name: "Name is required for this category.",
       }));
       return;
     }
 
-    console.log("Trigger category validation");
-    const isCategoryValid = await trigger("category");
-    console.log("Category validation result:", isCategoryValid);
+    // console.log("Trigger category validation");
+    // const isCategoryValid = await trigger("category");
+    // console.log("Category validation result:", isCategoryValid);
 
-    if (!isCategoryValid) {
-      console.log("Category is not valid");
-      console.log("Errors:", errors);
-      return;
-    }
+    // if (!isCategoryValid) {
+    //   console.log("Category is not valid");
+    //   console.log("Errors:", errors);
+    //   return;
+    // }
+
+    const isCategoryValid = await validateCategory();
+    if (!isCategoryValid) return;
 
     try {
       if (isUpdate && initialData) {
@@ -291,26 +304,29 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
 
     if (formattedData.category === "Merchandising" && !formattedData.name) {
-      attributeErrors["name"] = "Name is required for Merchandising.";
+      attributeErrors["name"] = "Name is required for this category.";
       hasError = true;
       methods.setError("name", {
         type: "manual",
-        message: "Name is required for Merchandising.",
+        message: "Name is required for this category.",
       });
     }
 
     console.log("attributeErrors:", attributeErrors);
     setCustomErrors(attributeErrors);
 
-    console.log("Trigger category validation for Next");
-    const isCategoryValid = await trigger("category");
-    console.log("Category validation result for Next:", isCategoryValid);
-    console.log("Errors:", errors);
-    console.log("hasError:", hasError);
-    if (!isCategoryValid || hasError) {
-      console.log("Category is not valid for Next");
-      return;
-    }
+    const isCategoryValid = await validateCategory();
+    if (!isCategoryValid || hasError) return;
+
+    // console.log("Trigger category validation for Next");
+    // const isCategoryValid = await trigger("category");
+    // console.log("Category validation result for Next:", isCategoryValid);
+    // console.log("Errors:", errors);
+    // console.log("hasError:", hasError);
+    // if (!isCategoryValid || hasError) {
+    //   console.log("Category is not valid for Next");
+    //   return;
+    // }
 
     const productData = {
       ...formattedData,

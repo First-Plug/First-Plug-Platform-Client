@@ -26,5 +26,8 @@ export const ALERTS_TYPES = [
   "ErorPasswordChange",
   "missingBrandOrModel",
   "errorDeleteTeamWithMembers",
+  "bulkCreateProductSuccess",
+  "bulkCreateProductError",
+  "bulkCreateSerialNumberError",
 ] as const;
 export type AlertType = (typeof ALERTS_TYPES)[number];
