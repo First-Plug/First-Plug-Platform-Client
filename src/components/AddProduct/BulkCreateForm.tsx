@@ -131,7 +131,7 @@ const BulkCreateForm = () => {
       return {
         ...initialData,
         assignedEmail: data[`assignedEmail_${index}`],
-        assignedMember: data[`assignedMember_${index}`],
+        // assignedMember: data[`assignedMember_${index}`],
         location: data[`location_${index}`],
         serialNumber: data[`serialNumber_${index}`],
         status,
@@ -147,8 +147,6 @@ const BulkCreateForm = () => {
       };
     });
 
-    console.log("productsData", productsData);
-
     const isCategoryValid = await trigger("category");
     if (!isCategoryValid) {
       return;
@@ -158,14 +156,12 @@ const BulkCreateForm = () => {
       if (Array.isArray(productsData)) {
         await ProductServices.bulkCreateProducts(productsData);
         setAlert("bulkCreateProductSuccess");
-        // router.push("/home/my-stock");
       } else {
         throw new Error(
           "El formato de los datos de los productos no es un array."
         );
       }
     } catch (error) {
-      console.error("Error creating products:", error);
       if (error.response?.data?.message === "Serial Number already exists") {
         setAlert("bulkCreateSerialNumberError");
       } else {

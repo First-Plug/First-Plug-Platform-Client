@@ -88,8 +88,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const validateCategory = async () => {
     const isCategoryValid = await trigger("category");
     if (!isCategoryValid) {
-      console.log("Category is not valid");
-      console.log("Errors:", errors);
       return false;
     }
     return true;
@@ -199,7 +197,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
             )}`
           );
         } else {
-          console.log("Create product:", formatData);
           await ProductServices.createProduct(formatData);
           setAlert("createProduct");
         }
@@ -226,8 +223,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const handleNext = async () => {
     const data = methods.getValues();
-    console.log("handleNext data:", data);
-
     const updatedAttributes = attributes.map((attr) =>
       getSnapshot(
         AttributeModel.create({
@@ -238,7 +233,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       )
     );
 
-    // Formatear los datos como en handleSaveProduct
     const formattedData = {
       ...emptyProduct,
       ...data,
@@ -259,8 +253,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       }
     });
 
-    console.log("Updated data with attributes:", data);
-
     let hasError = false;
     const attributeErrors: Record<string, string> = {};
 
@@ -271,9 +263,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       const model = formattedData.attributes.find(
         (attr) => attr.key === "model"
       )?.value;
-
-      console.log("brand:", brand);
-      console.log("model:", model);
 
       if (!brand) {
         attributeErrors["brand"] = "Brand is required.";
@@ -301,8 +290,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
         message: "Name is required for this category.",
       });
     }
-
-    console.log("attributeErrors:", attributeErrors);
     setCustomErrors(attributeErrors);
 
     const isCategoryValid = await validateCategory();
@@ -311,8 +298,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const productData = {
       ...formattedData,
     };
-
-    console.log("productData:", productData);
     router.push(
       `/home/my-stock/addOneProduct/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(
         JSON.stringify(productData)

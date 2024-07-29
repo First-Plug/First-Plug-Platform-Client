@@ -22,9 +22,6 @@ const DynamicForm = ({
   const [attributes, setAttributes] = useState(initialValues?.attributes || []);
   const selectedCategory = watch("category");
 
-  console.log("DynamicForm selectedCategory:", selectedCategory);
-  console.log("DynamicForm attributes:", attributes);
-
   useEffect(() => {
     const newAttributes = fields.map((field) => ({
       _id: "",
@@ -56,8 +53,6 @@ const DynamicForm = ({
     setValue(fieldKey, value);
     clearErrors(fieldKey);
     setCustomErrors((prev) => ({ ...prev, [fieldKey]: undefined }));
-
-    console.log("handleChange updatedAttributes:", updatedAttributes);
   };
 
   const getAttributeError = (key) => {

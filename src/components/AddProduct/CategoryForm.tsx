@@ -75,7 +75,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 ? assignedEmail
                 : "None"
             );
-            setValue("assignedMember", assignedMember);
+            setValue("assignedMember", assignedMember ? assignedMember : "");
 
             setAssignedEmail(selectedMember?.email || assignedEmail || "");
 
