@@ -303,21 +303,29 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         </div>
       ) : (
         <>
-          <div className="flex items-center">
-            <DropdownInputProductForm
-              options={CATEGORIES}
-              placeholder="Category"
-              title="Category*"
-              name="category"
-              selectedOption={selectedCategory}
-              onChange={(category: Category) => {
-                handleCategoryChange(category);
-                clearErrors("category");
-              }}
-              required="required"
-            />
-
-            <div>
+          <div className="flex items-start">
+            <div className="flex flex-col w-1/4">
+              <DropdownInputProductForm
+                options={CATEGORIES}
+                placeholder="Category"
+                title="Category*"
+                name="category"
+                selectedOption={selectedCategory}
+                onChange={(category: Category) => {
+                  handleCategoryChange(category);
+                  clearErrors("category");
+                }}
+                required="required"
+              />
+              <div className="min-h-[24px]">
+                {errors.category && (
+                  <p className="text-red-500">
+                    {(errors.category as any).message}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="ml-4">
               <QuantityCounter quantity={quantity} setQuantity={setQuantity} />
             </div>
           </div>
