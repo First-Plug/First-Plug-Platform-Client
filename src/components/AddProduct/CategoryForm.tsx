@@ -184,7 +184,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   return (
     <div className="w-full">
       {isUpdate ? (
-        <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <div className="w-full lg:w-full">
             <DropdownInputProductForm
               options={CATEGORIES}
