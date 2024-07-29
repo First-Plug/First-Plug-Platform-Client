@@ -13,6 +13,7 @@ import { cast, Instance } from "mobx-state-tree";
 import { AttributeModel, TeamMemberModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
+import { BarLoader } from "../Loader/BarLoader";
 
 const BulkCreateForm = () => {
   const router = useRouter();
@@ -182,13 +183,21 @@ const BulkCreateForm = () => {
   };
 
   if (!quantity || !productData || loading) {
-    return <div>Loading...</div>;
+    return (
+      <div>
+        <BarLoader />
+      </div>
+    );
   }
 
   return (
     <FormProvider {...methods}>
       <PageLayout>
-        <SectionTitle>Assign Members</SectionTitle>
+        <SectionTitle>Assign Members to</SectionTitle>
+        <div className="w-1/2">
+          <ProductDetail product={initialData} />
+        </div>
+
         <div className="h-[70vh] w-full overflow-y-auto scrollbar-custom pr-4">
           <form onSubmit={handleSubmit(onSubmit)}>
             {Array.from({ length: numProducts }, (_, index) => (
