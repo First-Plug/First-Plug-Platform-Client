@@ -54,6 +54,7 @@ const BulkCreateForm = () => {
   const [selectedLocations, setSelectedLocations] = useState<string[]>(
     Array(numProducts).fill("Location")
   );
+  const [assignAll, setAssignAll] = useState(false);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -94,7 +95,32 @@ const BulkCreateForm = () => {
       newIsLocationEnabled[index] = selectedFullName === "None";
       return newIsLocationEnabled;
     });
+
     clearErrors([`assignedEmail_${index}`, `location_${index}`]);
+
+    if (assignAll && index === 0) {
+      for (let i = 1; i < numProducts; i++) {
+        setValue(`assignedEmail_${i}`, email);
+        setValue(`assignedMember_${i}`, selectedFullName);
+        setValue(`location_${i}`, newSelectedLocations[index]);
+        setIsLocationEnabled((prev) => {
+          const newIsLocationEnabled = [...prev];
+          newIsLocationEnabled[i] = selectedFullName === "None";
+          return newIsLocationEnabled;
+        });
+        clearErrors([`assignedEmail_${i}`, `location_${i}`]);
+      }
+    }
+  };
+
+  const handleLocationChange = (value: string, index: number) => {
+    setValue(`location_${index}`, value);
+    if (assignAll) {
+      for (let i = 0; i < numProducts; i++) {
+        setValue(`location_${i}`, value);
+        clearErrors([`location_${i}`]);
+      }
+    }
   };
 
   const validateData = async (data: any) => {
@@ -107,7 +133,7 @@ const BulkCreateForm = () => {
       if (!assignedEmail && assignedMember !== "None") {
         methods.setError(`assignedEmail_${index}`, {
           type: "manual",
-          message: "Assigned Email is required",
+          message: "Assigned Member is required",
         });
         isValid = false;
       }
@@ -190,15 +216,59 @@ const BulkCreateForm = () => {
     );
   }
 
+  const handleAssignAllChange = () => {
+    setAssignAll(!assignAll);
+    const firstAssignedEmail = watch(`assignedEmail_0`);
+    const firstAssignedMember = watch(`assignedMember_0`);
+    const firstLocation = watch(`location_0`);
+    if (!assignAll) {
+      for (let index = 1; index < numProducts; index++) {
+        setValue(`assignedEmail_${index}`, firstAssignedEmail);
+        setValue(`assignedMember_${index}`, firstAssignedMember);
+        setValue(`location_${index}`, firstLocation);
+        setIsLocationEnabled((prev) => {
+          const newIsLocationEnabled = [...prev];
+          newIsLocationEnabled[index] = firstAssignedMember === "None";
+          return newIsLocationEnabled;
+        });
+        clearErrors([`assignedEmail_${index}`, `location_${index}`]);
+      }
+    } else {
+      for (let index = 1; index < numProducts; index++) {
+        setValue(`assignedEmail_${index}`, "");
+        setValue(`assignedMember_${index}`, "");
+        setValue(`location_${index}`, "Location");
+        setIsLocationEnabled((prev) => {
+          const newIsLocationEnabled = [...prev];
+          newIsLocationEnabled[index] = true;
+          return newIsLocationEnabled;
+        });
+      }
+    }
+  };
+
   return (
     <FormProvider {...methods}>
       <PageLayout>
-        <SectionTitle>Assign Members to</SectionTitle>
-        <div className="w-1/2">
-          <ProductDetail product={initialData} />
+        <SectionTitle>Assign Member to each product</SectionTitle>
+        <div className="flex justify-between">
+          <div className="w-1/2">
+            <ProductDetail product={initialData} />
+          </div>
+          <div className="w-1/2 p-4">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                className="mr-2"
+                checked={assignAll}
+                onChange={handleAssignAllChange}
+              />
+              Assign all products at once
+            </label>
+          </div>
         </div>
 
-        <div className="h-[70vh] w-full overflow-y-auto scrollbar-custom pr-4">
+        <div className="h-[60vh] w-full overflow-y-auto scrollbar-custom pr-4">
           <form onSubmit={handleSubmit(onSubmit)}>
             {Array.from({ length: numProducts }, (_, index) => (
               <div key={index} className="mb-4">
@@ -239,6 +309,7 @@ const BulkCreateForm = () => {
                             setSelectedLocations(newSelectedLocations);
                             setValue(`location_${index}`, value);
                             clearErrors(`location_${index}`);
+                            handleLocationChange(value, index);
                           }}
                           required="required"
                           className="w-full"
@@ -284,13 +355,22 @@ const BulkCreateForm = () => {
               </div>
             ))}
             <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
-              <Button
-                body="Save"
-                variant="primary"
-                size="big"
-                type="submit"
-                disabled={isSubmitting}
-              />
+              <div className="flex space-x-2">
+                <Button
+                  body="Back"
+                  variant="secondary"
+                  className="rounded lg"
+                  size="big"
+                  onClick={() => router.back()}
+                />
+                <Button
+                  body="Save"
+                  variant="primary"
+                  size="big"
+                  type="submit"
+                  disabled={isSubmitting}
+                />
+              </div>
             </aside>
           </form>
         </div>
