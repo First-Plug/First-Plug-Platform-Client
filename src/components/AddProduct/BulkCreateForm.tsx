@@ -103,6 +103,7 @@ const BulkCreateForm = () => {
         setValue(`assignedEmail_${i}`, email);
         setValue(`assignedMember_${i}`, selectedFullName);
         setValue(`location_${i}`, newSelectedLocations[index]);
+        newSelectedLocations[i] = newSelectedLocations[index];
         setIsLocationEnabled((prev) => {
           const newIsLocationEnabled = [...prev];
           newIsLocationEnabled[i] = selectedFullName === "None";
@@ -110,16 +111,22 @@ const BulkCreateForm = () => {
         });
         clearErrors([`assignedEmail_${i}`, `location_${i}`]);
       }
+      setSelectedLocations(newSelectedLocations);
     }
   };
 
   const handleLocationChange = (value: string, index: number) => {
     setValue(`location_${index}`, value);
+    const newSelectedLocations = [...selectedLocations];
+    newSelectedLocations[index] = value;
+    setSelectedLocations(newSelectedLocations);
     if (assignAll) {
       for (let i = 0; i < numProducts; i++) {
         setValue(`location_${i}`, value);
+        newSelectedLocations[i] = value;
         clearErrors([`location_${i}`]);
       }
+      setSelectedLocations(newSelectedLocations); // Actualiza el estado aquí también
     }
   };
 
@@ -222,10 +229,12 @@ const BulkCreateForm = () => {
     const firstAssignedMember = watch(`assignedMember_0`);
     const firstLocation = watch(`location_0`);
     if (!assignAll) {
+      const newSelectedLocations = [...selectedLocations];
       for (let index = 1; index < numProducts; index++) {
         setValue(`assignedEmail_${index}`, firstAssignedEmail);
         setValue(`assignedMember_${index}`, firstAssignedMember);
         setValue(`location_${index}`, firstLocation);
+        newSelectedLocations[index] = firstLocation;
         setIsLocationEnabled((prev) => {
           const newIsLocationEnabled = [...prev];
           newIsLocationEnabled[index] = firstAssignedMember === "None";
@@ -233,7 +242,7 @@ const BulkCreateForm = () => {
         });
         clearErrors([`assignedEmail_${index}`, `location_${index}`]);
       }
-    } else {
+      setSelectedLocations(newSelectedLocations);
       for (let index = 1; index < numProducts; index++) {
         setValue(`assignedEmail_${index}`, "");
         setValue(`assignedMember_${index}`, "");
