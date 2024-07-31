@@ -24,7 +24,6 @@ import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
-import { getSnapshot } from "mobx-state-tree";
 import BulkCreateForm from "./BulkCreateForm";
 
 interface ProductFormProps {
@@ -45,7 +44,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   initialData,
   isUpdate = false,
 }) => {
-  console.log("Initial Data in ProductForm:", initialData);
   const {
     aside: { setAside },
     alerts: { setAlert },
@@ -76,6 +74,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [attributes, setAttributes] = useState(initialData?.attributes || []);
   const [customErrors, setCustomErrors] = useState({});
   const [showBulkCreate, setShowBulkCreate] = useState(false);
+  const [bulkInitialData, setBulkInitialData] = useState<Product | undefined>(
+    initialData
+  );
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -195,6 +196,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       } else {
         if (quantity > 1) {
           console.log("Format Data before Bulk Create:", formatData);
+          setBulkInitialData(formatData);
           setShowBulkCreate(true);
         } else {
           await ProductServices.createProduct(formatData);
@@ -223,27 +225,32 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const handleNext = async () => {
     const data = methods.getValues();
-    const updatedAttributes = attributes.map((attr) =>
-      getSnapshot(
-        AttributeModel.create({
-          key: attr.key,
-          value: watch(attr.key),
-          _id: attr._id || "",
-        })
-      )
-    );
-
-    const formattedData = {
+    const finalAssignedEmail = watch("assignedEmail");
+    const formattedData: Product = {
       ...emptyProduct,
       ...data,
       status:
-        data.assignedEmail || data.assignedMember ? "Delivered" : "Available",
+        finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
-      assignedEmail: data.assignedEmail,
-      attributes: updatedAttributes,
+      assignedEmail: finalAssignedEmail,
+      attributes: cast(
+        attributes.map((attr) => {
+          const initialAttr = initialData?.attributes.find(
+            (ia) => ia.key === attr.key
+          );
+          return {
+            ...AttributeModel.create(attr),
+            value:
+              attr.value !== ""
+                ? attr.value
+                : initialAttr
+                ? initialAttr.value
+                : attr.value,
+          };
+        })
+      ),
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
-
     Object.keys(formattedData).forEach((key) => {
       if (
         key !== "attributes" &&
@@ -295,8 +302,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const isCategoryValid = await validateCategory();
     if (!isCategoryValid || hasError) return;
 
-    console.log("Formatted Data before Bulk Create:", formattedData);
-
+    setBulkInitialData(formattedData);
     setShowBulkCreate(true);
   };
 
@@ -376,7 +382,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
               </aside>
             </>
           ) : (
-            <BulkCreateForm initialData={initialData} quantity={quantity} />
+            <BulkCreateForm
+              initialData={bulkInitialData}
+              quantity={quantity}
+              onBack={() => setShowBulkCreate(false)}
+            />
           )}
         </div>
         <div className="z-50">

@@ -9,13 +9,8 @@ import { DropdownInputProductForm } from "@/components/AddProduct/DropDownProduc
 import { InputProductForm } from "@/components/AddProduct/InputProductForm";
 import { ProductServices } from "@/services/product.services";
 import { Memberservices } from "@/services";
-import { cast, getSnapshot, Instance, types } from "mobx-state-tree";
-import {
-  AttributeModel,
-  Product,
-  ProductModel,
-  TeamMemberModel,
-} from "@/types";
+import { getSnapshot, Instance } from "mobx-state-tree";
+import { AttributeModel, ProductModel, TeamMemberModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
@@ -23,8 +18,8 @@ import { BarLoader } from "../Loader/BarLoader";
 const BulkCreateForm: React.FC<{
   initialData: any;
   quantity: number;
-}> = ({ initialData, quantity }) => {
-  console.log("Initial Data:", initialData);
+  onBack: () => void;
+}> = ({ initialData, quantity, onBack }) => {
   const router = useRouter();
 
   const numProducts = quantity;
@@ -411,7 +406,7 @@ const BulkCreateForm: React.FC<{
                   variant="secondary"
                   className="rounded lg"
                   size="big"
-                  onClick={() => router.back()}
+                  onClick={onBack}
                 />
                 <Button
                   body="Save"
