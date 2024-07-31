@@ -9,6 +9,14 @@ export default function PrdouctModelDetail({
   if (!product) return null;
   const { attributes } = product;
 
+  if (!attributes) {
+    return (
+      <div>
+        <span>No attributes available</span>
+      </div>
+    );
+  }
+
   const CATEGORY_KEYS: Record<Category, readonly Key[]> = {
     Merchandising: [],
     Computer: ["processor", "ram", "storage", "screen"],
@@ -23,7 +31,8 @@ export default function PrdouctModelDetail({
   );
 
   const getValue = (key: Key) => {
-    return attributesToShow.filter((at) => at.key === key)[0]?.value;
+    const attribute = attributesToShow.find((at) => at.key === key);
+    return attribute ? attribute.value : "-";
   };
 
   return (
@@ -33,10 +42,10 @@ export default function PrdouctModelDetail({
       ) : (
         <div className="flex gap-1 text-md ">
           <span className="font-semibold">
-            {product.attributes.filter((at) => at.key === "brand")[0].value}
+            {attributes.filter((at) => at.key === "brand")[0]?.value || "-"}
           </span>
-          <span className=" font-normal">
-            {product.attributes.filter((at) => at.key === "model")[0].value}
+          <span className="font-normal">
+            {attributes.filter((at) => at.key === "model")[0]?.value || "-"}
           </span>
         </div>
       )}
@@ -44,9 +53,9 @@ export default function PrdouctModelDetail({
         {categoryKeys
           .filter((c) => c !== "brand" && c !== "model")
           .map((cat) => (
-            <div className="flex flex-col gap-1  font-normal  " key={cat}>
-              <span className="">{cat} </span>
-              <span className=" -mt-1">{getValue(cat) || "-"}</span>
+            <div className="flex flex-col gap-1 font-normal" key={cat}>
+              <span>{cat} </span>
+              <span className="-mt-1">{getValue(cat)}</span>
             </div>
           ))}
       </div>
