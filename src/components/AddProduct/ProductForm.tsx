@@ -25,6 +25,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
 import { getSnapshot } from "mobx-state-tree";
+import BulkCreateForm from "./BulkCreateForm";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -44,6 +45,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   initialData,
   isUpdate = false,
 }) => {
+  console.log("Initial Data in ProductForm:", initialData);
   const {
     aside: { setAside },
     alerts: { setAlert },
@@ -73,6 +75,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   );
   const [attributes, setAttributes] = useState(initialData?.attributes || []);
   const [customErrors, setCustomErrors] = useState({});
+  const [showBulkCreate, setShowBulkCreate] = useState(false);
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -191,11 +194,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
         setAside(undefined);
       } else {
         if (quantity > 1) {
-          router.push(
-            `/home/my-stock/addOneProduct/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(
-              JSON.stringify(formatData)
-            )}`
-          );
+          console.log("Format Data before Bulk Create:", formatData);
+          setShowBulkCreate(true);
         } else {
           await ProductServices.createProduct(formatData);
           setAlert("createProduct");
@@ -295,14 +295,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const isCategoryValid = await validateCategory();
     if (!isCategoryValid || hasError) return;
 
-    const productData = {
-      ...formattedData,
-    };
-    router.push(
-      `/home/my-stock/addOneProduct/bulkCreate?quantity=${quantity}&productData=${encodeURIComponent(
-        JSON.stringify(productData)
-      )}`
-    );
+    console.log("Formatted Data before Bulk Create:", formattedData);
+
+    setShowBulkCreate(true);
   };
 
   useEffect(() => {
@@ -315,68 +310,74 @@ const ProductForm: React.FC<ProductFormProps> = ({
     <FormProvider {...methods}>
       <PageLayout>
         <div className="h-full w-full">
-          <div className="absolute h-[90%] w-[80%] overflow-y-auto scrollbar-custom pr-4">
-            <div className="px-4 py-2 rounded-3xl border">
-              <SectionTitle className="text-[20px]">
-                {isUpdate ? "" : "Add Product"}
-              </SectionTitle>
-              <section>
-                <div className="flex items-center">
-                  <CategoryForm
-                    handleCategoryChange={handleCategoryChange}
-                    selectedCategory={selectedCategory}
-                    setAssignedEmail={(email) =>
-                      setValue("assignedEmail", email)
-                    }
-                    formState={methods.getValues()}
-                    clearErrors={
-                      clearErrors as (name?: string | string[]) => void
-                    }
-                    isUpdate={isUpdate}
-                    quantity={quantity}
-                    setQuantity={setQuantity}
-                  />
-                </div>
-              </section>
-            </div>
-            {selectedCategory && (
-              <div className="flex flex-col lg:flex:row gap-4 max-h-[100%] h-[90%] w-full mt-4">
-                <div className="px-4 py-6 rounded-3xl border overflow-y-auto max-h-[500px] pb-40 scrollbar-custom">
+          {!showBulkCreate ? (
+            <>
+              <div className="absolute h-[90%] w-[80%] overflow-y-auto scrollbar-custom pr-4">
+                <div className="px-4 py-2 rounded-3xl border">
+                  <SectionTitle className="text-[20px]">
+                    {isUpdate ? "" : "Add Product"}
+                  </SectionTitle>
                   <section>
-                    <DynamicForm
-                      fields={FormConfig.fields}
-                      handleAttributesChange={setAttributes}
-                      isUpdate={isUpdate}
-                      initialValues={initialData}
-                      customErrors={customErrors}
-                      setCustomErrors={setCustomErrors}
-                    />
+                    <div className="flex items-center">
+                      <CategoryForm
+                        handleCategoryChange={handleCategoryChange}
+                        selectedCategory={selectedCategory}
+                        setAssignedEmail={(email) =>
+                          setValue("assignedEmail", email)
+                        }
+                        formState={methods.getValues()}
+                        clearErrors={
+                          clearErrors as (name?: string | string[]) => void
+                        }
+                        isUpdate={isUpdate}
+                        quantity={quantity}
+                        setQuantity={setQuantity}
+                      />
+                    </div>
                   </section>
                 </div>
+                {selectedCategory && (
+                  <div className="flex flex-col lg:flex:row gap-4 max-h-[100%] h-[90%] w-full mt-4">
+                    <div className="px-4 py-6 rounded-3xl border overflow-y-auto max-h-[500px] pb-40 scrollbar-custom">
+                      <section>
+                        <DynamicForm
+                          fields={FormConfig.fields}
+                          handleAttributesChange={setAttributes}
+                          isUpdate={isUpdate}
+                          initialValues={initialData}
+                          customErrors={customErrors}
+                          setCustomErrors={setCustomErrors}
+                        />
+                      </section>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
-            {quantity > 1 ? (
-              <Button
-                body="Next"
-                variant="secondary"
-                className="rounded lg"
-                size="big"
-                onClick={handleNext}
-                disabled={quantity <= 1}
-              />
-            ) : (
-              <Button
-                body={isUpdate ? "Update" : "Save"}
-                variant="primary"
-                className="rounded lg"
-                size="big"
-                onClick={handleSubmit(handleSaveProduct)}
-                disabled={isSubmitting}
-              />
-            )}
-          </aside>
+              <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
+                {quantity > 1 ? (
+                  <Button
+                    body="Next"
+                    variant="secondary"
+                    className="rounded lg"
+                    size="big"
+                    onClick={handleNext}
+                    disabled={quantity <= 1}
+                  />
+                ) : (
+                  <Button
+                    body={isUpdate ? "Update" : "Save"}
+                    variant="primary"
+                    className="rounded lg"
+                    size="big"
+                    onClick={handleSubmit(handleSaveProduct)}
+                    disabled={isSubmitting}
+                  />
+                )}
+              </aside>
+            </>
+          ) : (
+            <BulkCreateForm initialData={initialData} quantity={quantity} />
+          )}
         </div>
         <div className="z-50">
           <GenericAlertDialog

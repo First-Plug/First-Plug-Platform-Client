@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { observer } from "mobx-react-lite";
 import { Button, PageLayout, SectionTitle } from "@/common";
@@ -9,27 +9,66 @@ import { DropdownInputProductForm } from "@/components/AddProduct/DropDownProduc
 import { InputProductForm } from "@/components/AddProduct/InputProductForm";
 import { ProductServices } from "@/services/product.services";
 import { Memberservices } from "@/services";
-import { cast, Instance } from "mobx-state-tree";
-import { AttributeModel, TeamMemberModel } from "@/types";
+import { cast, getSnapshot, Instance, types } from "mobx-state-tree";
+import {
+  AttributeModel,
+  Product,
+  ProductModel,
+  TeamMemberModel,
+} from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
 
-const BulkCreateForm = () => {
+const BulkCreateForm: React.FC<{
+  initialData: any;
+  quantity: number;
+}> = ({ initialData, quantity }) => {
+  console.log("Initial Data:", initialData);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const quantity = searchParams.get("quantity");
-  const productData = searchParams.get("productData");
 
-  const numProducts = quantity ? parseInt(quantity as string, 10) : 0;
-  const initialData = productData ? JSON.parse(productData as string) : {};
+  const numProducts = quantity;
+
+  const attributesArray = initialData.attributes.map((attr) =>
+    AttributeModel.create({
+      _id: attr._id,
+      key: attr.key,
+      value: attr.value || "",
+    })
+  );
+
+  const initialProductData = {
+    _id: initialData._id || "new_id",
+    name: initialData.name || "",
+    category: initialData.category || "Other",
+    attributes: attributesArray,
+    status: initialData.status || "Available",
+    deleted: initialData.deleted || false,
+    recoverable:
+      initialData.recoverable !== undefined ? initialData.recoverable : true,
+    acquisitionDate: initialData.acquisitionDate || "",
+    createdAt: initialData.createdAt || "",
+    updatedAt: initialData.updatedAt || "",
+    deletedAt: initialData.deletedAt || null,
+    location: initialData.location || "",
+    assignedEmail: initialData.assignedEmail || "",
+    assignedMember: initialData.assignedMember || "",
+    serialNumber: initialData.serialNumber || "",
+    lastAssigned: initialData.lastAssigned || "",
+  };
+
+  const productInstance = ProductModel.create(initialProductData);
 
   const {
     alerts: { setAlert },
   } = useStore();
 
   const methods = useForm({
-    defaultValues: initialData,
+    defaultValues: {
+      products: Array.from({ length: numProducts }, () =>
+        getSnapshot(productInstance)
+      ),
+    },
   });
 
   const {
@@ -63,8 +102,7 @@ const BulkCreateForm = () => {
       const memberFullNames = [
         "None",
         ...fetchedMembers.map(
-          (member: Instance<typeof TeamMemberModel>) =>
-            `${member.firstName} ${member.lastName}`
+          (member) => `${member.firstName} ${member.lastName}`
         ),
       ];
       setAssignedEmailOptions(memberFullNames);
@@ -82,13 +120,13 @@ const BulkCreateForm = () => {
       (member) => `${member.firstName} ${member.lastName}` === selectedFullName
     );
     const email = selectedMember?.email || "";
-    setValue(`assignedEmail_${index}`, email);
-    setValue(`assignedMember_${index}`, selectedFullName);
+    setValue(`products.${index}.assignedEmail`, email);
+    setValue(`products.${index}.assignedMember`, selectedFullName);
 
     const newSelectedLocations = [...selectedLocations];
     newSelectedLocations[index] = selectedFullName === "None" ? "" : "Employee";
     setSelectedLocations(newSelectedLocations);
-    setValue(`location_${index}`, newSelectedLocations[index]);
+    setValue(`products.${index}.location`, newSelectedLocations[index]);
 
     setIsLocationEnabled((prev) => {
       const newIsLocationEnabled = [...prev];
@@ -96,49 +134,52 @@ const BulkCreateForm = () => {
       return newIsLocationEnabled;
     });
 
-    clearErrors([`assignedEmail_${index}`, `location_${index}`]);
+    clearErrors([
+      `products.${index}.assignedEmail`,
+      `products.${index}.location`,
+    ]);
 
     if (assignAll && index === 0) {
       for (let i = 1; i < numProducts; i++) {
-        setValue(`assignedEmail_${i}`, email);
-        setValue(`assignedMember_${i}`, selectedFullName);
-        setValue(`location_${i}`, newSelectedLocations[index]);
+        setValue(`products.${i}.assignedEmail`, email);
+        setValue(`products.${i}.assignedMember`, selectedFullName);
+        setValue(`products.${i}.location`, newSelectedLocations[index]);
         newSelectedLocations[i] = newSelectedLocations[index];
         setIsLocationEnabled((prev) => {
           const newIsLocationEnabled = [...prev];
           newIsLocationEnabled[i] = selectedFullName === "None";
           return newIsLocationEnabled;
         });
-        clearErrors([`assignedEmail_${i}`, `location_${i}`]);
+        clearErrors([`products.${i}.assignedEmail`, `products.${i}.location`]);
       }
       setSelectedLocations(newSelectedLocations);
     }
   };
 
   const handleLocationChange = (value: string, index: number) => {
-    setValue(`location_${index}`, value);
+    setValue(`products.${index}.location`, value);
     const newSelectedLocations = [...selectedLocations];
     newSelectedLocations[index] = value;
     setSelectedLocations(newSelectedLocations);
     if (assignAll) {
       for (let i = 0; i < numProducts; i++) {
-        setValue(`location_${i}`, value);
+        setValue(`products.${i}.location`, value);
         newSelectedLocations[i] = value;
-        clearErrors([`location_${i}`]);
+        clearErrors([`products.${i}.location`]);
       }
-      setSelectedLocations(newSelectedLocations); // Actualiza el estado aquí también
+      setSelectedLocations(newSelectedLocations);
     }
   };
 
   const validateData = async (data: any) => {
     let isValid = true;
     for (let index = 0; index < numProducts; index++) {
-      const assignedEmail = data[`assignedEmail_${index}`];
-      const assignedMember = data[`assignedMember_${index}`];
-      const location = data[`location_${index}`];
+      const assignedEmail = data.products[index].assignedEmail;
+      const assignedMember = data.products[index].assignedMember;
+      const location = data.products[index].location;
 
       if (!assignedEmail && assignedMember !== "None") {
-        methods.setError(`assignedEmail_${index}`, {
+        methods.setError(`products.${index}.assignedEmail`, {
           type: "manual",
           message: "Assigned Member is required",
         });
@@ -146,7 +187,7 @@ const BulkCreateForm = () => {
       }
 
       if (!location || location === "Location") {
-        methods.setError(`location_${index}`, {
+        methods.setError(`products.${index}.location`, {
           type: "manual",
           message: "Location is required",
         });
@@ -157,31 +198,22 @@ const BulkCreateForm = () => {
   };
 
   const handleBulkCreate = async (data: any) => {
-    const productsData = Array.from({ length: numProducts }, (_, index) => {
-      const assignedMember = data[`assignedMember_${index}`];
-      const location = data[`location_${index}`];
+    const productsData = data.products.map((productData: any) => {
+      const assignedMember = productData.assignedMember;
+      const location = productData.location;
       const status = assignedMember === "None" ? "Available" : "Delivered";
 
       return {
-        ...initialData,
-        assignedEmail: data[`assignedEmail_${index}`],
-        // assignedMember: data[`assignedMember_${index}`],
-        location: data[`location_${index}`],
-        serialNumber: data[`serialNumber_${index}`],
+        ...initialProductData,
+        assignedEmail: productData.assignedEmail,
+        location: productData.location,
+        serialNumber: productData.serialNumber,
         status,
-        attributes: cast(
-          initialData.attributes?.map((attr: any) => {
-            const value = data[attr.key];
-            return {
-              ...attr,
-              value: value !== undefined ? value : attr.value,
-            };
-          }) || []
-        ),
+        attributes: productData.attributes,
       };
     });
 
-    const isCategoryValid = await trigger("category");
+    const isCategoryValid = await trigger("products.0.category");
     if (!isCategoryValid) {
       return;
     }
@@ -215,7 +247,7 @@ const BulkCreateForm = () => {
     handleBulkCreate(data);
   };
 
-  if (!quantity || !productData || loading) {
+  if (loading) {
     return (
       <div>
         <BarLoader />
@@ -225,28 +257,32 @@ const BulkCreateForm = () => {
 
   const handleAssignAllChange = () => {
     setAssignAll(!assignAll);
-    const firstAssignedEmail = watch(`assignedEmail_0`);
-    const firstAssignedMember = watch(`assignedMember_0`);
-    const firstLocation = watch(`location_0`);
+    const firstAssignedEmail = watch(`products.0.assignedEmail`);
+    const firstAssignedMember = watch(`products.0.assignedMember`);
+    const firstLocation = watch(`products.0.location`);
     if (!assignAll) {
       const newSelectedLocations = [...selectedLocations];
       for (let index = 1; index < numProducts; index++) {
-        setValue(`assignedEmail_${index}`, firstAssignedEmail);
-        setValue(`assignedMember_${index}`, firstAssignedMember);
-        setValue(`location_${index}`, firstLocation);
+        setValue(`products.${index}.assignedEmail`, firstAssignedEmail);
+        setValue(`products.${index}.assignedMember`, firstAssignedMember);
+        setValue(`products.${index}.location`, firstLocation);
         newSelectedLocations[index] = firstLocation;
         setIsLocationEnabled((prev) => {
           const newIsLocationEnabled = [...prev];
           newIsLocationEnabled[index] = firstAssignedMember === "None";
           return newIsLocationEnabled;
         });
-        clearErrors([`assignedEmail_${index}`, `location_${index}`]);
+        clearErrors([
+          `products.${index}.assignedEmail`,
+          `products.${index}.location`,
+        ]);
       }
       setSelectedLocations(newSelectedLocations);
+    } else {
       for (let index = 1; index < numProducts; index++) {
-        setValue(`assignedEmail_${index}`, "");
-        setValue(`assignedMember_${index}`, "");
-        setValue(`location_${index}`, "Location");
+        setValue(`products.${index}.assignedEmail`, "");
+        setValue(`products.${index}.assignedMember`, "");
+        setValue(`products.${index}.location`, "Location");
         setIsLocationEnabled((prev) => {
           const newIsLocationEnabled = [...prev];
           newIsLocationEnabled[index] = true;
@@ -262,7 +298,7 @@ const BulkCreateForm = () => {
         <SectionTitle>Assign Member to each product</SectionTitle>
         <div className="flex justify-between">
           <div className="w-1/2">
-            <ProductDetail product={initialData} />
+            <ProductDetail product={initialProductData} />
           </div>
           <div className="w-1/2 p-4">
             <label className="flex items-center">
@@ -288,36 +324,37 @@ const BulkCreateForm = () => {
                       options={assignedEmailOptions}
                       placeholder="Assigned Member"
                       title="Assigned Member*"
-                      name={`assignedMember_${index}`}
-                      selectedOption={watch(`assignedMember_${index}`)}
+                      name={`products.${index}.assignedMember`}
+                      selectedOption={watch(`products.${index}.assignedMember`)}
                       onChange={(selectedFullName: string) =>
                         handleAssignedMemberChange(selectedFullName, index)
                       }
                     />
                     <div className="min-h-[24px]">
-                      {errors[`assignedEmail_${index}`] && (
-                        <p className="text-red-500">
-                          {(errors[`assignedEmail_${index}`] as any).message}
-                        </p>
-                      )}
+                      {errors.products &&
+                        errors.products[index]?.assignedEmail && (
+                          <p className="text-red-500">
+                            {errors.products[index].assignedEmail.message}
+                          </p>
+                        )}
                     </div>
                   </div>
                   <div className="w-full">
-                    {watch(`assignedMember_${index}`) === "None" ||
-                    !watch(`assignedMember_${index}`) ? (
+                    {watch(`products.${index}.assignedMember`) === "None" ||
+                    !watch(`products.${index}.assignedMember`) ? (
                       <>
                         <DropdownInputProductForm
                           options={["Our office", "FP warehouse"]}
                           placeholder="Location"
                           title="Location*"
-                          name={`location_${index}`}
+                          name={`products.${index}.location`}
                           selectedOption={selectedLocations[index]}
                           onChange={(value: string) => {
                             const newSelectedLocations = [...selectedLocations];
                             newSelectedLocations[index] = value;
                             setSelectedLocations(newSelectedLocations);
-                            setValue(`location_${index}`, value);
-                            clearErrors(`location_${index}`);
+                            setValue(`products.${index}.location`, value);
+                            clearErrors(`products.${index}.location`);
                             handleLocationChange(value, index);
                           }}
                           required="required"
@@ -325,11 +362,12 @@ const BulkCreateForm = () => {
                           disabled={!isLocationEnabled[index]}
                         />
                         <div className="min-h-[24px]">
-                          {errors[`location_${index}`] && (
-                            <p className="text-red-500">
-                              {(errors[`location_${index}`] as any).message}
-                            </p>
-                          )}
+                          {errors.products &&
+                            errors.products[index]?.location && (
+                              <p className="text-red-500">
+                                {errors.products[index].location.message}
+                              </p>
+                            )}
                         </div>
                       </>
                     ) : (
@@ -337,10 +375,10 @@ const BulkCreateForm = () => {
                         placeholder="Location"
                         title="Location"
                         type="text"
-                        name={`location_${index}`}
+                        name={`products.${index}.location`}
                         value="Employee"
                         onChange={(e) =>
-                          setValue(`location_${index}`, e.target.value)
+                          setValue(`products.${index}.location`, e.target.value)
                         }
                         className="w-full"
                         readOnly
@@ -352,10 +390,13 @@ const BulkCreateForm = () => {
                       placeholder="Serial Number"
                       title="Serial Number"
                       type="text"
-                      name={`serialNumber_${index}`}
-                      value={watch(`serialNumber_${index}`)}
+                      name={`products.${index}.serialNumber`}
+                      value={watch(`products.${index}.serialNumber`)}
                       onChange={(e) =>
-                        setValue(`serialNumber_${index}`, e.target.value)
+                        setValue(
+                          `products.${index}.serialNumber`,
+                          e.target.value
+                        )
                       }
                       className="w-full"
                     />
