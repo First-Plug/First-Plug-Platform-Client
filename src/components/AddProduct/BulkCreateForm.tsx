@@ -280,7 +280,7 @@ const BulkCreateForm: React.FC<{
         setValue(`products.${index}.location`, "Location");
         setIsLocationEnabled((prev) => {
           const newIsLocationEnabled = [...prev];
-          newIsLocationEnabled[index] = true;
+          newIsLocationEnabled[index] = false;
           return newIsLocationEnabled;
         });
       }
@@ -295,7 +295,7 @@ const BulkCreateForm: React.FC<{
           <div className="w-1/2">
             <ProductDetail product={initialProductData} />
           </div>
-          <div className="w-1/2 p-4">
+          <div className="w-1/2 p-4 mt-2">
             <label className="flex items-center">
               <input
                 type="checkbox"
