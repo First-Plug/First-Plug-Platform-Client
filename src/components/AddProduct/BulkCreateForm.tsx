@@ -283,7 +283,12 @@ const BulkCreateForm: React.FC<{
           newIsLocationEnabled[index] = false;
           return newIsLocationEnabled;
         });
+        clearErrors([
+          `products.${index}.assignedEmail`,
+          `products.${index}.location`,
+        ]);
       }
+      setSelectedLocations(Array(numProducts).fill("Location"));
     }
   };
 
