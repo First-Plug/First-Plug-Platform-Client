@@ -57,7 +57,13 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
                       placeholder={field.placeholder}
                       title={field.title}
                       value={controllerField.value || ""}
-                      onChange={controllerField.onChange}
+                      onChange={(e) =>
+                        field.name === "dni"
+                          ? controllerField.onChange(
+                              parseInt(e.target.value, 10)
+                            )
+                          : controllerField.onChange(e.target.value)
+                      }
                       allowFutureDates={false}
                     />
                     <div className="min-h-[24px]">
