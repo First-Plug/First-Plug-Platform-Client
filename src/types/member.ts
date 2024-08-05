@@ -87,7 +87,7 @@ export const zodCreateMembertModel = z.object({
   birthDate: z.string().trim().optional(),
   products: z.array(zodCreateProductModel).optional(),
   team: z.string().trim().optional(),
-  dni: z.number().int().positive().optional(),
+  dni: z.union([z.number().int().positive().optional(), z.literal("")]),
 });
 
 export type CreateMemberZodModel = z.infer<typeof zodCreateMembertModel>;

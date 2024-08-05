@@ -60,7 +60,9 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
                       onChange={(e) =>
                         field.name === "dni"
                           ? controllerField.onChange(
-                              parseInt(e.target.value, 10)
+                              e.target.value !== ""
+                                ? parseInt(e.target.value, 10)
+                                : undefined
                             )
                           : controllerField.onChange(e.target.value)
                       }
