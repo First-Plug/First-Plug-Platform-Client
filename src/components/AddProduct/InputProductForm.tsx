@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 
 interface InputProps {
   title: string;
@@ -13,6 +13,7 @@ interface InputProps {
   allowFutureDates?: boolean;
   disabled?: boolean;
   readOnly?: boolean;
+  disabledValue?: string;
 }
 
 export function InputProductForm({
@@ -26,12 +27,20 @@ export function InputProductForm({
   allowFutureDates = true,
   disabled = false,
   readOnly = false,
+  disabledValue = "",
 }: InputProps) {
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange && onChange(e);
   };
+  const [inputValue, setInputValue] = React.useState<string>(value);
 
   const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    if (disabled) {
+      setInputValue(disabledValue);
+    }
+  }, [disabled, disabledValue]);
 
   return (
     <div className={`relative ${className}`}>

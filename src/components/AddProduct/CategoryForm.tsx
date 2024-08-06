@@ -267,6 +267,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 onChange={(e) => handleInputChange("location", e.target.value)}
                 className="w-full"
                 readOnly={selectedLocation === "Employee"}
+                disabled={!isLocationEnabled && !isUpdate}
+                disabledValue=""
               />
             )}
           </div>
@@ -422,6 +424,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   }
                   className="w-full"
                   readOnly={selectedLocation === "Employee"}
+                  disabled={!isLocationEnabled && quantity > 1}
+                  disabledValue=""
                 />
               )}
             </div>
