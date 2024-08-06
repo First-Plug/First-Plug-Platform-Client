@@ -177,8 +177,9 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   useEffect(() => {
     if (selectedModel !== "Other") {
       setValue("name", "");
+      clearErrors("name");
     }
-  }, [selectedModel, setValue]);
+  }, [selectedModel, setValue, clearErrors]);
 
   if (loading) {
     return (

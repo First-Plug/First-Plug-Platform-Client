@@ -119,10 +119,33 @@ const ProductForm: React.FC<ProductFormProps> = ({
     return !hasError;
   };
 
+  const validateProductName = async () => {
+    const attributes = watch("attributes");
+    const model = attributes.find((attr) => attr.key === "model")?.value;
+    const productName = watch("name");
+
+    if (model === "Other" && !productName) {
+      methods.setError("name", {
+        type: "manual",
+        message: "Product Name is required for this model.",
+      });
+      return false;
+    }
+
+    if (model !== "Other") {
+      clearErrors("name");
+    }
+
+    return true;
+  };
+
   const handleSaveProduct = async (data: Product) => {
     setShowSuccessDialog(false);
     setShowErrorDialog(false);
     setErrorMessage("");
+
+    const isProductNameValid = await validateProductName();
+    if (!isProductNameValid) return;
 
     const finalAssignedEmail = watch("assignedEmail");
 
@@ -224,6 +247,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
 
   const handleNext = async () => {
+    const isProductNameValid = await validateProductName();
+    if (!isProductNameValid) return;
+
     const data = methods.getValues();
     const finalAssignedEmail = watch("assignedEmail");
     const formattedData: Product = {
