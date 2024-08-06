@@ -59,6 +59,8 @@ const DynamicForm = ({
     return errors[key]?.message || customErrors[key] || null;
   };
 
+  // const selectedModel = attributes.find((attr) => attr.key === "model")?.value;
+
   return (
     <div
       className={`grid gap-4 ${
@@ -117,6 +119,21 @@ const DynamicForm = ({
           </div>
         </div>
       ))}
+      {/* {selectedModel === "Other" && (
+        <div className="w-full">
+          <InputProductForm
+            name="name"
+            type="text"
+            value={watch("name") as string}
+            onChange={(e) => {
+              setValue("name", e.target.value);
+              clearErrors("name");
+            }}
+            placeholder="Product Name"
+            title="Product Name"
+          />
+        </div>
+      )} */}
     </div>
   );
 };

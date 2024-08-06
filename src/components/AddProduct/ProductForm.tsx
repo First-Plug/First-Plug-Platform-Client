@@ -125,6 +125,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setErrorMessage("");
 
     const finalAssignedEmail = watch("assignedEmail");
+    // const attributes = watch("attributes") || [];
+    // const selectedModel = attributes.find(
+    //   (attr) => attr.key === "model"
+    // )?.value;
 
     const formatData: Product = {
       ...emptyProduct,
