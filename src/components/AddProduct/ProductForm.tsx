@@ -83,26 +83,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
     (category: Category | undefined) => {
       if (!isUpdate) {
         setSelectedCategory(category);
-        reset({
-          ...emptyProduct,
-          category: category || undefined,
-          recoverable: category !== "Merchandising",
-        });
-        setAssignedEmail(undefined);
+        setValue("category", category || undefined);
+        setValue("recoverable", category !== "Merchandising");
       }
     },
-    [isUpdate, reset, setSelectedCategory]
+    [isUpdate, setValue]
   );
 
-  useEffect(() => {
-    if (selectedCategory) {
-      reset({
-        ...emptyProduct,
-        category: selectedCategory || undefined,
-        recoverable: selectedCategory !== "Merchandising",
-      });
-    }
-  }, [selectedCategory, reset]);
+  // useEffect(() => {
+  //   if (selectedCategory) {
+  //     reset({
+  //       ...emptyProduct,
+  //       category: selectedCategory || undefined,
+  //       recoverable: selectedCategory !== "Merchandising",
+  //     });
+  //   }
+  // }, [selectedCategory, reset]);
 
   const validateCategory = async () => {
     const isCategoryValid = await trigger("category");
@@ -140,10 +136,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setErrorMessage("");
 
     const finalAssignedEmail = watch("assignedEmail");
-    // const attributes = watch("attributes") || [];
-    // const selectedModel = attributes.find(
-    //   (attr) => attr.key === "model"
-    // )?.value;
 
     const formatData: Product = {
       ...emptyProduct,

@@ -23,20 +23,14 @@ const DynamicForm = ({
   const selectedCategory = watch("category");
 
   useEffect(() => {
-    if (!isUpdate) {
-      fields.forEach((field) => {
-        setValue(field.name, "");
-        clearErrors(field.name);
-      });
-      const newAttributes = fields.map((field) => ({
-        _id: "",
-        key: field.name,
-        value: watch(field.name) || "",
-      }));
-      setAttributes(newAttributes);
-      handleAttributesChange(newAttributes);
-    }
-  }, [fields, watch, handleAttributesChange, isUpdate, setValue, clearErrors]);
+    const newAttributes = fields.map((field) => ({
+      _id: "",
+      key: field.name,
+      value: watch(field.name) || "",
+    }));
+    setAttributes(newAttributes);
+    handleAttributesChange(newAttributes);
+  }, [fields, watch, handleAttributesChange]);
 
   useEffect(() => {
     if (isUpdate && initialValues) {
@@ -64,8 +58,6 @@ const DynamicForm = ({
   const getAttributeError = (key) => {
     return errors[key]?.message || customErrors[key] || null;
   };
-
-  // const selectedModel = attributes.find((attr) => attr.key === "model")?.value;
 
   return (
     <div
@@ -125,21 +117,6 @@ const DynamicForm = ({
           </div>
         </div>
       ))}
-      {/* {selectedModel === "Other" && (
-        <div className="w-full">
-          <InputProductForm
-            name="name"
-            type="text"
-            value={watch("name") as string}
-            onChange={(e) => {
-              setValue("name", e.target.value);
-              clearErrors("name");
-            }}
-            placeholder="Product Name"
-            title="Product Name"
-          />
-        </div>
-      )} */}
     </div>
   );
 };

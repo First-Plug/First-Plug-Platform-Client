@@ -14,7 +14,6 @@ interface DropdownInputProductFormProps {
   value?: string;
   disabled?: boolean;
   enableAutocomplete?: boolean;
-  disabledValue?: string;
 }
 
 export function DropdownInputProductForm({
@@ -27,7 +26,6 @@ export function DropdownInputProductForm({
   name,
   disabled,
   enableAutocomplete = true,
-  disabledValue = "",
 }: DropdownInputProductFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState<string>(selectedOption || "");
@@ -69,12 +67,6 @@ export function DropdownInputProductForm({
     );
     setIsOpen(true);
   };
-
-  useEffect(() => {
-    if (disabled) {
-      setInputValue(disabledValue);
-    }
-  }, [disabled, disabledValue]);
 
   useEffect(() => {
     if (isOpen) {
