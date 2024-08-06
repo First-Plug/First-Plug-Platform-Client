@@ -60,6 +60,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     trigger,
     formState: { isSubmitting, errors },
     watch,
+    reset,
   } = methods;
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -88,6 +89,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
     },
     [isUpdate, setValue]
   );
+
+  useEffect(() => {
+    if (selectedCategory) {
+      reset({
+        ...emptyProduct,
+        category: selectedCategory || undefined,
+        recoverable: selectedCategory !== "Merchandising",
+      });
+    }
+  }, [selectedCategory, reset]);
 
   const validateCategory = async () => {
     const isCategoryValid = await trigger("category");
@@ -347,6 +358,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     <div className="px-4 py-6 rounded-3xl border overflow-y-auto max-h-[500px] pb-40 scrollbar-custom">
                       <section>
                         <DynamicForm
+                          key={selectedCategory}
                           fields={FormConfig.fields}
                           handleAttributesChange={setAttributes}
                           isUpdate={isUpdate}

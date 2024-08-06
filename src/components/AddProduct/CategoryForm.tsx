@@ -36,6 +36,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const {
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useFormContext();
   const [selectedAssignedMember, setSelectedAssignedMember] =
@@ -47,6 +48,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );
+  const selectedModel = watch("model");
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -171,6 +173,15 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       clearErrors(["assignedEmail", "assignedMember", "location"]);
     }
   }, [quantity, clearErrors, setValue]);
+
+  // useEffect(() => {
+  //   if (!isUpdate) {
+  //     reset();
+  //     setAssignedEmailOptions(["None"]);
+  //     setSelectedAssignedMember("");
+  //     setSelectedLocation("");
+  //   }
+  // }, [selectedCategory, reset, isUpdate]);
 
   if (loading) {
     return (
@@ -303,7 +314,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         </div>
       ) : (
         <>
-          <div className="flex items-start">
+          <div className="flex items-start space-x-4">
             <div className="flex flex-col w-1/4">
               <DropdownInputProductForm
                 options={CATEGORIES}
@@ -325,8 +336,33 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 )}
               </div>
             </div>
-            <div className="ml-4">
-              <QuantityCounter quantity={quantity} setQuantity={setQuantity} />
+            <div className="flex items-center space-x-4 flex-1">
+              <div className="pb-6 pr-4 pl-2">
+                <QuantityCounter
+                  quantity={quantity}
+                  setQuantity={setQuantity}
+                />
+              </div>
+
+              {selectedModel === "Other" && (
+                <div className="flex-1 ml-4">
+                  <InputProductForm
+                    placeholder="Product Name"
+                    title="Product Name*"
+                    type="text"
+                    value={watch("name") as string}
+                    name="name"
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                  />
+                  <div className="min-h-[24px]">
+                    {errors.name && (
+                      <p className="text-red-500">
+                        {(errors.name as any).message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-4 mt-4">
