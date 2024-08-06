@@ -83,12 +83,26 @@ const ProductForm: React.FC<ProductFormProps> = ({
     (category: Category | undefined) => {
       if (!isUpdate) {
         setSelectedCategory(category);
-        setValue("category", category || undefined);
-        setValue("recoverable", category !== "Merchandising");
+        reset({
+          ...emptyProduct,
+          category: category || undefined,
+          recoverable: category !== "Merchandising",
+        });
+        setAssignedEmail(undefined);
       }
     },
-    [isUpdate, setValue]
+    [isUpdate, reset, setSelectedCategory]
   );
+
+  useEffect(() => {
+    if (selectedCategory) {
+      reset({
+        ...emptyProduct,
+        category: selectedCategory || undefined,
+        recoverable: selectedCategory !== "Merchandising",
+      });
+    }
+  }, [selectedCategory, reset]);
 
   const validateCategory = async () => {
     const isCategoryValid = await trigger("category");
@@ -352,6 +366,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     <div className="px-4 py-6 rounded-3xl border overflow-y-auto max-h-[500px] pb-40 scrollbar-custom">
                       <section>
                         <DynamicForm
+                          key={selectedCategory}
                           fields={FormConfig.fields}
                           handleAttributesChange={setAttributes}
                           isUpdate={isUpdate}

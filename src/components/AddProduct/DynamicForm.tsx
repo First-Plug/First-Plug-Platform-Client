@@ -23,14 +23,20 @@ const DynamicForm = ({
   const selectedCategory = watch("category");
 
   useEffect(() => {
-    const newAttributes = fields.map((field) => ({
-      _id: "",
-      key: field.name,
-      value: watch(field.name) || "",
-    }));
-    setAttributes(newAttributes);
-    handleAttributesChange(newAttributes);
-  }, [fields, watch, handleAttributesChange]);
+    if (!isUpdate) {
+      fields.forEach((field) => {
+        setValue(field.name, "");
+        clearErrors(field.name);
+      });
+      const newAttributes = fields.map((field) => ({
+        _id: "",
+        key: field.name,
+        value: watch(field.name) || "",
+      }));
+      setAttributes(newAttributes);
+      handleAttributesChange(newAttributes);
+    }
+  }, [fields, watch, handleAttributesChange, isUpdate, setValue, clearErrors]);
 
   useEffect(() => {
     if (isUpdate && initialValues) {

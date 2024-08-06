@@ -36,6 +36,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const {
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useFormContext();
   const [selectedAssignedMember, setSelectedAssignedMember] =
@@ -163,15 +164,13 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   };
 
   useEffect(() => {
-    if (quantity > 1) {
-      setValue("assignedMember", "");
-      setValue("assignedEmail", "");
+    if (!isUpdate) {
+      reset();
+      setAssignedEmailOptions(["None"]);
       setSelectedAssignedMember("");
-      setValue("location", "");
       setSelectedLocation("");
-      clearErrors(["assignedEmail", "assignedMember", "location"]);
     }
-  }, [quantity, clearErrors, setValue]);
+  }, [selectedCategory, reset, isUpdate]);
 
   if (loading) {
     return (
@@ -248,6 +247,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   className="w-full"
                   disabled={!isLocationEnabled && !isUpdate}
                   enableAutocomplete={false}
+                  disabledValue=""
                 />
                 <div className="min-h-[24px]">
                   {errors.location && (
@@ -371,6 +371,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 className="w-full"
                 disabled={quantity > 1}
                 enableAutocomplete={false}
+                disabledValue=""
               />
               <div className="min-h-[24px]">
                 {errors.assignedEmail && (
@@ -399,6 +400,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                     className="w-full"
                     disabled={!isLocationEnabled || quantity > 1}
                     enableAutocomplete={false}
+                    disabledValue=""
                   />
                   <div className="min-h-[24px]">
                     {errors.location && (
