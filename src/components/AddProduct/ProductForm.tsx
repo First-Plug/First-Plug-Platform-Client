@@ -60,6 +60,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     trigger,
     formState: { isSubmitting, errors },
     watch,
+    reset,
   } = methods;
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);

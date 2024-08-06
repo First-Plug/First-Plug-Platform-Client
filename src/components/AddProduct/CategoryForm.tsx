@@ -36,7 +36,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const {
     setValue,
     watch,
-    reset,
     formState: { errors },
   } = useFormContext();
   const [selectedAssignedMember, setSelectedAssignedMember] =
