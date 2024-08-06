@@ -329,7 +329,6 @@ const BulkCreateForm: React.FC<{
                       onChange={(selectedFullName: string) =>
                         handleAssignedMemberChange(selectedFullName, index)
                       }
-                      enableAutocomplete={false}
                     />
                     <div className="min-h-[24px]">
                       {errors.products &&
@@ -361,7 +360,6 @@ const BulkCreateForm: React.FC<{
                           required="required"
                           className="w-full"
                           disabled={!isLocationEnabled[index]}
-                          enableAutocomplete={false}
                         />
                         <div className="min-h-[24px]">
                           {errors.products &&

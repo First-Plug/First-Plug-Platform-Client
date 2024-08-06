@@ -198,7 +198,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               }}
               required="required"
               disabled={isUpdate}
-              enableAutocomplete={false}
             />
             <div className="min-h-[24px]">
               {errors.category && (
@@ -217,7 +216,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               selectedOption={selectedAssignedMember}
               onChange={handleAssignedMemberChange}
               className="w-full "
-              enableAutocomplete={false}
             />
             <div className="min-h-[24px]">
               {errors.assignedEmail && (
@@ -246,7 +244,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   required="required"
                   className="w-full"
                   disabled={!isLocationEnabled && !isUpdate}
-                  enableAutocomplete={false}
                 />
                 <div className="min-h-[24px]">
                   {errors.location && (
@@ -319,7 +316,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   clearErrors("category");
                 }}
                 required="required"
-                enableAutocomplete={false}
               />
               <div className="min-h-[24px]">
                 {errors.category && (
@@ -344,7 +340,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 onChange={handleAssignedMemberChange}
                 className="w-full"
                 disabled={quantity > 1}
-                enableAutocomplete={false}
               />
               <div className="min-h-[24px]">
                 {errors.assignedEmail && (
@@ -372,7 +367,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                     required="required"
                     className="w-full"
                     disabled={!isLocationEnabled || quantity > 1}
-                    enableAutocomplete={false}
                   />
                   <div className="min-h-[24px]">
                     {errors.location && (

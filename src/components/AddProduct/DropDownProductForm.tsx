@@ -13,7 +13,6 @@ interface DropdownInputProductFormProps {
   name: string;
   value?: string;
   disabled?: boolean;
-  enableAutocomplete?: boolean;
 }
 
 export function DropdownInputProductForm({
@@ -25,13 +24,9 @@ export function DropdownInputProductForm({
   className,
   name,
   disabled,
-  enableAutocomplete = true,
 }: DropdownInputProductFormProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState<string>(selectedOption || "");
-  const [filteredOptions, setFilteredOptions] = useState<string[]>([
-    ...options,
-  ]);
+  const [selectedValue, setSelectedValue] = useState<string>(selectedOption);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleDropdown = () => {
@@ -43,7 +38,7 @@ export function DropdownInputProductForm({
   const handleOptionClick = (option: string) => {
     if (!disabled) {
       onChange && onChange(option);
-      setInputValue(option);
+      setSelectedValue(option);
       setIsOpen(false);
     }
   };
@@ -55,17 +50,6 @@ export function DropdownInputProductForm({
     ) {
       setIsOpen(false);
     }
-  };
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setInputValue(value);
-    setFilteredOptions(
-      options.filter((option) =>
-        option.toLowerCase().includes(value.toLowerCase())
-      )
-    );
-    setIsOpen(true);
   };
 
   useEffect(() => {
@@ -83,29 +67,16 @@ export function DropdownInputProductForm({
     <div className={`relative ${className || ""}`} ref={dropdownRef}>
       <label className="block text-dark-grey ml-2 font-sans">{title}</label>
       <div className="relative">
-        {enableAutocomplete ? (
-          <input
-            type="text"
-            value={inputValue}
-            placeholder={placeholder}
-            onClick={toggleDropdown}
-            onChange={handleInputChange}
-            className={`w-full h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border text-black p-4 font-sans focus:outline-none`}
-            name={name}
-            disabled={disabled}
-          />
-        ) : (
-          <input
-            type="text"
-            value={inputValue}
-            placeholder={placeholder}
-            readOnly
-            onClick={toggleDropdown}
-            className={`w-full h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border text-black p-4 font-sans focus:outline-none`}
-            name={name}
-            disabled={disabled}
-          />
-        )}
+        <input
+          type="text"
+          value={selectedOption || ""}
+          placeholder={placeholder}
+          readOnly
+          onClick={toggleDropdown}
+          className={`w-full h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border text-black p-4 font-sans focus:outline-none`}
+          name={name}
+          disabled={disabled}
+        />
         <div onClick={toggleDropdown}>
           <ChevronDown
             className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
@@ -119,7 +90,7 @@ export function DropdownInputProductForm({
             isOpen ? "block" : "hidden"
           }`}
         >
-          {filteredOptions.map((option) => (
+          {options.map((option) => (
             <li
               key={option}
               onClick={() => handleOptionClick(option)}
