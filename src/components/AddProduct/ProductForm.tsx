@@ -90,15 +90,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
     [isUpdate, setValue]
   );
 
-  // useEffect(() => {
-  //   if (selectedCategory) {
-  //     reset({
-  //       ...emptyProduct,
-  //       category: selectedCategory || undefined,
-  //       recoverable: selectedCategory !== "Merchandising",
-  //     });
-  //   }
-  // }, [selectedCategory, reset]);
+  useEffect(() => {
+    if (selectedCategory) {
+      reset({
+        ...emptyProduct,
+        category: selectedCategory || undefined,
+        recoverable: selectedCategory !== "Merchandising",
+      });
+    }
+  }, [selectedCategory, reset]);
 
   const validateCategory = async () => {
     const isCategoryValid = await trigger("category");
