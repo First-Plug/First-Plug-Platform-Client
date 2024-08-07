@@ -1,4 +1,4 @@
-import { Product, ProductTable } from "@/types";
+import { Product, ProductTable, CATEGORIES } from "@/types";
 import { ArrowRight, Button, ProductImage } from "@/common";
 import { ColumnDef } from "@tanstack/react-table";
 import PrdouctModelDetail from "@/common/PrdouctModelDetail";
@@ -7,13 +7,15 @@ import { RootTable } from "./RootTable";
 import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
 import "./table.css";
+
 export const productColumns: ColumnDef<ProductTable>[] = [
   {
     accessorFn: (row) => row.category,
     header: "Category",
     size: 120,
     meta: {
-      filterVariant: "select",
+      filterVariant: "custom",
+      options: CATEGORIES as unknown as string[],
     },
     cell: ({ getValue }) => (
       <div className="flex gap-2 text-lg items-center w-[150px]">
@@ -22,6 +24,7 @@ export const productColumns: ColumnDef<ProductTable>[] = [
       </div>
     ),
     footer: (props) => props.column.id,
+    enableColumnFilter: true,
   },
   {
     accessorFn: (row) => row.products,

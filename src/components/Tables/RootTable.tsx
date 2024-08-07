@@ -23,8 +23,9 @@ import {
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
-    filterVariant?: "text" | "range" | "select";
+    filterVariant?: "text" | "range" | "select" | "custom";
     filterPositon?: "inline" | "bottom";
+    options?: string[];
   }
 }
 import { Fragment, ReactNode, useState } from "react";
@@ -32,7 +33,7 @@ import { TableType } from "@/types";
 import { TableActions } from "./TableActions";
 import HeaderFilter from "./Filters/HeaderFilter";
 import { Button } from "../ui/button";
-import { ArrowLeft, ArrowRight } from "@/common";
+import { ArrowLeft, ArrowRight, DropDownArrow } from "@/common";
 import {
   Select,
   SelectContent,
@@ -41,6 +42,7 @@ import {
   SelectGroup,
   SelectTrigger,
 } from "../ui/select";
+import FilterComponent from "./Filters/FilterComponent";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -70,6 +72,8 @@ export function RootTable<TData, TValue>({
         ? 1000
         : parseInt(localStorage.getItem(tableNameRef)) || pageSize,
   });
+
+  const [filterMenuOpen, setFilterMenuOpen] = useState<string | null>(null);
   const table = useReactTable({
     data,
     columns,
@@ -135,13 +139,39 @@ export function RootTable<TData, TValue>({
                           header.column.getCanFilter() ? "" : "hidden"
                         }`}
                       >
-                        {header.column.getCanFilter() ? (
-                          <HeaderFilter
-                            column={header.column}
-                            tableType={tableType}
-                            table={table}
-                          />
-                        ) : null}
+                        {header.column.getCanFilter() && (
+                          <div className="relative">
+                            <DropDownArrow
+                              className="cursor-pointer"
+                              onClick={() =>
+                                setFilterMenuOpen(
+                                  filterMenuOpen === header.id
+                                    ? null
+                                    : header.id
+                                )
+                              }
+                            />
+                            {filterMenuOpen === header.id && (
+                              <div className="absolute top-10 left-0 z-50">
+                                <FilterComponent
+                                  options={[
+                                    ...(header.column.columnDef.meta?.options ||
+                                      []),
+                                  ]}
+                                  onChange={(newSelectedOptions) =>
+                                    setColumnFilters((prev) => [
+                                      ...prev.filter((f) => f.id !== header.id),
+                                      {
+                                        id: header.id,
+                                        value: newSelectedOptions,
+                                      },
+                                    ])
+                                  }
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </TableHead>

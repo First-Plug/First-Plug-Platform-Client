@@ -340,7 +340,12 @@ export function NotificationIcon({
   );
 }
 
-export function DropDownArrow({ className }) {
+interface DropDownArrowProps {
+  className?: string;
+  onClick?: () => void;
+}
+
+export function DropDownArrow({ className, onClick }: DropDownArrowProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -349,6 +354,7 @@ export function DropDownArrow({ className }) {
       strokeWidth={1.5}
       stroke="currentColor"
       className={`w-6 h-6 ${className || ""}`}
+      onClick={onClick}
     >
       <path
         strokeLinecap="round"
