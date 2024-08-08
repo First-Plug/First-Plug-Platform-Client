@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SearchInput } from "../../../common/SearchInput";
 
 interface FilterComponentProps {
@@ -14,13 +14,23 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
 
+  //   useEffect(() => {
+  //     if (selectAll && selectedOptions.length !== options.length) {
+  //       setSelectAll(false);
+  //     }
+  //   }, [selectedOptions, options.length, selectAll]);
+
+  //   useEffect(() => {
+  //     setFilteredOptions(options);
+  //   }, [options]);
+
   const handleSearch = (query: string) => {
     const filtered = options.filter((option) =>
       option.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredOptions(filtered);
   };
-
+  // need to check why select All is not working on Name filter
   const handleSelectAll = () => {
     const newSelectedOptions = selectAll ? [] : options;
     setSelectedOptions(newSelectedOptions);
@@ -37,15 +47,19 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     onChange(updatedSelectedOptions);
   };
 
+  const combinedOptions = Array.from(
+    new Set([...filteredOptions, ...selectedOptions])
+  );
+
   return (
-    <div className="filter-component bg-white p-6 w-64">
+    <div className="filter-component bg-white p-6 w-64 shadow-lg z-50">
       <SearchInput placeholder="Search..." onSearch={handleSearch} />
       <div className="space-x-2 mt-2">
         <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
         <label>Select All</label>
       </div>
       <div className="p-2">
-        {filteredOptions.map((option) => (
+        {combinedOptions.map((option) => (
           <div key={option} className="mt-2">
             <input
               type="checkbox"

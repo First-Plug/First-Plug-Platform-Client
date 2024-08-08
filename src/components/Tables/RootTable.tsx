@@ -10,6 +10,7 @@ import {
   RowData,
   PaginationState,
   getPaginationRowModel,
+  Row,
 } from "@tanstack/react-table";
 
 import {
@@ -25,7 +26,7 @@ declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
     filterVariant?: "text" | "range" | "select" | "custom";
     filterPositon?: "inline" | "bottom";
-    options?: string[];
+    options?: string[] | ((rows: Row<TData>[]) => string[]);
   }
 }
 import { Fragment, ReactNode, useState } from "react";
@@ -154,10 +155,15 @@ export function RootTable<TData, TValue>({
                             {filterMenuOpen === header.id && (
                               <div className="absolute top-10 left-0 z-50">
                                 <FilterComponent
-                                  options={[
-                                    ...(header.column.columnDef.meta?.options ||
-                                      []),
-                                  ]}
+                                  options={
+                                    typeof header.column.columnDef.meta
+                                      ?.options === "function"
+                                      ? header.column.columnDef.meta.options(
+                                          table.getRowModel().rows
+                                        )
+                                      : header.column.columnDef.meta?.options ||
+                                        []
+                                  }
                                   onChange={(newSelectedOptions) =>
                                     setColumnFilters((prev) => [
                                       ...prev.filter((f) => f.id !== header.id),

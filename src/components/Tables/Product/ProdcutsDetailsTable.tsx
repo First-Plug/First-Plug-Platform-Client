@@ -63,6 +63,7 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
     header: "Actions",
     size: 85,
     cell: ({ row, getValue }) => <ActionButton product={row.original} />,
+    enableColumnFilter: false,
   },
   {
     id: "actiondelete",
