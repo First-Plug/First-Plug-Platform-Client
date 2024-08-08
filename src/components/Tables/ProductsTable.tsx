@@ -40,7 +40,7 @@ export const productColumns: ColumnDef<ProductTable>[] = [
         const options = new Set<string>();
         rows.forEach((row) => {
           if (row.original.category === "Merchandising") {
-            options.add(row.original.products[0]?.name || "");
+            options.add(row.original.products[0]?.name || "No Data");
           } else {
             const brand = row.original.products[0]?.attributes.find(
               (attr) => attr.key === "brand"
@@ -50,6 +50,8 @@ export const productColumns: ColumnDef<ProductTable>[] = [
             )?.value;
             if (brand && model) {
               options.add(`${brand} ${model}`);
+            } else {
+              options.add("No Data");
             }
           }
         });
@@ -65,7 +67,7 @@ export const productColumns: ColumnDef<ProductTable>[] = [
       if (filterValue.length === 0) return true;
       const product = row.original.products[0];
       if (product.category === "Merchandising") {
-        return filterValue.includes(product.name);
+        return filterValue.includes(product.name || "No Data");
       } else {
         const brand = product.attributes.find(
           (attr) => attr.key === "brand"
@@ -73,7 +75,8 @@ export const productColumns: ColumnDef<ProductTable>[] = [
         const model = product.attributes.find(
           (attr) => attr.key === "model"
         )?.value;
-        return filterValue.includes(`${brand} ${model}`);
+        const name = brand && model ? `${brand} ${model}` : "No Data";
+        return filterValue.includes(name);
       }
     },
   },

@@ -14,15 +14,17 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
 
-  //   useEffect(() => {
-  //     if (selectAll && selectedOptions.length !== options.length) {
-  //       setSelectAll(false);
-  //     }
-  //   }, [selectedOptions, options.length, selectAll]);
+  useEffect(() => {
+    setFilteredOptions(options);
+  }, [options]);
 
-  //   useEffect(() => {
-  //     setFilteredOptions(options);
-  //   }, [options]);
+  useEffect(() => {
+    if (selectedOptions.length === options.length && options.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedOptions, options.length]);
 
   const handleSearch = (query: string) => {
     const filtered = options.filter((option) =>
@@ -30,11 +32,15 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     );
     setFilteredOptions(filtered);
   };
-  // need to check why select All is not working on Name filter
+
   const handleSelectAll = () => {
-    const newSelectedOptions = selectAll ? [] : options;
-    setSelectedOptions(newSelectedOptions);
-    onChange(newSelectedOptions);
+    if (selectAll) {
+      setSelectedOptions([]);
+      onChange([]);
+    } else {
+      setSelectedOptions(options);
+      onChange(options);
+    }
     setSelectAll(!selectAll);
   };
 
@@ -47,10 +53,6 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     onChange(updatedSelectedOptions);
   };
 
-  const combinedOptions = Array.from(
-    new Set([...filteredOptions, ...selectedOptions])
-  );
-
   return (
     <div className="filter-component bg-white p-6 w-64 shadow-lg z-50">
       <SearchInput placeholder="Search..." onSearch={handleSearch} />
@@ -59,14 +61,14 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         <label>Select All</label>
       </div>
       <div className="p-2 max-h-60 overflow-y-auto">
-        {combinedOptions.map((option) => (
+        {options.map((option) => (
           <div key={option} className="mt-2">
             <input
               type="checkbox"
               checked={selectedOptions.includes(option)}
               onChange={() => handleCheckboxChange(option)}
             />
-            <label className="ml-2 mt-2">{option}</label>
+            <label className="ml-2 mt-2">{option || "No Data"}</label>
           </div>
         ))}
       </div>
