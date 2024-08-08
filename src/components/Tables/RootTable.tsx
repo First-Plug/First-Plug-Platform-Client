@@ -153,7 +153,7 @@ export function RootTable<TData, TValue>({
                               }
                             />
                             {filterMenuOpen === header.id && (
-                              <div className="absolute top-10 left-0 z-50">
+                              <div className="absolute top-10 left-[-5rem] z-50">
                                 <FilterComponent
                                   options={
                                     typeof header.column.columnDef.meta

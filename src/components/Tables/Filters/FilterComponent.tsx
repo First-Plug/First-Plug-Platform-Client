@@ -58,7 +58,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
         <label>Select All</label>
       </div>
-      <div className="p-2">
+      <div className="p-2 max-h-60 overflow-y-auto">
         {combinedOptions.map((option) => (
           <div key={option} className="mt-2">
             <input

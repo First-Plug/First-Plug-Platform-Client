@@ -81,6 +81,7 @@ export const productColumns: ColumnDef<ProductTable>[] = [
     accessorFn: (row) => row.products,
     header: "Stock",
     size: 80,
+    enableColumnFilter: false,
     cell: ({ getValue }) => {
       const products = getValue<Product[]>().filter(
         (product) => product.status !== "Deprecated"
