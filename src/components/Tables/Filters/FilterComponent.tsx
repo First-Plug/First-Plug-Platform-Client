@@ -59,7 +59,10 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   );
 
   return (
-    <div className="filter-component bg-white p-6 w-64 shadow-lg z-50">
+    <div
+      className="filter-component bg-white p-6 w-64 shadow-lg z-50 relative"
+      style={{ zIndex: 99 }}
+    >
       <SearchInput placeholder="Search..." onSearch={handleSearch} />
       <div className="space-x-2 mt-2">
         <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />

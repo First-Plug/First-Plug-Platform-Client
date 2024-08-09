@@ -81,9 +81,8 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
       options: (rows) => {
         const options = new Set<string>();
         rows.forEach((row) => {
-          if (row.original.assignedMember) {
-            options.add(row.original.assignedMember || "No Data");
-          }
+          const assignedMember = row.original.assignedMember;
+          options.add(assignedMember || "Not Assigned");
         });
         return Array.from(options);
       },
@@ -94,7 +93,8 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
     enableColumnFilter: true,
     filterFn: (row, columnId, filterValue) => {
       if (filterValue.length === 0) return true;
-      return filterValue.includes(row.getValue(columnId) || "No Data");
+      const assignedMember = row.getValue(columnId) || "Not Assigned";
+      return filterValue.includes(assignedMember);
     },
   },
   {
