@@ -14,17 +14,13 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
 
-  useEffect(() => {
-    setFilteredOptions(options);
-  }, [options]);
-
-  useEffect(() => {
-    if (selectedOptions.length === options.length && options.length > 0) {
-      setSelectAll(true);
-    } else {
-      setSelectAll(false);
-    }
-  }, [selectedOptions, options.length]);
+  //   useEffect(() => {
+  //     if (selectedOptions.length === options.length && options.length > 0) {
+  //       setSelectAll(true);
+  //     } else {
+  //       setSelectAll(false);
+  //     }
+  //   }, [selectedOptions, options]);
 
   const handleSearch = (query: string) => {
     const filtered = options.filter((option) =>
@@ -38,8 +34,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
       setSelectedOptions([]);
       onChange([]);
     } else {
-      setSelectedOptions(options);
-      onChange(options);
+      const allOptions = Array.from(new Set([...filteredOptions, ...options]));
+      setSelectedOptions(allOptions);
+      onChange(allOptions);
     }
     setSelectAll(!selectAll);
   };
@@ -51,7 +48,15 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
     setSelectedOptions(updatedSelectedOptions);
     onChange(updatedSelectedOptions);
+
+    if (updatedSelectedOptions.length !== options.length) {
+      setSelectAll(false);
+    }
   };
+
+  const combinedOptions = Array.from(
+    new Set([...filteredOptions, ...selectedOptions])
+  );
 
   return (
     <div className="filter-component bg-white p-6 w-64 shadow-lg z-50">
@@ -61,7 +66,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         <label>Select All</label>
       </div>
       <div className="p-2 max-h-60 overflow-y-auto">
-        {options.map((option) => (
+        {combinedOptions.map((option) => (
           <div key={option} className="mt-2">
             <input
               type="checkbox"
