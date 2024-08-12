@@ -29,10 +29,10 @@ declare module "@tanstack/react-table" {
     options?: string[] | ((rows: Row<TData>[]) => string[]);
   }
 }
-import { Fragment, ReactNode, useState } from "react";
+import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
 import { TableType } from "@/types";
 import { TableActions } from "./TableActions";
-import HeaderFilter from "./Filters/HeaderFilter";
+// import HeaderFilter from "./Filters/HeaderFilter";
 import { Button } from "../ui/button";
 import { ArrowLeft, ArrowRight, DropDownArrow } from "@/common";
 import {
@@ -75,6 +75,13 @@ export function RootTable<TData, TValue>({
   });
 
   const [filterMenuOpen, setFilterMenuOpen] = useState<string | null>(null);
+  const [filterOptions, setFilterOptions] = useState<string[]>([]);
+  const [filterPosition, setFilterPosition] = useState<{
+    top: number;
+    left: number;
+  }>({ top: 0, left: 0 });
+  const filterIconRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
   const table = useReactTable({
     data,
     columns,
@@ -100,8 +107,50 @@ export function RootTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const handleFilterIconClick = (
+    headerId: string,
+    options: string[],
+    event: React.MouseEvent
+  ) => {
+    if (filterMenuOpen === headerId) {
+      setFilterMenuOpen(null);
+      return;
+    }
+
+    const headerElement =
+      filterIconRefs.current[headerId]?.getBoundingClientRect();
+    const tableElement =
+      filterIconRefs.current[headerId]?.offsetParent?.getBoundingClientRect();
+
+    if (headerElement && tableElement) {
+      setFilterPosition({
+        top: headerElement.bottom - tableElement.top,
+        left: headerElement.left - tableElement.left,
+      });
+    }
+
+    setFilterOptions(options);
+    setFilterMenuOpen(headerId);
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      filterMenuOpen &&
+      !filterIconRefs.current[filterMenuOpen]?.contains(event.target as Node)
+    ) {
+      setFilterMenuOpen(null);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [filterMenuOpen]);
+
   return (
-    <div className="h-full flex-grow  flex flex-col  gap-1 relative   ">
+    <div className="relative h-full flex-grow  flex flex-col  gap-1   ">
       {tableType !== "subRow" && (
         <div className="   max-h-[50%]  flex items-center   ">
           <TableActions table={table} type={tableType} />
@@ -141,19 +190,36 @@ export function RootTable<TData, TValue>({
                         }`}
                       >
                         {header.column.getCanFilter() && (
-                          <div className="relative">
+                          <div
+                            className="relative"
+                            ref={(el) =>
+                              (filterIconRefs.current[header.id] = el)
+                            }
+                          >
                             <DropDownArrow
                               className="cursor-pointer"
-                              onClick={() =>
-                                setFilterMenuOpen(
-                                  filterMenuOpen === header.id
-                                    ? null
-                                    : header.id
+                              onClick={(event) =>
+                                handleFilterIconClick(
+                                  header.id,
+                                  typeof header.column.columnDef.meta
+                                    ?.options === "function"
+                                    ? header.column.columnDef.meta.options(
+                                        table.getRowModel().rows
+                                      )
+                                    : header.column.columnDef.meta?.options ||
+                                        [],
+                                  event
                                 )
                               }
                             />
                             {filterMenuOpen === header.id && (
-                              <div className="absolute top-10 left-[-5rem] z-50">
+                              <div
+                                className="absolute z-50"
+                                style={{
+                                  top: `${filterPosition.top}px`,
+                                  left: `${filterPosition.left}px`,
+                                }}
+                              >
                                 <FilterComponent
                                   options={
                                     typeof header.column.columnDef.meta
@@ -173,6 +239,7 @@ export function RootTable<TData, TValue>({
                                       },
                                     ])
                                   }
+                                  onClose={() => setFilterMenuOpen(null)}
                                 />
                               </div>
                             )}

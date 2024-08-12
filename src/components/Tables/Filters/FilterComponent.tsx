@@ -1,26 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { SearchInput } from "../../../common/SearchInput";
+import { IconX } from "../../../common/Icons";
 
 interface FilterComponentProps {
   options: string[];
   onChange: (selectedOptions: string[]) => void;
+  onClose: () => void;
 }
 
 const FilterComponent: React.FC<FilterComponentProps> = ({
   options,
   onChange,
+  onClose,
 }) => {
   const [filteredOptions, setFilteredOptions] = useState<string[]>(options);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
-
-  //   useEffect(() => {
-  //     if (selectedOptions.length === options.length && options.length > 0) {
-  //       setSelectAll(true);
-  //     } else {
-  //       setSelectAll(false);
-  //     }
-  //   }, [selectedOptions, options]);
 
   const handleSearch = (query: string) => {
     const filtered = options.filter((option) =>
@@ -60,9 +55,12 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
   return (
     <div
-      className="filter-component bg-white p-6 w-64 shadow-lg z-50 relative"
+      className="fixed top-0 left-0 bg-white p-6 w-64 shadow-lg z-50 overflow-visible "
       style={{ zIndex: 99 }}
     >
+      <div className="flex justify-between items-center mb-4">
+        <IconX onClick={onClose} className="cursor-pointer" />
+      </div>
       <SearchInput placeholder="Search..." onSearch={handleSearch} />
       <div className="space-x-2 mt-2">
         <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
