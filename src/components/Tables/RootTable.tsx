@@ -81,6 +81,7 @@ export function RootTable<TData, TValue>({
     left: number;
   }>({ top: 0, left: 0 });
   const filterIconRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const table = useReactTable({
     data,
@@ -119,12 +120,14 @@ export function RootTable<TData, TValue>({
 
     const headerElement =
       filterIconRefs.current[headerId]?.getBoundingClientRect();
-    const tableElement =
-      filterIconRefs.current[headerId]?.offsetParent?.getBoundingClientRect();
+    const tableElement = tableContainerRef.current?.getBoundingClientRect();
 
     if (headerElement && tableElement) {
       setFilterPosition({
-        top: headerElement.bottom - tableElement.top,
+        top:
+          headerElement.bottom -
+          tableElement.top +
+          tableContainerRef.current?.scrollTop,
         left: headerElement.left - tableElement.left,
       });
     }
@@ -133,16 +136,16 @@ export function RootTable<TData, TValue>({
     setFilterMenuOpen(headerId);
   };
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      filterMenuOpen &&
-      !filterIconRefs.current[filterMenuOpen]?.contains(event.target as Node)
-    ) {
-      setFilterMenuOpen(null);
-    }
-  };
-
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        filterMenuOpen &&
+        !filterIconRefs.current[filterMenuOpen]?.contains(event.target as Node)
+      ) {
+        setFilterMenuOpen(null);
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -150,29 +153,30 @@ export function RootTable<TData, TValue>({
   }, [filterMenuOpen]);
 
   return (
-    <div className="relative h-full flex-grow  flex flex-col  gap-1   ">
+    <div className="relative h-full flex-grow flex flex-col gap-1">
       {tableType !== "subRow" && (
-        <div className="   max-h-[50%]  flex items-center   ">
+        <div className="max-h-[50%] flex items-center">
           <TableActions table={table} type={tableType} />
         </div>
       )}
       <div
-        className={`rounded-md border     w-full  mx-auto ${
+        ref={tableContainerRef}
+        className={`rounded-md border w-full mx-auto ${
           tableType === "members" ? "max-h-[80%]" : "max-h-[85%]"
-        }  overflow-y-auto scrollbar-custom `}
+        } overflow-y-auto scrollbar-custom `}
       >
-        <Table className="table ">
+        <Table className="table">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className=" border-gray-200 bg-light-grey rounded-md  "
+                className="border-gray-200 bg-light-grey rounded-md"
               >
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
                     style={{ width: `${header.getSize()}px` }}
-                    className={` py-3 px-4 border-r       text-start  text-black font-semibold   `}
+                    className="py-3 px-4 border-r text-start text-black font-semibold"
                   >
                     <div className="flex w-full justify-between items-center">
                       <div>
@@ -183,7 +187,6 @@ export function RootTable<TData, TValue>({
                               header.getContext()
                             )}
                       </div>
-
                       <div
                         className={`${
                           header.column.getCanFilter() ? "" : "hidden"
@@ -214,22 +217,14 @@ export function RootTable<TData, TValue>({
                             />
                             {filterMenuOpen === header.id && (
                               <div
-                                className="absolute z-50"
+                                className="fixed z-50"
                                 style={{
                                   top: `${filterPosition.top}px`,
                                   left: `${filterPosition.left}px`,
                                 }}
                               >
                                 <FilterComponent
-                                  options={
-                                    typeof header.column.columnDef.meta
-                                      ?.options === "function"
-                                      ? header.column.columnDef.meta.options(
-                                          table.getRowModel().rows
-                                        )
-                                      : header.column.columnDef.meta?.options ||
-                                        []
-                                  }
+                                  options={filterOptions}
                                   onChange={(newSelectedOptions) =>
                                     setColumnFilters((prev) => [
                                       ...prev.filter((f) => f.id !== header.id),
@@ -258,13 +253,13 @@ export function RootTable<TData, TValue>({
                 <Fragment key={row.id}>
                   <TableRow
                     key={row.id}
-                    className={` text-black border-b text-md   border-gray-200 text-left  ${
+                    className={`text-black border-b text-md border-gray-200 text-left ${
                       row.getIsExpanded() &&
                       "border-l-2 border-l-black bg-hoverBlue"
                     }`}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="text-xs  ">
+                      <TableCell key={cell.id} className="text-xs">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -297,8 +292,8 @@ export function RootTable<TData, TValue>({
       </div>
 
       {tableType !== "subRow" && (
-        <section className=" flex justify-center absolute w-full bottom-0 z-30 ">
-          <div className=" flex items-center gap-10">
+        <section className="flex justify-center absolute w-full bottom-0 z-30">
+          <div className="flex items-center gap-10">
             <Button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
@@ -334,7 +329,7 @@ export function RootTable<TData, TValue>({
               <ArrowRight className="w-5" />
             </Button>
           </div>
-          <div className=" absolute right-0">
+          <div className="absolute right-0">
             <Select
               value={table.getState().pagination.pageSize.toString()}
               onValueChange={(value) => {
@@ -345,9 +340,7 @@ export function RootTable<TData, TValue>({
               }}
             >
               <SelectTrigger>
-                <span className="">
-                  Table size: {table.getState().pagination.pageSize}
-                </span>
+                <span>Table size: {table.getState().pagination.pageSize}</span>
               </SelectTrigger>
               <SelectContent className="bg-white">
                 <SelectGroup>

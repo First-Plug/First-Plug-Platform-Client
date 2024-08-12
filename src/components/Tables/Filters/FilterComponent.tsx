@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { SearchInput } from "../../../common/SearchInput";
 import { IconX } from "../../../common/Icons";
 
@@ -16,6 +16,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   const [filteredOptions, setFilteredOptions] = useState<string[]>(options);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
+  const filterRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = (query: string) => {
     const filtered = options.filter((option) =>
@@ -55,8 +56,8 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
   return (
     <div
-      className="fixed top-0 left-0 bg-white p-6 w-64 shadow-lg z-50 overflow-visible "
-      style={{ zIndex: 99 }}
+      ref={filterRef}
+      className="fixed bg-white p-6 w-64 shadow-lg z-50 overflow-visible"
     >
       <div className="flex justify-between items-center mb-4">
         <IconX onClick={onClose} className="cursor-pointer" />
