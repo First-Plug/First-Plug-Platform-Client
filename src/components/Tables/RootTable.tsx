@@ -14,6 +14,16 @@ import {
 } from "@tanstack/react-table";
 
 import {
+  useFloating,
+  offset,
+  flip,
+  shift,
+  size,
+  detectOverflow,
+  autoPlacement,
+} from "@floating-ui/react-dom";
+
+import {
   Table,
   TableBody,
   TableCell,
@@ -76,12 +86,37 @@ export function RootTable<TData, TValue>({
 
   const [filterMenuOpen, setFilterMenuOpen] = useState<string | null>(null);
   const [filterOptions, setFilterOptions] = useState<string[]>([]);
-  const [filterPosition, setFilterPosition] = useState<{
-    top: number;
-    left: number;
-  }>({ top: 0, left: 0 });
+  // const [filterPosition, setFilterPosition] = useState<{
+  //   top: number;
+  //   left: number;
+  // }>({ top: 0, left: 0 });
   const filterIconRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const filterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  const { x, y, strategy, refs, update } = useFloating({
+    strategy: "fixed",
+    middleware: [
+      offset(6),
+      flip(),
+      shift(),
+      size({
+        apply({ availableWidth, availableHeight, elements }) {
+          Object.assign(elements.floating.style, {
+            maxWidth: `${availableWidth}px`,
+            maxHeight: `${availableHeight}px`,
+          });
+        },
+      }),
+      {
+        name: "detectOverflow",
+        async fn(state) {
+          const overflow = await detectOverflow(state);
+          return {};
+        },
+      },
+    ],
+  });
 
   const table = useReactTable({
     data,
@@ -118,29 +153,45 @@ export function RootTable<TData, TValue>({
       return;
     }
 
-    const headerElement =
-      filterIconRefs.current[headerId]?.getBoundingClientRect();
-    const tableElement = tableContainerRef.current?.getBoundingClientRect();
-
-    if (headerElement && tableElement) {
-      setFilterPosition({
-        top:
-          headerElement.bottom -
-          tableElement.top +
-          tableContainerRef.current?.scrollTop,
-        left: headerElement.left - tableElement.left,
-      });
-    }
-
     setFilterOptions(options);
     setFilterMenuOpen(headerId);
   };
 
   useEffect(() => {
+    if (filterMenuOpen) {
+      const filterElement = filterRefs.current[filterMenuOpen];
+      const iconElement = filterIconRefs.current[filterMenuOpen];
+
+      if (filterElement && iconElement) {
+        refs.setReference(iconElement);
+        refs.setFloating(filterElement);
+        update();
+      }
+    }
+  }, [filterMenuOpen, refs, update]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (filterMenuOpen) {
+        update();
+      }
+    };
+
+    const containerRef = tableContainerRef.current;
+    containerRef?.addEventListener("scroll", handleScroll);
+    return () => {
+      containerRef?.removeEventListener("scroll", handleScroll);
+    };
+  }, [filterMenuOpen, update]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         filterMenuOpen &&
-        !filterIconRefs.current[filterMenuOpen]?.contains(event.target as Node)
+        !filterIconRefs.current[filterMenuOpen]?.contains(
+          event.target as Node
+        ) &&
+        !filterRefs.current[filterMenuOpen]?.contains(event.target as Node)
       ) {
         setFilterMenuOpen(null);
       }
@@ -218,9 +269,13 @@ export function RootTable<TData, TValue>({
                             {filterMenuOpen === header.id && (
                               <div
                                 className="fixed z-50"
+                                ref={(el) =>
+                                  (filterRefs.current[header.id] = el)
+                                }
                                 style={{
-                                  top: `${filterPosition.top}px`,
-                                  left: `${filterPosition.left}px`,
+                                  position: strategy,
+                                  top: y ?? 0,
+                                  left: x ?? 0,
                                 }}
                               >
                                 <FilterComponent
