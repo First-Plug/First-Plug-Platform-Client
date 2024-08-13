@@ -124,15 +124,24 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const model = attributes.find((attr) => attr.key === "model")?.value;
     const productName = watch("name");
 
-    if (model === "Other" && !productName) {
-      methods.setError("name", {
-        type: "manual",
-        message: "Product Name is required for this model.",
-      });
-      return false;
-    }
+    console.log("Attributes:", attributes);
+    console.log("Model:", model);
+    console.log("Category:", selectedCategory);
+    console.log("ProductName:", productName);
 
-    if (model !== "Other") {
+    if (
+      (model === "Other" && selectedCategory !== "Merchandising") ||
+      selectedCategory === "Merchandising"
+    ) {
+      if (!productName || productName.trim() === "") {
+        console.log("Product Name is required for this category and model.");
+        methods.setError("name", {
+          type: "manual",
+          message: "Product Name is required for this category and model.",
+        });
+        return false;
+      }
+    } else {
       clearErrors("name");
     }
 
@@ -140,11 +149,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleSaveProduct = async (data: Product) => {
+    console.log("Handle Save Product:", data);
     setShowSuccessDialog(false);
     setShowErrorDialog(false);
     setErrorMessage("");
 
     const isProductNameValid = await validateProductName();
+    console.log("Is Product Name Valid:", isProductNameValid);
     if (!isProductNameValid) return;
 
     const finalAssignedEmail = watch("assignedEmail");
@@ -175,6 +186,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
 
+    const model = formatData.attributes.find(
+      (attr) => attr.key === "model"
+    )?.value;
+
     const isAttributesValid = validateAttributes(
       formatData.attributes,
       selectedCategory
@@ -192,8 +207,47 @@ const ProductForm: React.FC<ProductFormProps> = ({
       return;
     }
 
+    let hasError = false;
+    const attributeErrors: Record<string, string> = {};
+
+    if (formatData.category !== "Merchandising") {
+      const brand = formatData.attributes.find(
+        (attr) => attr.key === "brand"
+      )?.value;
+      if (!brand) {
+        attributeErrors["brand"] = "Brand is required.";
+        hasError = true;
+        methods.setError("attributes", {
+          type: "manual",
+          message: "Brand is required.",
+        });
+      }
+      if (!model) {
+        attributeErrors["model"] = "Model is required.";
+        hasError = true;
+        methods.setError("attributes", {
+          type: "manual",
+          message: "Model is required.",
+        });
+      }
+    }
+
+    if (
+      formatData.category !== "Merchandising" &&
+      model === "Other" &&
+      !formatData.name
+    ) {
+      attributeErrors["name"] = "Name is required for this model.";
+      hasError = true;
+      methods.setError("name", {
+        type: "manual",
+        message: "Name is required for this model.",
+      });
+    }
+    setCustomErrors(attributeErrors);
+
     const isCategoryValid = await validateCategory();
-    if (!isCategoryValid) return;
+    if (!isCategoryValid || hasError) return;
 
     try {
       if (isUpdate && initialData) {
@@ -247,7 +301,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
 
   const handleNext = async () => {
+    console.log("Handle Next");
     const isProductNameValid = await validateProductName();
+    console.log("Is Product Name Valid:", isProductNameValid);
     if (!isProductNameValid) return;
 
     const data = methods.getValues();
@@ -277,6 +333,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
       ),
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
+
+    const model = formattedData.attributes.find(
+      (attr) => attr.key === "model"
+    )?.value;
+
     Object.keys(formattedData).forEach((key) => {
       if (
         key !== "attributes" &&
@@ -315,12 +376,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
       }
     }
 
-    if (formattedData.category === "Merchandising" && !formattedData.name) {
-      attributeErrors["name"] = "Name is required for this category.";
+    if (
+      formattedData.category !== "Merchandising" &&
+      model === "Other" &&
+      !formattedData.name
+    ) {
+      attributeErrors["name"] = "Name is required for this model.";
       hasError = true;
       methods.setError("name", {
         type: "manual",
-        message: "Name is required for this category.",
+        message: "Name is required for this model.",
       });
     }
     setCustomErrors(attributeErrors);
@@ -337,6 +402,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
       clearErrors(["assignedEmail", "assignedMember", "location"]);
     }
   }, [quantity, clearErrors]);
+
+  const modelValue = watch("attributes").find(
+    (attr) => attr.key === "model"
+  )?.value;
 
   return (
     <FormProvider {...methods}>
@@ -364,6 +433,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         isUpdate={isUpdate}
                         quantity={quantity}
                         setQuantity={setQuantity}
+                        model={modelValue}
                       />
                     </div>
                   </section>
