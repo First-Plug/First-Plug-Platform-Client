@@ -20,6 +20,7 @@ interface CategoryFormProps {
   isUpdate?: boolean;
   quantity: number;
   setQuantity: (value: number) => void;
+  model: string;
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = function ({
@@ -31,6 +32,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   isUpdate,
   quantity,
   setQuantity,
+  model,
 }) {
   const { members } = useStore();
   const {
@@ -175,11 +177,10 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   }, [quantity, clearErrors, setValue]);
 
   useEffect(() => {
-    if (selectedModel !== "Other") {
-      setValue("name", "");
-      clearErrors("name");
+    if (model === "Other") {
+      console.log("Model is Other from props, enabling Product Name input.");
     }
-  }, [selectedModel, setValue, clearErrors]);
+  }, [model]);
 
   if (loading) {
     return (
