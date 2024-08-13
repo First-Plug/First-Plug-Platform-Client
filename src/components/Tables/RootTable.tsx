@@ -21,6 +21,7 @@ import {
   size,
   detectOverflow,
   autoPlacement,
+  autoUpdate,
 } from "@floating-ui/react-dom";
 
 import {
@@ -42,7 +43,6 @@ declare module "@tanstack/react-table" {
 import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
 import { TableType } from "@/types";
 import { TableActions } from "./TableActions";
-// import HeaderFilter from "./Filters/HeaderFilter";
 import { Button } from "../ui/button";
 import { ArrowLeft, ArrowRight, DropDownArrow } from "@/common";
 import {
@@ -86,10 +86,6 @@ export function RootTable<TData, TValue>({
 
   const [filterMenuOpen, setFilterMenuOpen] = useState<string | null>(null);
   const [filterOptions, setFilterOptions] = useState<string[]>([]);
-  // const [filterPosition, setFilterPosition] = useState<{
-  //   top: number;
-  //   left: number;
-  // }>({ top: 0, left: 0 });
   const filterIconRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const filterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -97,7 +93,10 @@ export function RootTable<TData, TValue>({
   const { x, y, strategy, refs, update } = useFloating({
     strategy: "fixed",
     middleware: [
-      offset(6),
+      offset({
+        mainAxis: 8,
+        crossAxis: -60,
+      }),
       flip(),
       shift(),
       size({
@@ -108,13 +107,6 @@ export function RootTable<TData, TValue>({
           });
         },
       }),
-      {
-        name: "detectOverflow",
-        async fn(state) {
-          const overflow = await detectOverflow(state);
-          return {};
-        },
-      },
     ],
   });
 
@@ -165,24 +157,32 @@ export function RootTable<TData, TValue>({
       if (filterElement && iconElement) {
         refs.setReference(iconElement);
         refs.setFloating(filterElement);
-        update();
+
+        const cleanup = autoUpdate(iconElement, filterElement, update, {
+          ancestorScroll: true,
+          ancestorResize: true,
+          elementResize: true,
+          layoutShift: true,
+        });
+
+        return () => cleanup();
       }
     }
   }, [filterMenuOpen, refs, update]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (filterMenuOpen) {
-        update();
-      }
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (filterMenuOpen) {
+  //       update();
+  //     }
+  //   };
 
-    const containerRef = tableContainerRef.current;
-    containerRef?.addEventListener("scroll", handleScroll);
-    return () => {
-      containerRef?.removeEventListener("scroll", handleScroll);
-    };
-  }, [filterMenuOpen, update]);
+  //   const containerRef = tableContainerRef.current;
+  //   containerRef?.addEventListener("scroll", handleScroll);
+  //   return () => {
+  //     containerRef?.removeEventListener("scroll", handleScroll);
+  //   };
+  // }, [filterMenuOpen, update]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
