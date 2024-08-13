@@ -13,6 +13,7 @@ import { Badge, badgeVariants } from "@/components/ui/badge";
 import useActions from "@/hooks/useActions";
 import useFetch from "@/hooks/useFetch";
 import { XIcon } from "lucide-react";
+import CategoryIcons from "@/components/AsideContents/EditTeamAside/CategoryIcons";
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
   product,
@@ -139,6 +140,7 @@ const MembersList = observer(function MembersList({
                         ? member.team
                         : member.team?.name}
                     </span>
+                    <CategoryIcons products={member.products} />
                   </div>
                 </div>
               ))}
