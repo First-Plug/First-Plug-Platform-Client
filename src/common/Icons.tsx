@@ -22,9 +22,10 @@ export function FileIcon() {
 type IconXProps = {
   className?: string | "";
   strokeWidth?: number;
+  onClick?: () => void;
 };
 
-export function IconX({ className = "", strokeWidth }: IconXProps) {
+export function IconX({ className = "", strokeWidth, onClick }: IconXProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -33,6 +34,7 @@ export function IconX({ className = "", strokeWidth }: IconXProps) {
       strokeWidth={strokeWidth}
       stroke="currentColor"
       className={`w-4 ${className}`}
+      onClick={onClick}
     >
       <path
         strokeLinecap="round"
@@ -340,7 +342,12 @@ export function NotificationIcon({
   );
 }
 
-export function DropDownArrow({ className }) {
+interface DropDownArrowProps {
+  className?: string;
+  onClick?: (event: React.MouseEvent) => void;
+}
+
+export function DropDownArrow({ className, onClick }: DropDownArrowProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -349,6 +356,7 @@ export function DropDownArrow({ className }) {
       strokeWidth={1.5}
       stroke="currentColor"
       className={`w-6 h-6 ${className || ""}`}
+      onClick={onClick}
     >
       <path
         strokeLinecap="round"

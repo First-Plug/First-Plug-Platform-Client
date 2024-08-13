@@ -1,4 +1,4 @@
-import { Product, ProductTable } from "@/types";
+import { Product, ProductTable, CATEGORIES } from "@/types";
 import { ArrowRight, Button, ProductImage } from "@/common";
 import { ColumnDef } from "@tanstack/react-table";
 import PrdouctModelDetail from "@/common/PrdouctModelDetail";
@@ -7,13 +7,15 @@ import { RootTable } from "./RootTable";
 import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
 import "./table.css";
+
 export const productColumns: ColumnDef<ProductTable>[] = [
   {
     accessorFn: (row) => row.category,
     header: "Category",
     size: 120,
     meta: {
-      filterVariant: "select",
+      filterVariant: "custom",
+      options: [...CATEGORIES] as unknown as string[],
     },
     cell: ({ getValue }) => (
       <div className="flex gap-2 text-lg items-center w-[150px]">
@@ -22,20 +24,67 @@ export const productColumns: ColumnDef<ProductTable>[] = [
       </div>
     ),
     footer: (props) => props.column.id,
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId));
+    },
   },
   {
     accessorFn: (row) => row.products,
     header: "Name",
     size: 200,
+    meta: {
+      filterVariant: "custom",
+      options: (rows) => {
+        const options = new Set<string>();
+        rows.forEach((row) => {
+          if (row.original.category === "Merchandising") {
+            options.add(row.original.products[0]?.name || "No Data");
+          } else {
+            const brand = row.original.products[0]?.attributes.find(
+              (attr) => attr.key === "brand"
+            )?.value;
+            const model = row.original.products[0]?.attributes.find(
+              (attr) => attr.key === "model"
+            )?.value;
+            if (brand && model) {
+              options.add(`${brand} ${model}`);
+            } else {
+              options.add("No Data");
+            }
+          }
+        });
+        return Array.from(options);
+      },
+    },
     cell: ({ row }) => (
       <PrdouctModelDetail product={row.original.products[0]} />
     ),
     footer: (props) => props.column.id,
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      const product = row.original.products[0];
+      if (product.category === "Merchandising") {
+        return filterValue.includes(product.name || "No Data");
+      } else {
+        const brand = product.attributes.find(
+          (attr) => attr.key === "brand"
+        )?.value;
+        const model = product.attributes.find(
+          (attr) => attr.key === "model"
+        )?.value;
+        const name = brand && model ? `${brand} ${model}` : "No Data";
+        return filterValue.includes(name);
+      }
+    },
   },
   {
     accessorFn: (row) => row.products,
     header: "Stock",
     size: 80,
+    enableColumnFilter: false,
     cell: ({ getValue }) => {
       const products = getValue<Product[]>().filter(
         (product) => product.status !== "Deprecated"

@@ -10,7 +10,19 @@ import {
   RowData,
   PaginationState,
   getPaginationRowModel,
+  Row,
 } from "@tanstack/react-table";
+
+import {
+  useFloating,
+  offset,
+  flip,
+  shift,
+  size,
+  detectOverflow,
+  autoPlacement,
+  autoUpdate,
+} from "@floating-ui/react-dom";
 
 import {
   Table,
@@ -23,16 +35,16 @@ import {
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
-    filterVariant?: "text" | "range" | "select";
+    filterVariant?: "text" | "range" | "select" | "custom";
     filterPositon?: "inline" | "bottom";
+    options?: string[] | ((rows: Row<TData>[]) => string[]);
   }
 }
-import { Fragment, ReactNode, useState } from "react";
+import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
 import { TableType } from "@/types";
 import { TableActions } from "./TableActions";
-import HeaderFilter from "./Filters/HeaderFilter";
 import { Button } from "../ui/button";
-import { ArrowLeft, ArrowRight } from "@/common";
+import { ArrowLeft, ArrowRight, DropDownArrow } from "@/common";
 import {
   Select,
   SelectContent,
@@ -41,6 +53,7 @@ import {
   SelectGroup,
   SelectTrigger,
 } from "../ui/select";
+import FilterComponent from "./Filters/FilterComponent";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -70,6 +83,33 @@ export function RootTable<TData, TValue>({
         ? 1000
         : parseInt(localStorage.getItem(tableNameRef)) || pageSize,
   });
+
+  const [filterMenuOpen, setFilterMenuOpen] = useState<string | null>(null);
+  const [filterOptions, setFilterOptions] = useState<string[]>([]);
+  const filterIconRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const filterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  const { x, y, strategy, refs, update } = useFloating({
+    strategy: "fixed",
+    middleware: [
+      offset({
+        mainAxis: 8,
+        crossAxis: -60,
+      }),
+      flip(),
+      shift(),
+      size({
+        apply({ availableWidth, availableHeight, elements }) {
+          Object.assign(elements.floating.style, {
+            maxWidth: `${availableWidth}px`,
+            maxHeight: `${availableHeight}px`,
+          });
+        },
+      }),
+    ],
+  });
+
   const table = useReactTable({
     data,
     columns,
@@ -95,30 +135,99 @@ export function RootTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const handleFilterIconClick = (
+    headerId: string,
+    options: string[],
+    event: React.MouseEvent
+  ) => {
+    if (filterMenuOpen === headerId) {
+      setFilterMenuOpen(null);
+      return;
+    }
+
+    setFilterOptions(options);
+    setFilterMenuOpen(headerId);
+  };
+
+  useEffect(() => {
+    if (filterMenuOpen) {
+      const filterElement = filterRefs.current[filterMenuOpen];
+      const iconElement = filterIconRefs.current[filterMenuOpen];
+
+      if (filterElement && iconElement) {
+        refs.setReference(iconElement);
+        refs.setFloating(filterElement);
+
+        const cleanup = autoUpdate(iconElement, filterElement, update, {
+          ancestorScroll: true,
+          ancestorResize: true,
+          elementResize: true,
+          layoutShift: true,
+        });
+
+        return () => cleanup();
+      }
+    }
+  }, [filterMenuOpen, refs, update]);
+
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (filterMenuOpen) {
+  //       update();
+  //     }
+  //   };
+
+  //   const containerRef = tableContainerRef.current;
+  //   containerRef?.addEventListener("scroll", handleScroll);
+  //   return () => {
+  //     containerRef?.removeEventListener("scroll", handleScroll);
+  //   };
+  // }, [filterMenuOpen, update]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        filterMenuOpen &&
+        !filterIconRefs.current[filterMenuOpen]?.contains(
+          event.target as Node
+        ) &&
+        !filterRefs.current[filterMenuOpen]?.contains(event.target as Node)
+      ) {
+        setFilterMenuOpen(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [filterMenuOpen]);
+
   return (
-    <div className="h-full flex-grow  flex flex-col  gap-1 relative   ">
+    <div className="relative h-full flex-grow flex flex-col gap-1">
       {tableType !== "subRow" && (
-        <div className="   max-h-[50%]  flex items-center   ">
+        <div className="max-h-[50%] flex items-center">
           <TableActions table={table} type={tableType} />
         </div>
       )}
       <div
-        className={`rounded-md border     w-full  mx-auto ${
+        ref={tableContainerRef}
+        className={`rounded-md border w-full mx-auto ${
           tableType === "members" ? "max-h-[80%]" : "max-h-[85%]"
-        }  overflow-y-auto scrollbar-custom `}
+        } overflow-y-auto scrollbar-custom `}
       >
-        <Table className="table ">
+        <Table className="table">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className=" border-gray-200 bg-light-grey rounded-md  "
+                className="border-gray-200 bg-light-grey rounded-md"
               >
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
                     style={{ width: `${header.getSize()}px` }}
-                    className={` py-3 px-4 border-r       text-start  text-black font-semibold   `}
+                    className="py-3 px-4 border-r text-start text-black font-semibold"
                   >
                     <div className="flex w-full justify-between items-center">
                       <div>
@@ -129,19 +238,63 @@ export function RootTable<TData, TValue>({
                               header.getContext()
                             )}
                       </div>
-
                       <div
                         className={`${
                           header.column.getCanFilter() ? "" : "hidden"
                         }`}
                       >
-                        {header.column.getCanFilter() ? (
-                          <HeaderFilter
-                            column={header.column}
-                            tableType={tableType}
-                            table={table}
-                          />
-                        ) : null}
+                        {header.column.getCanFilter() && (
+                          <div
+                            className="relative"
+                            ref={(el) =>
+                              (filterIconRefs.current[header.id] = el)
+                            }
+                          >
+                            <DropDownArrow
+                              className="cursor-pointer"
+                              onClick={(event) =>
+                                handleFilterIconClick(
+                                  header.id,
+                                  typeof header.column.columnDef.meta
+                                    ?.options === "function"
+                                    ? header.column.columnDef.meta.options(
+                                        table.getRowModel().rows
+                                      )
+                                    : header.column.columnDef.meta?.options ||
+                                        [],
+                                  event
+                                )
+                              }
+                            />
+                            {filterMenuOpen === header.id && (
+                              <div
+                                className="fixed z-50"
+                                ref={(el) =>
+                                  (filterRefs.current[header.id] = el)
+                                }
+                                style={{
+                                  position: strategy,
+                                  top: y ?? 0,
+                                  left: x ?? 0,
+                                }}
+                              >
+                                <FilterComponent
+                                  options={filterOptions}
+                                  onChange={(newSelectedOptions) =>
+                                    setColumnFilters((prev) => [
+                                      ...prev.filter((f) => f.id !== header.id),
+                                      {
+                                        id: header.id,
+                                        value: newSelectedOptions,
+                                      },
+                                    ])
+                                  }
+                                  onClose={() => setFilterMenuOpen(null)}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </TableHead>
@@ -155,13 +308,13 @@ export function RootTable<TData, TValue>({
                 <Fragment key={row.id}>
                   <TableRow
                     key={row.id}
-                    className={` text-black border-b text-md   border-gray-200 text-left  ${
+                    className={`text-black border-b text-md border-gray-200 text-left ${
                       row.getIsExpanded() &&
                       "border-l-2 border-l-black bg-hoverBlue"
                     }`}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="text-xs  ">
+                      <TableCell key={cell.id} className="text-xs">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -194,8 +347,8 @@ export function RootTable<TData, TValue>({
       </div>
 
       {tableType !== "subRow" && (
-        <section className=" flex justify-center absolute w-full bottom-0 z-30 ">
-          <div className=" flex items-center gap-10">
+        <section className="flex justify-center absolute w-full bottom-0 z-30">
+          <div className="flex items-center gap-10">
             <Button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
@@ -231,7 +384,7 @@ export function RootTable<TData, TValue>({
               <ArrowRight className="w-5" />
             </Button>
           </div>
-          <div className=" absolute right-0">
+          <div className="absolute right-0">
             <Select
               value={table.getState().pagination.pageSize.toString()}
               onValueChange={(value) => {
@@ -242,9 +395,7 @@ export function RootTable<TData, TValue>({
               }}
             >
               <SelectTrigger>
-                <span className="">
-                  Table size: {table.getState().pagination.pageSize}
-                </span>
+                <span>Table size: {table.getState().pagination.pageSize}</span>
               </SelectTrigger>
               <SelectContent className="bg-white">
                 <SelectGroup>
