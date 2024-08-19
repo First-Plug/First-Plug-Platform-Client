@@ -25,13 +25,24 @@ interface CategoryIconsProps {
 const CategoryIcons: React.FC<CategoryIconsProps> = ({ products }) => {
   const uniqueCategories = Array.from(
     new Set(products.map((product) => product.category.toLowerCase()))
-  ).sort();
+  ).sort((a, b) => {
+    if (a === "other") return 1;
+    if (b === "other") return -1;
+    return a.localeCompare(b);
+  });
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-4 flex-wrap">
       {uniqueCategories.map((category) => {
         const IconComponent = categoryToIconMap[category] || GenericIcon;
-        return <IconComponent key={category} />;
+        return (
+          <div className="relative group" key={category}>
+            <IconComponent />
+            <span className="absolute left-1/2 transform -translate-x-1/2 -top-8 mt-2 hidden group-hover:block text-xs bg-gray-800 text-white rounded-md px-2 py-1 z-50 whitespace-nowrap">
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </span>
+          </div>
+        );
       })}
     </div>
   );
