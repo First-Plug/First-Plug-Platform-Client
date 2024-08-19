@@ -91,6 +91,16 @@ const BulkCreateForm: React.FC<{
   const [assignAll, setAssignAll] = useState(false);
 
   useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (assignAll && name?.startsWith("products.")) {
+        setAssignAll(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, assignAll]);
+
+  useEffect(() => {
     const fetchMembers = async () => {
       const fetchedMembers = await Memberservices.getAllMembers();
       setMembers(fetchedMembers as Instance<typeof TeamMemberModel>[]);
@@ -255,6 +265,7 @@ const BulkCreateForm: React.FC<{
     const firstAssignedEmail = watch(`products.0.assignedEmail`);
     const firstAssignedMember = watch(`products.0.assignedMember`);
     const firstLocation = watch(`products.0.location`);
+
     if (!assignAll) {
       const newSelectedLocations = [...selectedLocations];
       for (let index = 1; index < numProducts; index++) {
@@ -273,22 +284,6 @@ const BulkCreateForm: React.FC<{
         ]);
       }
       setSelectedLocations(newSelectedLocations);
-    } else {
-      for (let index = 1; index < numProducts; index++) {
-        setValue(`products.${index}.assignedEmail`, "");
-        setValue(`products.${index}.assignedMember`, "");
-        setValue(`products.${index}.location`, "Location");
-        setIsLocationEnabled((prev) => {
-          const newIsLocationEnabled = [...prev];
-          newIsLocationEnabled[index] = false;
-          return newIsLocationEnabled;
-        });
-        clearErrors([
-          `products.${index}.assignedEmail`,
-          `products.${index}.location`,
-        ]);
-      }
-      setSelectedLocations(Array(numProducts).fill("Location"));
     }
   };
 
