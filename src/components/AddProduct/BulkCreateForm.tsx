@@ -303,7 +303,9 @@ const BulkCreateForm: React.FC<{
                 checked={assignAll}
                 onChange={handleAssignAllChange}
               />
-              Assign all products at once
+              <p className="text-md font-semibold">
+                Apply &quot;Product 1&quot; settings to all Products
+              </p>
             </label>
           </div>
         </div>
