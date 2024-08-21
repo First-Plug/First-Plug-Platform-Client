@@ -176,11 +176,17 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     }
   }, [quantity, clearErrors, setValue]);
 
+  // useEffect(() => {
+  //   if (model === "Other") {
+  //     console.log("Model is Other from props, enabling Product Name input.");
+  //   }
+  // }, [model]);
+
   useEffect(() => {
-    if (model === "Other") {
-      console.log("Model is Other from props, enabling Product Name input.");
+    if (selectedModel === "Other") {
+      setValue("name", watch("name") || "");
     }
-  }, [model]);
+  }, [selectedModel, setValue, watch]);
 
   if (loading) {
     return (
@@ -310,6 +316,25 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               disabled={quantity > 1 && !isUpdate}
             />
           </div>
+          {(isUpdate && watch("name") && watch("name") !== "") ||
+          selectedModel === "Other" ? (
+            <div className="w-full">
+              <InputProductForm
+                placeholder="Product Name"
+                title="Product Name*"
+                type="text"
+                value={watch("name") as string}
+                name="name"
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                // required={model === "Other"}
+              />
+              <div className="min-h-[24px]">
+                {errors.name && (
+                  <p className="text-red-500">{(errors.name as any).message}</p>
+                )}
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : (
         <>

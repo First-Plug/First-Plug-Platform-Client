@@ -124,17 +124,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const model = attributes.find((attr) => attr.key === "model")?.value;
     const productName = watch("name");
 
-    console.log("Attributes:", attributes);
-    console.log("Model:", model);
-    console.log("Category:", selectedCategory);
-    console.log("ProductName:", productName);
+    // console.log("Attributes:", attributes);
+    // console.log("Model:", model);
+    // console.log("Category:", selectedCategory);
+    // console.log("ProductName:", productName);
 
     if (
       (model === "Other" && selectedCategory !== "Merchandising") ||
       selectedCategory === "Merchandising"
     ) {
       if (!productName || productName.trim() === "") {
-        console.log("Product Name is required for this category and model.");
+        // console.log("Product Name is required for this category and model.");
         methods.setError("name", {
           type: "manual",
           message: "Product Name is required for this category and model.",
