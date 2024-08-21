@@ -257,6 +257,33 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    bulkCreateProductSuccess: {
+      title: "Success",
+      type: "succes",
+      description: "Products have been successfully created.",
+      closeAction: async () => {
+        await fetchStock();
+        setAlert(undefined);
+        router.push("/home/my-stock");
+      },
+    },
+    bulkCreateProductError: {
+      title: "Error",
+      type: "error",
+      description:
+        "There was an error creating the products. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    bulkCreateSerialNumberError: {
+      title: "Error",
+      type: "error",
+      description: "Serial Number already exists for one or more products.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;

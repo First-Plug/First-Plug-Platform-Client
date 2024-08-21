@@ -10,10 +10,10 @@ export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
 export const LOCATION = ["Our office", "FP warehouse", "Employee"] as const;
 export type Location = (typeof LOCATION)[number];
 export const CATEGORIES = [
-  "Merchandising",
-  "Computer",
-  "Monitor",
   "Audio",
+  "Computer",
+  "Merchandising",
+  "Monitor",
   "Peripherals",
   "Other",
 ] as const;
@@ -192,23 +192,6 @@ export const zodCreateProductModel = z
     } else {
       data.recoverable = true;
     }
-    // if (data.category !== "Merchandising") {
-    //   const attributekeys = data.attributes.map((attr) => attr.key);
-    //   if (!attributekeys.includes("brand")) {
-    //     ctx.addIssue({
-    //       code: z.ZodIssueCode.custom,
-    //       message: "Brand is required.",
-    //       path: ["attributes"],
-    //     });
-    //   }
-    //   if (!attributekeys.includes("model")) {
-    //     ctx.addIssue({
-    //       code: z.ZodIssueCode.custom,
-    //       message: "Model is required.",
-    //       path: ["attributes"],
-    //     });
-    //   }
-    // }
   })
   .refine(
     (data) => {

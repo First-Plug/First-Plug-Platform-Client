@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
+import BulkCreateForm from "./BulkCreateForm";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -31,12 +32,12 @@ interface ProductFormProps {
 }
 
 const categoryComponents = {
-  Computer: computerData,
-  Monitor: monitorData,
   Audio: audioData,
+  Computer: computerData,
+  Merchandising: merchandisingData,
+  Monitor: monitorData,
   Peripherals: peripheralsData,
   Other: othersData,
-  Merchandising: merchandisingData,
 };
 
 const ProductForm: React.FC<ProductFormProps> = ({
@@ -56,12 +57,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
     handleSubmit,
     setValue,
     clearErrors,
-    formState: { isSubmitting },
+    trigger,
+    formState: { isSubmitting, errors },
     watch,
   } = methods;
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<
     Category | undefined
   >(initialData?.category);
@@ -70,6 +73,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
   );
   const [attributes, setAttributes] = useState(initialData?.attributes || []);
   const [customErrors, setCustomErrors] = useState({});
+  const [showBulkCreate, setShowBulkCreate] = useState(false);
+  const [bulkInitialData, setBulkInitialData] = useState<Product | undefined>(
+    initialData
+  );
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -82,9 +89,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
     [isUpdate, setValue]
   );
 
+  const validateCategory = async () => {
+    const isCategoryValid = await trigger("category");
+    if (!isCategoryValid) {
+      return false;
+    }
+    return true;
+  };
+
   const validateAttributes = (attributes, category) => {
     let hasError = false;
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
     if (category !== "Merchandising") {
       const brand = attributes.find((attr) => attr.key === "brand")?.value;
       const model = attributes.find((attr) => attr.key === "model")?.value;
@@ -137,9 +152,25 @@ const ProductForm: React.FC<ProductFormProps> = ({
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
 
-    if (!validateAttributes(formatData.attributes, selectedCategory)) {
+    const isAttributesValid = validateAttributes(
+      formatData.attributes,
+      selectedCategory
+    );
+
+    if (quantity === 1 && !isAttributesValid) {
       return;
     }
+
+    if (quantity > 1 && selectedCategory === "Merchandising" && !data.name) {
+      setCustomErrors((prevErrors) => ({
+        ...prevErrors,
+        name: "Name is required for this category.",
+      }));
+      return;
+    }
+
+    const isCategoryValid = await validateCategory();
+    if (!isCategoryValid) return;
 
     try {
       if (isUpdate && initialData) {
@@ -163,8 +194,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
         setAlert("updateStock");
         setAside(undefined);
       } else {
-        await ProductServices.createProduct(formatData);
-        setAlert("createProduct");
+        if (quantity > 1) {
+          console.log("Format Data before Bulk Create:", formatData);
+          setBulkInitialData(formatData);
+          setShowBulkCreate(true);
+        } else {
+          await ProductServices.createProduct(formatData);
+          setAlert("createProduct");
+        }
       }
       methods.reset();
       setSelectedCategory(undefined);
@@ -186,55 +223,171 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
 
+  const handleNext = async () => {
+    const data = methods.getValues();
+    const finalAssignedEmail = watch("assignedEmail");
+    const formattedData: Product = {
+      ...emptyProduct,
+      ...data,
+      status:
+        finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
+      category: selectedCategory || "Other",
+      assignedEmail: finalAssignedEmail,
+      attributes: cast(
+        attributes.map((attr) => {
+          const initialAttr = initialData?.attributes.find(
+            (ia) => ia.key === attr.key
+          );
+          return {
+            ...AttributeModel.create(attr),
+            value:
+              attr.value !== ""
+                ? attr.value
+                : initialAttr
+                ? initialAttr.value
+                : attr.value,
+          };
+        })
+      ),
+      serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
+    };
+    Object.keys(formattedData).forEach((key) => {
+      if (
+        key !== "attributes" &&
+        formattedData.attributes.find((attr) => attr.key === key)
+      ) {
+        delete formattedData[key];
+      }
+    });
+
+    let hasError = false;
+    const attributeErrors: Record<string, string> = {};
+
+    if (formattedData.category !== "Merchandising") {
+      const brand = formattedData.attributes.find(
+        (attr) => attr.key === "brand"
+      )?.value;
+      const model = formattedData.attributes.find(
+        (attr) => attr.key === "model"
+      )?.value;
+
+      if (!brand) {
+        attributeErrors["brand"] = "Brand is required.";
+        hasError = true;
+        methods.setError("attributes", {
+          type: "manual",
+          message: "Brand is required.",
+        });
+      }
+      if (!model) {
+        attributeErrors["model"] = "Model is required.";
+        hasError = true;
+        methods.setError("attributes", {
+          type: "manual",
+          message: "Model is required.",
+        });
+      }
+    }
+
+    if (formattedData.category === "Merchandising" && !formattedData.name) {
+      attributeErrors["name"] = "Name is required for this category.";
+      hasError = true;
+      methods.setError("name", {
+        type: "manual",
+        message: "Name is required for this category.",
+      });
+    }
+    setCustomErrors(attributeErrors);
+
+    const isCategoryValid = await validateCategory();
+    if (!isCategoryValid || hasError) return;
+
+    setBulkInitialData(formattedData);
+    setShowBulkCreate(true);
+  };
+
+  useEffect(() => {
+    if (quantity > 1) {
+      clearErrors(["assignedEmail", "assignedMember", "location"]);
+    }
+  }, [quantity, clearErrors]);
+
   return (
     <FormProvider {...methods}>
       <PageLayout>
-        <div className="h-full w-full ">
-          <div className="absolute h-[90%] w-[80%] overflow-y-auto scrollbar-custom pr-4">
-            <div className="px-4 py-2 rounded-3xl border">
-              <SectionTitle className="text-[20px]">
-                {isUpdate ? "" : "Add Product"}
-              </SectionTitle>
-              <section>
-                <CategoryForm
-                  handleCategoryChange={handleCategoryChange}
-                  selectedCategory={selectedCategory}
-                  setAssignedEmail={(email) => setValue("assignedEmail", email)}
-                  formState={methods.getValues()}
-                  clearErrors={
-                    clearErrors as (name?: string | string[]) => void
-                  }
-                  isUpdate={isUpdate}
-                />
-              </section>
-            </div>
-            {selectedCategory && (
-              <div className="flex flex-col lg:flex:row gap-4 max-h-[100%] h-[90%] w-full  mt-4">
-                <div className="px-4 py-6 rounded-3xl border overflow-y-auto max-h-[500px] pb-40 scrollbar-custom">
+        <div className="h-full w-full">
+          {!showBulkCreate ? (
+            <>
+              <div className="absolute h-[90%] w-[80%] overflow-y-auto scrollbar-custom pr-4">
+                <div className="px-4 py-2 rounded-3xl border">
+                  <SectionTitle className="text-[20px]">
+                    {isUpdate ? "" : "Add Product"}
+                  </SectionTitle>
                   <section>
-                    <DynamicForm
-                      fields={FormConfig.fields}
-                      handleAttributesChange={setAttributes}
-                      isUpdate={isUpdate}
-                      initialValues={initialData}
-                      customErrors={customErrors}
-                      setCustomErrors={setCustomErrors}
-                    />
+                    <div className="flex items-center">
+                      <CategoryForm
+                        handleCategoryChange={handleCategoryChange}
+                        selectedCategory={selectedCategory}
+                        setAssignedEmail={(email) =>
+                          setValue("assignedEmail", email)
+                        }
+                        formState={methods.getValues()}
+                        clearErrors={
+                          clearErrors as (name?: string | string[]) => void
+                        }
+                        isUpdate={isUpdate}
+                        quantity={quantity}
+                        setQuantity={setQuantity}
+                      />
+                    </div>
                   </section>
                 </div>
+                {selectedCategory && (
+                  <div className="flex flex-col lg:flex:row gap-4 max-h-[100%] h-[90%] w-full mt-4">
+                    <div className="px-4 py-6 rounded-3xl border overflow-y-auto max-h-[500px] pb-40 scrollbar-custom">
+                      <section>
+                        <DynamicForm
+                          fields={FormConfig.fields}
+                          handleAttributesChange={setAttributes}
+                          isUpdate={isUpdate}
+                          initialValues={initialData}
+                          customErrors={customErrors}
+                          setCustomErrors={setCustomErrors}
+                        />
+                      </section>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
-            <Button
-              body={isUpdate ? "Update" : "Save"}
-              variant="primary"
-              className="rounded lg"
-              size={"big"}
-              onClick={handleSubmit(handleSaveProduct)}
-              disabled={isSubmitting}
+              <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
+                {quantity > 1 ? (
+                  <Button
+                    body="Next"
+                    variant="secondary"
+                    className="rounded lg"
+                    size="big"
+                    onClick={handleNext}
+                    disabled={quantity <= 1}
+                  />
+                ) : (
+                  <Button
+                    body={isUpdate ? "Update" : "Save"}
+                    variant="primary"
+                    className="rounded lg"
+                    size="big"
+                    onClick={handleSubmit(handleSaveProduct)}
+                    disabled={isSubmitting}
+                  />
+                )}
+              </aside>
+            </>
+          ) : (
+            <BulkCreateForm
+              initialData={bulkInitialData}
+              quantity={quantity}
+              onBack={() => setShowBulkCreate(false)}
             />
-          </aside>
+          )}
         </div>
         <div className="z-50">
           <GenericAlertDialog
