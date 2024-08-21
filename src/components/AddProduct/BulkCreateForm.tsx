@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { observer } from "mobx-react-lite";
@@ -90,10 +90,40 @@ const BulkCreateForm: React.FC<{
   );
   const [assignAll, setAssignAll] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const subscription = watch((value, { name }) => {
-      if (assignAll && name?.startsWith("products.")) {
-        setAssignAll(false);
+      if (assignAll && name?.startsWith("products.") && name !== "products.0") {
+        const productIndex = Number(name.split(".")[1]);
+        if (!isNaN(productIndex)) {
+          setTimeout(() => {
+            const firstProductAssignedEmail = watch("products.0.assignedEmail");
+            const firstProductAssignedMember = watch(
+              "products.0.assignedMember"
+            );
+            const firstProductLocation = watch("products.0.location");
+
+            const currentProductAssignedEmail = watch(
+              `products.${productIndex}.assignedEmail`
+            );
+            const currentProductAssignedMember = watch(
+              `products.${productIndex}.assignedMember`
+            );
+            const currentProductLocation = watch(
+              `products.${productIndex}.location`
+            );
+
+            const isEmailDifferent =
+              firstProductAssignedEmail !== currentProductAssignedEmail;
+            const isMemberDifferent =
+              firstProductAssignedMember !== currentProductAssignedMember;
+            const isLocationDifferent =
+              firstProductLocation !== currentProductLocation;
+
+            if (isEmailDifferent || isMemberDifferent || isLocationDifferent) {
+              setAssignAll(false);
+            }
+          }, 100);
+        }
       }
     });
 
@@ -166,11 +196,20 @@ const BulkCreateForm: React.FC<{
     const newSelectedLocations = [...selectedLocations];
     newSelectedLocations[index] = value;
     setSelectedLocations(newSelectedLocations);
+
+    const firstProductLocation = watch("products.0.location");
+    if (assignAll && firstProductLocation !== value) {
+      setAssignAll(false);
+      return;
+    }
+
     if (assignAll) {
       for (let i = 0; i < numProducts; i++) {
-        setValue(`products.${i}.location`, value);
-        newSelectedLocations[i] = value;
-        clearErrors([`products.${i}.location`]);
+        if (i !== index) {
+          setValue(`products.${i}.location`, value);
+          newSelectedLocations[i] = value;
+          clearErrors([`products.${i}.location`]);
+        }
       }
       setSelectedLocations(newSelectedLocations);
     }
