@@ -231,6 +231,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               name="assignedMember"
               selectedOption={selectedAssignedMember}
               onChange={handleAssignedMemberChange}
+              searchable={true}
               className="w-full "
             />
             <div className="min-h-[24px]">
@@ -398,6 +399,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 name="assignedMember"
                 selectedOption={selectedAssignedMember}
                 onChange={handleAssignedMemberChange}
+                searchable={true}
                 className="w-full"
                 disabled={quantity > 1}
               />
