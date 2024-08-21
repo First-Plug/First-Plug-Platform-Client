@@ -1,4 +1,5 @@
 import { StatusColor } from "./StatusColors";
+import Image from "next/image";
 
 export function HeadsetIcon() {
   return (
@@ -16,6 +17,65 @@ export function HeadsetIcon() {
         d="M12 1.5a9 9 0 00-9 9v5.25m18-5.25v5.25M3 12.75v4.5A1.5 1.5 0 004.5 18h1.379a1.5 1.5 0 001.342-.83l.737-1.474a1.5 1.5 0 00-1.342-2.17H3m18 0v-4.5A9 9 0 0012 1.5v0a9 9 0 00-9 9m0 0H3"
       />
     </svg>
+  );
+}
+
+export function Mouse() {
+  return (
+    <Image
+      src="/svg/mouse.svg"
+      alt="Mouse Icon"
+      width={24}
+      height={24}
+      style={{ filter: "brightness(0) saturate(100%)" }}
+    />
+  );
+}
+
+export function HeadSet() {
+  return (
+    <Image
+      src="/svg/headphones.svg"
+      alt="HeadSet Icon"
+      width={24}
+      height={24}
+    />
+  );
+}
+
+export function Gift() {
+  return (
+    <Image
+      src="/svg/gift.svg"
+      alt="Gift Icon"
+      width={24}
+      height={24}
+      style={{ filter: "brightness(0) saturate(100%)" }}
+    />
+  );
+}
+
+export function LapTop() {
+  return (
+    <Image
+      src="/svg/laptop.svg"
+      alt="Laptop Icon"
+      width={24}
+      height={24}
+      style={{ filter: "brightness(0) saturate(100%)" }}
+    />
+  );
+}
+
+export function Other() {
+  return (
+    <Image
+      src="/svg/other.svg"
+      alt="Other Icon"
+      width={24}
+      height={24}
+      style={{ filter: "brightness(0) saturate(100%)" }}
+    />
   );
 }
 

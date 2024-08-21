@@ -1,21 +1,21 @@
 import React from "react";
 import {
-  HeadsetIcon,
-  ComputerIcon,
-  ShopBag,
+  HeadSet,
+  LapTop,
+  Gift,
   MonitorIcon,
-  MouseIcon,
-  GenericIcon,
+  Mouse,
+  Other,
 } from "../../../common/Icons";
 import { Product } from "@/types";
 
 const categoryToIconMap = {
-  audio: HeadsetIcon,
-  computer: ComputerIcon,
-  merchandising: ShopBag,
+  audio: HeadSet,
+  computer: LapTop,
+  merchandising: Gift,
   monitor: MonitorIcon,
-  peripherals: MouseIcon,
-  other: GenericIcon,
+  peripherals: Mouse,
+  other: Other,
 };
 
 interface CategoryIconsProps {
@@ -34,7 +34,7 @@ const CategoryIcons: React.FC<CategoryIconsProps> = ({ products }) => {
   return (
     <div className="flex gap-4 flex-wrap">
       {uniqueCategories.map((category) => {
-        const IconComponent = categoryToIconMap[category] || GenericIcon;
+        const IconComponent = categoryToIconMap[category] || Other;
         return (
           <div className="relative group" key={category}>
             <IconComponent />
