@@ -19,6 +19,8 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
         if (key === "birthDate" && initialData[key]) {
           const date = new Date(initialData[key]);
           setValue(key, date.toISOString().split("T")[0]);
+        } else if (key === "dni" && initialData[key]) {
+          setValue(key, initialData[key].toString());
         } else {
           setValue(key, initialData[key]);
         }
