@@ -65,13 +65,18 @@ export function DropdownInputProductForm({
     }
   };
 
+  const normalizeString = (str: string) =>
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (searchable) {
       const inputValue = event.target.value;
       setSearchTerm(inputValue);
 
       const matchingOptions = options.filter((option) =>
-        option.toLowerCase().startsWith(inputValue.toLowerCase())
+        normalizeString(option)
+          .toLowerCase()
+          .startsWith(normalizeString(inputValue).toLowerCase())
       );
 
       setFilteredOptions(matchingOptions);
@@ -100,6 +105,12 @@ export function DropdownInputProductForm({
       firstMatchingOption?.scrollIntoView({ block: "nearest" });
     }
   }, [filteredOptions, isOpen]);
+
+  useEffect(() => {
+    if (selectedOption !== searchTerm) {
+      setSearchTerm(selectedOption || "");
+    }
+  }, [selectedOption]);
 
   return (
     <div className={`relative ${className || ""}`} ref={dropdownRef}>
