@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { RootTable } from "../RootTable";
 import {
   LOCATION,
@@ -165,16 +165,18 @@ export default function ProdcutsDetailsTable({
     (product) => product.status !== "Deprecated"
   );
 
-  const { subscribeToReset } = useFilterReset();
+  // const { subscribeToReset } = useFilterReset();
 
-  useEffect(() => {
-    const unsubscribe = subscribeToReset(() => {
-      if (onClearFilters) {
-        onClearFilters();
-      }
-    });
-    return unsubscribe;
-  }, [subscribeToReset, onClearFilters]);
+  // const memoizedClearFilters = useCallback(onClearFilters, []);
+
+  // useEffect(() => {
+  //   const unsubscribe = subscribeToReset(() => {
+  //     if (memoizedClearFilters) {
+  //       memoizedClearFilters();
+  //     }
+  //   });
+  //   return unsubscribe;
+  // }, [subscribeToReset, memoizedClearFilters]);
 
   return (
     <RootTable
