@@ -58,6 +58,13 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     }
   };
 
+  const handleClearFilter = () => {
+    setSelectedOptions([]);
+    setSelectAll(false);
+    onChange([]);
+    onClearFilter();
+  };
+
   const combinedOptions = Array.from(
     new Set([...filteredOptions, ...selectedOptions])
   );
@@ -89,7 +96,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
       </div>
       <button
         className="mt-4 p-2 hover:bg-hoverBlue  rounded"
-        onClick={onClearFilter}
+        onClick={handleClearFilter}
       >
         CLEAR FILTER
       </button>
