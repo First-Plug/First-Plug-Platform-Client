@@ -13,6 +13,7 @@ interface DropdownInputProductFormProps {
   name: string;
   value?: string;
   disabled?: boolean;
+  searchable?: boolean;
 }
 
 export function DropdownInputProductForm({
@@ -24,21 +25,32 @@ export function DropdownInputProductForm({
   className,
   name,
   disabled,
+  searchable = false,
 }: DropdownInputProductFormProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState<string>(selectedOption);
+  // const [selectedValue, setSelectedValue] = useState<string>(selectedOption);
+  const [searchTerm, setSearchTerm] = useState<string>(selectedOption || "");
+  const [filteredOptions, setFilteredOptions] = useState<string[]>([
+    ...options,
+  ]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
 
   const toggleDropdown = () => {
     if (!disabled) {
       setIsOpen(!isOpen);
+      if (!isOpen) {
+        setSearchTerm(selectedOption || "");
+        setFilteredOptions([...options]);
+      }
     }
   };
 
   const handleOptionClick = (option: string) => {
     if (!disabled) {
       onChange && onChange(option);
-      setSelectedValue(option);
+      setSearchTerm(option);
       setIsOpen(false);
     }
   };
@@ -49,12 +61,36 @@ export function DropdownInputProductForm({
       !dropdownRef.current.contains(event.target as Node)
     ) {
       setIsOpen(false);
+      setSearchTerm(selectedOption || "");
+    }
+  };
+
+  const normalizeString = (str: string) =>
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (searchable) {
+      const inputValue = event.target.value;
+      setSearchTerm(inputValue);
+
+      const matchingOptions = options.filter((option) =>
+        normalizeString(option)
+          .toLowerCase()
+          .startsWith(normalizeString(inputValue).toLowerCase())
+      );
+
+      setFilteredOptions(matchingOptions);
+
+      if (!isOpen) {
+        setIsOpen(true);
+      }
     }
   };
 
   useEffect(() => {
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      inputRef.current?.focus();
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
@@ -63,19 +99,35 @@ export function DropdownInputProductForm({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (filteredOptions.length > 0 && isOpen) {
+      const firstMatchingOption = optionRefs.current[0];
+      firstMatchingOption?.scrollIntoView({ block: "nearest" });
+    }
+  }, [filteredOptions, isOpen]);
+
+  useEffect(() => {
+    if (selectedOption !== searchTerm) {
+      setSearchTerm(selectedOption || "");
+    }
+  }, [selectedOption]);
+
   return (
     <div className={`relative ${className || ""}`} ref={dropdownRef}>
       <label className="block text-dark-grey ml-2 font-sans">{title}</label>
       <div className="relative">
         <input
+          ref={inputRef}
           type="text"
-          value={selectedOption || ""}
+          value={searchable ? searchTerm : selectedOption || ""}
           placeholder={placeholder}
-          readOnly
+          readOnly={!searchable}
           onClick={toggleDropdown}
+          onChange={handleSearch}
           className={`w-full h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border text-black p-4 font-sans focus:outline-none`}
           name={name}
           disabled={disabled}
+          autoComplete="off"
         />
         <div onClick={toggleDropdown}>
           <ChevronDown
@@ -90,9 +142,10 @@ export function DropdownInputProductForm({
             isOpen ? "block" : "hidden"
           }`}
         >
-          {options.map((option) => (
+          {filteredOptions.map((option, index) => (
             <li
               key={option}
+              ref={(el) => (optionRefs.current[index] = el)}
               onClick={() => handleOptionClick(option)}
               className="py-2 px-4 cursor-pointer hover:bg-gray-100"
             >

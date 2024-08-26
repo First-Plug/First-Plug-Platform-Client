@@ -13,6 +13,7 @@ import { Badge, badgeVariants } from "@/components/ui/badge";
 import useActions from "@/hooks/useActions";
 import useFetch from "@/hooks/useFetch";
 import { XIcon } from "lucide-react";
+import CategoryIcons from "@/components/AsideContents/EditTeamAside/CategoryIcons";
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
   product,
@@ -115,7 +116,7 @@ const MembersList = observer(function MembersList({
           <div>
             <SearchInput placeholder="Search Member" onSearch={handleSearch} />
           </div>
-          <div className="flex flex-col gap-2 w-full max-h-[250px] h-[250px] overflow-y-auto">
+          <div className="flex flex-col gap-2 w-full max-h-[250px] h-[250px] overflow-y-auto pt-4">
             {displayedMembers
               .filter((m) => m._id !== currentMember._id)
               .map((member) => (
@@ -139,6 +140,7 @@ const MembersList = observer(function MembersList({
                         ? member.team
                         : member.team?.name}
                     </span>
+                    <CategoryIcons products={member.products} />
                   </div>
                 </div>
               ))}

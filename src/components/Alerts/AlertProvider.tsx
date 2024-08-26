@@ -107,6 +107,7 @@ export default observer(function AlertProvider() {
       description: " This member has been successfully updated.",
       closeAction: async () => {
         await fetchMembers();
+        await fetchStock();
         setAside(undefined);
         setAlert(undefined);
       },

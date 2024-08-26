@@ -7,6 +7,21 @@ import { DeleteAction } from "../Alerts";
 import { RootTable } from "./RootTable";
 import FormatedDate from "./helpers/FormatedDate";
 
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 const membersColumns: (
   handleEdit: (memberId: TeamMember["_id"]) => void,
   handleDelete: (memberId: TeamMember["_id"]) => void,
@@ -22,6 +37,21 @@ const membersColumns: (
         {getValue<string>()}
       </span>
     ),
+    meta: {
+      filterVariant: "custom",
+      options: (rows) => {
+        const options = new Set<string>();
+        rows.forEach((row) => {
+          options.add(row.original.fullName || "No Data");
+        });
+        return Array.from(options);
+      },
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId) || "No Data");
+    },
   },
   {
     accessorKey: "birthDate",
@@ -33,6 +63,19 @@ const membersColumns: (
         <FormatedDate date={getValue<string>()} />{" "}
       </span>
     ),
+    meta: {
+      filterVariant: "select",
+      options: [...MONTHS, "No Data"],
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      const dateValue = row.getValue(columnId) as string | undefined;
+      const month = dateValue
+        ? new Date(dateValue).toLocaleString("en-US", { month: "long" })
+        : "No Data";
+      return filterValue.includes(month);
+    },
   },
   {
     accessorKey: "startDate",
@@ -43,6 +86,19 @@ const membersColumns: (
         <FormatedDate date={getValue<string>()} />
       </span>
     ),
+    meta: {
+      filterVariant: "select",
+      options: [...MONTHS, "No Data"],
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      const dateValue = row.getValue(columnId) as string | undefined;
+      const month = dateValue
+        ? new Date(dateValue).toLocaleString("en-US", { month: "long" })
+        : "No Data";
+      return filterValue.includes(month);
+    },
   },
   {
     accessorKey: "teamId",
@@ -61,6 +117,21 @@ const membersColumns: (
     },
     meta: {
       filterVariant: "select",
+      options: (rows) => {
+        const options = new Set<string>();
+        rows.forEach((row) => {
+          if (row.original.team) {
+            options.add((row.original.team as Team).name);
+          }
+        });
+        return Array.from(options);
+      },
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      const teamName = (row.original.team as Team)?.name || "Not Assigned";
+      return filterValue.includes(teamName);
     },
   },
   {
@@ -70,6 +141,21 @@ const membersColumns: (
     cell: ({ getValue }) => (
       <span className="font-semibold">{getValue<string>()}</span>
     ),
+    meta: {
+      filterVariant: "custom",
+      options: (rows) => {
+        const options = new Set<string>();
+        rows.forEach((row) => {
+          options.add(row.original.position || "No Data");
+        });
+        return Array.from(options);
+      },
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId) || "No Data");
+    },
   },
   {
     accessorKey: "products",
@@ -80,6 +166,16 @@ const membersColumns: (
         {(row.original.products || []).length}
       </span>
     ),
+    meta: {
+      filterVariant: "select",
+      options: Array.from({ length: 99 }, (_, i) => i.toString()),
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      const productCount = (row.original.products || []).length.toString();
+      return filterValue.includes(productCount);
+    },
   },
   {
     accessorKey: "",

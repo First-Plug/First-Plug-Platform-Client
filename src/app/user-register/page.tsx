@@ -26,6 +26,7 @@ export default function UserRegister() {
     additionalInfo: "",
     teamId: "",
     isDeleted: false,
+    dni: 0,
   });
   const handleInput = useCallback((key: string, value: unknown) => {
     setState((prev) => ({

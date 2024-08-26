@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProductServices } from "@/services";
+import CategoryIcons from "./AsideContents/EditTeamAside/CategoryIcons";
+
 interface AddMemberFormProps {
   members: TeamMember[];
   selectedMember?: TeamMember | null;
@@ -202,6 +204,7 @@ export const AddMemberForm = observer(function ({
                       ? member.team
                       : member.team?.name}
                   </span>
+                  <CategoryIcons products={member.products} />
                 </div>
               </div>
             ))}

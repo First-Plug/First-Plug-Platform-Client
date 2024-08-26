@@ -19,6 +19,8 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
         if (key === "birthDate" && initialData[key]) {
           const date = new Date(initialData[key]);
           setValue(key, date.toISOString().split("T")[0]);
+        } else if (key === "dni" && initialData[key]) {
+          setValue(key, initialData[key].toString());
         } else {
           setValue(key, initialData[key]);
         }
@@ -57,7 +59,15 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
                       placeholder={field.placeholder}
                       title={field.title}
                       value={controllerField.value || ""}
-                      onChange={controllerField.onChange}
+                      onChange={(e) =>
+                        field.name === "dni"
+                          ? controllerField.onChange(
+                              e.target.value !== ""
+                                ? parseInt(e.target.value, 10)
+                                : undefined
+                            )
+                          : controllerField.onChange(e.target.value)
+                      }
                       allowFutureDates={false}
                     />
                     <div className="min-h-[24px]">
