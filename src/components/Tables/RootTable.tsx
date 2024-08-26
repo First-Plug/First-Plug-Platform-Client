@@ -54,6 +54,8 @@ import {
   SelectTrigger,
 } from "../ui/select";
 import FilterComponent from "./Filters/FilterComponent";
+import { useFilterReset } from "./Filters/FilterResetContext";
+import { on } from "events";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -63,6 +65,7 @@ interface DataTableProps<TData, TValue> {
   tableType: TableType;
   pageSize?: number;
   tableNameRef?: string;
+  onClearFilters?: () => void;
 }
 
 export function RootTable<TData, TValue>({
@@ -73,6 +76,7 @@ export function RootTable<TData, TValue>({
   tableType,
   pageSize = 5,
   tableNameRef,
+  onClearFilters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -170,20 +174,6 @@ export function RootTable<TData, TValue>({
     }
   }, [filterMenuOpen, refs, update]);
 
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     if (filterMenuOpen) {
-  //       update();
-  //     }
-  //   };
-
-  //   const containerRef = tableContainerRef.current;
-  //   containerRef?.addEventListener("scroll", handleScroll);
-  //   return () => {
-  //     containerRef?.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, [filterMenuOpen, update]);
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -203,11 +193,23 @@ export function RootTable<TData, TValue>({
     };
   }, [filterMenuOpen]);
 
+  // const { resetFilters } = useFilterReset();
+
+  useEffect(() => {
+    if (onClearFilters) {
+      onClearFilters();
+    }
+  }, [onClearFilters]);
+
   return (
     <div className="relative h-full flex-grow flex flex-col gap-1">
       {tableType !== "subRow" && (
         <div className="max-h-[50%] flex items-center">
-          <TableActions table={table} type={tableType} />
+          <TableActions
+            table={table}
+            type={tableType}
+            onClearAllFilters={onClearFilters}
+          />
         </div>
       )}
       <div
@@ -288,6 +290,11 @@ export function RootTable<TData, TValue>({
                                         value: newSelectedOptions,
                                       },
                                     ])
+                                  }
+                                  onClearFilter={() =>
+                                    setColumnFilters((prev) =>
+                                      prev.filter((f) => f.id !== header.id)
+                                    )
                                   }
                                   onClose={() => setFilterMenuOpen(null)}
                                 />

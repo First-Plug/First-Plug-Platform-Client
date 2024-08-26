@@ -6,7 +6,13 @@ import { observer } from "mobx-react-lite";
 import { RootTable } from "./RootTable";
 import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
+import { useFilterReset } from "./Filters/FilterResetContext";
 import "./table.css";
+import { useEffect } from "react";
+
+interface ProductsTableProps {
+  onClearFilters: () => void;
+}
 
 export const productColumns: ColumnDef<ProductTable>[] = [
   {
@@ -135,10 +141,20 @@ export const productColumns: ColumnDef<ProductTable>[] = [
   },
 ];
 
-export var ProductsTable = observer(function ProductsTable() {
+export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
+  onClearFilters,
+}) {
   const {
     products: { tableProducts, availableProducts, onlyAvaliable },
   } = useStore();
+  const { resetFilters } = useFilterReset();
+
+  const handleClearFilters = () => {
+    resetFilters();
+    if (onClearFilters) {
+      onClearFilters();
+    }
+  };
 
   return (
     <RootTable
@@ -147,8 +163,12 @@ export var ProductsTable = observer(function ProductsTable() {
       data={onlyAvaliable ? availableProducts : tableProducts}
       columns={productColumns}
       getRowCanExpand={() => true}
+      onClearFilters={handleClearFilters}
       renderSubComponent={(row) => (
-        <ProdcutsDetailsTable products={row.products} />
+        <ProdcutsDetailsTable
+          products={row.products}
+          onClearFilters={handleClearFilters}
+        />
       )}
     />
   );

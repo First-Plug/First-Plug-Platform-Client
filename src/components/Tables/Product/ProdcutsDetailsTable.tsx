@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { RootTable } from "../RootTable";
 import {
   LOCATION,
@@ -14,8 +14,12 @@ import { ProductLocation, ShipmentStatusCard } from "@/common";
 import { ActionButton } from "./ActionButton";
 import EditProduct from "./EditProduct";
 import { DeleteAction } from "@/components/Alerts";
+import { useFilterReset } from "../Filters/FilterResetContext";
+
 interface IProdcutsDetailsTable {
   products: Product[];
+  onClearFilters?: () => void;
+  onSubTableInstance?: (instance: any) => void;
 }
 
 const InternalProductsColumns: ColumnDef<Product>[] = [
@@ -155,15 +159,29 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
 ];
 export default function ProdcutsDetailsTable({
   products,
+  onClearFilters,
 }: IProdcutsDetailsTable) {
   const fiteredProducts = products.filter(
     (product) => product.status !== "Deprecated"
   );
+
+  const { subscribeToReset } = useFilterReset();
+
+  useEffect(() => {
+    const unsubscribe = subscribeToReset(() => {
+      if (onClearFilters) {
+        onClearFilters();
+      }
+    });
+    return unsubscribe;
+  }, [subscribeToReset, onClearFilters]);
+
   return (
     <RootTable
       tableType="subRow"
       data={fiteredProducts}
       columns={InternalProductsColumns}
+      onClearFilters={onClearFilters}
     />
   );
 }

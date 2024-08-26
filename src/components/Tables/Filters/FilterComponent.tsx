@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { SearchInput } from "../../../common/SearchInput";
 import { IconX } from "../../../common/Icons";
 
@@ -6,12 +6,14 @@ interface FilterComponentProps {
   options: string[];
   onChange: (selectedOptions: string[]) => void;
   onClose: () => void;
+  onClearFilter: () => void;
 }
 
 const FilterComponent: React.FC<FilterComponentProps> = ({
   options,
   onChange,
   onClose,
+  onClearFilter,
 }) => {
   const [filteredOptions, setFilteredOptions] = useState<string[]>(options);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -79,6 +81,12 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
           </div>
         ))}
       </div>
+      <button
+        className="mt-4 p-2 hover:bg-hoverBlue  rounded"
+        onClick={onClearFilter}
+      >
+        CLEAR FILTER
+      </button>
     </div>
   );
 };
