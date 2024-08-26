@@ -93,6 +93,9 @@ export function RootTable<TData, TValue>({
   const filterIconRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const filterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [selectedFilterOptions, setSelectedFilterOptions] = useState<{
+    [key: string]: string[];
+  }>({});
 
   const { x, y, strategy, refs, update } = useFloating({
     strategy: "fixed",
@@ -138,6 +141,21 @@ export function RootTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
+
+  const handleFilterChange = (columnId: string, selectedOptions: string[]) => {
+    setSelectedFilterOptions((prev) => ({
+      ...prev,
+      [columnId]: selectedOptions,
+    }));
+
+    setColumnFilters((prev) => [
+      ...prev.filter((f) => f.id !== columnId),
+      {
+        id: columnId,
+        value: selectedOptions,
+      },
+    ]);
+  };
 
   const handleFilterIconClick = (
     headerId: string,
@@ -192,8 +210,6 @@ export function RootTable<TData, TValue>({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [filterMenuOpen]);
-
-  // const { resetFilters } = useFilterReset();
 
   useEffect(() => {
     if (onClearFilters) {
@@ -282,14 +298,14 @@ export function RootTable<TData, TValue>({
                               >
                                 <FilterComponent
                                   options={filterOptions}
+                                  initialSelectedOptions={
+                                    selectedFilterOptions[header.id] || []
+                                  }
                                   onChange={(newSelectedOptions) =>
-                                    setColumnFilters((prev) => [
-                                      ...prev.filter((f) => f.id !== header.id),
-                                      {
-                                        id: header.id,
-                                        value: newSelectedOptions,
-                                      },
-                                    ])
+                                    handleFilterChange(
+                                      header.id,
+                                      newSelectedOptions
+                                    )
                                   }
                                   onClearFilter={() =>
                                     setColumnFilters((prev) =>

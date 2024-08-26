@@ -7,6 +7,7 @@ interface FilterComponentProps {
   onChange: (selectedOptions: string[]) => void;
   onClose: () => void;
   onClearFilter: () => void;
+  initialSelectedOptions?: string[];
 }
 
 const FilterComponent: React.FC<FilterComponentProps> = ({
@@ -14,11 +15,16 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   onChange,
   onClose,
   onClearFilter,
+  initialSelectedOptions,
 }) => {
   const [filteredOptions, setFilteredOptions] = useState<string[]>(options);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setSelectedOptions(initialSelectedOptions);
+  }, [initialSelectedOptions]);
 
   const handleSearch = (query: string) => {
     const filtered = options.filter((option) =>
@@ -61,7 +67,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
       ref={filterRef}
       className="fixed bg-white p-6 w-64 shadow-lg z-50 overflow-visible"
     >
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-end items-center mb-4">
         <IconX onClick={onClose} className="cursor-pointer" />
       </div>
       <SearchInput placeholder="Search..." onSearch={handleSearch} />
