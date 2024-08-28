@@ -1,12 +1,26 @@
 import { ArrowLeft } from "@/common";
 import ProductDetail from "@/common/ProductDetail";
 import { Product } from "@/types";
+import { useState } from "react";
 interface IRelacoteProducts {
   products: Product[];
   handleBack: (action: "open" | "close") => void;
+  addTaskToQueue: (task: () => Promise<void>, productId) => void;
 }
 
-export function RelacoteProducts({ products, handleBack }: IRelacoteProducts) {
+export function RelacoteProducts({
+  products,
+  handleBack,
+  addTaskToQueue,
+}: IRelacoteProducts) {
+  const [enabledProductIndex, setEnabledProductIndex] = useState(0);
+
+  const handleSuccess = () => {
+    if (enabledProductIndex < products.length - 1) {
+      setEnabledProductIndex((prevIndex) => prevIndex + 1);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2 h-full max-h-[100%]">
       <div
@@ -17,8 +31,15 @@ export function RelacoteProducts({ products, handleBack }: IRelacoteProducts) {
         <p>Back</p>
       </div>
       <div className=" max-h-[100%] h-[100%] overflow-y-auto scrollbar-custom">
-        {products.map((product) => (
-          <ProductDetail product={product} isRelocating key={product._id} />
+        {products.map((product, index) => (
+          <ProductDetail
+            product={product}
+            isRelocating
+            key={product._id}
+            addTaskToQueue={addTaskToQueue}
+            onRelocateSuccess={handleSuccess}
+            disabled={enabledProductIndex !== index}
+          />
         ))}
       </div>
     </div>

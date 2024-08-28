@@ -19,8 +19,9 @@ import { Badge, badgeVariants } from "../ui/badge";
 
 interface IRemoveItems {
   product: Product;
+  selectedProducts: Product[];
 }
-export function ReturnProduct({ product }: IRemoveItems) {
+export function ReturnProduct({ product, selectedProducts }: IRemoveItems) {
   const {
     alerts: { setAlert },
     aside: { setAside },
@@ -37,17 +38,24 @@ export function ReturnProduct({ product }: IRemoveItems) {
   } = useStore();
 
   const handleRemoveItems = async () => {
+    if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
+      console.error("No products selected for return");
+      return; // Sal de la función si no hay productos seleccionados
+    }
+
     setIsRemoving(true);
     try {
-      await unassignProduct({
-        location: newLocation,
-        product,
-        currentMember: selectedMember,
-      });
+      for (const product of selectedProducts) {
+        await unassignProduct({
+          location: newLocation,
+          product,
+          currentMember: selectedMember,
+        });
+      }
       await fetchMembers();
       setReturnStatus("success");
     } catch (error) {
-      console.log("error", error);
+      console.error("Error returning product:", error);
       setReturnStatus("error");
     } finally {
       setIsRemoving(false);
@@ -57,7 +65,7 @@ export function ReturnProduct({ product }: IRemoveItems) {
   return (
     <div className="flex flex-col border-b pb-2 mb-2 rounded-sm items-start gap-1">
       <div className="w-full">
-        <ProductDetail product={product} />
+        <ProductDetail product={product} selectedProducts={selectedProducts} />
       </div>
 
       <section className="flex justify-between  items-center w-full gap-10 ">

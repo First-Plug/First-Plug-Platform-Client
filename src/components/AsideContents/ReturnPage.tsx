@@ -2,13 +2,21 @@ import { ArrowLeft } from "@/common";
 import { Product } from "@/types";
 
 import { ReturnProduct } from "./ReturnProduct";
+import { useState } from "react";
 
 interface IReturnPage {
   products: Product[];
   handleBack: (action: "open" | "close") => void;
+  addTaskToQueue: (task: () => Promise<void>, productId) => void;
 }
 
-export function ReturnPage({ handleBack, products }: IReturnPage) {
+export function ReturnPage({
+  handleBack,
+  products,
+  addTaskToQueue,
+}: IReturnPage) {
+  const [selectedProducts] = useState<Product[]>(products);
+
   return (
     <div className="flex flex-col gap-2  h-full max-h-[100%]">
       <div
@@ -27,7 +35,11 @@ export function ReturnPage({ handleBack, products }: IReturnPage) {
       </div>
       <div className=" max-h-[90%] h-[90%] overflow-y-auto scrollbar-custom">
         {products.map((product) => (
-          <ReturnProduct product={product} key={product._id} />
+          <ReturnProduct
+            product={product}
+            key={product._id}
+            selectedProducts={selectedProducts}
+          />
         ))}
       </div>
     </div>
