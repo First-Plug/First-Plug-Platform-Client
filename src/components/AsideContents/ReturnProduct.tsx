@@ -40,7 +40,7 @@ export function ReturnProduct({ product, selectedProducts }: IRemoveItems) {
   const handleRemoveItems = async () => {
     if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
       console.error("No products selected for return");
-      return; // Sal de la función si no hay productos seleccionados
+      return;
     }
 
     setIsRemoving(true);

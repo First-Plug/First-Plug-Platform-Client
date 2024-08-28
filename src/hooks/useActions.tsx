@@ -38,7 +38,6 @@ export default function useActions() {
   };
 
   const addTaskToQueue = (task: () => Promise<void>, productId: string) => {
-    console.log(`Adding task to queue for product ${productId}`);
     taskQueue.push(task);
     if (!isProcessingQueue) {
       processQueue();
@@ -58,7 +57,6 @@ export default function useActions() {
     let retryCount = 0;
 
     const task = async () => {
-      console.log("Attempting to relocate product: ".concat(product._id));
       const updatedProduct: Partial<Product> = {
         category: product.category,
         attributes: product.attributes,
@@ -76,11 +74,7 @@ export default function useActions() {
 
       while (retryCount < retryLimit) {
         try {
-          const response = await ProductServices.updateProduct(
-            product._id,
-            updatedProduct
-          );
-          console.log("Product relocated successfully:", response);
+          await ProductServices.updateProduct(product._id, updatedProduct);
           break;
         } catch (error) {
           retryCount++;
