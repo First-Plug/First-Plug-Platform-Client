@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Product, Team, TeamMember } from "@/types";
 import { ProductImage } from "./ProductImage";
 import PrdouctModelDetail from "./PrdouctModelDetail";
@@ -18,9 +18,15 @@ export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
   product,
   setRelocateStauts,
+  addTaskToQueue,
+  disabled,
+  onRelocateSuccess,
 }: {
   product: Product;
   setRelocateStauts: (status: RelocateStatus) => void;
+  addTaskToQueue: (task: () => Promise<void>, productId) => void;
+  disabled?: boolean;
+  onRelocateSuccess?: () => void;
 }) {
   const {
     members: { members, selectedMember: currentMember, setRelocateChange },
@@ -31,6 +37,7 @@ const MembersList = observer(function MembersList({
     useState<RelocateStatus>(undefined);
   const [selectedMember, setSelectedMember] = useState<TeamMember>();
   const { handleReassignProduct } = useActions();
+  const { fetchMembers } = useFetch();
 
   const handleSelectMember = (member: TeamMember) => {
     setSelectedMember(member);
@@ -51,22 +58,31 @@ const MembersList = observer(function MembersList({
     (member) => member.email !== currentMember?.email
   );
 
-  const { fetchMembers } = useFetch();
-
   const handleRelocateProduct = async () => {
-    setRelocating(true);
-    try {
-      if (selectedMember) {
-        await handleReassignProduct({ currentMember, selectedMember, product });
-        await fetchMembers();
-        setRelocateResult("success");
-        setRelocateStauts("success");
-      }
-    } catch (error) {
-      setRelocateResult("error");
-      setRelocateStauts("error");
-    } finally {
-      setRelocating(false);
+    if (selectedMember) {
+      const task = async () => {
+        setRelocating(true);
+        try {
+          await handleReassignProduct({
+            currentMember,
+            selectedMember,
+            product,
+          });
+          // await fetchMembers();
+          setRelocateResult("success");
+          setRelocateStauts("success");
+          if (onRelocateSuccess) {
+            onRelocateSuccess();
+          }
+        } catch (error) {
+          setRelocateResult("error");
+          setRelocateStauts("error");
+        } finally {
+          setRelocating(false);
+        }
+      };
+      addTaskToQueue(task, product._id);
+      setRelocating(true);
     }
   };
 
@@ -79,7 +95,10 @@ const MembersList = observer(function MembersList({
             <button
               className="border border-light-grey rounded-md px-2 py-1 bg-hoverBlue flex items-center gap-2 cursor-pointer "
               disabled={
-                isRelocating || relocateResult === "success" || !selectedMember
+                isRelocating ||
+                relocateResult === "success" ||
+                !selectedMember ||
+                disabled
               }
               onClick={() => setSelectedMember(null)}
             >
@@ -96,7 +115,10 @@ const MembersList = observer(function MembersList({
               variant="text"
               onClick={handleRelocateProduct}
               disabled={
-                isRelocating || relocateResult === "success" || !selectedMember
+                isRelocating ||
+                relocateResult === "success" ||
+                !selectedMember ||
+                disabled
               }
             >
               {!isRelocating ? <span>Confirm ✔️</span> : <LoaderSpinner />}
@@ -129,6 +151,7 @@ const MembersList = observer(function MembersList({
                     <input
                       type="checkbox"
                       checked={member._id === selectedMember._id}
+                      onChange={() => handleSelectMember(member)}
                     />
                   )}
                   <div className="flex gap-2">
@@ -157,6 +180,10 @@ interface ProductDetailProps {
   isRelocating?: boolean;
   handleSelect?: (productId: Product) => void;
   setProductToRemove?: (product: Product) => void;
+  selectedProducts?: Product[];
+  addTaskToQueue?: (task: () => Promise<void>, productId) => void;
+  onRelocateSuccess?: () => void;
+  disabled?: boolean;
 }
 export default function ProductDetail({
   product,
@@ -165,10 +192,14 @@ export default function ProductDetail({
   isChecked = false,
   setProductToRemove,
   isRelocating = false,
+  addTaskToQueue,
+  onRelocateSuccess,
+  disabled,
 }: ProductDetailProps) {
   const [showList, setShowList] = useState(false);
   const [relocateStatus, setRelocateStauts] =
     useState<RelocateStatus>(undefined);
+
   const toggleList = () => setShowList(!showList);
 
   return (
@@ -212,7 +243,13 @@ export default function ProductDetail({
       {isRelocating && showList && <hr />}
 
       {isRelocating && showList && (
-        <MembersList product={product} setRelocateStauts={setRelocateStauts} />
+        <MembersList
+          product={product}
+          setRelocateStauts={setRelocateStauts}
+          addTaskToQueue={addTaskToQueue}
+          onRelocateSuccess={onRelocateSuccess}
+          disabled={disabled}
+        />
       )}
     </div>
   );

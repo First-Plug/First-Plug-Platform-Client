@@ -1,12 +1,13 @@
 import { Category, Key, Product } from "@/types";
 import React from "react";
+import { isAlive } from "mobx-state-tree";
 interface PrdouctModelDetailProps {
   product: Product;
 }
 export default function PrdouctModelDetail({
   product,
 }: PrdouctModelDetailProps) {
-  if (!product) return null;
+  if (!product || !isAlive(product)) return null;
   const { attributes } = product;
 
   if (!attributes) {
