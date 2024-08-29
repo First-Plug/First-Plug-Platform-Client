@@ -237,11 +237,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
       model === "Other" &&
       !formatData.name
     ) {
-      attributeErrors["name"] = "Name is required for this model.";
+      attributeErrors["name"] =
+        "Name is required for this model. Please describe it. ";
       hasError = true;
       methods.setError("name", {
         type: "manual",
-        message: "Name is required for this model.",
+        message: "Name is required for this model. Please describe it. ",
       });
     }
     setCustomErrors(attributeErrors);
@@ -381,11 +382,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
       model === "Other" &&
       !formattedData.name
     ) {
-      attributeErrors["name"] = "Name is required for this model.";
+      attributeErrors["name"] =
+        "Name is required for this model. Please describe it. ";
       hasError = true;
       methods.setError("name", {
         type: "manual",
-        message: "Name is required for this model.",
+        message: "Name is required for this model. Please describe it. ",
       });
     }
     setCustomErrors(attributeErrors);
