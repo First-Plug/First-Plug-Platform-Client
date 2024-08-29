@@ -8,6 +8,7 @@ import { SearchInput } from "./SearchInput";
 import { Button } from "./Button";
 import { ArrowLeft } from "./Icons";
 import { observer } from "mobx-react-lite";
+import { clone, isAlive } from "mobx-state-tree";
 import { LoaderSpinner } from "./LoaderSpinner";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import useActions from "@/hooks/useActions";
@@ -38,6 +39,7 @@ const MembersList = observer(function MembersList({
   const [selectedMember, setSelectedMember] = useState<TeamMember>();
   const { handleReassignProduct } = useActions();
   const { fetchMembers } = useFetch();
+  const clonedProduct = clone(product);
 
   const handleSelectMember = (member: TeamMember) => {
     setSelectedMember(member);
@@ -66,7 +68,7 @@ const MembersList = observer(function MembersList({
           await handleReassignProduct({
             currentMember,
             selectedMember,
-            product,
+            product: clonedProduct,
           });
           // await fetchMembers();
           setRelocateResult("success");
@@ -196,6 +198,7 @@ export default function ProductDetail({
   onRelocateSuccess,
   disabled,
 }: ProductDetailProps) {
+  const clonedProduct = useRef(clone(product)).current;
   const [showList, setShowList] = useState(false);
   const [relocateStatus, setRelocateStauts] =
     useState<RelocateStatus>(undefined);
@@ -215,13 +218,13 @@ export default function ProductDetail({
         <section className="flex items-center  gap-2  ">
           <section className="flex gap-2 items-start">
             <div className="flex gap-2 items-start">
-              <ProductImage category={product.category} />
-              <span className="font-semibold">{product.category}</span>
+              <ProductImage category={clonedProduct.category} />
+              <span className="font-semibold">{clonedProduct.category}</span>
             </div>
 
             <hr />
 
-            <PrdouctModelDetail product={product} />
+            <PrdouctModelDetail product={clonedProduct} />
           </section>
           {isRelocating && (
             <Button
@@ -244,7 +247,7 @@ export default function ProductDetail({
 
       {isRelocating && showList && (
         <MembersList
-          product={product}
+          product={clonedProduct}
           setRelocateStauts={setRelocateStauts}
           addTaskToQueue={addTaskToQueue}
           onRelocateSuccess={onRelocateSuccess}
