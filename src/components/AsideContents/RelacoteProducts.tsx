@@ -2,6 +2,7 @@ import { ArrowLeft } from "@/common";
 import ProductDetail from "@/common/ProductDetail";
 import { Product } from "@/types";
 import { useState } from "react";
+import { clone } from "mobx-state-tree";
 interface IRelacoteProducts {
   products: Product[];
   handleBack: (action: "open" | "close") => void;
@@ -31,16 +32,20 @@ export function RelacoteProducts({
         <p>Back</p>
       </div>
       <div className=" max-h-[100%] h-[100%] overflow-y-auto scrollbar-custom">
-        {products.map((product, index) => (
-          <ProductDetail
-            product={product}
-            isRelocating
-            key={product._id}
-            addTaskToQueue={addTaskToQueue}
-            onRelocateSuccess={handleSuccess}
-            disabled={enabledProductIndex !== index}
-          />
-        ))}
+        {products.map((product, index) => {
+          const clonedProduct = clone(product);
+
+          return (
+            <ProductDetail
+              product={clonedProduct}
+              isRelocating
+              key={clonedProduct._id}
+              addTaskToQueue={addTaskToQueue}
+              onRelocateSuccess={handleSuccess}
+              disabled={enabledProductIndex !== index}
+            />
+          );
+        })}
       </div>
     </div>
   );
