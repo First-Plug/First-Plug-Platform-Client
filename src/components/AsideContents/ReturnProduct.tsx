@@ -99,7 +99,7 @@ export function ReturnProduct({ product, selectedProducts }: IRemoveItems) {
               size="small"
               disabled={isRemoving || !newLocation}
             >
-              {!isRemoving ? <span>Remove</span> : <LoaderSpinner />}
+              {!isRemoving ? <span>Return</span> : <LoaderSpinner />}
             </Button>
           )}
         </div>
