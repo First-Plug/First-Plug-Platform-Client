@@ -155,7 +155,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setErrorMessage("");
 
     const isProductNameValid = await validateProductName();
-    console.log("Is Product Name Valid:", isProductNameValid);
     if (!isProductNameValid) return;
 
     const finalAssignedEmail = watch("assignedEmail");
@@ -302,9 +301,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
 
   const handleNext = async () => {
-    console.log("Handle Next");
     const isProductNameValid = await validateProductName();
-    console.log("Is Product Name Valid:", isProductNameValid);
     if (!isProductNameValid) return;
 
     const data = methods.getValues();
