@@ -84,7 +84,7 @@ export function ReturnProduct({
         <Select onValueChange={(value) => setNewLocation(value as Location)}>
           <SelectTrigger
             className="font-semibold text-md w-1/2"
-            disabled={returnStatus === "success"}
+            disabled={returnStatus === "success" || isRemoving}
           >
             <SelectValue placeholder="Please select the new location" />
           </SelectTrigger>
