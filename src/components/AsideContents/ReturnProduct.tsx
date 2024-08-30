@@ -19,8 +19,16 @@ import { Badge, badgeVariants } from "../ui/badge";
 
 interface IRemoveItems {
   product: Product;
+  selectedProducts: Product[];
+  isEnabled?: boolean;
+  onRemoveSuccess?: () => void;
 }
-export function ReturnProduct({ product }: IRemoveItems) {
+export function ReturnProduct({
+  product,
+  selectedProducts,
+  isEnabled,
+  onRemoveSuccess,
+}: IRemoveItems) {
   const {
     alerts: { setAlert },
     aside: { setAside },
@@ -37,17 +45,29 @@ export function ReturnProduct({ product }: IRemoveItems) {
   } = useStore();
 
   const handleRemoveItems = async () => {
+    if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
+      console.error("No products selected for return");
+      return;
+    }
+
+    if (!selectedMember || typeof selectedMember !== "object") {
+      console.error("Selected member is not valid");
+      return;
+    }
+
     setIsRemoving(true);
     try {
-      await unassignProduct({
-        location: newLocation,
-        product,
-        currentMember: selectedMember,
-      });
-      await fetchMembers();
+      for (const product of selectedProducts) {
+        await unassignProduct({
+          location: newLocation,
+          product,
+          currentMember: selectedMember,
+        });
+      }
       setReturnStatus("success");
+      onRemoveSuccess();
     } catch (error) {
-      console.log("error", error);
+      console.error("Error returning product:", error);
       setReturnStatus("error");
     } finally {
       setIsRemoving(false);
@@ -57,14 +77,14 @@ export function ReturnProduct({ product }: IRemoveItems) {
   return (
     <div className="flex flex-col border-b pb-2 mb-2 rounded-sm items-start gap-1">
       <div className="w-full">
-        <ProductDetail product={product} />
+        <ProductDetail product={product} selectedProducts={selectedProducts} />
       </div>
 
       <section className="flex justify-between  items-center w-full gap-10 ">
         <Select onValueChange={(value) => setNewLocation(value as Location)}>
           <SelectTrigger
             className="font-semibold text-md w-1/2"
-            disabled={returnStatus === "success"}
+            disabled={returnStatus === "success" || isRemoving}
           >
             <SelectValue placeholder="Please select the new location" />
           </SelectTrigger>
@@ -89,9 +109,9 @@ export function ReturnProduct({ product }: IRemoveItems) {
               onClick={handleRemoveItems}
               variant="delete"
               size="small"
-              disabled={isRemoving || !newLocation}
+              disabled={isRemoving || !newLocation || !isEnabled}
             >
-              {!isRemoving ? <span>Remove</span> : <LoaderSpinner />}
+              {!isRemoving ? <span>Return</span> : <LoaderSpinner />}
             </Button>
           )}
         </div>

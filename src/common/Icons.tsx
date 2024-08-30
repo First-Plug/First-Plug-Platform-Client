@@ -1,4 +1,121 @@
 import { StatusColor } from "./StatusColors";
+import Image from "next/image";
+
+export function HeadsetIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="w-6 h-6"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 1.5a9 9 0 00-9 9v5.25m18-5.25v5.25M3 12.75v4.5A1.5 1.5 0 004.5 18h1.379a1.5 1.5 0 001.342-.83l.737-1.474a1.5 1.5 0 00-1.342-2.17H3m18 0v-4.5A9 9 0 0012 1.5v0a9 9 0 00-9 9m0 0H3"
+      />
+    </svg>
+  );
+}
+
+export function Mouse() {
+  return (
+    <Image
+      src="/svg/mouse.svg"
+      alt="Mouse Icon"
+      width={24}
+      height={24}
+      style={{ filter: "brightness(0) saturate(100%)" }}
+    />
+  );
+}
+
+export function HeadSet() {
+  return (
+    <Image
+      src="/svg/headphones.svg"
+      alt="HeadSet Icon"
+      width={24}
+      height={24}
+    />
+  );
+}
+
+export function Gift() {
+  return (
+    <Image
+      src="/svg/gift.svg"
+      alt="Gift Icon"
+      width={24}
+      height={24}
+      style={{ filter: "brightness(0) saturate(100%)" }}
+    />
+  );
+}
+
+export function LapTop() {
+  return (
+    <Image
+      src="/svg/laptop.svg"
+      alt="Laptop Icon"
+      width={24}
+      height={24}
+      style={{ filter: "brightness(0) saturate(100%)" }}
+    />
+  );
+}
+
+export function Other() {
+  return (
+    <Image
+      src="/svg/other.svg"
+      alt="Other Icon"
+      width={24}
+      height={24}
+      style={{ filter: "brightness(0) saturate(100%)" }}
+    />
+  );
+}
+
+export function MouseIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="w-6 h-6"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672ZM12 2.25V4.5m5.834.166-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243-1.59-1.59"
+      />
+    </svg>
+  );
+}
+
+export function GenericIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="w-6 h-6"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5ZM8.25 6h7.5v2.25h-7.5V6ZM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0 0 12 2.25Z"
+      />
+    </svg>
+  );
+}
 
 export function FileIcon() {
   return (
@@ -22,9 +139,10 @@ export function FileIcon() {
 type IconXProps = {
   className?: string | "";
   strokeWidth?: number;
+  onClick?: () => void;
 };
 
-export function IconX({ className = "", strokeWidth }: IconXProps) {
+export function IconX({ className = "", strokeWidth, onClick }: IconXProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -33,6 +151,7 @@ export function IconX({ className = "", strokeWidth }: IconXProps) {
       strokeWidth={strokeWidth}
       stroke="currentColor"
       className={`w-4 ${className}`}
+      onClick={onClick}
     >
       <path
         strokeLinecap="round"
@@ -340,7 +459,12 @@ export function NotificationIcon({
   );
 }
 
-export function DropDownArrow({ className }) {
+interface DropDownArrowProps {
+  className?: string;
+  onClick?: (event: React.MouseEvent) => void;
+}
+
+export function DropDownArrow({ className, onClick }: DropDownArrowProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -349,6 +473,7 @@ export function DropDownArrow({ className }) {
       strokeWidth={1.5}
       stroke="currentColor"
       className={`w-6 h-6 ${className || ""}`}
+      onClick={onClick}
     >
       <path
         strokeLinecap="round"
@@ -869,7 +994,7 @@ export function MonitorIcon() {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"
+        d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125Z"
       />
     </svg>
   );

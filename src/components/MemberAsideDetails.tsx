@@ -15,6 +15,7 @@ import Image from "next/image";
 import { LinkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { RelacoteProducts, ReturnPage } from "./AsideContents";
+import useActions from "@/hooks/useActions";
 
 interface MemberAsideDetailsProps {
   className?: string;
@@ -35,6 +36,7 @@ export const MemberAsideDetails = observer(function ({
   const [productToRemove, setProductToRemove] = useState<Product>();
   const [relocatePage, setRelocatePage] = useState(false);
   const [returnPage, setReturnPage] = useState(false);
+  const { addTaskToQueue } = useActions();
 
   const handleSelectProducts = (product: Product) => {
     if (selectedProducts.includes(product)) {
@@ -64,9 +66,14 @@ export const MemberAsideDetails = observer(function ({
         <RelacoteProducts
           products={selectedProducts}
           handleBack={handleRealocate}
+          addTaskToQueue={addTaskToQueue}
         />
       ) : returnPage ? (
-        <ReturnPage products={selectedProducts} handleBack={handleReturn} />
+        <ReturnPage
+          products={selectedProducts}
+          handleBack={handleReturn}
+          addTaskToQueue={addTaskToQueue}
+        />
       ) : (
         <Fragment>
           <div className="flex flex-col gap-6   h-full   ">
