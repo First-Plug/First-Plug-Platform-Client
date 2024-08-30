@@ -16,6 +16,13 @@ export function ReturnPage({
   addTaskToQueue,
 }: IReturnPage) {
   const [selectedProducts] = useState<Product[]>(products);
+  const [enabledProductIndex, setEnabledProductIndex] = useState<number>(0);
+
+  const handleSuccess = () => {
+    if (enabledProductIndex < products.length - 1) {
+      setEnabledProductIndex((prevIndex) => prevIndex + 1);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-2  h-full max-h-[100%]">
@@ -34,11 +41,13 @@ export function ReturnPage({
         </h2>
       </div>
       <div className=" max-h-[90%] h-[90%] overflow-y-auto scrollbar-custom">
-        {products.map((product) => (
+        {products.map((product, index) => (
           <ReturnProduct
             product={product}
             key={product._id}
             selectedProducts={selectedProducts}
+            isEnabled={enabledProductIndex === index}
+            onRemoveSuccess={handleSuccess}
           />
         ))}
       </div>

@@ -27,9 +27,7 @@ export default function useActions() {
         }
       }
     }
-
     isProcessingQueue = false;
-
     try {
       await fetchMembers();
     } catch (error) {
@@ -53,45 +51,26 @@ export default function useActions() {
     currentMember: TeamMember;
     product: Product;
   }) => {
-    const retryLimit = 3;
-    let retryCount = 0;
-
-    const task = async () => {
-      const updatedProduct: Partial<Product> = {
-        category: product.category,
-        attributes: product.attributes,
-        name: product.name,
-        assignedEmail: selectedMember.email,
-        assignedMember:
-          selectedMember.firstName + " " + selectedMember.lastName,
-        status: "Delivered",
-        location: "Employee",
-      };
-      if (product.assignedMember) {
-        updatedProduct.lastAssigned =
-          currentMember?.firstName + " " + currentMember?.lastName || "";
-      }
-
-      while (retryCount < retryLimit) {
-        try {
-          await ProductServices.updateProduct(product._id, updatedProduct);
-          break;
-        } catch (error) {
-          retryCount++;
-          console.error(
-            `Error relocating product ${product._id}, retrying ${retryCount}/${retryLimit}:`,
-            error
-          );
-          if (retryCount >= retryLimit) {
-            console.error(
-              `Failed to relocate product ${product._id} after ${retryLimit} attempts`
-            );
-          }
-        }
-      }
+    const updatedProduct: Partial<Product> = {
+      category: product.category,
+      attributes: product.attributes,
+      name: product.name,
+      assignedEmail: selectedMember.email,
+      assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
+      status: "Delivered",
+      location: "Employee",
     };
+    if (product.assignedMember) {
+      updatedProduct.lastAssigned =
+        currentMember?.firstName + " " + currentMember?.lastName || "";
+    }
 
-    addTaskToQueue(task, product._id);
+    try {
+      await ProductServices.updateProduct(product._id, updatedProduct);
+      await fetchMembers();
+    } catch (error) {
+      console.error(`Error relocating product ${product._id}:`, error);
+    }
   };
 
   const unassignProduct = async ({

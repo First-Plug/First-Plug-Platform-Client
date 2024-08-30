@@ -21,12 +21,14 @@ const MembersList = observer(function MembersList({
   addTaskToQueue,
   disabled,
   onRelocateSuccess,
+  handleSuccess,
 }: {
   product: Product;
   setRelocateStauts: (status: RelocateStatus) => void;
   addTaskToQueue: (task: () => Promise<void>, productId) => void;
   disabled?: boolean;
   onRelocateSuccess?: () => void;
+  handleSuccess?: () => void;
 }) {
   const {
     members: { members, selectedMember: currentMember, setRelocateChange },
@@ -69,12 +71,10 @@ const MembersList = observer(function MembersList({
             selectedMember,
             product: clonedProduct,
           });
-          // await fetchMembers();
+          await fetchMembers();
           setRelocateResult("success");
           setRelocateStauts("success");
-          if (onRelocateSuccess) {
-            onRelocateSuccess();
-          }
+          handleSuccess();
         } catch (error) {
           setRelocateResult("error");
           setRelocateStauts("error");
@@ -83,7 +83,6 @@ const MembersList = observer(function MembersList({
         }
       };
       addTaskToQueue(task, product._id);
-      setRelocating(true);
     }
   };
 
@@ -106,28 +105,27 @@ const MembersList = observer(function MembersList({
               <p className="font-semibold text-black">
                 {selectedMember.fullName}
               </p>
-
               <XIcon size={14} />
             </button>
           </div>
 
-          {!relocateResult ? (
+          {relocateResult === "success" ? (
+            <Badge className={badgeVariants({ variant: relocateResult })}>
+              Successfully relocated ✅
+            </Badge>
+          ) : (
             <Button
               variant="text"
               onClick={handleRelocateProduct}
               disabled={
                 isRelocating ||
-                relocateResult === "success" ||
+                relocateResult !== undefined ||
                 !selectedMember ||
                 disabled
               }
             >
-              {!isRelocating ? <span>Confirm ✔️</span> : <LoaderSpinner />}
+              {isRelocating ? <LoaderSpinner /> : <span>Confirm ✔️</span>}
             </Button>
-          ) : (
-            <Badge className={badgeVariants({ variant: relocateResult })}>
-              Successfully relocated ✅
-            </Badge>
           )}
         </section>
       ) : (
@@ -173,6 +171,7 @@ const MembersList = observer(function MembersList({
     </section>
   );
 });
+
 interface ProductDetailProps {
   product: Product;
   className?: string;
@@ -250,6 +249,7 @@ export default function ProductDetail({
           addTaskToQueue={addTaskToQueue}
           onRelocateSuccess={onRelocateSuccess}
           disabled={disabled}
+          handleSuccess={onRelocateSuccess}
         />
       )}
     </div>
