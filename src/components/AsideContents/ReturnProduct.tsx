@@ -20,8 +20,15 @@ import { Badge, badgeVariants } from "../ui/badge";
 interface IRemoveItems {
   product: Product;
   selectedProducts: Product[];
+  isEnabled?: boolean;
+  onRemoveSuccess?: () => void;
 }
-export function ReturnProduct({ product, selectedProducts }: IRemoveItems) {
+export function ReturnProduct({
+  product,
+  selectedProducts,
+  isEnabled,
+  onRemoveSuccess,
+}: IRemoveItems) {
   const {
     alerts: { setAlert },
     aside: { setAside },
@@ -43,6 +50,11 @@ export function ReturnProduct({ product, selectedProducts }: IRemoveItems) {
       return;
     }
 
+    if (!selectedMember || typeof selectedMember !== "object") {
+      console.error("Selected member is not valid");
+      return;
+    }
+
     setIsRemoving(true);
     try {
       for (const product of selectedProducts) {
@@ -52,8 +64,8 @@ export function ReturnProduct({ product, selectedProducts }: IRemoveItems) {
           currentMember: selectedMember,
         });
       }
-      await fetchMembers();
       setReturnStatus("success");
+      onRemoveSuccess();
     } catch (error) {
       console.error("Error returning product:", error);
       setReturnStatus("error");
@@ -97,7 +109,7 @@ export function ReturnProduct({ product, selectedProducts }: IRemoveItems) {
               onClick={handleRemoveItems}
               variant="delete"
               size="small"
-              disabled={isRemoving || !newLocation}
+              disabled={isRemoving || !newLocation || !isEnabled}
             >
               {!isRemoving ? <span>Return</span> : <LoaderSpinner />}
             </Button>
