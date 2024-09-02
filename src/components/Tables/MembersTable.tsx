@@ -25,8 +25,14 @@ const MONTHS = [
 const membersColumns: (
   handleEdit: (memberId: TeamMember["_id"]) => void,
   handleDelete: (memberId: TeamMember["_id"]) => void,
-  handleViewDetail: (memberId: TeamMember["_id"]) => void
-) => ColumnDef<TeamMember>[] = (handleEdit, handleDelete, handleViewDetail) => [
+  handleViewDetail: (memberId: TeamMember["_id"]) => void,
+  members: TeamMember[]
+) => ColumnDef<TeamMember>[] = (
+  handleEdit,
+  handleDelete,
+  handleViewDetail,
+  members
+) => [
   {
     id: "name",
     accessorKey: "fullName",
@@ -39,10 +45,10 @@ const membersColumns: (
     ),
     meta: {
       filterVariant: "custom",
-      options: (rows) => {
+      options: () => {
         const options = new Set<string>();
-        rows.forEach((row) => {
-          options.add(row.original.fullName || "No Data");
+        members.forEach((member) => {
+          options.add(member.fullName || "No Data");
         });
         return Array.from(options);
       },
@@ -117,11 +123,13 @@ const membersColumns: (
     },
     meta: {
       filterVariant: "select",
-      options: (rows) => {
+      options: () => {
         const options = new Set<string>();
-        rows.forEach((row) => {
-          if (row.original.team) {
-            options.add((row.original.team as Team).name);
+        members.forEach((member) => {
+          if (typeof member.team === "object" && member.team !== null) {
+            options.add(member.team.name);
+          } else {
+            options.add("Not Assigned");
           }
         });
         return Array.from(options);
@@ -143,10 +151,10 @@ const membersColumns: (
     ),
     meta: {
       filterVariant: "custom",
-      options: (rows) => {
+      options: () => {
         const options = new Set<string>();
-        rows.forEach((row) => {
-          options.add(row.original.position || "No Data");
+        members.forEach((member) => {
+          options.add(member.position || "No Data");
         });
         return Array.from(options);
       },
@@ -240,7 +248,12 @@ export function MembersTable({ members }: TableMembersProps) {
   return (
     <RootTable
       tableType="members"
-      columns={membersColumns(handleEdit, handleDelete, handleViewDetail)}
+      columns={membersColumns(
+        handleEdit,
+        handleDelete,
+        handleViewDetail,
+        members
+      )}
       data={members}
       pageSize={12}
       tableNameRef="membersTable"
