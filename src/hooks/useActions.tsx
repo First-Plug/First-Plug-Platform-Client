@@ -9,39 +9,6 @@ export default function useActions() {
   } = useStore();
   const { fetchMembers } = useFetch();
 
-  const taskQueue: (() => Promise<void>)[] = [];
-  let isProcessingQueue = false;
-
-  const processQueue = async () => {
-    if (isProcessingQueue) return;
-
-    isProcessingQueue = true;
-
-    while (taskQueue.length > 0) {
-      const task = taskQueue.shift();
-      if (task) {
-        try {
-          await task();
-        } catch (error) {
-          console.error("Error processing task:", error);
-        }
-      }
-    }
-    isProcessingQueue = false;
-    try {
-      await fetchMembers();
-    } catch (error) {
-      console.error("Error fetching members after queue processing:", error);
-    }
-  };
-
-  const addTaskToQueue = (task: () => Promise<void>, productId: string) => {
-    taskQueue.push(task);
-    if (!isProcessingQueue) {
-      processQueue();
-    }
-  };
-
   const handleReassignProduct = async ({
     currentMember,
     product,
@@ -104,5 +71,5 @@ export default function useActions() {
     }
   };
 
-  return { handleReassignProduct, unassignProduct, addTaskToQueue };
+  return { handleReassignProduct, unassignProduct };
 }

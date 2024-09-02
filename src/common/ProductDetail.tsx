@@ -18,14 +18,12 @@ export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
   product,
   setRelocateStauts,
-  addTaskToQueue,
   disabled,
   onRelocateSuccess,
   handleSuccess,
 }: {
   product: Product;
   setRelocateStauts: (status: RelocateStatus) => void;
-  addTaskToQueue: (task: () => Promise<void>, productId) => void;
   disabled?: boolean;
   onRelocateSuccess?: () => void;
   handleSuccess?: () => void;
@@ -62,26 +60,23 @@ const MembersList = observer(function MembersList({
 
   const handleRelocateProduct = async () => {
     if (selectedMember) {
-      const task = async () => {
-        setRelocating(true);
-        try {
-          await handleReassignProduct({
-            currentMember,
-            selectedMember,
-            product: product,
-          });
-          await fetchMembers();
-          setRelocateResult("success");
-          setRelocateStauts("success");
-          handleSuccess();
-        } catch (error) {
-          setRelocateResult("error");
-          setRelocateStauts("error");
-        } finally {
-          setRelocating(false);
-        }
-      };
-      addTaskToQueue(task, product._id);
+      setRelocating(true);
+      try {
+        await handleReassignProduct({
+          currentMember,
+          selectedMember,
+          product: product,
+        });
+        await fetchMembers();
+        setRelocateResult("success");
+        setRelocateStauts("success");
+        handleSuccess();
+      } catch (error) {
+        setRelocateResult("error");
+        setRelocateStauts("error");
+      } finally {
+        setRelocating(false);
+      }
     }
   };
 
@@ -180,7 +175,6 @@ interface ProductDetailProps {
   handleSelect?: (productId: Product) => void;
   setProductToRemove?: (product: Product) => void;
   selectedProducts?: Product[];
-  addTaskToQueue?: (task: () => Promise<void>, productId) => void;
   onRelocateSuccess?: () => void;
   disabled?: boolean;
 }
@@ -191,7 +185,6 @@ export default function ProductDetail({
   isChecked = false,
   setProductToRemove,
   isRelocating = false,
-  addTaskToQueue,
   onRelocateSuccess,
   disabled,
 }: ProductDetailProps) {
@@ -245,7 +238,6 @@ export default function ProductDetail({
         <MembersList
           product={product}
           setRelocateStauts={setRelocateStauts}
-          addTaskToQueue={addTaskToQueue}
           onRelocateSuccess={onRelocateSuccess}
           disabled={disabled}
           handleSuccess={onRelocateSuccess}
