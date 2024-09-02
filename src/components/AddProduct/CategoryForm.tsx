@@ -51,6 +51,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   );
 
   const selectedModel = watch("model");
+  const [showNameInput, setShowNameInput] = useState(false);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -176,11 +177,13 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     }
   }, [quantity, clearErrors, setValue]);
 
-  // useEffect(() => {
-  //   if (model === "Other") {
-  //     console.log("Model is Other from props, enabling Product Name input.");
-  //   }
-  // }, [model]);
+  useEffect(() => {
+    if (selectedModel === "Other") {
+      setShowNameInput(true);
+    } else {
+      setShowNameInput(false);
+    }
+  }, [selectedModel]);
 
   useEffect(() => {
     if (selectedModel === "Other") {
@@ -317,8 +320,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               disabled={quantity > 1 && !isUpdate}
             />
           </div>
-          {(isUpdate && watch("name") && watch("name") !== "") ||
-          selectedModel === "Other" ? (
+          {selectedModel === "Other" ||
+          (isUpdate && watch("name") && selectedModel === "Other") ? (
             <div className="w-full">
               <InputProductForm
                 placeholder="Product Name"
@@ -327,7 +330,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 value={watch("name") as string}
                 name="name"
                 onChange={(e) => handleInputChange("name", e.target.value)}
-                // required={model === "Other"}
               />
               <div className="min-h-[24px]">
                 {errors.name && (
