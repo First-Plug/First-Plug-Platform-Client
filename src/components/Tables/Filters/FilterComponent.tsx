@@ -89,7 +89,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
               type="checkbox"
               checked={selectedOptions.includes(option)}
               onChange={() => handleCheckboxChange(option)}
-              className="mt-1"
+              className="mt-2"
             />
             <label className="ml-2 mt-2 leading-tight flex-1">
               {option || "No Data"}
