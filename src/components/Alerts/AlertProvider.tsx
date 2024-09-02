@@ -207,6 +207,14 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    errorDniInUse: {
+      title: "Error",
+      type: "error",
+      description: "DNI is already in use",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     errorCreateMember: {
       title: " Error",
       type: "error",

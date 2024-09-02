@@ -19,6 +19,7 @@ export const ALERTS_TYPES = [
   "errorAssignedProduct",
   "errorCreateMember",
   "errorEmailInUse",
+  "errorDniInUse",
   "removeItemSuccesfully",
   "memberUnassigned",
   "userUpdatedSuccesfully",
