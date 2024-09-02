@@ -35,6 +35,8 @@ export default function PrdouctModelDetail({
     return attribute ? attribute.value : "-";
   };
 
+  const modelValue = getValue("model");
+
   return (
     <div className="flex flex-col">
       {product.category === "Merchandising" ? (
@@ -47,6 +49,11 @@ export default function PrdouctModelDetail({
           <span className="font-normal">
             {attributes.filter((at) => at.key === "model")[0]?.value || "-"}
           </span>
+          {modelValue === "Other" &&
+            product.name &&
+            product.name.trim() !== "" && (
+              <span className="font-normal">- {product.name}</span>
+            )}
         </div>
       )}
       <div className="flex gap-4 text-sm">
