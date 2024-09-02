@@ -230,12 +230,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
       model === "Other" &&
       !formatData.name
     ) {
-      attributeErrors["name"] =
-        "Name is required for this model. Please describe it.";
+      attributeErrors["name"] = "Name is required for this model.";
       hasError = true;
       methods.setError("name", {
         type: "manual",
-        message: "Name is required for this model. Please describe it.",
+        message: "Name is required for this model.",
       });
     }
     setCustomErrors(attributeErrors);
@@ -295,9 +294,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
 
   const handleNext = async () => {
-    console.log("Handle Next");
     const isProductNameValid = await validateProductName();
-    // console.log("Is Product Name Valid:", isProductNameValid);
+    console.log("Is Product Name Valid:", isProductNameValid);
     if (!isProductNameValid) return;
 
     const data = methods.getValues();
@@ -375,12 +373,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
       model === "Other" &&
       !formattedData.name
     ) {
-      attributeErrors["name"] =
-        "Name is required for this model. Please describe it.";
+      attributeErrors["name"] = "Name is required for this model.";
       hasError = true;
       methods.setError("name", {
         type: "manual",
-        message: "Name is required for this model. Please describe it.",
+        message: "Name is required for this model.",
       });
     }
     setCustomErrors(attributeErrors);

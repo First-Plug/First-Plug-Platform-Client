@@ -184,7 +184,7 @@ export const AddMemberForm = observer(function ({
               className="w-full"
             />
           </div>
-          <div className="flex flex-col gap-2 w-full h-[95%] max-h-[95%] overflow-y-auto scrollbar-custom ">
+          <div className="flex flex-col gap-2 w-full h-[95%] max-h-[95%] overflow-y-auto scrollbar-custom pt-4 ">
             {displayedMembers.map((member) => (
               <div
                 className={`flex gap-2 items-center py-2 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue `}

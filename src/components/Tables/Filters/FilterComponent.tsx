@@ -95,10 +95,10 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         ))}
       </div>
       <button
-        className="mt-4 p-2 hover:bg-hoverBlue  rounded"
+        className="mt-4 p-2 bg-red-200 hover:bg-hoverBlue  rounded"
         onClick={handleClearFilter}
       >
-        CLEAR FILTER
+        Clear Filter
       </button>
     </div>
   );

@@ -1,7 +1,7 @@
 import { ArrowLeft } from "@/common";
 import { Product } from "@/types";
-
 import { ReturnProduct } from "./ReturnProduct";
+import { useState } from "react";
 
 interface IReturnPage {
   products: Product[];
@@ -9,6 +9,15 @@ interface IReturnPage {
 }
 
 export function ReturnPage({ handleBack, products }: IReturnPage) {
+  const [selectedProducts] = useState<Product[]>(products);
+  const [enabledProductIndex, setEnabledProductIndex] = useState<number>(0);
+
+  const handleSuccess = () => {
+    if (enabledProductIndex < products.length - 1) {
+      setEnabledProductIndex((prevIndex) => prevIndex + 1);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2  h-full max-h-[100%]">
       <div
@@ -26,8 +35,14 @@ export function ReturnPage({ handleBack, products }: IReturnPage) {
         </h2>
       </div>
       <div className=" max-h-[90%] h-[90%] overflow-y-auto scrollbar-custom">
-        {products.map((product) => (
-          <ReturnProduct product={product} key={product._id} />
+        {products.map((product, index) => (
+          <ReturnProduct
+            product={product}
+            key={product._id}
+            selectedProducts={selectedProducts}
+            isEnabled={enabledProductIndex === index}
+            onRemoveSuccess={handleSuccess}
+          />
         ))}
       </div>
     </div>
