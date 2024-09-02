@@ -84,13 +84,16 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
       </div>
       <div className="p-2 max-h-60 overflow-y-auto">
         {combinedOptions.map((option) => (
-          <div key={option} className="mt-2">
+          <div key={option} className="mt-2 flex items-start">
             <input
               type="checkbox"
               checked={selectedOptions.includes(option)}
               onChange={() => handleCheckboxChange(option)}
+              className="mt-1"
             />
-            <label className="ml-2 mt-2">{option || "No Data"}</label>
+            <label className="ml-2 mt-2 leading-tight flex-1">
+              {option || "No Data"}
+            </label>
           </div>
         ))}
       </div>

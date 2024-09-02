@@ -8,13 +8,14 @@ import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
 import { useFilterReset } from "./Filters/FilterResetContext";
 import "./table.css";
-import { useEffect } from "react";
 
 interface ProductsTableProps {
   onClearFilters: () => void;
 }
 
-export const productColumns: ColumnDef<ProductTable>[] = [
+export const productColumns = (
+  data: ProductTable[]
+): ColumnDef<ProductTable>[] => [
   {
     accessorFn: (row) => row.category,
     header: "Category",
@@ -42,25 +43,35 @@ export const productColumns: ColumnDef<ProductTable>[] = [
     size: 200,
     meta: {
       filterVariant: "custom",
-      options: (rows) => {
+      options: () => {
         const options = new Set<string>();
-        rows.forEach((row) => {
-          if (row.original.category === "Merchandising") {
-            options.add(row.original.products[0]?.name || "No Data");
-          } else {
-            const brand = row.original.products[0]?.attributes.find(
-              (attr) => attr.key === "brand"
-            )?.value;
-            const model = row.original.products[0]?.attributes.find(
-              (attr) => attr.key === "model"
-            )?.value;
-            if (brand && model) {
-              options.add(`${brand} ${model}`);
+
+        // Asegúrate de recorrer todos los productos
+        data.forEach((row) => {
+          row.products.forEach((product) => {
+            if (product.category === "Merchandising") {
+              options.add(product.name || "No Data");
             } else {
-              options.add("No Data");
+              const brand = product.attributes.find(
+                (attr) => attr.key === "brand"
+              )?.value;
+              const model = product.attributes.find(
+                (attr) => attr.key === "model"
+              )?.value;
+              const name = product.name;
+              if (brand && model) {
+                if (model === "Other") {
+                  options.add(`${product.category} ${brand} Other ${name}`);
+                } else {
+                  options.add(`${brand} ${model}`);
+                }
+              } else {
+                options.add("No Data");
+              }
             }
-          }
+          });
         });
+
         return Array.from(options);
       },
     },
@@ -81,8 +92,16 @@ export const productColumns: ColumnDef<ProductTable>[] = [
         const model = product.attributes.find(
           (attr) => attr.key === "model"
         )?.value;
-        const name = brand && model ? `${brand} ${model}` : "No Data";
-        return filterValue.includes(name);
+        const name = product.name;
+
+        let groupName = "No Data";
+        if (brand && model) {
+          groupName =
+            model === "Other"
+              ? `${product.category} ${brand} Other ${name}`
+              : `${brand} ${model}`;
+        }
+        return filterValue.includes(groupName);
       }
     },
   },
@@ -156,12 +175,16 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     }
   };
 
+  const columns = productColumns(
+    onlyAvaliable ? availableProducts : tableProducts
+  );
+
   return (
     <RootTable
       tableType="stock"
       tableNameRef="productsTable"
       data={onlyAvaliable ? availableProducts : tableProducts}
-      columns={productColumns}
+      columns={columns}
       getRowCanExpand={() => true}
       onClearFilters={handleClearFilters}
       renderSubComponent={(row) => (
