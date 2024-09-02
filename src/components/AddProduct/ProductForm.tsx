@@ -124,17 +124,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const model = attributes.find((attr) => attr.key === "model")?.value;
     const productName = watch("name");
 
-    // console.log("Attributes:", attributes);
-    // console.log("Model:", model);
-    // console.log("Category:", selectedCategory);
-    // console.log("ProductName:", productName);
-
     if (
       (model === "Other" && selectedCategory !== "Merchandising") ||
       selectedCategory === "Merchandising"
     ) {
       if (!productName || productName.trim() === "") {
-        // console.log("Product Name is required for this category and model.");
         methods.setError("name", {
           type: "manual",
           message: "Product Name is required for this category and model.",
@@ -149,13 +143,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleSaveProduct = async (data: Product) => {
-    // console.log("Handle Save Product:", data);
     setShowSuccessDialog(false);
     setShowErrorDialog(false);
     setErrorMessage("");
 
     const isProductNameValid = await validateProductName();
-    // console.log("Is Product Name Valid:", isProductNameValid);
+
     if (!isProductNameValid) return;
 
     const finalAssignedEmail = watch("assignedEmail");
