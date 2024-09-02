@@ -149,13 +149,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleSaveProduct = async (data: Product) => {
-    console.log("Handle Save Product:", data);
+    // console.log("Handle Save Product:", data);
     setShowSuccessDialog(false);
     setShowErrorDialog(false);
     setErrorMessage("");
 
     const isProductNameValid = await validateProductName();
-    console.log("Is Product Name Valid:", isProductNameValid);
+    // console.log("Is Product Name Valid:", isProductNameValid);
     if (!isProductNameValid) return;
 
     const finalAssignedEmail = watch("assignedEmail");
@@ -237,11 +237,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
       model === "Other" &&
       !formatData.name
     ) {
-      attributeErrors["name"] = "Name is required for this model.";
+      attributeErrors["name"] =
+        "Name is required for this model. Please describe it.";
       hasError = true;
       methods.setError("name", {
         type: "manual",
-        message: "Name is required for this model.",
+        message: "Name is required for this model. Please describe it.",
       });
     }
     setCustomErrors(attributeErrors);
@@ -303,7 +304,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const handleNext = async () => {
     console.log("Handle Next");
     const isProductNameValid = await validateProductName();
-    console.log("Is Product Name Valid:", isProductNameValid);
+    // console.log("Is Product Name Valid:", isProductNameValid);
     if (!isProductNameValid) return;
 
     const data = methods.getValues();
@@ -381,11 +382,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
       model === "Other" &&
       !formattedData.name
     ) {
-      attributeErrors["name"] = "Name is required for this model.";
+      attributeErrors["name"] =
+        "Name is required for this model. Please describe it.";
       hasError = true;
       methods.setError("name", {
         type: "manual",
-        message: "Name is required for this model.",
+        message: "Name is required for this model. Please describe it.",
       });
     }
     setCustomErrors(attributeErrors);
