@@ -1,12 +1,6 @@
 "use client";
 import React, { Fragment, useState } from "react";
-import {
-  Button,
-  CustomLink,
-  EmptyCard,
-  EmptyCardLayout,
-  MemberDetail,
-} from "@/common";
+import { Button, EmptyCardLayout, MemberDetail } from "@/common";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
 import ProductDetail from "@/common/ProductDetail";
@@ -15,7 +9,6 @@ import Image from "next/image";
 import { LinkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { RelacoteProducts, ReturnPage } from "./AsideContents";
-import useActions from "@/hooks/useActions";
 
 interface MemberAsideDetailsProps {
   className?: string;
@@ -36,7 +29,6 @@ export const MemberAsideDetails = observer(function ({
   const [productToRemove, setProductToRemove] = useState<Product>();
   const [relocatePage, setRelocatePage] = useState(false);
   const [returnPage, setReturnPage] = useState(false);
-  const { addTaskToQueue } = useActions();
 
   const handleSelectProducts = (product: Product) => {
     if (selectedProducts.includes(product)) {
@@ -66,14 +58,9 @@ export const MemberAsideDetails = observer(function ({
         <RelacoteProducts
           products={selectedProducts}
           handleBack={handleRealocate}
-          addTaskToQueue={addTaskToQueue}
         />
       ) : returnPage ? (
-        <ReturnPage
-          products={selectedProducts}
-          handleBack={handleReturn}
-          addTaskToQueue={addTaskToQueue}
-        />
+        <ReturnPage products={selectedProducts} handleBack={handleReturn} />
       ) : (
         <Fragment>
           <div className="flex flex-col gap-6   h-full   ">
