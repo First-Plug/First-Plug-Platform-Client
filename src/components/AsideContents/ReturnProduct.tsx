@@ -35,8 +35,8 @@ export function ReturnProduct({
   } = useStore();
   const [isRemoving, setIsRemoving] = useState(false);
   const [newLocation, setNewLocation] = useState<Location>(null);
-
   const [returnStatus, setReturnStatus] = useState<RelocateStatus>(undefined);
+
   const { unassignProduct } = useActions();
   const { fetchMembers } = useFetch();
 
@@ -44,7 +44,12 @@ export function ReturnProduct({
     members: { selectedMember },
   } = useStore();
 
-  const handleRemoveItems = async () => {
+  const handleRemoveItems = async (location: Location) => {
+    if (!location) {
+      console.error("Location is required for return");
+      return;
+    }
+
     if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
       console.error("No products selected for return");
       return;
@@ -57,13 +62,11 @@ export function ReturnProduct({
 
     setIsRemoving(true);
     try {
-      for (const product of selectedProducts) {
-        await unassignProduct({
-          location: newLocation,
-          product,
-          currentMember: selectedMember,
-        });
-      }
+      await unassignProduct({
+        location,
+        product,
+        currentMember: selectedMember,
+      });
       setReturnStatus("success");
       onRemoveSuccess();
     } catch (error) {
@@ -106,7 +109,7 @@ export function ReturnProduct({
             </Badge>
           ) : (
             <Button
-              onClick={handleRemoveItems}
+              onClick={() => handleRemoveItems(newLocation)}
               variant="delete"
               size="small"
               disabled={isRemoving || !newLocation || !isEnabled}

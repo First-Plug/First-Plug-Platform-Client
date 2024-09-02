@@ -6,14 +6,9 @@ import { useState } from "react";
 interface IReturnPage {
   products: Product[];
   handleBack: (action: "open" | "close") => void;
-  addTaskToQueue: (task: () => Promise<void>, productId) => void;
 }
 
-export function ReturnPage({
-  handleBack,
-  products,
-  addTaskToQueue,
-}: IReturnPage) {
+export function ReturnPage({ handleBack, products }: IReturnPage) {
   const [selectedProducts] = useState<Product[]>(products);
   const [enabledProductIndex, setEnabledProductIndex] = useState<number>(0);
 

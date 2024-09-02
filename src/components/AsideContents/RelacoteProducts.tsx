@@ -6,14 +6,9 @@ import { clone } from "mobx-state-tree";
 interface IRelacoteProducts {
   products: Product[];
   handleBack: (action: "open" | "close") => void;
-  addTaskToQueue: (task: () => Promise<void>, productId) => void;
 }
 
-export function RelacoteProducts({
-  products,
-  handleBack,
-  addTaskToQueue,
-}: IRelacoteProducts) {
+export function RelacoteProducts({ products, handleBack }: IRelacoteProducts) {
   const [enabledProductIndex, setEnabledProductIndex] = useState(0);
 
   const handleSuccess = () => {
@@ -40,7 +35,6 @@ export function RelacoteProducts({
               product={clonedProduct}
               isRelocating
               key={clonedProduct._id}
-              addTaskToQueue={addTaskToQueue}
               onRelocateSuccess={handleSuccess}
               disabled={enabledProductIndex !== index}
             />

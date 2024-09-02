@@ -82,29 +82,26 @@ export default function useActions() {
     product: Product;
     currentMember?: TeamMember;
   }) => {
-    const task = async () => {
-      let updatedProduct: Partial<Product> = {
-        category: product.category,
-        attributes: product.attributes,
-        name: product.name,
-        assignedEmail: "",
-        assignedMember: "",
-        status: "Available",
-        location,
-      };
-      if (product.assignedMember) {
-        updatedProduct.lastAssigned =
-          currentMember?.firstName + " " + currentMember?.lastName || "";
-      }
-
-      try {
-        await reassignProduct(product._id, updatedProduct);
-      } catch (error) {
-        console.error("Error unassigning product:", error);
-      }
+    let updatedProduct: Partial<Product> = {
+      category: product.category,
+      attributes: product.attributes,
+      name: product.name,
+      assignedEmail: "",
+      assignedMember: "",
+      status: "Available",
+      location,
     };
+    if (product.assignedMember) {
+      updatedProduct.lastAssigned =
+        currentMember?.firstName + " " + currentMember?.lastName || "";
+    }
 
-    addTaskToQueue(task, product._id);
+    try {
+      await reassignProduct(product._id, updatedProduct);
+      await fetchMembers();
+    } catch (error) {
+      console.error("Error unassigning product:", error);
+    }
   };
 
   return { handleReassignProduct, unassignProduct, addTaskToQueue };
