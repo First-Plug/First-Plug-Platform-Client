@@ -176,7 +176,18 @@ const membersColumns: (
     ),
     meta: {
       filterVariant: "select",
-      options: Array.from({ length: 99 }, (_, i) => i.toString()),
+      options: () => {
+        const productCounts = new Set<number>();
+
+        members.forEach((member) => {
+          const count = (member.products || []).length;
+          productCounts.add(count);
+        });
+
+        return Array.from(productCounts)
+          .sort((a, b) => a - b)
+          .map(String);
+      },
     },
     enableColumnFilter: true,
     filterFn: (row, columnId, filterValue) => {

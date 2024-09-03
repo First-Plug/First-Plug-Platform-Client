@@ -78,7 +78,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         <IconX onClick={onClose} className="cursor-pointer" />
       </div>
       <SearchInput placeholder="Search..." onSearch={handleSearch} />
-      <div className="space-x-2 mt-2">
+      <div className="space-x-2 mt-2 pb-1">
         <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />
         <label>Select All</label>
       </div>
