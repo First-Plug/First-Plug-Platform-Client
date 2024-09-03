@@ -49,25 +49,22 @@ export const productColumns = (
         // Asegúrate de recorrer todos los productos
         data.forEach((row) => {
           row.products.forEach((product) => {
-            if (product.category === "Merchandising") {
-              options.add(product.name || "No Data");
-            } else {
-              const brand = product.attributes.find(
-                (attr) => attr.key === "brand"
-              )?.value;
-              const model = product.attributes.find(
-                (attr) => attr.key === "model"
-              )?.value;
-              const name = product.name;
-              if (brand && model) {
-                if (model === "Other") {
-                  options.add(`${product.category} ${brand} Other ${name}`);
-                } else {
-                  options.add(`${brand} ${model}`);
-                }
+            const brand = product.attributes.find(
+              (attr) => attr.key === "brand"
+            )?.value;
+            const model = product.attributes.find(
+              (attr) => attr.key === "model"
+            )?.value;
+            const name = product.name;
+
+            if (brand && model) {
+              if (model === "Other") {
+                options.add(`${brand} Other ${name}`);
               } else {
-                options.add("No Data");
+                options.add(`${brand} ${model}`);
               }
+            } else {
+              options.add("No Data");
             }
           });
         });

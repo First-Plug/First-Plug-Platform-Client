@@ -165,19 +165,6 @@ export default function ProdcutsDetailsTable({
     (product) => product.status !== "Deprecated"
   );
 
-  // const { subscribeToReset } = useFilterReset();
-
-  // const memoizedClearFilters = useCallback(onClearFilters, []);
-
-  // useEffect(() => {
-  //   const unsubscribe = subscribeToReset(() => {
-  //     if (memoizedClearFilters) {
-  //       memoizedClearFilters();
-  //     }
-  //   });
-  //   return unsubscribe;
-  // }, [subscribeToReset, memoizedClearFilters]);
-
   return (
     <RootTable
       tableType="subRow"

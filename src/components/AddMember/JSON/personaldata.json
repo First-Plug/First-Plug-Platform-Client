@@ -41,7 +41,7 @@
     },
     {
       "name": "dni",
-      "title": "DNI",
+      "title": "DNI/CI",
       "type": "text",
       "placeholder": "DNI"
     }
