@@ -32,6 +32,7 @@ export function InputProductForm({
   };
 
   const today = new Date().toISOString().split("T")[0];
+  const formattedValue = type === "date" && value ? value.split("T")[0] : value;
 
   return (
     <div className={`relative ${className}`}>
@@ -39,7 +40,7 @@ export function InputProductForm({
       <input
         name={name}
         type={type}
-        value={value}
+        value={formattedValue}
         onChange={(e) => {
           onChange(e);
           if (type === "date") {
