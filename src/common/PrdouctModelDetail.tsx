@@ -31,7 +31,10 @@ export default function PrdouctModelDetail({
   );
 
   const getValue = (key: Key) => {
-    const attribute = attributesToShow.find((at) => at.key === key);
+    let attribute = attributesToShow.find((at) => at.key === key);
+    if (!attribute) {
+      attribute = attributes.find((at) => at.key === key);
+    }
     return attribute ? attribute.value : "-";
   };
 
