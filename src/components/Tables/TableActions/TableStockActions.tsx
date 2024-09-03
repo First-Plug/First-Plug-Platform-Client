@@ -47,7 +47,7 @@ export default observer(function TableStockActions<TData>({
           onChange={handleFilter}
         />
         <label className=" text-gray-500 text-md">
-          Show only avaliable stock
+          Show only available stock
         </label>
       </div>
 
