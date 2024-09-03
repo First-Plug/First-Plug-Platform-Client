@@ -24,6 +24,7 @@ export const TeamMemberModel = types.model({
   teamId: types.optional(types.string, ""),
   products: types.optional(types.array(ProductModel), []),
   team: types.optional(types.union(types.string, TeamModel), "Not Assigned"),
+  dni: types.optional(types.number, 0),
   isDeleted: types.optional(types.boolean, false),
 });
 
@@ -86,6 +87,9 @@ export const zodCreateMembertModel = z.object({
   birthDate: z.string().trim().optional(),
   products: z.array(zodCreateProductModel).optional(),
   team: z.string().trim().optional(),
+  dni: z
+    .union([z.number().int().positive().or(z.literal(0)), z.undefined()])
+    .optional(),
 });
 
 export type CreateMemberZodModel = z.infer<typeof zodCreateMembertModel>;

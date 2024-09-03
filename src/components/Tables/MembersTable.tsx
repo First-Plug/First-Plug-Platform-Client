@@ -7,11 +7,32 @@ import { DeleteAction } from "../Alerts";
 import { RootTable } from "./RootTable";
 import FormatedDate from "./helpers/FormatedDate";
 
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 const membersColumns: (
   handleEdit: (memberId: TeamMember["_id"]) => void,
   handleDelete: (memberId: TeamMember["_id"]) => void,
-  handleViewDetail: (memberId: TeamMember["_id"]) => void
-) => ColumnDef<TeamMember>[] = (handleEdit, handleDelete, handleViewDetail) => [
+  handleViewDetail: (memberId: TeamMember["_id"]) => void,
+  members: TeamMember[]
+) => ColumnDef<TeamMember>[] = (
+  handleEdit,
+  handleDelete,
+  handleViewDetail,
+  members
+) => [
   {
     id: "name",
     accessorKey: "fullName",
@@ -22,6 +43,21 @@ const membersColumns: (
         {getValue<string>()}
       </span>
     ),
+    meta: {
+      filterVariant: "custom",
+      options: () => {
+        const options = new Set<string>();
+        members.forEach((member) => {
+          options.add(member.fullName || "No Data");
+        });
+        return Array.from(options);
+      },
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId) || "No Data");
+    },
   },
   {
     accessorKey: "birthDate",
@@ -33,6 +69,19 @@ const membersColumns: (
         <FormatedDate date={getValue<string>()} />{" "}
       </span>
     ),
+    meta: {
+      filterVariant: "select",
+      options: [...MONTHS, "No Data"],
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      const dateValue = row.getValue(columnId) as string | undefined;
+      const month = dateValue
+        ? new Date(dateValue).toLocaleString("en-US", { month: "long" })
+        : "No Data";
+      return filterValue.includes(month);
+    },
   },
   {
     accessorKey: "startDate",
@@ -43,6 +92,19 @@ const membersColumns: (
         <FormatedDate date={getValue<string>()} />
       </span>
     ),
+    meta: {
+      filterVariant: "select",
+      options: [...MONTHS, "No Data"],
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      const dateValue = row.getValue(columnId) as string | undefined;
+      const month = dateValue
+        ? new Date(dateValue).toLocaleString("en-US", { month: "long" })
+        : "No Data";
+      return filterValue.includes(month);
+    },
   },
   {
     accessorKey: "teamId",
@@ -61,6 +123,23 @@ const membersColumns: (
     },
     meta: {
       filterVariant: "select",
+      options: () => {
+        const options = new Set<string>();
+        members.forEach((member) => {
+          if (typeof member.team === "object" && member.team !== null) {
+            options.add(member.team.name);
+          } else {
+            options.add("Not Assigned");
+          }
+        });
+        return Array.from(options);
+      },
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      const teamName = (row.original.team as Team)?.name || "Not Assigned";
+      return filterValue.includes(teamName);
     },
   },
   {
@@ -70,6 +149,21 @@ const membersColumns: (
     cell: ({ getValue }) => (
       <span className="font-semibold">{getValue<string>()}</span>
     ),
+    meta: {
+      filterVariant: "custom",
+      options: () => {
+        const options = new Set<string>();
+        members.forEach((member) => {
+          options.add(member.position || "No Data");
+        });
+        return Array.from(options);
+      },
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId) || "No Data");
+    },
   },
   {
     accessorKey: "products",
@@ -80,6 +174,27 @@ const membersColumns: (
         {(row.original.products || []).length}
       </span>
     ),
+    meta: {
+      filterVariant: "select",
+      options: () => {
+        const productCounts = new Set<number>();
+
+        members.forEach((member) => {
+          const count = (member.products || []).length;
+          productCounts.add(count);
+        });
+
+        return Array.from(productCounts)
+          .sort((a, b) => a - b)
+          .map(String);
+      },
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      const productCount = (row.original.products || []).length.toString();
+      return filterValue.includes(productCount);
+    },
   },
   {
     accessorKey: "",
@@ -144,7 +259,12 @@ export function MembersTable({ members }: TableMembersProps) {
   return (
     <RootTable
       tableType="members"
-      columns={membersColumns(handleEdit, handleDelete, handleViewDetail)}
+      columns={membersColumns(
+        handleEdit,
+        handleDelete,
+        handleViewDetail,
+        members
+      )}
       data={members}
       pageSize={12}
       tableNameRef="membersTable"

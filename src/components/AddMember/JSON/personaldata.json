@@ -38,6 +38,12 @@
       "title": "Phone Number",
       "type": "text",
       "placeholder": "+(54) 9 (11) [xxxxxxxx]"
+    },
+    {
+      "name": "dni",
+      "title": "DNI/CI",
+      "type": "text",
+      "placeholder": "DNI"
     }
   ]
 }

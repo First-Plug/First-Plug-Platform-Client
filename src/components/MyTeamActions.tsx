@@ -26,10 +26,10 @@ export const MyTeamActions = observer(function <TData>({
 
       <div className="w-full flex justify-between  items-center    gap-2  ">
         <div className="flex gap-2 items-center ">
-          <SearchInput
+          {/* <SearchInput
             placeholder="Search by Name"
             onSearch={(value) => table.getColumn("name")?.setFilterValue(value)}
-          />
+          /> */}
         </div>
 
         <div className="flex gap-2 items-center ">

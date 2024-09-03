@@ -20,6 +20,7 @@ interface CategoryFormProps {
   isUpdate?: boolean;
   quantity: number;
   setQuantity: (value: number) => void;
+  model: string;
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = function ({
@@ -31,6 +32,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   isUpdate,
   quantity,
   setQuantity,
+  model,
 }) {
   const { members } = useStore();
   const {
@@ -47,6 +49,9 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );
+
+  const selectedModel = watch("model");
+  const [showNameInput, setShowNameInput] = useState(false);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -172,6 +177,20 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     }
   }, [quantity, clearErrors, setValue]);
 
+  useEffect(() => {
+    if (selectedModel === "Other") {
+      setShowNameInput(true);
+    } else {
+      setShowNameInput(false);
+    }
+  }, [selectedModel]);
+
+  useEffect(() => {
+    if (selectedModel === "Other") {
+      setValue("name", watch("name") || "");
+    }
+  }, [selectedModel, setValue, watch]);
+
   if (loading) {
     return (
       <div className="h-full w-full flex flex-col gap-2">
@@ -215,6 +234,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               name="assignedMember"
               selectedOption={selectedAssignedMember}
               onChange={handleAssignedMemberChange}
+              searchable={true}
               className="w-full "
             />
             <div className="min-h-[24px]">
@@ -300,10 +320,28 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               disabled={quantity > 1 && !isUpdate}
             />
           </div>
+          {selectedModel === "Other" ||
+          (isUpdate && watch("name") && selectedModel === "Other") ? (
+            <div className="w-full">
+              <InputProductForm
+                placeholder="Product Name"
+                title="Product Name*"
+                type="text"
+                value={watch("name") as string}
+                name="name"
+                onChange={(e) => handleInputChange("name", e.target.value)}
+              />
+              <div className="min-h-[24px]">
+                {errors.name && (
+                  <p className="text-red-500">{(errors.name as any).message}</p>
+                )}
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : (
         <>
-          <div className="flex items-start">
+          <div className="flex items-start space-x-4">
             <div className="flex flex-col w-1/4">
               <DropdownInputProductForm
                 options={CATEGORIES}
@@ -325,8 +363,33 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 )}
               </div>
             </div>
-            <div className="ml-4">
-              <QuantityCounter quantity={quantity} setQuantity={setQuantity} />
+            <div className="flex items-center space-x-4 flex-1">
+              <div className="pb-6 pr-4 pl-2">
+                <QuantityCounter
+                  quantity={quantity}
+                  setQuantity={setQuantity}
+                />
+              </div>
+
+              {selectedModel === "Other" && (
+                <div className="flex-1 ml-4">
+                  <InputProductForm
+                    placeholder="Product Name"
+                    title="Product Name*"
+                    type="text"
+                    value={watch("name") as string}
+                    name="name"
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                  />
+                  <div className="min-h-[24px]">
+                    {errors.name && (
+                      <p className="text-red-500">
+                        {(errors.name as any).message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-4 mt-4">
@@ -338,6 +401,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 name="assignedMember"
                 selectedOption={selectedAssignedMember}
                 onChange={handleAssignedMemberChange}
+                searchable={true}
                 className="w-full"
                 disabled={quantity > 1}
               />

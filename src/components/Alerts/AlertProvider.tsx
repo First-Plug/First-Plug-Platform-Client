@@ -107,6 +107,7 @@ export default observer(function AlertProvider() {
       description: " This member has been successfully updated.",
       closeAction: async () => {
         await fetchMembers();
+        await fetchStock();
         setAside(undefined);
         setAlert(undefined);
       },
@@ -202,6 +203,14 @@ export default observer(function AlertProvider() {
       title: " Error",
       type: "error",
       description: " Email is already in use.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorDniInUse: {
+      title: "Error",
+      type: "error",
+      description: "DNI is already in use",
       closeAction: () => {
         setAlert(undefined);
       },

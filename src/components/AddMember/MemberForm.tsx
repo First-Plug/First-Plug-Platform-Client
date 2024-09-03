@@ -45,6 +45,18 @@ const MemberForm: React.FC<MemberFormProps> = ({
     return isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
   };
 
+  function handleApiError(error: any) {
+    const errorMessage = error.response?.data?.message || "";
+
+    if (errorMessage.includes("DNI")) {
+      return "errorDniInUse";
+    } else if (errorMessage.includes("Email")) {
+      return "errorEmailInUse";
+    } else {
+      return "errorCreateMember";
+    }
+  }
+
   const handleSaveMember = async (data: TeamMember) => {
     try {
       let teamId: string | "";
@@ -106,16 +118,8 @@ const MemberForm: React.FC<MemberFormProps> = ({
       setTeams(updatedTeams);
       methods.reset();
     } catch (error: any) {
-      console.error(
-        "API Error:",
-        error.response?.data?.message || error.message
-      );
-
-      if (error.response?.data?.message === "Email is already in use") {
-        setAlert("errorEmailInUse");
-      } else {
-        setAlert("errorCreateMember");
-      }
+      const alertType = handleApiError(error);
+      setAlert(alertType);
     }
   };
 

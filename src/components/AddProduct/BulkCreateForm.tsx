@@ -365,6 +365,7 @@ const BulkCreateForm: React.FC<{
                       onChange={(selectedFullName: string) =>
                         handleAssignedMemberChange(selectedFullName, index)
                       }
+                      searchable={true}
                     />
                     <div className="min-h-[24px]">
                       {errors.products &&
