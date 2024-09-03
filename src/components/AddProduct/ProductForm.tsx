@@ -81,12 +81,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
       if (!isUpdate) {
+        methods.reset(emptyProduct);
         setSelectedCategory(category);
         setValue("category", category || undefined);
         setValue("recoverable", category !== "Merchandising");
       }
     },
-    [isUpdate, setValue]
+    [isUpdate, setValue, methods]
   );
 
   const validateCategory = async () => {
