@@ -187,9 +187,9 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
             <DialogContent>
               <DialogHeader>
                 <DialogTitle className="text-xl">{title}</DialogTitle>
-                <DialogTitle className="text-md font-normal">
+                <DialogDescription className="text-md font-normal">
                   {description}
-                </DialogTitle>
+                </DialogDescription>
               </DialogHeader>
               <DialogDescription className="text-md">
                 <div className="flex items-center gap-2">

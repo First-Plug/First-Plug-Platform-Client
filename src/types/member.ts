@@ -88,7 +88,12 @@ export const zodCreateMembertModel = z.object({
   products: z.array(zodCreateProductModel).optional(),
   team: z.string().trim().optional(),
   dni: z
-    .union([z.number().int().positive().or(z.literal(0)), z.undefined()])
+    .preprocess((value) => {
+      if (typeof value === "string") {
+        return parseInt(value, 10);
+      }
+      return value;
+    }, z.union([z.number().int().positive().or(z.literal(0)), z.undefined()]))
     .optional(),
 });
 

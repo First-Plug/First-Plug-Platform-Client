@@ -266,7 +266,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
         setAside(undefined);
       } else {
         if (quantity > 1) {
-          console.log("Format Data before Bulk Create:", formatData);
           setBulkInitialData(formatData);
           setShowBulkCreate(true);
         } else {

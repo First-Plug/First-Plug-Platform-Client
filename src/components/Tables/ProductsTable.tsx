@@ -46,7 +46,7 @@ export const productColumns = (
       options: () => {
         const options = new Set<string>();
 
-        // Asegúrate de recorrer todos los productos
+        // Recorre todos los productos
         data.forEach((row) => {
           row.products.forEach((product) => {
             const brand = product.attributes.find(
@@ -57,14 +57,20 @@ export const productColumns = (
             )?.value;
             const name = product.name;
 
-            if (brand && model) {
-              if (model === "Other") {
-                options.add(`${brand} Other ${name}`);
-              } else {
-                options.add(`${brand} ${model}`);
-              }
+            // Productos de Merchandising
+            if (product.category === "Merchandising") {
+              options.add(name || "No Data");
             } else {
-              options.add("No Data");
+              // Otros productos
+              if (brand && model) {
+                if (model === "Other") {
+                  options.add(`${brand} Other ${name}`);
+                } else {
+                  options.add(`${brand} ${model}`);
+                }
+              } else {
+                options.add("No Data");
+              }
             }
           });
         });
@@ -80,23 +86,22 @@ export const productColumns = (
     filterFn: (row, columnId, filterValue) => {
       if (filterValue.length === 0) return true;
       const product = row.original.products[0];
-      if (product.category === "Merchandising") {
-        return filterValue.includes(product.name || "No Data");
-      } else {
-        const brand = product.attributes.find(
-          (attr) => attr.key === "brand"
-        )?.value;
-        const model = product.attributes.find(
-          (attr) => attr.key === "model"
-        )?.value;
-        const name = product.name;
 
+      const brand = product.attributes.find(
+        (attr) => attr.key === "brand"
+      )?.value;
+      const model = product.attributes.find(
+        (attr) => attr.key === "model"
+      )?.value;
+      const name = product.name;
+
+      if (product.category === "Merchandising") {
+        return filterValue.includes(name || "No Data");
+      } else {
         let groupName = "No Data";
         if (brand && model) {
           groupName =
-            model === "Other"
-              ? `${product.category} ${brand} Other ${name}`
-              : `${brand} ${model}`;
+            model === "Other" ? `${brand} Other ${name}` : `${brand} ${model}`;
         }
         return filterValue.includes(groupName);
       }
