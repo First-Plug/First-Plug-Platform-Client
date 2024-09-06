@@ -33,6 +33,7 @@ const ShipmentData = function ({ isUpdate, initialData }) {
                       selectedOption={controllerField.value || ""}
                       onChange={controllerField.onChange}
                       name={field.name}
+                      searchable={true}
                     />
                   );
                 } else {

@@ -1,4 +1,4 @@
-import { Product, ProductTable } from "@/types";
+import { Product, ProductTable, CATEGORIES } from "@/types";
 import { ArrowRight, Button, ProductImage } from "@/common";
 import { ColumnDef } from "@tanstack/react-table";
 import PrdouctModelDetail from "@/common/PrdouctModelDetail";
@@ -6,14 +6,23 @@ import { observer } from "mobx-react-lite";
 import { RootTable } from "./RootTable";
 import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
+import { useFilterReset } from "./Filters/FilterResetContext";
 import "./table.css";
-export const productColumns: ColumnDef<ProductTable>[] = [
+
+interface ProductsTableProps {
+  onClearFilters: () => void;
+}
+
+export const productColumns = (
+  data: ProductTable[]
+): ColumnDef<ProductTable>[] => [
   {
     accessorFn: (row) => row.category,
     header: "Category",
     size: 120,
     meta: {
-      filterVariant: "select",
+      filterVariant: "custom",
+      options: [...CATEGORIES] as unknown as string[],
     },
     cell: ({ getValue }) => (
       <div className="flex gap-2 text-lg items-center w-[150px]">
@@ -22,20 +31,87 @@ export const productColumns: ColumnDef<ProductTable>[] = [
       </div>
     ),
     footer: (props) => props.column.id,
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId));
+    },
   },
   {
     accessorFn: (row) => row.products,
     header: "Name",
     size: 200,
+    meta: {
+      filterVariant: "custom",
+      options: () => {
+        const options = new Set<string>();
+
+        // Recorre todos los productos
+        data.forEach((row) => {
+          row.products.forEach((product) => {
+            const brand = product.attributes.find(
+              (attr) => attr.key === "brand"
+            )?.value;
+            const model = product.attributes.find(
+              (attr) => attr.key === "model"
+            )?.value;
+            const name = product.name;
+
+            // Productos de Merchandising
+            if (product.category === "Merchandising") {
+              options.add(name || "No Data");
+            } else {
+              // Otros productos
+              if (brand && model) {
+                if (model === "Other") {
+                  options.add(`${brand} Other ${name}`);
+                } else {
+                  options.add(`${brand} ${model}`);
+                }
+              } else {
+                options.add("No Data");
+              }
+            }
+          });
+        });
+
+        return Array.from(options);
+      },
+    },
     cell: ({ row }) => (
       <PrdouctModelDetail product={row.original.products[0]} />
     ),
     footer: (props) => props.column.id,
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0) return true;
+      const product = row.original.products[0];
+
+      const brand = product.attributes.find(
+        (attr) => attr.key === "brand"
+      )?.value;
+      const model = product.attributes.find(
+        (attr) => attr.key === "model"
+      )?.value;
+      const name = product.name;
+
+      if (product.category === "Merchandising") {
+        return filterValue.includes(name || "No Data");
+      } else {
+        let groupName = "No Data";
+        if (brand && model) {
+          groupName =
+            model === "Other" ? `${brand} Other ${name}` : `${brand} ${model}`;
+        }
+        return filterValue.includes(groupName);
+      }
+    },
   },
   {
     accessorFn: (row) => row.products,
     header: "Stock",
     size: 80,
+    enableColumnFilter: false,
     cell: ({ getValue }) => {
       const products = getValue<Product[]>().filter(
         (product) => product.status !== "Deprecated"
@@ -86,20 +162,38 @@ export const productColumns: ColumnDef<ProductTable>[] = [
   },
 ];
 
-export var ProductsTable = observer(function ProductsTable() {
+export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
+  onClearFilters,
+}) {
   const {
     products: { tableProducts, availableProducts, onlyAvaliable },
   } = useStore();
+  const { resetFilters } = useFilterReset();
+
+  const handleClearFilters = () => {
+    resetFilters();
+    if (onClearFilters) {
+      onClearFilters();
+    }
+  };
+
+  const columns = productColumns(
+    onlyAvaliable ? availableProducts : tableProducts
+  );
 
   return (
     <RootTable
       tableType="stock"
       tableNameRef="productsTable"
       data={onlyAvaliable ? availableProducts : tableProducts}
-      columns={productColumns}
+      columns={columns}
       getRowCanExpand={() => true}
+      onClearFilters={handleClearFilters}
       renderSubComponent={(row) => (
-        <ProdcutsDetailsTable products={row.products} />
+        <ProdcutsDetailsTable
+          products={row.products}
+          onClearFilters={handleClearFilters}
+        />
       )}
     />
   );

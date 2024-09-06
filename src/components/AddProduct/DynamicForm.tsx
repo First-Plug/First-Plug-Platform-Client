@@ -97,6 +97,7 @@ const DynamicForm = ({
                 placeholder={field.title}
                 title={field.title}
                 selectedOption={value || ""}
+                searchable={true}
                 onChange={(option) => {
                   onChange(option);
                   handleChange(field.name, option);

@@ -31,9 +31,14 @@ export default function PrdouctModelDetail({
   );
 
   const getValue = (key: Key) => {
-    const attribute = attributesToShow.find((at) => at.key === key);
+    let attribute = attributesToShow.find((at) => at.key === key);
+    if (!attribute) {
+      attribute = attributes.find((at) => at.key === key);
+    }
     return attribute ? attribute.value : "-";
   };
+
+  const modelValue = getValue("model");
 
   return (
     <div className="flex flex-col">
@@ -47,6 +52,11 @@ export default function PrdouctModelDetail({
           <span className="font-normal">
             {attributes.filter((at) => at.key === "model")[0]?.value || "-"}
           </span>
+          {modelValue === "Other" &&
+            product.name &&
+            product.name.trim() !== "" && (
+              <span className="font-normal">- {product.name}</span>
+            )}
         </div>
       )}
       <div className="flex gap-4 text-sm">

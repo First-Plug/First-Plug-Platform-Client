@@ -84,6 +84,7 @@ const EmployeeData = function ({ isUpdate, initialData }) {
                 title="Select a Team"
                 selectedOption={teamValue}
                 onChange={handleTeamChange}
+                searchable={true}
               />
               {errors.team && (
                 <p className="text-red-500">{String(errors.team?.message)}</p>
