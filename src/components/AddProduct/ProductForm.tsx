@@ -295,7 +295,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const handleNext = async () => {
     const isProductNameValid = await validateProductName();
-    console.log("Is Product Name Valid:", isProductNameValid);
     if (!isProductNameValid) return;
 
     const data = methods.getValues();
