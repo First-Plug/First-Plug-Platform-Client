@@ -44,7 +44,7 @@ export default function PrdouctModelDetail({
   return (
     <div className="flex flex-col">
       {product.category === "Merchandising" ? (
-        <div className="flex gap-1 text-lg">
+        <div className="flex gap-1 text-md font-semibold">
           <span>{product.name}</span>
         </div>
       ) : (
