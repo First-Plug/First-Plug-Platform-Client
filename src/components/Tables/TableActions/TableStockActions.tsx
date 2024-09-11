@@ -1,4 +1,4 @@
-import { AddIcon, Button, ShopIcon, UploadIcon } from "@/common";
+import { AddIcon, Button, ShopIcon, UploadIcon, DownloadIcon } from "@/common";
 import { useStore } from "@/models";
 import { Table } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
@@ -19,19 +19,22 @@ export default observer(function TableStockActions<TData>({
   const { resetFilters } = useFilterReset();
   const router = useRouter();
   const {
-    products: { toggleStockToShow, onlyAvaliable },
+    products: { toggleStockToShow, onlyAvaliable, exportProductsCsv },
     aside: { setAside },
   } = useStore();
-
-  // const handleClearFilters = () => {
-  //   resetFilters();
-  //   table.setColumnFilters([]);
-  //   subTable?.setColumnFilters([]);
-  // };
 
   const handleFilter = () => {
     toggleStockToShow();
   };
+
+  const handleExportCsv = async () => {
+    try {
+      await exportProductsCsv();
+    } catch (error) {
+      console.error("Failed to export products CSV:", error);
+    }
+  };
+
   return (
     <div className=" flex items-center justify-between   h-full w-full ">
       <div className="flex gap-1">
@@ -60,6 +63,14 @@ export default observer(function TableStockActions<TData>({
           onClick={() => {
             router.push("/home/my-stock/addOneProduct");
           }}
+        />
+
+        <Button
+          size="small"
+          variant="secondary"
+          icon={<DownloadIcon />}
+          body="Export My Stock"
+          onClick={handleExportCsv}
         />
 
         <Button

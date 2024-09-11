@@ -152,4 +152,11 @@ export const ProductsStore = types
         console.error("Failed to reassign product", error);
       }
     }),
+    exportProductsCsv: flow(function* () {
+      try {
+        yield ProductServices.exportProductsCsv();
+      } catch (error) {
+        console.error("Failed to export products CSV", error);
+      }
+    }),
   }));
