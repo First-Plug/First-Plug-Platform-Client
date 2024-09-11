@@ -39,6 +39,8 @@ const MemberForm: React.FC<MemberFormProps> = ({
     formState: { isSubmitting },
   } = methods;
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const formatAcquisitionDate = (date: string) => {
     if (!date) return "";
     const d = new Date(date);
@@ -74,9 +76,20 @@ const MemberForm: React.FC<MemberFormProps> = ({
         teamId = undefined;
       }
 
-      const changes: Partial<TeamMember> = {};
+      let changes: Partial<TeamMember> = {};
       Object.keys(data).forEach((key) => {
-        if (data[key] !== initialData?.[key]) {
+        if (key === "dni") {
+          const initialDni =
+            initialData?.[key] !== undefined
+              ? Number(initialData[key])
+              : undefined;
+          const newDni =
+            data[key] !== undefined ? Number(data[key]) : undefined;
+
+          if (newDni !== initialDni) {
+            changes[key] = newDni;
+          }
+        } else if (data[key] !== initialData?.[key]) {
           if (key === "acquisitionDate" || key === "birthDate") {
             changes[key] = formatAcquisitionDate(data[key]);
           } else {
@@ -84,6 +97,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
           }
         }
       });
+
+      if (!("dni" in changes) && initialData?.dni) {
+        changes.dni = initialData.dni;
+      }
 
       if (changes.products) {
         delete changes.products;
@@ -94,12 +111,20 @@ const MemberForm: React.FC<MemberFormProps> = ({
       // }
 
       let response;
+      setIsProcessing(true);
       if (isUpdate && initialData) {
         response = await Memberservices.updateMember(initialData._id, {
           ...changes,
           ...(teamId && { team: teamId }),
         });
+
         updateMember(response);
+        initialData = { ...initialData, ...response };
+
+        if (changes.dni === undefined && initialData.dni !== undefined) {
+          initialData.dni = initialData.dni;
+        }
+
         setAlert("updateMember");
       } else {
         response = await Memberservices.createMember({
@@ -108,6 +133,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
         });
         addMember(response);
         setAlert("createMember");
+        methods.reset(initialData);
       }
 
       const updateMembers = await Memberservices.getAllMembers();
@@ -116,10 +142,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       setMembers(transformedMembers);
       setTeams(updatedTeams);
-      methods.reset();
     } catch (error: any) {
       const alertType = handleApiError(error);
       setAlert(alertType);
+      setIsProcessing(false);
     }
   };
 
@@ -158,7 +184,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
               onClick={() => {
                 handleSubmit(handleSaveMember)();
               }}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isProcessing}
             />
           </aside>
         </div>

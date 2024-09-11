@@ -77,6 +77,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [bulkInitialData, setBulkInitialData] = useState<Product | undefined>(
     initialData
   );
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -244,6 +245,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     if (!isCategoryValid || hasError) return;
 
     try {
+      setIsProcessing(true);
       if (isUpdate && initialData) {
         const changes: Partial<Product> = {};
         const requiredFields = ["name", "category", "location", "status"];
@@ -288,6 +290,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         );
       }
       setShowErrorDialog(true);
+      setIsProcessing(false);
     }
   };
 
@@ -295,7 +298,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const handleNext = async () => {
     const isProductNameValid = await validateProductName();
-    console.log("Is Product Name Valid:", isProductNameValid);
     if (!isProductNameValid) return;
 
     const data = methods.getValues();
@@ -464,7 +466,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     className="rounded lg"
                     size="big"
                     onClick={handleSubmit(handleSaveProduct)}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isProcessing}
                   />
                 )}
               </aside>
@@ -474,6 +476,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
               initialData={bulkInitialData}
               quantity={quantity}
               onBack={() => setShowBulkCreate(false)}
+              isProcessing={isProcessing}
+              setIsProcessing={setIsProcessing}
             />
           )}
         </div>

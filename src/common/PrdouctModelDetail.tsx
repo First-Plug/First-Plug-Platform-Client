@@ -18,7 +18,7 @@ export default function PrdouctModelDetail({
   }
 
   const CATEGORY_KEYS: Record<Category, readonly Key[]> = {
-    Merchandising: [],
+    Merchandising: ["color"],
     Computer: ["processor", "ram", "storage", "screen"],
     Monitor: ["brand", "model", "screen"],
     Audio: ["brand", "model"],
@@ -39,11 +39,14 @@ export default function PrdouctModelDetail({
   };
 
   const modelValue = getValue("model");
+  const colorValue = getValue("color");
 
   return (
     <div className="flex flex-col">
       {product.category === "Merchandising" ? (
-        <span className="text-lg">{product.name}</span>
+        <div className="flex gap-1 text-md font-semibold">
+          <span>{product.name}</span>
+        </div>
       ) : (
         <div className="flex gap-1 text-md ">
           <span className="font-semibold">

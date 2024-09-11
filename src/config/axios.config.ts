@@ -16,7 +16,7 @@ export const setAuthInterceptor = (token: string | null) => {
 };
 
 export class HTTPRequests {
-  static async get(url: string) {
+  static async get(url: string, config?: any) {
     return await axiosInstance.get(url);
   }
 

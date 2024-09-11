@@ -5,12 +5,15 @@ import { observer } from "mobx-react-lite";
 import personalData from "./JSON/personaldata.json";
 import { InputProductForm } from "../AddProduct/InputProductForm";
 import { useFormContext, Controller } from "react-hook-form";
+//testing
 
 const PersonalData = function ({ memberImage, isUpdate, initialData }) {
   const {
     control,
     formState: { errors },
     setValue,
+    getValues,
+    trigger,
   } = useFormContext();
 
   useEffect(() => {
@@ -59,15 +62,18 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
                       placeholder={field.placeholder}
                       title={field.title}
                       value={controllerField.value || ""}
-                      onChange={(e) =>
-                        field.name === "dni"
-                          ? controllerField.onChange(
-                              e.target.value !== ""
-                                ? parseInt(e.target.value, 10)
-                                : undefined
-                            )
-                          : controllerField.onChange(e.target.value)
-                      }
+                      onChange={(e) => {
+                        if (field.name === "dni") {
+                          const newDniValue =
+                            e.target.value.trim() === ""
+                              ? ""
+                              : parseInt(e.target.value, 10);
+
+                          controllerField.onChange(newDniValue);
+                        } else {
+                          controllerField.onChange(e.target.value);
+                        }
+                      }}
                       allowFutureDates={false}
                     />
                     <div className="min-h-[24px]">

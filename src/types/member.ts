@@ -90,7 +90,7 @@ export const zodCreateMembertModel = z.object({
   dni: z
     .preprocess((value) => {
       if (typeof value === "string") {
-        return parseInt(value, 10);
+        return value.trim() === "" ? undefined : parseInt(value, 10);
       }
       return value;
     }, z.union([z.number().int().positive().or(z.literal(0)), z.undefined()]))

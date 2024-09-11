@@ -56,10 +56,13 @@ export const productColumns = (
               (attr) => attr.key === "model"
             )?.value;
             const name = product.name;
+            const color =
+              product.attributes.find((attr) => attr.key === "color")?.value ||
+              "No Color";
 
             // Productos de Merchandising
             if (product.category === "Merchandising") {
-              options.add(name || "No Data");
+              options.add(`${name || "No Data"} (${color})`);
             } else {
               // Otros productos
               if (brand && model) {
@@ -94,9 +97,12 @@ export const productColumns = (
         (attr) => attr.key === "model"
       )?.value;
       const name = product.name;
+      const color =
+        product.attributes.find((attr) => attr.key === "color")?.value ||
+        "No Color";
 
       if (product.category === "Merchandising") {
-        return filterValue.includes(name || "No Data");
+        return filterValue.includes(`${name || "No Data"} (${color || "-"})`);
       } else {
         let groupName = "No Data";
         if (brand && model) {

@@ -14,12 +14,15 @@ import { AttributeModel, ProductModel, TeamMemberModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
+import { set } from "zod";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
   quantity: number;
   onBack: () => void;
-}> = ({ initialData, quantity, onBack }) => {
+  isProcessing?: boolean;
+  setIsProcessing?: (isProcessing: boolean) => void;
+}> = ({ initialData, quantity, onBack, isProcessing, setIsProcessing }) => {
   const router = useRouter();
 
   const numProducts = quantity;
@@ -263,6 +266,7 @@ const BulkCreateForm: React.FC<{
     }
 
     try {
+      setIsProcessing(true);
       if (Array.isArray(productsData)) {
         await ProductServices.bulkCreateProducts(productsData);
         setAlert("bulkCreateProductSuccess");
@@ -276,6 +280,7 @@ const BulkCreateForm: React.FC<{
         setAlert("bulkCreateSerialNumberError");
       } else {
         setAlert("bulkCreateProductError");
+        setIsProcessing(false);
       }
     }
   };
@@ -455,7 +460,7 @@ const BulkCreateForm: React.FC<{
                   variant="primary"
                   size="big"
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isProcessing}
                 />
               </div>
             </aside>
