@@ -74,9 +74,20 @@ const MemberForm: React.FC<MemberFormProps> = ({
         teamId = undefined;
       }
 
-      const changes: Partial<TeamMember> = {};
+      let changes: Partial<TeamMember> = {};
       Object.keys(data).forEach((key) => {
-        if (data[key] !== initialData?.[key]) {
+        if (key === "dni") {
+          const initialDni =
+            initialData?.[key] !== undefined
+              ? Number(initialData[key])
+              : undefined;
+          const newDni =
+            data[key] !== undefined ? Number(data[key]) : undefined;
+
+          if (newDni !== initialDni) {
+            changes[key] = newDni;
+          }
+        } else if (data[key] !== initialData?.[key]) {
           if (key === "acquisitionDate" || key === "birthDate") {
             changes[key] = formatAcquisitionDate(data[key]);
           } else {
@@ -99,7 +110,14 @@ const MemberForm: React.FC<MemberFormProps> = ({
           ...changes,
           ...(teamId && { team: teamId }),
         });
+
         updateMember(response);
+        initialData = { ...initialData, ...response };
+
+        if (changes.dni === undefined) {
+          initialData.dni = undefined;
+        }
+
         setAlert("updateMember");
       } else {
         response = await Memberservices.createMember({
@@ -108,6 +126,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
         });
         addMember(response);
         setAlert("createMember");
+        methods.reset(initialData);
       }
 
       const updateMembers = await Memberservices.getAllMembers();
@@ -116,7 +135,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       setMembers(transformedMembers);
       setTeams(updatedTeams);
-      methods.reset();
     } catch (error: any) {
       const alertType = handleApiError(error);
       setAlert(alertType);

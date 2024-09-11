@@ -12,22 +12,46 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
     control,
     formState: { errors },
     setValue,
+    getValues,
+    trigger,
   } = useFormContext();
 
   useEffect(() => {
-    if (isUpdate) {
+    if (isUpdate && initialData) {
       Object.keys(initialData).forEach((key) => {
         if (key === "birthDate" && initialData[key]) {
           const date = new Date(initialData[key]);
           setValue(key, date.toISOString().split("T")[0]);
-        } else if (key === "dni" && initialData[key]) {
-          setValue(key, initialData[key].toString());
+        } else if (key === "dni") {
+          const currentValue = getValues(key);
+
+          if (
+            currentValue === "" ||
+            currentValue === undefined ||
+            currentValue === initialData[key]?.toString()
+          ) {
+            setValue(
+              key,
+              initialData[key] !== undefined && initialData[key] !== null
+                ? initialData[key].toString()
+                : undefined
+            );
+            console.log(
+              `Setting DNI to: ${
+                initialData[key] !== undefined
+                  ? initialData[key].toString()
+                  : undefined
+              }`
+            );
+          }
         } else {
           setValue(key, initialData[key]);
         }
       });
+
+      trigger();
     }
-  }, [isUpdate, initialData, setValue]);
+  }, [isUpdate, initialData, setValue, getValues, trigger]);
 
   return (
     <div className="flex items-start gap-7">
@@ -60,15 +84,18 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
                       placeholder={field.placeholder}
                       title={field.title}
                       value={controllerField.value || ""}
-                      onChange={(e) =>
-                        field.name === "dni"
-                          ? controllerField.onChange(
-                              e.target.value !== ""
-                                ? parseInt(e.target.value, 10)
-                                : undefined
-                            )
-                          : controllerField.onChange(e.target.value)
-                      }
+                      onChange={(e) => {
+                        if (field.name === "dni") {
+                          const newDniValue =
+                            e.target.value.trim() === ""
+                              ? ""
+                              : parseInt(e.target.value, 10);
+
+                          controllerField.onChange(newDniValue);
+                        } else {
+                          controllerField.onChange(e.target.value);
+                        }
+                      }}
                       allowFutureDates={false}
                     />
                     <div className="min-h-[24px]">
