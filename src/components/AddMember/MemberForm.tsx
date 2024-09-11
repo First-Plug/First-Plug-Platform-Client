@@ -98,6 +98,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
+      if (!("dni" in changes) && initialData?.dni) {
+        changes.dni = initialData.dni;
+      }
+
       if (changes.products) {
         delete changes.products;
       }
@@ -117,8 +121,8 @@ const MemberForm: React.FC<MemberFormProps> = ({
         updateMember(response);
         initialData = { ...initialData, ...response };
 
-        if (changes.dni === undefined) {
-          initialData.dni = undefined;
+        if (changes.dni === undefined && initialData.dni !== undefined) {
+          initialData.dni = initialData.dni;
         }
 
         setAlert("updateMember");
