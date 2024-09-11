@@ -17,41 +17,19 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
   } = useFormContext();
 
   useEffect(() => {
-    if (isUpdate && initialData) {
+    if (isUpdate) {
       Object.keys(initialData).forEach((key) => {
         if (key === "birthDate" && initialData[key]) {
           const date = new Date(initialData[key]);
           setValue(key, date.toISOString().split("T")[0]);
-        } else if (key === "dni") {
-          const currentValue = getValues(key);
-
-          if (
-            currentValue === "" ||
-            currentValue === undefined ||
-            currentValue === initialData[key]?.toString()
-          ) {
-            setValue(
-              key,
-              initialData[key] !== undefined && initialData[key] !== null
-                ? initialData[key].toString()
-                : undefined
-            );
-            console.log(
-              `Setting DNI to: ${
-                initialData[key] !== undefined
-                  ? initialData[key].toString()
-                  : undefined
-              }`
-            );
-          }
+        } else if (key === "dni" && initialData[key]) {
+          setValue(key, initialData[key].toString());
         } else {
           setValue(key, initialData[key]);
         }
       });
-
-      trigger();
     }
-  }, [isUpdate, initialData, setValue, getValues, trigger]);
+  }, [isUpdate, initialData, setValue]);
 
   return (
     <div className="flex items-start gap-7">
