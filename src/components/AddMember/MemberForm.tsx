@@ -39,6 +39,8 @@ const MemberForm: React.FC<MemberFormProps> = ({
     formState: { isSubmitting },
   } = methods;
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const formatAcquisitionDate = (date: string) => {
     if (!date) return "";
     const d = new Date(date);
@@ -105,6 +107,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
       // }
 
       let response;
+      setIsProcessing(true);
       if (isUpdate && initialData) {
         response = await Memberservices.updateMember(initialData._id, {
           ...changes,
@@ -138,6 +141,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
     } catch (error: any) {
       const alertType = handleApiError(error);
       setAlert(alertType);
+      setIsProcessing(false);
     }
   };
 
@@ -176,7 +180,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
               onClick={() => {
                 handleSubmit(handleSaveMember)();
               }}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isProcessing}
             />
           </aside>
         </div>
