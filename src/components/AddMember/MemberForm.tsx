@@ -84,7 +84,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
           const newDni =
             data[key] !== undefined ? Number(data[key]) : undefined;
 
-          // Si el dni ha sido modificado (incluyendo el caso de eliminarlo)
           if (newDni !== initialDni) {
             changes[key] = newDni;
           }
@@ -97,7 +96,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
-      // Verificar si no hay cambios en el dni y se debe preservar el valor original
       if (!("dni" in changes) && initialData?.dni) {
         changes.dni = initialData.dni;
       }
