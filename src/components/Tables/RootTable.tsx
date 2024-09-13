@@ -274,11 +274,11 @@ export function RootTable<TData, TValue>({
       .getFilteredRowModel()
       .rows.map((row) => {
         const product = getSnapshot(row.original) as ProductTable;
-        const value = row.getValue(headerId);
+        // const value = row.getValue(headerId);
 
-        if (headerId === "Category") {
-          return product.category;
-        }
+        // if (headerId === "Category") {
+        //   return product.category;
+        // }
 
         if (headerId === "Name") {
           const firstProduct = product.products[0];
@@ -286,22 +286,33 @@ export function RootTable<TData, TValue>({
 
           const brand =
             firstProduct.attributes.find((attr) => attr.key === "brand")
-              ?.value || "No Data";
+              ?.value || "";
           const model =
             firstProduct.attributes.find((attr) => attr.key === "model")
-              ?.value || "No Data";
-          const name = firstProduct.name || "No Data";
+              ?.value || "";
+          const name = firstProduct.name || "";
           const color =
             firstProduct.attributes.find((attr) => attr.key === "color")
-              ?.value || "No Color";
+              ?.value || "";
 
-          if (model === "Other" && name === "No Data") {
-            return `${brand} Other (Sin nombre)`;
-          } else if (model === "Other") {
-            return `${brand} Other ${name}`;
-          } else {
-            return `${brand} ${model}`;
+          // if (product.category === "Merchandising") {
+          //   return name ? `${name}${color ? ` (${color})` : ""}` : "No Data";
+          // }
+
+          let result = brand;
+          if (model) {
+            result += ` ${model}`;
           }
+          if (name) {
+            result += ` ${name}`;
+          }
+
+          return result || "No Data";
+        }
+
+        const value = row.getValue(headerId);
+        if (headerId === "Category") {
+          return product.category;
         }
 
         if (headerId === "serialNumber") {
@@ -344,10 +355,7 @@ export function RootTable<TData, TValue>({
       }
 
       if (
-        headerId === "name" ||
-        headerId === "currentlyWith" ||
-        headerId === "category" ||
-        headerId === "location"
+        ["Name", "currentlyWith", "Category", "Location"].includes(headerId)
       ) {
         if (a === "No Data" || a === "Not Assigned") return 1;
         if (b === "No Data" || b === "Not Assigned") return -1;

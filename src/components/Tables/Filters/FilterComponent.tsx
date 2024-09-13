@@ -25,8 +25,14 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   // const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setSelectedOptions(options);
-  }, [options]);
+    setFilteredOptions([...options]);
+    setSelectedOptions(initialSelectedOptions || []);
+  }, [options, initialSelectedOptions]);
+
+  //este useEffect hace que el selectAll y todas las opciones esten checked cuando abro el filtro
+  // useEffect(() => {
+  //   setSelectedOptions(options);
+  // }, [options]);
 
   useEffect(() => {
     if (
@@ -72,11 +78,19 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   };
 
   const handleClearFilter = () => {
+    console.log("Clearing filter...");
     setSelectedOptions([]);
+    setFilteredOptions([...options]);
     setSelectAll(false);
     onChange([]);
     onClearFilter();
+    console.log("Filtered options restored:", options);
   };
+
+  // useEffect(() => {
+  //   setFilteredOptions(options);
+  //   console.log("options", options);
+  // }, [options]);
 
   // const combinedOptions = Array.from(
   //   new Set([...filteredOptions, ...selectedOptions])

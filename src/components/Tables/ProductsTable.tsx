@@ -43,17 +43,19 @@ export const productColumns = (
     size: 200,
     meta: {
       filterVariant: "custom",
-      options: () => {
+      options: (rows) => {
         const options = new Set<string>();
 
-        data.forEach((row) => {
-          row.products.forEach((product) => {
+        // Recorremos los productos
+        rows.forEach((row) => {
+          row.original.products.forEach((product) => {
+            const name = product.name || "No Data";
+            const color =
+              product.attributes.find((attr) => attr.key === "color")?.value ||
+              "";
+
             if (product.category === "Merchandising") {
-              const name = product.name || "No Data";
-              const color =
-                product.attributes.find((attr) => attr.key === "color")
-                  ?.value || "No Color";
-              options.add(`${name} (${color})`);
+              options.add(`${name}${color ? ` (${color})` : ""}`);
             }
           });
         });
@@ -68,17 +70,15 @@ export const productColumns = (
     enableColumnFilter: true,
     filterFn: (row, columnId, filterValue) => {
       if (filterValue.length === 0) return true;
+
       const product = row.original.products[0];
+      const name = product.name || "No Data";
+      const color =
+        product.attributes.find((attr) => attr.key === "color")?.value || "";
 
-      if (product.category === "Merchandising") {
-        const name = product.name || "No Data";
-        const color =
-          product.attributes.find((attr) => attr.key === "color")?.value ||
-          "No Color";
-        return filterValue.includes(`${name} (${color})`);
-      }
+      const formattedValue = `${name}${color ? ` (${color})` : ""}`;
 
-      return false;
+      return filterValue.includes(formattedValue);
     },
   },
   {
