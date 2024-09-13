@@ -54,8 +54,6 @@ import {
   SelectTrigger,
 } from "../ui/select";
 import FilterComponent from "./Filters/FilterComponent";
-import { useFilterReset } from "./Filters/FilterResetContext";
-import { on } from "events";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -157,17 +155,42 @@ export function RootTable<TData, TValue>({
     ]);
   };
 
-  const handleFilterIconClick = (
-    headerId: string,
-    options: string[],
-    event: React.MouseEvent
-  ) => {
-    if (filterMenuOpen === headerId) {
-      setFilterMenuOpen(null);
-      return;
+  // const handleFilterIconClick = (
+  //   headerId: string,
+  //   options: string[],
+  //   event: React.MouseEvent
+  // ) => {
+  //   if (filterMenuOpen === headerId) {
+  //     setFilterMenuOpen(null);
+  //     return;
+  //   }
+
+  //   setFilterOptions(options);
+  //   setFilterMenuOpen(headerId);
+  // };
+
+  const handleFilterIconClick = (headerId: string) => {
+    // Obtenemos las opciones filtradas basadas en las filas visibles
+    const filteredOptions = table
+      .getFilteredRowModel()
+      .rows.map((row) => {
+        const value = row.getValue(headerId);
+        return value ? String(value) : "No Data"; // Convertir el valor a string y manejar casos vacíos
+      })
+      .filter((value, index, self) => self.indexOf(value) === index); // Filtrar duplicados
+
+    console.log(`Filtered options for ${headerId}:`, filteredOptions); // Verificar opciones antes de setear
+
+    // Si no hay opciones disponibles, mostramos "No Data"
+    if (filteredOptions.length === 0) {
+      filteredOptions.push("No Data");
     }
 
-    setFilterOptions(options);
+    // Actualizamos las opciones de filtro disponibles para esa columna
+    setFilterOptions(filteredOptions);
+    console.log("Updated filterOptions state:", filteredOptions);
+
+    // Abrimos el menú del filtro
     setFilterMenuOpen(headerId);
   };
 
@@ -270,19 +293,7 @@ export function RootTable<TData, TValue>({
                           >
                             <DropDownArrow
                               className="cursor-pointer"
-                              onClick={(event) =>
-                                handleFilterIconClick(
-                                  header.id,
-                                  typeof header.column.columnDef.meta
-                                    ?.options === "function"
-                                    ? header.column.columnDef.meta.options(
-                                        table.getRowModel().rows
-                                      )
-                                    : header.column.columnDef.meta?.options ||
-                                        [],
-                                  event
-                                )
-                              }
+                              onClick={() => handleFilterIconClick(header.id)}
                             />
                             {filterMenuOpen === header.id && (
                               <div
@@ -297,7 +308,11 @@ export function RootTable<TData, TValue>({
                                 }}
                               >
                                 <FilterComponent
-                                  options={filterOptions}
+                                  options={
+                                    filterOptions.length > 0
+                                      ? filterOptions
+                                      : ["No Data"]
+                                  }
                                   initialSelectedOptions={
                                     selectedFilterOptions[header.id] || []
                                   }
