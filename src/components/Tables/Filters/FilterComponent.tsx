@@ -83,8 +83,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   // );
 
   useEffect(() => {
-    console.log("FilterComponent options:", options); // Verificar si están llegando las opciones correctas
-  }, [options]);
+    console.log("FilterComponent options:", options);
+    console.log("Filter options passed to FilterComponent:", filteredOptions); // Verificar si están llegando las opciones correctas
+  }, [options, filteredOptions]);
 
   return (
     <div

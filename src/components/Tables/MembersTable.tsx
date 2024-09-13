@@ -77,23 +77,31 @@ const membersColumns: (
         const options = new Set<string>();
         filteredMembers.forEach((member) => {
           const dateValue = member.birthDate;
-          const month = dateValue
-            ? new Date(dateValue).toLocaleString("en-US", { month: "long" })
-            : "No Data";
-          options.add(month);
+          if (dateValue) {
+            const month = new Date(dateValue).toLocaleString("en-US", {
+              month: "long",
+            });
+            options.add(month);
+          } else {
+            options.add("No Anda");
+          }
         });
-        return Array.from(options)
+        const finalOptions = Array.from(options)
           .sort((a, b) => MONTHS.indexOf(a) - MONTHS.indexOf(b))
-          .concat("No Data");
+          .concat("No Anda");
+
+        console.log("Generated options for birthDate:", finalOptions);
+        return finalOptions;
       },
     },
     enableColumnFilter: true,
     filterFn: (row, columnId, filterValue) => {
       if (filterValue.length === 0) return true;
       const dateValue = row.getValue(columnId) as string | undefined;
+      // Convertir la fecha a mes para comparar en el filtro
       const month = dateValue
         ? new Date(dateValue).toLocaleString("en-US", { month: "long" })
-        : "No Data";
+        : "No anda";
       return filterValue.includes(month);
     },
   },

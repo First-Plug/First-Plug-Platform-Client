@@ -41,7 +41,7 @@ declare module "@tanstack/react-table" {
   }
 }
 import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
-import { TableType } from "@/types";
+import { TableType, TeamMember } from "@/types";
 import { TableActions } from "./TableActions";
 import { Button } from "../ui/button";
 import { ArrowLeft, ArrowRight, DropDownArrow } from "@/common";
@@ -54,6 +54,21 @@ import {
   SelectTrigger,
 } from "../ui/select";
 import FilterComponent from "./Filters/FilterComponent";
+
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -170,27 +185,81 @@ export function RootTable<TData, TValue>({
   // };
 
   const handleFilterIconClick = (headerId: string) => {
-    // Obtenemos las opciones filtradas basadas en las filas visibles
+    if (filterMenuOpen === headerId) {
+      setFilterMenuOpen(null);
+      return;
+    }
+
     const filteredOptions = table
       .getFilteredRowModel()
       .rows.map((row) => {
         const value = row.getValue(headerId);
-        return value ? String(value) : "No Data"; // Convertir el valor a string y manejar casos vacíos
+
+        const member = row.original as TeamMember;
+
+        if (headerId === "birthDate" || headerId === "startDate") {
+          if (typeof value === "string" || typeof value === "number") {
+            const dateValue = new Date(value);
+            if (!isNaN(dateValue.getTime())) {
+              return dateValue.toLocaleString("en-US", { month: "long" });
+            }
+          }
+          return "No Data";
+        }
+
+        if (headerId === "teamId") {
+          if (
+            typeof member.team === "object" &&
+            member.team !== null &&
+            "name" in member.team
+          ) {
+            return member.team.name;
+          }
+          return "Not Assigned";
+        }
+
+        if (headerId === "position") {
+          return value ? String(value) : "No Data";
+        }
+
+        if (headerId === "products") {
+          const productCount = (member.products || []).length;
+          return productCount.toString();
+        }
+
+        return value ? String(value) : "No Data";
       })
-      .filter((value, index, self) => self.indexOf(value) === index); // Filtrar duplicados
+      .filter((value, index, self) => self.indexOf(value) === index);
 
-    console.log(`Filtered options for ${headerId}:`, filteredOptions); // Verificar opciones antes de setear
+    const sortedOptions = filteredOptions.sort((a, b) => {
+      if (headerId === "birthDate" || headerId === "startDate") {
+        const monthIndexA = MONTHS.indexOf(a);
+        const monthIndexB = MONTHS.indexOf(b);
+        if (a === "No Data") return 1;
+        if (b === "No Data") return -1;
+        return monthIndexA - monthIndexB;
+      }
 
-    // Si no hay opciones disponibles, mostramos "No Data"
-    if (filteredOptions.length === 0) {
-      filteredOptions.push("No Data");
+      if (headerId === "position" || headerId === "teamId") {
+        if (a === "No Data" || a === "Not Assigned") return 1;
+        if (b === "No Data" || b === "Not Assigned") return -1;
+        return a.localeCompare(b, undefined, { sensitivity: "base" });
+      }
+
+      if (headerId === "products") {
+        const numA = parseInt(a, 10);
+        const numB = parseInt(b, 10);
+        return numA - numB;
+      }
+
+      return a.localeCompare(b);
+    });
+
+    if (sortedOptions.length === 0) {
+      sortedOptions.push("No Data");
     }
 
-    // Actualizamos las opciones de filtro disponibles para esa columna
-    setFilterOptions(filteredOptions);
-    console.log("Updated filterOptions state:", filteredOptions);
-
-    // Abrimos el menú del filtro
+    setFilterOptions(sortedOptions);
     setFilterMenuOpen(headerId);
   };
 
@@ -244,6 +313,16 @@ export function RootTable<TData, TValue>({
     <div className="relative h-full flex-grow flex flex-col gap-1">
       {tableType !== "subRow" && (
         <div className="max-h-[50%] flex items-center">
+          <Button
+            onClick={() => {
+              setColumnFilters([]);
+            }}
+            variant="outline"
+            size="sm"
+          >
+            Clear All Filters
+          </Button>
+
           <TableActions
             table={table}
             type={tableType}
