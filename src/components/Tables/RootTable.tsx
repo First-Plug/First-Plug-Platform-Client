@@ -41,7 +41,7 @@ declare module "@tanstack/react-table" {
   }
 }
 import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
-import { TableType, TeamMember } from "@/types";
+import { ProductTable, TableType, TeamMember } from "@/types";
 import { TableActions } from "./TableActions";
 import { Button } from "../ui/button";
 import { ArrowLeft, ArrowRight, DropDownArrow } from "@/common";
@@ -54,6 +54,7 @@ import {
   SelectTrigger,
 } from "../ui/select";
 import FilterComponent from "./Filters/FilterComponent";
+import { getSnapshot } from "mobx-state-tree";
 
 const MONTHS = [
   "January",
@@ -184,7 +185,7 @@ export function RootTable<TData, TValue>({
   //   setFilterMenuOpen(headerId);
   // };
 
-  const handleFilterIconClick = (headerId: string) => {
+  const handleFilterIconClickMembers = (headerId: string) => {
     if (filterMenuOpen === headerId) {
       setFilterMenuOpen(null);
       return;
@@ -263,6 +264,112 @@ export function RootTable<TData, TValue>({
     setFilterMenuOpen(headerId);
   };
 
+  const handleFilterIconClickStock = (headerId: string) => {
+    if (filterMenuOpen === headerId) {
+      setFilterMenuOpen(null);
+      return;
+    }
+
+    const filteredOptions = table
+      .getFilteredRowModel()
+      .rows.map((row) => {
+        const product = getSnapshot(row.original) as ProductTable;
+        const value = row.getValue(headerId);
+
+        if (headerId === "Category") {
+          return product.category;
+        }
+
+        if (headerId === "Name") {
+          const firstProduct = product.products[0];
+          if (!firstProduct) return "No Data";
+
+          const brand =
+            firstProduct.attributes.find((attr) => attr.key === "brand")
+              ?.value || "No Data";
+          const model =
+            firstProduct.attributes.find((attr) => attr.key === "model")
+              ?.value || "No Data";
+          const name = firstProduct.name || "No Data";
+          const color =
+            firstProduct.attributes.find((attr) => attr.key === "color")
+              ?.value || "No Color";
+
+          if (model === "Other" && name === "No Data") {
+            return `${brand} Other (Sin nombre)`;
+          } else if (model === "Other") {
+            return `${brand} Other ${name}`;
+          } else {
+            return `${brand} ${model}`;
+          }
+        }
+
+        if (headerId === "serialNumber") {
+          return value ? String(value) : "No Data";
+        }
+
+        if (headerId === "Acquisition Date ") {
+          if (typeof value === "string" && value) {
+            const dateValue = new Date(value);
+            if (!isNaN(dateValue.getTime())) {
+              return dateValue.toLocaleDateString("es-AR", { timeZone: "UTC" });
+            }
+          }
+          return "No Data";
+        }
+
+        if (headerId === "currentlyWith") {
+          return product.products[0].assignedMember || "Not Assigned";
+        }
+
+        if (headerId === "status") {
+          return product.products[0].status || "No Data";
+        }
+
+        if (headerId === "location") {
+          return product.products[0].location || "No Data";
+        }
+
+        return value ? String(value) : "No Data";
+      })
+      .filter((value, index, self) => self.indexOf(value) === index);
+
+    const sortedOptions = filteredOptions.sort((a, b) => {
+      if (headerId === "acquisitionDate") {
+        const dateA = new Date(a).getTime();
+        const dateB = new Date(b).getTime();
+        if (isNaN(dateA)) return 1;
+        if (isNaN(dateB)) return -1;
+        return dateA - dateB;
+      }
+
+      if (
+        headerId === "name" ||
+        headerId === "currentlyWith" ||
+        headerId === "category" ||
+        headerId === "location"
+      ) {
+        if (a === "No Data" || a === "Not Assigned") return 1;
+        if (b === "No Data" || b === "Not Assigned") return -1;
+        return a.localeCompare(b, undefined, { sensitivity: "base" });
+      }
+
+      if (headerId === "serialNumber") {
+        const numA = parseInt(a, 10);
+        const numB = parseInt(b, 10);
+        return numA - numB;
+      }
+
+      return a.localeCompare(b);
+    });
+
+    if (sortedOptions.length === 0) {
+      sortedOptions.push("No Data");
+    }
+    setFilterOptions(sortedOptions);
+    setFilterMenuOpen(headerId);
+  };
+
   useEffect(() => {
     if (filterMenuOpen) {
       const filterElement = filterRefs.current[filterMenuOpen];
@@ -319,6 +426,7 @@ export function RootTable<TData, TValue>({
             }}
             variant="outline"
             size="sm"
+            className="mr-2"
           >
             Clear All Filters
           </Button>
@@ -372,7 +480,11 @@ export function RootTable<TData, TValue>({
                           >
                             <DropDownArrow
                               className="cursor-pointer"
-                              onClick={() => handleFilterIconClick(header.id)}
+                              onClick={() =>
+                                tableType === "members"
+                                  ? handleFilterIconClickMembers(header.id)
+                                  : handleFilterIconClickStock(header.id)
+                              }
                             />
                             {filterMenuOpen === header.id && (
                               <div

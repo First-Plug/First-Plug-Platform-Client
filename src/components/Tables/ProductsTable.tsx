@@ -22,7 +22,7 @@ export const productColumns = (
     size: 120,
     meta: {
       filterVariant: "custom",
-      options: [...CATEGORIES] as unknown as string[],
+      options: [...CATEGORIES].sort(),
     },
     cell: ({ getValue }) => (
       <div className="flex gap-2 text-lg items-center w-[150px]">
@@ -46,39 +46,19 @@ export const productColumns = (
       options: () => {
         const options = new Set<string>();
 
-        // Recorre todos los productos
         data.forEach((row) => {
           row.products.forEach((product) => {
-            const brand = product.attributes.find(
-              (attr) => attr.key === "brand"
-            )?.value;
-            const model = product.attributes.find(
-              (attr) => attr.key === "model"
-            )?.value;
-            const name = product.name;
-            const color =
-              product.attributes.find((attr) => attr.key === "color")?.value ||
-              "No Color";
-
-            // Productos de Merchandising
             if (product.category === "Merchandising") {
-              options.add(`${name || "No Data"} (${color})`);
-            } else {
-              // Otros productos
-              if (brand && model) {
-                if (model === "Other") {
-                  options.add(`${brand} Other ${name}`);
-                } else {
-                  options.add(`${brand} ${model}`);
-                }
-              } else {
-                options.add("No Data");
-              }
+              const name = product.name || "No Data";
+              const color =
+                product.attributes.find((attr) => attr.key === "color")
+                  ?.value || "No Color";
+              options.add(`${name} (${color})`);
             }
           });
         });
 
-        return Array.from(options);
+        return Array.from(options).sort();
       },
     },
     cell: ({ row }) => (
@@ -90,27 +70,15 @@ export const productColumns = (
       if (filterValue.length === 0) return true;
       const product = row.original.products[0];
 
-      const brand = product.attributes.find(
-        (attr) => attr.key === "brand"
-      )?.value;
-      const model = product.attributes.find(
-        (attr) => attr.key === "model"
-      )?.value;
-      const name = product.name;
-      const color =
-        product.attributes.find((attr) => attr.key === "color")?.value ||
-        "No Color";
-
       if (product.category === "Merchandising") {
-        return filterValue.includes(`${name || "No Data"} (${color || "-"})`);
-      } else {
-        let groupName = "No Data";
-        if (brand && model) {
-          groupName =
-            model === "Other" ? `${brand} Other ${name}` : `${brand} ${model}`;
-        }
-        return filterValue.includes(groupName);
+        const name = product.name || "No Data";
+        const color =
+          product.attributes.find((attr) => attr.key === "color")?.value ||
+          "No Color";
+        return filterValue.includes(`${name} (${color})`);
       }
+
+      return false;
     },
   },
   {

@@ -14,7 +14,6 @@ import { ProductLocation, ShipmentStatusCard } from "@/common";
 import { ActionButton } from "./ActionButton";
 import EditProduct from "./EditProduct";
 import { DeleteAction } from "@/components/Alerts";
-import { useFilterReset } from "../Filters/FilterResetContext";
 
 interface IProdcutsDetailsTable {
   products: Product[];
