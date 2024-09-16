@@ -18,13 +18,32 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   initialSelectedOptions,
 }) => {
   const [filteredOptions, setFilteredOptions] = useState<string[]>(options);
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>(
+    initialSelectedOptions || []
+  );
   const [selectAll, setSelectAll] = useState<boolean>(false);
-  const filterRef = useRef<HTMLDivElement>(null);
+  // const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setSelectedOptions(initialSelectedOptions);
-  }, [initialSelectedOptions]);
+    setFilteredOptions([...options]);
+    setSelectedOptions(initialSelectedOptions || []);
+  }, [options, initialSelectedOptions]);
+
+  //este useEffect hace que el selectAll y todas las opciones esten checked cuando abro el filtro
+  // useEffect(() => {
+  //   setSelectedOptions(options);
+  // }, [options]);
+
+  useEffect(() => {
+    if (
+      selectedOptions.length === filteredOptions.length &&
+      filteredOptions.length > 0
+    ) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedOptions, filteredOptions]);
 
   const handleSearch = (query: string) => {
     const filtered = options.filter((option) =>
@@ -38,9 +57,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
       setSelectedOptions([]);
       onChange([]);
     } else {
-      const allOptions = Array.from(new Set([...filteredOptions, ...options]));
-      setSelectedOptions(allOptions);
-      onChange(allOptions);
+      // const allOptions = Array.from(new Set([...filteredOptions, ...options]));
+      setSelectedOptions(filteredOptions);
+      onChange(filteredOptions);
     }
     setSelectAll(!selectAll);
   };
@@ -53,25 +72,32 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     setSelectedOptions(updatedSelectedOptions);
     onChange(updatedSelectedOptions);
 
-    if (updatedSelectedOptions.length !== options.length) {
-      setSelectAll(false);
-    }
+    // if (updatedSelectedOptions.length !== options.length) {
+    //   setSelectAll(false);
+    // }
   };
 
   const handleClearFilter = () => {
     setSelectedOptions([]);
+    setFilteredOptions([...options]);
     setSelectAll(false);
+
     onChange([]);
     onClearFilter();
   };
 
-  const combinedOptions = Array.from(
-    new Set([...filteredOptions, ...selectedOptions])
-  );
+  // useEffect(() => {
+  //   setFilteredOptions(options);
+  //   console.log("options", options);
+  // }, [options]);
+
+  // const combinedOptions = Array.from(
+  //   new Set([...filteredOptions, ...selectedOptions])
+  // );
 
   return (
     <div
-      ref={filterRef}
+      // ref={filterRef}
       className="fixed bg-white p-6 w-64 shadow-lg z-50 overflow-visible"
     >
       <div className="flex justify-end items-center mb-4">
@@ -83,12 +109,18 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         <label>Select All</label>
       </div>
       <div className="p-2 max-h-60 overflow-y-auto">
-        {combinedOptions.map((option) => (
+        {filteredOptions.map((option) => (
           <div key={option} className="mt-2 flex items-start">
             <input
               type="checkbox"
               checked={selectedOptions.includes(option)}
-              onChange={() => handleCheckboxChange(option)}
+              onChange={() => {
+                const updatedOptions = selectedOptions.includes(option)
+                  ? selectedOptions.filter((o) => o !== option)
+                  : [...selectedOptions, option];
+                setSelectedOptions(updatedOptions);
+                onChange(updatedOptions);
+              }}
               className="mt-2"
             />
             <label className="ml-2 mt-2 leading-tight flex-1">

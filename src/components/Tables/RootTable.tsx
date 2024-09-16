@@ -41,7 +41,7 @@ declare module "@tanstack/react-table" {
   }
 }
 import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
-import { TableType } from "@/types";
+import { ProductTable, TableType, TeamMember } from "@/types";
 import { TableActions } from "./TableActions";
 import { Button } from "../ui/button";
 import { ArrowLeft, ArrowRight, DropDownArrow } from "@/common";
@@ -54,8 +54,22 @@ import {
   SelectTrigger,
 } from "../ui/select";
 import FilterComponent from "./Filters/FilterComponent";
-import { useFilterReset } from "./Filters/FilterResetContext";
-import { on } from "events";
+import { getSnapshot } from "mobx-state-tree";
+
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -66,6 +80,8 @@ interface DataTableProps<TData, TValue> {
   pageSize?: number;
   tableNameRef?: string;
   onClearFilters?: () => void;
+  onColumnFiltersChange?: (newFilters: ColumnFiltersState) => void;
+  columnFilters?: ColumnFiltersState;
 }
 
 export function RootTable<TData, TValue>({
@@ -77,6 +93,8 @@ export function RootTable<TData, TValue>({
   pageSize = 5,
   tableNameRef,
   onClearFilters,
+  onColumnFiltersChange,
+  columnFilters: externalColumnFilters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -117,6 +135,24 @@ export function RootTable<TData, TValue>({
     ],
   });
 
+  const [clearAll, setClearAll] = useState(false);
+
+  const handleClearAllFilters = () => {
+    setColumnFilters([]);
+    setSelectedFilterOptions({});
+    setClearAll((prev) => !prev);
+    if (onClearFilters) {
+      onClearFilters();
+    }
+  };
+
+  const handleColumnFiltersChange = (newFilters: ColumnFiltersState) => {
+    setColumnFilters(newFilters);
+    if (onColumnFiltersChange) {
+      onColumnFiltersChange(newFilters);
+    }
+  };
+
   const table = useReactTable({
     data,
     columns,
@@ -137,7 +173,7 @@ export function RootTable<TData, TValue>({
     getRowCanExpand,
     getExpandedRowModel: getExpandedRowModel(),
     getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
+    onColumnFiltersChange: handleColumnFiltersChange,
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
@@ -157,17 +193,190 @@ export function RootTable<TData, TValue>({
     ]);
   };
 
-  const handleFilterIconClick = (
-    headerId: string,
-    options: string[],
-    event: React.MouseEvent
-  ) => {
+  const handleFilterIconClickMembers = (headerId: string) => {
     if (filterMenuOpen === headerId) {
       setFilterMenuOpen(null);
       return;
     }
 
-    setFilterOptions(options);
+    const filteredOptions = table
+      .getFilteredRowModel()
+      .rows.map((row) => {
+        const value = row.getValue(headerId);
+
+        const member = row.original as TeamMember;
+
+        if (headerId === "birthDate" || headerId === "startDate") {
+          if (typeof value === "string" || typeof value === "number") {
+            const dateValue = new Date(value);
+            if (!isNaN(dateValue.getTime())) {
+              return dateValue.toLocaleString("en-US", { month: "long" });
+            }
+          }
+          return "No Data";
+        }
+
+        if (headerId === "teamId") {
+          if (
+            typeof member.team === "object" &&
+            member.team !== null &&
+            "name" in member.team
+          ) {
+            return member.team.name;
+          }
+          return "Not Assigned";
+        }
+
+        if (headerId === "position") {
+          return value ? String(value) : "No Data";
+        }
+
+        if (headerId === "products") {
+          const productCount = (member.products || []).length;
+          return productCount.toString();
+        }
+
+        return value ? String(value) : "No Data";
+      })
+      .filter((value, index, self) => self.indexOf(value) === index);
+
+    const sortedOptions = filteredOptions.sort((a, b) => {
+      if (headerId === "birthDate" || headerId === "startDate") {
+        const monthIndexA = MONTHS.indexOf(a);
+        const monthIndexB = MONTHS.indexOf(b);
+        if (a === "No Data") return 1;
+        if (b === "No Data") return -1;
+        return monthIndexA - monthIndexB;
+      }
+
+      if (headerId === "position" || headerId === "teamId") {
+        if (a === "No Data" || a === "Not Assigned") return 1;
+        if (b === "No Data" || b === "Not Assigned") return -1;
+        return a.localeCompare(b, undefined, { sensitivity: "base" });
+      }
+
+      if (headerId === "products") {
+        const numA = parseInt(a, 10);
+        const numB = parseInt(b, 10);
+        return numA - numB;
+      }
+
+      return a.localeCompare(b);
+    });
+
+    if (sortedOptions.length === 0) {
+      sortedOptions.push("No Data");
+    }
+
+    setFilterOptions(sortedOptions);
+    setFilterMenuOpen(headerId);
+  };
+
+  const handleFilterIconClickStock = (headerId: string) => {
+    if (filterMenuOpen === headerId) {
+      setFilterMenuOpen(null);
+      return;
+    }
+
+    const filteredOptions = table
+      .getFilteredRowModel()
+      .rows.map((row) => {
+        const product = getSnapshot(row.original) as ProductTable;
+
+        if (headerId === "Name") {
+          const firstProduct = product.products[0];
+          if (!firstProduct) return "No Data";
+
+          const brand =
+            firstProduct.attributes.find((attr) => attr.key === "brand")
+              ?.value || "";
+          const model =
+            firstProduct.attributes.find((attr) => attr.key === "model")
+              ?.value || "";
+          const name = firstProduct.name || "";
+          const color =
+            firstProduct.attributes.find((attr) => attr.key === "color")
+              ?.value || "";
+
+          let result = brand;
+          if (model) {
+            result += ` ${model}`;
+          }
+          if (name) {
+            result += ` ${name}`;
+          }
+          if (firstProduct.category === "Merchandising") {
+            result = color ? `${name} (${color})` : name || "No Data";
+          }
+
+          return result || "No Data";
+        }
+
+        const value = row.getValue(headerId);
+        if (headerId === "Category") {
+          return product.category;
+        }
+
+        if (headerId === "serialNumber") {
+          return value ? String(value) : "No Data";
+        }
+
+        if (headerId === "Acquisition Date ") {
+          if (typeof value === "string" && value) {
+            const dateValue = new Date(value);
+            if (!isNaN(dateValue.getTime())) {
+              return dateValue.toLocaleDateString("es-AR", { timeZone: "UTC" });
+            }
+          }
+          return "No Data";
+        }
+
+        if (headerId === "currentlyWith") {
+          return product.products[0].assignedMember || "No Data";
+        }
+
+        if (headerId === "status") {
+          return product.products[0].status || "No Data";
+        }
+
+        if (headerId === "location") {
+          return product.products[0].location || "No Data";
+        }
+
+        return value ? String(value) : "No Data";
+      })
+      .filter((value, index, self) => self.indexOf(value) === index);
+
+    const sortedOptions = filteredOptions.sort((a, b) => {
+      if (headerId === "acquisitionDate") {
+        const dateA = new Date(a).getTime();
+        const dateB = new Date(b).getTime();
+        if (isNaN(dateA)) return 1;
+        if (isNaN(dateB)) return -1;
+        return dateA - dateB;
+      }
+
+      if (
+        ["Name", "currentlyWith", "Category", "Location"].includes(headerId)
+      ) {
+        if (a === "No Data" || a === "Not Assigned") return 1;
+        if (b === "No Data" || b === "Not Assigned") return -1;
+        return a.localeCompare(b, undefined, { sensitivity: "base" });
+      }
+
+      if (headerId === "serialNumber") {
+        const numA = parseInt(a, 10);
+        const numB = parseInt(b, 10);
+        return numA - numB;
+      }
+
+      return a.localeCompare(b);
+    });
+
+    if (sortedOptions.length === 0) {
+      sortedOptions.push("No Data");
+    }
+    setFilterOptions(sortedOptions);
     setFilterMenuOpen(headerId);
   };
 
@@ -221,6 +430,15 @@ export function RootTable<TData, TValue>({
     <div className="relative h-full flex-grow flex flex-col gap-1">
       {tableType !== "subRow" && (
         <div className="max-h-[50%] flex items-center">
+          <Button
+            onClick={handleClearAllFilters}
+            variant="outline"
+            size="sm"
+            className="mr-2"
+          >
+            Clear All Filters
+          </Button>
+
           <TableActions
             table={table}
             type={tableType}
@@ -270,18 +488,10 @@ export function RootTable<TData, TValue>({
                           >
                             <DropDownArrow
                               className="cursor-pointer"
-                              onClick={(event) =>
-                                handleFilterIconClick(
-                                  header.id,
-                                  typeof header.column.columnDef.meta
-                                    ?.options === "function"
-                                    ? header.column.columnDef.meta.options(
-                                        table.getRowModel().rows
-                                      )
-                                    : header.column.columnDef.meta?.options ||
-                                        [],
-                                  event
-                                )
+                              onClick={() =>
+                                tableType === "members"
+                                  ? handleFilterIconClickMembers(header.id)
+                                  : handleFilterIconClickStock(header.id)
                               }
                             />
                             {filterMenuOpen === header.id && (
@@ -297,7 +507,11 @@ export function RootTable<TData, TValue>({
                                 }}
                               >
                                 <FilterComponent
-                                  options={filterOptions}
+                                  options={
+                                    filterOptions.length > 0
+                                      ? filterOptions
+                                      : ["No Data"]
+                                  }
                                   initialSelectedOptions={
                                     selectedFilterOptions[header.id] || []
                                   }
@@ -307,11 +521,15 @@ export function RootTable<TData, TValue>({
                                       newSelectedOptions
                                     )
                                   }
-                                  onClearFilter={() =>
+                                  onClearFilter={() => {
                                     setColumnFilters((prev) =>
                                       prev.filter((f) => f.id !== header.id)
-                                    )
-                                  }
+                                    );
+
+                                    tableType === "members"
+                                      ? handleFilterIconClickMembers(header.id)
+                                      : handleFilterIconClickStock(header.id);
+                                  }}
                                   onClose={() => setFilterMenuOpen(null)}
                                 />
                               </div>
