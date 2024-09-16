@@ -151,12 +151,18 @@ export function RootTable<TData, TValue>({
     getRowCanExpand,
     getExpandedRowModel: getExpandedRowModel(),
     getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
+    onColumnFiltersChange: (newFilters) => {
+      console.log("Updated column filters:", newFilters);
+      setColumnFilters(newFilters);
+    },
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
   const handleFilterChange = (columnId: string, selectedOptions: string[]) => {
+    // const cleanedOptions = selectedOptions.map((option) => option.trim());
+    // console.log("Opciones seleccionadas limpias:", selectedOptions);
+
     setSelectedFilterOptions((prev) => ({
       ...prev,
       [columnId]: selectedOptions,
@@ -274,11 +280,6 @@ export function RootTable<TData, TValue>({
       .getFilteredRowModel()
       .rows.map((row) => {
         const product = getSnapshot(row.original) as ProductTable;
-        // const value = row.getValue(headerId);
-
-        // if (headerId === "Category") {
-        //   return product.category;
-        // }
 
         if (headerId === "Name") {
           const firstProduct = product.products[0];
@@ -295,16 +296,15 @@ export function RootTable<TData, TValue>({
             firstProduct.attributes.find((attr) => attr.key === "color")
               ?.value || "";
 
-          // if (product.category === "Merchandising") {
-          //   return name ? `${name}${color ? ` (${color})` : ""}` : "No Data";
-          // }
-
           let result = brand;
           if (model) {
             result += ` ${model}`;
           }
           if (name) {
             result += ` ${name}`;
+          }
+          if (firstProduct.category === "Merchandising") {
+            result = color ? `${name} (${color})` : name || "No Data";
           }
 
           return result || "No Data";
@@ -521,11 +521,15 @@ export function RootTable<TData, TValue>({
                                       newSelectedOptions
                                     )
                                   }
-                                  onClearFilter={() =>
+                                  onClearFilter={() => {
                                     setColumnFilters((prev) =>
                                       prev.filter((f) => f.id !== header.id)
-                                    )
-                                  }
+                                    );
+
+                                    tableType === "members"
+                                      ? handleFilterIconClickMembers(header.id)
+                                      : handleFilterIconClickStock(header.id);
+                                  }}
                                   onClose={() => setFilterMenuOpen(null)}
                                 />
                               </div>

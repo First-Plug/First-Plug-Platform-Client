@@ -43,24 +43,41 @@ export const productColumns = (
     size: 200,
     meta: {
       filterVariant: "custom",
-      options: (rows) => {
+      options: () => {
         const options = new Set<string>();
 
-        // Recorremos los productos
-        rows.forEach((row) => {
-          row.original.products.forEach((product) => {
-            const name = product.name || "No Data";
+        data.forEach((row) => {
+          row.products.forEach((product) => {
+            const brand = product.attributes.find(
+              (attr) => attr.key === "brand"
+            )?.value;
+            const model = product.attributes.find(
+              (attr) => attr.key === "model"
+            )?.value;
+            const name = (product.name || "").trim();
             const color =
               product.attributes.find((attr) => attr.key === "color")?.value ||
-              "";
+              "No Color";
 
+            // Productos de Merchandising
             if (product.category === "Merchandising") {
-              options.add(`${name}${color ? ` (${color})` : ""}`);
+              options.add(`${name} (${color})`.trim());
+            } else {
+              // Otros productos
+              if (brand && model) {
+                if (model === "Other") {
+                  options.add(`${brand} Other ${name}`.trim());
+                } else {
+                  options.add(`${brand} ${model}`.trim());
+                }
+              } else {
+                options.add("No Data");
+              }
             }
           });
         });
 
-        return Array.from(options).sort();
+        return Array.from(options);
       },
     },
     cell: ({ row }) => (
@@ -72,13 +89,28 @@ export const productColumns = (
       if (filterValue.length === 0) return true;
 
       const product = row.original.products[0];
-      const name = product.name || "No Data";
+      const brand = product.attributes.find(
+        (attr) => attr.key === "brand"
+      )?.value;
+      const model = product.attributes.find(
+        (attr) => attr.key === "model"
+      )?.value;
+      const name = (product.name || "").trim(); // Limpiamos aquí
       const color =
-        product.attributes.find((attr) => attr.key === "color")?.value || "";
+        product.attributes.find((attr) => attr.key === "color")?.value ||
+        "No Color";
 
-      const formattedValue = `${name}${color ? ` (${color})` : ""}`;
+      let groupName = "No Data";
 
-      return filterValue.includes(formattedValue);
+      if (product.category === "Merchandising") {
+        groupName = color ? `${name} (${color})` : name;
+      } else if (brand && model) {
+        groupName =
+          model === "Other" ? `${brand} Other ${name}` : `${brand} ${model}`;
+        groupName = groupName.trim(); // Limpiamos
+      }
+
+      return filterValue.includes(groupName);
     },
   },
   {

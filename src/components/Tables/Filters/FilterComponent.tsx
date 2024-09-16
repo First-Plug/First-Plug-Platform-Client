@@ -68,8 +68,13 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     const updatedSelectedOptions = selectedOptions.includes(option)
       ? selectedOptions.filter((o) => o !== option)
       : [...selectedOptions, option];
+    console.log("Updated selected options:", updatedSelectedOptions);
 
     setSelectedOptions(updatedSelectedOptions);
+    console.log(
+      "Selected options before calling onChange:",
+      updatedSelectedOptions
+    );
     onChange(updatedSelectedOptions);
 
     // if (updatedSelectedOptions.length !== options.length) {
@@ -79,9 +84,11 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
   const handleClearFilter = () => {
     console.log("Clearing filter...");
+
     setSelectedOptions([]);
     setFilteredOptions([...options]);
     setSelectAll(false);
+
     onChange([]);
     onClearFilter();
     console.log("Filtered options restored:", options);
