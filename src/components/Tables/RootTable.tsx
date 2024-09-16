@@ -332,7 +332,7 @@ export function RootTable<TData, TValue>({
         }
 
         if (headerId === "currentlyWith") {
-          return product.products[0].assignedMember || "Not Assigned";
+          return product.products[0].assignedMember || "No Data";
         }
 
         if (headerId === "status") {

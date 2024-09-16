@@ -83,14 +83,13 @@ const membersColumns: (
             });
             options.add(month);
           } else {
-            options.add("No Anda");
+            options.add("No Data");
           }
         });
         const finalOptions = Array.from(options)
           .sort((a, b) => MONTHS.indexOf(a) - MONTHS.indexOf(b))
-          .concat("No Anda");
+          .concat("No Data");
 
-        console.log("Generated options for birthDate:", finalOptions);
         return finalOptions;
       },
     },
@@ -98,10 +97,9 @@ const membersColumns: (
     filterFn: (row, columnId, filterValue) => {
       if (filterValue.length === 0) return true;
       const dateValue = row.getValue(columnId) as string | undefined;
-      // Convertir la fecha a mes para comparar en el filtro
       const month = dateValue
         ? new Date(dateValue).toLocaleString("en-US", { month: "long" })
-        : "No anda";
+        : "No Data";
       return filterValue.includes(month);
     },
   },
