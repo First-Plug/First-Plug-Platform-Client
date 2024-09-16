@@ -152,7 +152,6 @@ export function RootTable<TData, TValue>({
     getExpandedRowModel: getExpandedRowModel(),
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: (newFilters) => {
-      console.log("Updated column filters:", newFilters);
       setColumnFilters(newFilters);
     },
     getFilteredRowModel: getFilteredRowModel(),

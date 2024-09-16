@@ -59,11 +59,9 @@ export const productColumns = (
               product.attributes.find((attr) => attr.key === "color")?.value ||
               "";
 
-            // Productos de Merchandising
             if (product.category === "Merchandising") {
               options.add(`${name} (${color})`.trim());
             } else {
-              // Otros productos
               if (brand && model) {
                 if (model === "Other") {
                   options.add(`${brand} Other ${name}`.trim());
@@ -106,7 +104,7 @@ export const productColumns = (
       } else if (brand && model) {
         groupName =
           model === "Other" ? `${brand} Other ${name}` : `${brand} ${model}`;
-        groupName = groupName.trim(); // Limpiamos
+        groupName = groupName.trim();
       }
 
       return filterValue.includes(groupName);
