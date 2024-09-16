@@ -57,7 +57,7 @@ export const productColumns = (
             const name = (product.name || "").trim();
             const color =
               product.attributes.find((attr) => attr.key === "color")?.value ||
-              "No Color";
+              "";
 
             // Productos de Merchandising
             if (product.category === "Merchandising") {
@@ -95,10 +95,9 @@ export const productColumns = (
       const model = product.attributes.find(
         (attr) => attr.key === "model"
       )?.value;
-      const name = (product.name || "").trim(); // Limpiamos aquí
+      const name = (product.name || "").trim();
       const color =
-        product.attributes.find((attr) => attr.key === "color")?.value ||
-        "No Color";
+        product.attributes.find((attr) => attr.key === "color")?.value || "";
 
       let groupName = "No Data";
 
