@@ -22,7 +22,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     initialSelectedOptions || []
   );
   const [selectAll, setSelectAll] = useState<boolean>(false);
-  // const filterRef = useRef<HTMLDivElement>(null);
+  const [initialized, setInitialized] = useState<boolean>(false);
 
   useEffect(() => {
     setFilteredOptions([...options]);
@@ -30,9 +30,13 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   }, [options, initialSelectedOptions]);
 
   //este useEffect hace que el selectAll y todas las opciones esten checked cuando abro el filtro
-  // useEffect(() => {
-  //   setSelectedOptions(options);
-  // }, [options]);
+  useEffect(() => {
+    if (!initialized && options.length > 0) {
+      setSelectedOptions(options);
+      setInitialized(true);
+      onChange(options);
+    }
+  }, [options, initialized, onChange]);
 
   useEffect(() => {
     if (
@@ -57,7 +61,6 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
       setSelectedOptions([]);
       onChange([]);
     } else {
-      // const allOptions = Array.from(new Set([...filteredOptions, ...options]));
       setSelectedOptions(filteredOptions);
       onChange(filteredOptions);
     }
@@ -71,10 +74,6 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
     setSelectedOptions(updatedSelectedOptions);
     onChange(updatedSelectedOptions);
-
-    // if (updatedSelectedOptions.length !== options.length) {
-    //   setSelectAll(false);
-    // }
   };
 
   const handleClearFilter = () => {
@@ -86,20 +85,8 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     onClearFilter();
   };
 
-  // useEffect(() => {
-  //   setFilteredOptions(options);
-  //   console.log("options", options);
-  // }, [options]);
-
-  // const combinedOptions = Array.from(
-  //   new Set([...filteredOptions, ...selectedOptions])
-  // );
-
   return (
-    <div
-      // ref={filterRef}
-      className="fixed bg-white p-6 w-64 shadow-lg z-50 overflow-visible"
-    >
+    <div className="fixed bg-white p-6 w-64 shadow-lg z-50 overflow-visible">
       <div className="flex justify-end items-center mb-4">
         <IconX onClick={onClose} className="cursor-pointer" />
       </div>
@@ -114,13 +101,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
             <input
               type="checkbox"
               checked={selectedOptions.includes(option)}
-              onChange={() => {
-                const updatedOptions = selectedOptions.includes(option)
-                  ? selectedOptions.filter((o) => o !== option)
-                  : [...selectedOptions, option];
-                setSelectedOptions(updatedOptions);
-                onChange(updatedOptions);
-              }}
+              onChange={() => handleCheckboxChange(option)}
               className="mt-2"
             />
             <label className="ml-2 mt-2 leading-tight flex-1">

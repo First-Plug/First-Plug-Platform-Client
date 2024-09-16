@@ -38,12 +38,6 @@ export default observer(function TableStockActions<TData>({
   return (
     <div className=" flex items-center justify-between   h-full w-full ">
       <div className="flex gap-1">
-        {/* <Button
-          size="small"
-          variant="secondary"
-          body="CLEAR ALL FILTERS"
-          onClick={handleClearFilters}
-        /> */}
         <input
           type="checkbox"
           checked={onlyAvaliable}
