@@ -114,7 +114,13 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
             <input
               type="checkbox"
               checked={selectedOptions.includes(option)}
-              onChange={() => handleCheckboxChange(option)}
+              onChange={() => {
+                const updatedOptions = selectedOptions.includes(option)
+                  ? selectedOptions.filter((o) => o !== option)
+                  : [...selectedOptions, option];
+                setSelectedOptions(updatedOptions);
+                onChange(updatedOptions);
+              }}
               className="mt-2"
             />
             <label className="ml-2 mt-2 leading-tight flex-1">

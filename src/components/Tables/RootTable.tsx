@@ -80,6 +80,8 @@ interface DataTableProps<TData, TValue> {
   pageSize?: number;
   tableNameRef?: string;
   onClearFilters?: () => void;
+  onColumnFiltersChange?: (newFilters: ColumnFiltersState) => void;
+  columnFilters?: ColumnFiltersState;
 }
 
 export function RootTable<TData, TValue>({
@@ -91,6 +93,8 @@ export function RootTable<TData, TValue>({
   pageSize = 5,
   tableNameRef,
   onClearFilters,
+  onColumnFiltersChange,
+  columnFilters: externalColumnFilters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -131,6 +135,24 @@ export function RootTable<TData, TValue>({
     ],
   });
 
+  const [clearAll, setClearAll] = useState(false);
+
+  const handleClearAllFilters = () => {
+    setColumnFilters([]);
+    setSelectedFilterOptions({});
+    setClearAll((prev) => !prev);
+    if (onClearFilters) {
+      onClearFilters();
+    }
+  };
+
+  const handleColumnFiltersChange = (newFilters: ColumnFiltersState) => {
+    setColumnFilters(newFilters);
+    if (onColumnFiltersChange) {
+      onColumnFiltersChange(newFilters);
+    }
+  };
+
   const table = useReactTable({
     data,
     columns,
@@ -151,17 +173,12 @@ export function RootTable<TData, TValue>({
     getRowCanExpand,
     getExpandedRowModel: getExpandedRowModel(),
     getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: (newFilters) => {
-      setColumnFilters(newFilters);
-    },
+    onColumnFiltersChange: handleColumnFiltersChange,
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
   const handleFilterChange = (columnId: string, selectedOptions: string[]) => {
-    // const cleanedOptions = selectedOptions.map((option) => option.trim());
-    // console.log("Opciones seleccionadas limpias:", selectedOptions);
-
     setSelectedFilterOptions((prev) => ({
       ...prev,
       [columnId]: selectedOptions,
@@ -175,20 +192,6 @@ export function RootTable<TData, TValue>({
       },
     ]);
   };
-
-  // const handleFilterIconClick = (
-  //   headerId: string,
-  //   options: string[],
-  //   event: React.MouseEvent
-  // ) => {
-  //   if (filterMenuOpen === headerId) {
-  //     setFilterMenuOpen(null);
-  //     return;
-  //   }
-
-  //   setFilterOptions(options);
-  //   setFilterMenuOpen(headerId);
-  // };
 
   const handleFilterIconClickMembers = (headerId: string) => {
     if (filterMenuOpen === headerId) {
@@ -428,9 +431,7 @@ export function RootTable<TData, TValue>({
       {tableType !== "subRow" && (
         <div className="max-h-[50%] flex items-center">
           <Button
-            onClick={() => {
-              setColumnFilters([]);
-            }}
+            onClick={handleClearAllFilters}
             variant="outline"
             size="sm"
             className="mr-2"

@@ -8,6 +8,7 @@ import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
 import { useFilterReset } from "./Filters/FilterResetContext";
 import "./table.css";
+import { useState } from "react";
 
 interface ProductsTableProps {
   onClearFilters: () => void;
@@ -172,9 +173,19 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     products: { tableProducts, availableProducts, onlyAvaliable },
   } = useStore();
   const { resetFilters } = useFilterReset();
+  const [clearAll, setClearAll] = useState(false);
+  const [resetSubTableFilters, setResetSubTableFilters] = useState<
+    (() => void) | null
+  >(null);
 
-  const handleClearFilters = () => {
-    resetFilters();
+  const handleClearAllFilters = () => {
+    setClearAll(true);
+    if (resetSubTableFilters) {
+      resetSubTableFilters();
+    }
+
+    setTimeout(() => setClearAll(false), 100);
+
     if (onClearFilters) {
       onClearFilters();
     }
@@ -191,11 +202,12 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
       data={onlyAvaliable ? availableProducts : tableProducts}
       columns={columns}
       getRowCanExpand={() => true}
-      onClearFilters={handleClearFilters}
+      onClearFilters={handleClearAllFilters}
       renderSubComponent={(row) => (
         <ProdcutsDetailsTable
           products={row.products}
-          onClearFilters={handleClearFilters}
+          clearAll={clearAll}
+          onResetInternalFilters={setResetSubTableFilters}
         />
       )}
     />

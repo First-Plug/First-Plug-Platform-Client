@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { RootTable } from "../RootTable";
 import {
   LOCATION,
@@ -7,7 +7,7 @@ import {
   PRODUCT_STATUSES,
   ShipmentStatus,
 } from "@/types";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
 import FormatedDate from "../helpers/FormatedDate";
 import MemberName from "../helpers/MemberName";
 import { ProductLocation, ShipmentStatusCard } from "@/common";
@@ -19,6 +19,8 @@ interface IProdcutsDetailsTable {
   products: Product[];
   onClearFilters?: () => void;
   onSubTableInstance?: (instance: any) => void;
+  clearAll?: boolean;
+  onResetInternalFilters?: (resetFunction: () => void) => void;
 }
 
 const InternalProductsColumns: ColumnDef<Product>[] = [
@@ -159,16 +161,46 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
 export default function ProdcutsDetailsTable({
   products,
   onClearFilters,
+  clearAll,
+  onResetInternalFilters,
 }: IProdcutsDetailsTable) {
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [selectedFilterOptions, setSelectedFilterOptions] = useState({});
+  const [key, setKey] = useState(0);
+
+  const resetFilters = () => {
+    setColumnFilters([]);
+    setSelectedFilterOptions({});
+    setKey((prevKey) => prevKey + 1);
+  };
+
+  useEffect(() => {
+    if (clearAll) {
+      resetFilters();
+    }
+  }, [clearAll]);
+
+  useEffect(() => {
+    if (onResetInternalFilters) {
+      onResetInternalFilters(resetFilters);
+    }
+  }, [onResetInternalFilters]);
+
   const fiteredProducts = products.filter(
     (product) => product.status !== "Deprecated"
   );
 
   return (
     <RootTable
+      key={key}
       tableType="subRow"
       data={fiteredProducts}
       columns={InternalProductsColumns}
+      columnFilters={columnFilters}
+      onColumnFiltersChange={(newFilters) => {
+        console.log("Updating column filters in subtable", newFilters);
+        setColumnFilters(newFilters);
+      }}
       onClearFilters={onClearFilters}
     />
   );
