@@ -13,35 +13,67 @@ import {
 } from "@/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { UserServices } from "@/services/user.services";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthServices } from "@/services";
 import { useSession } from "next-auth/react";
 import { setAuthInterceptor } from "@/config/axios.config";
 import { z } from "zod";
+import AssetsForm from "./AssetsForm";
 
 export default function SettingsForm() {
   const {
     user: { user },
     alerts: { setAlert },
   } = useStore();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+  const session = useSession();
+
   const form = useForm<z.infer<typeof UserZodSchema>>({
     resolver: zodResolver(UserZodSchema),
     mode: "onChange",
-    defaultValues: { ...user },
+    defaultValues: {
+      ...user,
+      isRecoverableConfig: user.isRecoverableConfig
+        ? Object.fromEntries(user.isRecoverableConfig.entries())
+        : {},
+    },
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const session = useSession();
+
+  useEffect(() => {
+    if (user.isRecoverableConfig && !initialDataLoaded) {
+      form.reset({
+        ...user,
+        isRecoverableConfig: Object.fromEntries(
+          user.isRecoverableConfig.entries()
+        ),
+      });
+      setInitialDataLoaded(true);
+    }
+  }, [user, form, initialDataLoaded]);
+
   const onSubmit = async (values: UserZod) => {
+    const isRecoverableConfig = values.isRecoverableConfig;
+
     if (session.data.backendTokens.refreshToken) {
       setIsLoading(true);
       try {
-        await UserServices.updateUser(values);
-        const refreshData = await AuthServices.refreshToken(
-          session.data.backendTokens.refreshToken
-        );
-        setAuthInterceptor(refreshData.backendTokens.accessToken);
+        if (isRecoverableConfig) {
+          await UserServices.updateRecoverableConfig(
+            values.tenantName!,
+            isRecoverableConfig
+          );
+          setAlert("recoverableConfigUpdated");
+        } else {
+          await UserServices.updateUser(values);
+          const refreshData = await AuthServices.refreshToken(
+            session.data.backendTokens.refreshToken
+          );
+          setAuthInterceptor(refreshData.backendTokens.accessToken);
 
-        setAlert("userUpdatedSuccesfully");
+          setAlert("userUpdatedSuccesfully");
+        }
       } catch (error) {
         console.log(error);
         setAlert("errorUpdateTeam");
@@ -53,6 +85,7 @@ export default function SettingsForm() {
 
   const noChanges = Object.keys(form.formState.dirtyFields).length === 0;
   const isAble = noChanges || !form.formState.isValid;
+
   return (
     <Form {...form}>
       <form
@@ -65,6 +98,7 @@ export default function SettingsForm() {
             <AccessForm form={form} />
           </div>
           <BillingForm form={form} />
+          <AssetsForm form={form} />
         </div>
 
         <section className="flex h-[10%] py-6 items-center justify-end border-t relative">
@@ -87,7 +121,12 @@ export default function SettingsForm() {
               <DialogTrigger
                 className=" bg-blue rounded-md py-1 text-white"
                 onClick={() => {
-                  form.reset(user);
+                  form.reset({
+                    ...user,
+                    isRecoverableConfig: user.isRecoverableConfig
+                      ? Object.fromEntries(user.isRecoverableConfig.entries())
+                      : {},
+                  });
                 }}
               >
                 Confirm

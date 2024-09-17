@@ -60,6 +60,14 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    recoverableConfigUpdated: {
+      title: "Success",
+      type: "succes",
+      description: "Recoverable configuration has been successfully updated.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     removeItemSuccesfully: {
       title: "Success",
       type: "succes",
