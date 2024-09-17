@@ -293,18 +293,19 @@ export function RootTable<TData, TValue>({
           const model =
             firstProduct.attributes.find((attr) => attr.key === "model")
               ?.value || "";
-          const name = firstProduct.name || "";
+          const name = (firstProduct.name || "").trim();
           const color =
             firstProduct.attributes.find((attr) => attr.key === "color")
               ?.value || "";
 
           let result = brand;
-          if (model) {
+
+          if (model === "Other") {
+            result += name ? ` Other ${name}` : ` Other`;
+          } else {
             result += ` ${model}`;
           }
-          if (name) {
-            result += ` ${name}`;
-          }
+
           if (firstProduct.category === "Merchandising") {
             result = color ? `${name} (${color})` : name || "No Data";
           }
