@@ -26,12 +26,14 @@ const membersColumns: (
   handleEdit: (memberId: TeamMember["_id"]) => void,
   handleDelete: (memberId: TeamMember["_id"]) => void,
   handleViewDetail: (memberId: TeamMember["_id"]) => void,
-  members: TeamMember[]
+  members: TeamMember[],
+  filteredMembers?: TeamMember[]
 ) => ColumnDef<TeamMember>[] = (
   handleEdit,
   handleDelete,
   handleViewDetail,
-  members
+  members,
+  filteredMembers = members
 ) => [
   {
     id: "name",
@@ -47,10 +49,10 @@ const membersColumns: (
       filterVariant: "custom",
       options: () => {
         const options = new Set<string>();
-        members.forEach((member) => {
+        filteredMembers.forEach((member) => {
           options.add(member.fullName || "No Data");
         });
-        return Array.from(options);
+        return Array.from(options).sort();
       },
     },
     enableColumnFilter: true,
@@ -71,7 +73,25 @@ const membersColumns: (
     ),
     meta: {
       filterVariant: "select",
-      options: [...MONTHS, "No Data"],
+      options: () => {
+        const options = new Set<string>();
+        filteredMembers.forEach((member) => {
+          const dateValue = member.birthDate;
+          if (dateValue) {
+            const month = new Date(dateValue).toLocaleString("en-US", {
+              month: "long",
+            });
+            options.add(month);
+          } else {
+            options.add("No Data");
+          }
+        });
+        const finalOptions = Array.from(options)
+          .sort((a, b) => MONTHS.indexOf(a) - MONTHS.indexOf(b))
+          .concat("No Data");
+
+        return finalOptions;
+      },
     },
     enableColumnFilter: true,
     filterFn: (row, columnId, filterValue) => {
@@ -94,7 +114,19 @@ const membersColumns: (
     ),
     meta: {
       filterVariant: "select",
-      options: [...MONTHS, "No Data"],
+      options: () => {
+        const options = new Set<string>();
+        filteredMembers.forEach((member) => {
+          const dateValue = member.startDate;
+          const month = dateValue
+            ? new Date(dateValue).toLocaleString("en-US", { month: "long" })
+            : "No Data";
+          options.add(month);
+        });
+        return Array.from(options)
+          .sort((a, b) => MONTHS.indexOf(a) - MONTHS.indexOf(b))
+          .concat("No Data");
+      },
     },
     enableColumnFilter: true,
     filterFn: (row, columnId, filterValue) => {
@@ -125,14 +157,17 @@ const membersColumns: (
       filterVariant: "select",
       options: () => {
         const options = new Set<string>();
-        members.forEach((member) => {
+        filteredMembers.forEach((member) => {
           if (typeof member.team === "object" && member.team !== null) {
-            options.add(member.team.name);
+            // Añadir un console.log para depurar el valor del equipo
+            console.log("Team object:", member.team);
+            const teamName = member.team?.name || "Not Assigned";
+            options.add(teamName);
           } else {
             options.add("Not Assigned");
           }
         });
-        return Array.from(options);
+        return Array.from(options).sort().concat("Not Assigned");
       },
     },
     enableColumnFilter: true,
@@ -153,10 +188,10 @@ const membersColumns: (
       filterVariant: "custom",
       options: () => {
         const options = new Set<string>();
-        members.forEach((member) => {
+        filteredMembers.forEach((member) => {
           options.add(member.position || "No Data");
         });
-        return Array.from(options);
+        return Array.from(options).sort().concat("No Data");
       },
     },
     enableColumnFilter: true,
@@ -178,12 +213,10 @@ const membersColumns: (
       filterVariant: "select",
       options: () => {
         const productCounts = new Set<number>();
-
-        members.forEach((member) => {
+        filteredMembers.forEach((member) => {
           const count = (member.products || []).length;
           productCounts.add(count);
         });
-
         return Array.from(productCounts)
           .sort((a, b) => a - b)
           .map(String);
@@ -231,7 +264,7 @@ const membersColumns: (
 interface TableMembersProps {
   members: TeamMember[];
 }
-export function MembersTable({ members }: TableMembersProps) {
+export function MembersTable({ members }: { members: TeamMember[] }) {
   const {
     members: { setSelectedMember, setMembers, setMemberToEdit },
     aside: { setAside },
