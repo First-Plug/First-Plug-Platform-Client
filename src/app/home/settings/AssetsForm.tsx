@@ -74,7 +74,7 @@ export default function AssetsForm({ form }: { form: any }) {
         <div className="flex flex-wrap gap-10 justify-between">
           {CATEGORIES.map((category) => (
             <div key={category} className="flex flex-col items-center">
-              <span className="text-sm font-medium">{category}</span>
+              <span className="text-sm font-medium mb-2">{category}</span>
               <Controller
                 name={`isRecoverableConfig.${category}`}
                 control={control}
