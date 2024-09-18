@@ -13,35 +13,70 @@ import {
 } from "@/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { UserServices } from "@/services/user.services";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthServices } from "@/services";
 import { useSession } from "next-auth/react";
 import { setAuthInterceptor } from "@/config/axios.config";
 import { z } from "zod";
+import AssetsForm from "./AssetsForm";
 
 export default function SettingsForm() {
   const {
     user: { user },
     alerts: { setAlert },
   } = useStore();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const session = useSession();
+
   const form = useForm<z.infer<typeof UserZodSchema>>({
     resolver: zodResolver(UserZodSchema),
     mode: "onChange",
-    defaultValues: { ...user },
+    reValidateMode: "onChange",
+    defaultValues: {
+      ...user,
+      isRecoverableConfig: user.isRecoverableConfig
+        ? Object.fromEntries(user.isRecoverableConfig.entries())
+        : {},
+    },
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const session = useSession();
+
   const onSubmit = async (values: UserZod) => {
+    const isRecoverableConfigChanged =
+      "isRecoverableConfig" in form.formState.dirtyFields;
+    const otherFieldsChanged = Object.keys(form.formState.dirtyFields).some(
+      (key) => key !== "isRecoverableConfig"
+    );
+
     if (session.data.backendTokens.refreshToken) {
       setIsLoading(true);
-      try {
-        await UserServices.updateUser(values);
-        const refreshData = await AuthServices.refreshToken(
-          session.data.backendTokens.refreshToken
-        );
-        setAuthInterceptor(refreshData.backendTokens.accessToken);
+      let recoverableUpdated = false;
+      let otherFieldsUpdated = false;
 
-        setAlert("userUpdatedSuccesfully");
+      try {
+        const accessToken = session.data.backendTokens.accessToken;
+
+        if (isRecoverableConfigChanged) {
+          await UserServices.updateRecoverableConfig(
+            values.tenantName!,
+            values.isRecoverableConfig,
+            accessToken
+          );
+          recoverableUpdated = true;
+        }
+
+        if (otherFieldsChanged) {
+          await UserServices.updateUser(values);
+          const refreshData = await AuthServices.refreshToken(
+            session.data.backendTokens.refreshToken
+          );
+          setAuthInterceptor(refreshData.backendTokens.accessToken);
+          otherFieldsUpdated = true;
+        }
+
+        if (recoverableUpdated || otherFieldsUpdated) {
+          setAlert("dataUpdatedSuccessfully");
+        }
       } catch (error) {
         console.log(error);
         setAlert("errorUpdateTeam");
@@ -53,18 +88,20 @@ export default function SettingsForm() {
 
   const noChanges = Object.keys(form.formState.dirtyFields).length === 0;
   const isAble = noChanges || !form.formState.isValid;
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="h-full flex flex-col gap-2"
       >
-        <div className="flex flex-col gap-4  h-[90%] max-h-[90%] overflow-y-auto">
+        <div className="flex flex-col gap-4  h-[90%] max-h-[90%] overflow-y-auto scrollbar-custom">
           <div className="flex w-full gap-4 ">
             <CompanyForm form={form} />
             <AccessForm form={form} />
           </div>
           <BillingForm form={form} />
+          <AssetsForm form={form} />
         </div>
 
         <section className="flex h-[10%] py-6 items-center justify-end border-t relative">
@@ -87,7 +124,12 @@ export default function SettingsForm() {
               <DialogTrigger
                 className=" bg-blue rounded-md py-1 text-white"
                 onClick={() => {
-                  form.reset(user);
+                  form.reset({
+                    ...user,
+                    isRecoverableConfig: user.isRecoverableConfig
+                      ? Object.fromEntries(user.isRecoverableConfig.entries())
+                      : {},
+                  });
                 }}
               >
                 Confirm

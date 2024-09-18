@@ -15,6 +15,7 @@ export const LoggedInUserModel = types.model({
   image: types.maybeNull(types.string),
   tenantName: types.maybeNull(types.string),
   accountProvider: types.enumeration(["credentials", "google", "azure-ad"]),
+  isRecoverableConfig: types.map(types.boolean),
 });
 export const UserModel = types.compose(
   LoggedInUserModel,
@@ -77,6 +78,7 @@ export const UserZodSchema = z.object({
   zipCode: z.string().trim().optional(),
   address: z.string().trim().optional(),
   apartment: z.string().trim().optional(),
+  isRecoverableConfig: z.record(z.string(), z.boolean()).optional(),
 });
 
 export type UserZod = z.infer<typeof UserZodSchema>;
@@ -91,6 +93,7 @@ export const SETTINGS_ARRAY_KEYS: SettingsFormKeys[] = [
   "apartment",
   "tenantName",
   "email",
+  "isRecoverableConfig",
 ];
 
 type SettingsFormInput = {
@@ -99,7 +102,7 @@ type SettingsFormInput = {
   subMessage: string;
   name: SettingsFormKeys;
   readonly: boolean;
-  tpye?: "select" | "input";
+  tpye?: "select" | "input" | "switch";
   options?: string[];
 };
 export const SettingsFormConfig: Record<SettingsFormKeys, SettingsFormInput> = {
@@ -168,5 +171,13 @@ export const SettingsFormConfig: Record<SettingsFormKeys, SettingsFormInput> = {
     name: "tenantName",
     placeholder: "",
     readonly: true,
+  },
+  isRecoverableConfig: {
+    subMessage: "Configure recoverability settings for each category",
+    label: "Recoverable Settings",
+    name: "isRecoverableConfig",
+    placeholder: "",
+    readonly: false,
+    tpye: "switch",
   },
 };

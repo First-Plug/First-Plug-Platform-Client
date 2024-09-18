@@ -60,6 +60,22 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    recoverableConfigUpdated: {
+      title: "Success",
+      type: "succes",
+      description: "Recoverable configuration has been successfully updated.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    dataUpdatedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: " Data has been successfully updated.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     removeItemSuccesfully: {
       title: "Success",
       type: "succes",
@@ -314,7 +330,7 @@ export default observer(function AlertProvider() {
                 <XIcon />
               </div>
             )}
-            <h2 className="font-semibold text-black text-2xl">{title}</h2>
+            <span className="font-semibold text-black text-2xl">{title}</span>
           </Dialog.Title>
           <Dialog.Description className="text-lg text-center my-2 ">
             {description}
