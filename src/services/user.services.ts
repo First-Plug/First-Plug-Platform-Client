@@ -1,6 +1,7 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 import { UserZod } from "@/types";
 import axios from "axios";
+import { access } from "fs";
 
 export class UserServices {
   static async updateUser(data: UserZod) {
@@ -10,14 +11,20 @@ export class UserServices {
   }
   static async updateRecoverableConfig(
     tenantName: string,
-    config: Record<string, boolean>
+    config: Record<string, boolean>,
+    access_token: string
   ) {
     try {
       const response = await axios.patch(
-        `${BASE_URL}/api/tenant/update-recoverable`,
+        `${BASE_URL}/api/user/update-recoverable`,
         {
           tenantName,
           isRecoverableConfig: config,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
         }
       );
       return response.data;

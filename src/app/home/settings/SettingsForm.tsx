@@ -27,7 +27,6 @@ export default function SettingsForm() {
   } = useStore();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const session = useSession();
 
   const form = useForm<z.infer<typeof UserZodSchema>>({
@@ -41,28 +40,18 @@ export default function SettingsForm() {
     },
   });
 
-  useEffect(() => {
-    if (user.isRecoverableConfig && !initialDataLoaded) {
-      form.reset({
-        ...user,
-        isRecoverableConfig: Object.fromEntries(
-          user.isRecoverableConfig.entries()
-        ),
-      });
-      setInitialDataLoaded(true);
-    }
-  }, [user, form, initialDataLoaded]);
-
   const onSubmit = async (values: UserZod) => {
     const isRecoverableConfig = values.isRecoverableConfig;
 
     if (session.data.backendTokens.refreshToken) {
       setIsLoading(true);
       try {
+        const accessToken = session.data.backendTokens.accessToken;
         if (isRecoverableConfig) {
           await UserServices.updateRecoverableConfig(
             values.tenantName!,
-            isRecoverableConfig
+            isRecoverableConfig,
+            accessToken
           );
           setAlert("recoverableConfigUpdated");
         } else {
