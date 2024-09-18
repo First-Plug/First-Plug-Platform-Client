@@ -32,6 +32,7 @@ export default function SettingsForm() {
   const form = useForm<z.infer<typeof UserZodSchema>>({
     resolver: zodResolver(UserZodSchema),
     mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       ...user,
       isRecoverableConfig: user.isRecoverableConfig
@@ -41,27 +42,40 @@ export default function SettingsForm() {
   });
 
   const onSubmit = async (values: UserZod) => {
-    const isRecoverableConfig = values.isRecoverableConfig;
+    const isRecoverableConfigChanged =
+      "isRecoverableConfig" in form.formState.dirtyFields;
+    const otherFieldsChanged = Object.keys(form.formState.dirtyFields).some(
+      (key) => key !== "isRecoverableConfig"
+    );
 
     if (session.data.backendTokens.refreshToken) {
       setIsLoading(true);
+      let recoverableUpdated = false;
+      let otherFieldsUpdated = false;
+
       try {
         const accessToken = session.data.backendTokens.accessToken;
-        if (isRecoverableConfig) {
+
+        if (isRecoverableConfigChanged) {
           await UserServices.updateRecoverableConfig(
             values.tenantName!,
-            isRecoverableConfig,
+            values.isRecoverableConfig,
             accessToken
           );
-          setAlert("recoverableConfigUpdated");
-        } else {
+          recoverableUpdated = true;
+        }
+
+        if (otherFieldsChanged) {
           await UserServices.updateUser(values);
           const refreshData = await AuthServices.refreshToken(
             session.data.backendTokens.refreshToken
           );
           setAuthInterceptor(refreshData.backendTokens.accessToken);
+          otherFieldsUpdated = true;
+        }
 
-          setAlert("userUpdatedSuccesfully");
+        if (recoverableUpdated || otherFieldsUpdated) {
+          setAlert("dataUpdatedSuccessfully");
         }
       } catch (error) {
         console.log(error);

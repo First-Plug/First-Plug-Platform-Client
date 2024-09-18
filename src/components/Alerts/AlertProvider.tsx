@@ -68,6 +68,14 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    dataUpdatedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: " Data has been successfully updated.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     removeItemSuccesfully: {
       title: "Success",
       type: "succes",

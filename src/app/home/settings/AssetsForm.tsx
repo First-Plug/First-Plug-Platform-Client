@@ -52,7 +52,9 @@ export default function AssetsForm({ form }: { form: any }) {
                 return (
                   <Switch.Root
                     checked={field.value}
-                    onCheckedChange={field.onChange}
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                    }}
                     className={`w-10 h-6 bg-blue/80 rounded-full relative transition-colors duration-200
                       ${field.value ? "bg-blue/80" : "bg-gray-300"}`}
                   >
