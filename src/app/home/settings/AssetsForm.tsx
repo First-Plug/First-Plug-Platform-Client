@@ -54,7 +54,9 @@ export default function AssetsForm({ form }: { form: any }) {
                     checked={field.value}
                     onCheckedChange={(checked) => {
                       field.onChange(checked);
+                      form.trigger();
                     }}
+                    onBlur={() => form.trigger()}
                     className={`w-10 h-6 bg-blue/80 rounded-full relative transition-colors duration-200
                       ${field.value ? "bg-blue/80" : "bg-gray-300"}`}
                   >
