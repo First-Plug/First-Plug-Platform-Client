@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { useStore } from "@/models";
 import { UserServices } from "@/services/user.services";
@@ -7,18 +7,23 @@ interface RecoverableSwitchProps {
   selectedCategory: string;
   onRecoverableChange: (value: boolean) => void;
   isUpdate?: boolean;
+  formValues: any;
+  setFormValues: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
   selectedCategory,
   onRecoverableChange,
   isUpdate = false,
+  formValues,
+  setFormValues,
 }) => {
   const {
     user: { user, setUserRecoverable },
   } = useStore();
   const [isRecoverable, setIsRecoverable] = useState(false);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+  const [manualChange, setManualChange] = useState(false);
 
   useEffect(() => {
     async function fetchRecoverableConfig() {
@@ -44,29 +49,35 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
   }, [user, setUserRecoverable, initialDataLoaded]);
 
   useEffect(() => {
-    if (selectedCategory && user?.isRecoverableConfig) {
+    if (selectedCategory && user?.isRecoverableConfig && !manualChange) {
       const configValue = user.isRecoverableConfig.get
         ? user.isRecoverableConfig.get(selectedCategory)
         : user.isRecoverableConfig[selectedCategory];
 
-      //   console.log("Selected Category:", selectedCategory);
-      //   console.log("Config Value from isRecoverableConfig:", configValue);
-      //   console.log(
-      //     "Available Categories in isRecoverableConfig:",
-      //     user.isRecoverableConfig.get
-      //       ? Array.from(user.isRecoverableConfig.keys())
-      //       : Object.keys(user.isRecoverableConfig)
-      //   );
-
       setIsRecoverable(configValue ?? false);
       onRecoverableChange(configValue ?? false);
     }
-  }, [selectedCategory, user?.isRecoverableConfig, onRecoverableChange]);
+  }, [
+    selectedCategory,
+    user?.isRecoverableConfig,
+    onRecoverableChange,
+    manualChange,
+  ]);
 
   const handleToggle = (checked: boolean) => {
     setIsRecoverable(checked);
+    setManualChange(true);
     onRecoverableChange(checked);
+
+    setFormValues({
+      ...formValues,
+      recoverable: checked,
+    });
   };
+
+  useEffect(() => {
+    setManualChange(false);
+  }, [selectedCategory]);
 
   return (
     <div className="flex flex-col space-y-2 mb-10">

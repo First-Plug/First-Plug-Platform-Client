@@ -22,6 +22,8 @@ interface CategoryFormProps {
   quantity: number;
   setQuantity: (value: number) => void;
   model: string;
+  formValues: any;
+  setFormValues: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = function ({
@@ -34,6 +36,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   quantity,
   setQuantity,
   model,
+  formValues,
+  setFormValues,
 }) {
   const { members } = useStore();
   const {
@@ -54,6 +58,9 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const selectedModel = watch("model");
   const [showNameInput, setShowNameInput] = useState(false);
   const [isRecoverable, setIsRecoverable] = useState(false);
+  // const [formValues, setFormValues] = useState({
+  //   recoverable: false,
+  // });
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -331,6 +338,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 selectedCategory={selectedCategory}
                 onRecoverableChange={handleRecoverableChange}
                 isUpdate={isUpdate}
+                formValues={formValues}
+                setFormValues={setFormValues}
               />
             </div>
           </div>
@@ -388,6 +397,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 <RecoverableSwitch
                   selectedCategory={selectedCategory}
                   onRecoverableChange={handleRecoverableChange}
+                  formValues={formValues}
+                  setFormValues={setFormValues}
                 />
               </div>
 
