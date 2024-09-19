@@ -306,9 +306,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     const data = methods.getValues();
     const finalAssignedEmail = watch("assignedEmail");
+
+    console.log("Data recuperada del formulario:", data);
+    console.log("Valor de recoverable en el formulario:", data.recoverable);
+
     const formattedData: Product = {
       ...emptyProduct,
       ...data,
+      recoverable: data.recoverable,
       status:
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
@@ -331,6 +336,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
       ),
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
+
+    console.log("Datos formateados para bulk create:", formattedData);
 
     const model = formattedData.attributes.find(
       (attr) => attr.key === "model"

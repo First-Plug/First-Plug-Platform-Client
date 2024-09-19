@@ -14,7 +14,6 @@ import { AttributeModel, ProductModel, TeamMemberModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
-import { set } from "zod";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -250,11 +249,22 @@ const BulkCreateForm: React.FC<{
       const location = productData.location;
       const status = assignedMember === "None" ? "Available" : "Delivered";
 
+      console.log("Datos del producto a enviar:", {
+        ...initialProductData,
+        assignedEmail: productData.assignedEmail,
+        location: productData.location,
+        serialNumber: productData.serialNumber,
+        recoverable: productData.recoverable, // Verificar si el valor de recoverable es correcto
+        status,
+        attributes: productData.attributes,
+      });
+
       return {
         ...initialProductData,
         assignedEmail: productData.assignedEmail,
         location: productData.location,
         serialNumber: productData.serialNumber,
+        recoverable: productData.recoverable,
         status,
         attributes: productData.attributes,
       };
@@ -269,6 +279,10 @@ const BulkCreateForm: React.FC<{
       setIsProcessing(true);
       if (Array.isArray(productsData)) {
         await ProductServices.bulkCreateProducts(productsData);
+        console.log(
+          "Datos que se van a enviar al backend para bulk create:",
+          productsData
+        );
         setAlert("bulkCreateProductSuccess");
       } else {
         throw new Error(
