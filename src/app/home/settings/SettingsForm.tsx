@@ -106,14 +106,14 @@ export default function SettingsForm() {
 
         <section className="flex h-[10%] py-6 items-center justify-end border-t relative">
           <Dialog>
-            <DialogTrigger>
+            {/* <DialogTrigger>
               <Button
                 body="Cancel"
                 variant="secondary"
                 className="mr-[20px] w-[200px] h-[40px] rounded-lg"
                 disabled={noChanges || isLoading}
               />
-            </DialogTrigger>
+            </DialogTrigger> */}
             <DialogContent>
               <DialogTitle className="text-xl">Caution ⚠️</DialogTitle>
               <DialogDescription>

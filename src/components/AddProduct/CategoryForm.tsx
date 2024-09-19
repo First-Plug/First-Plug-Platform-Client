@@ -10,6 +10,7 @@ import { setAuthInterceptor } from "@/config/axios.config";
 import { Memberservices } from "@/services";
 import { Skeleton } from "../ui/skeleton";
 import QuantityCounter from "./QuantityCounter";
+import RecoverableSwitch from "./RecoverableSwitch";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -52,6 +53,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 
   const selectedModel = watch("model");
   const [showNameInput, setShowNameInput] = useState(false);
+  const [isRecoverable, setIsRecoverable] = useState(false);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -190,6 +192,11 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       setValue("name", watch("name") || "");
     }
   }, [selectedModel, setValue, watch]);
+
+  const handleRecoverableChange = (value: boolean) => {
+    setIsRecoverable(value);
+    setValue("recoverable", value);
+  };
 
   if (loading) {
     return (
@@ -336,6 +343,11 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   <p className="text-red-500">{(errors.name as any).message}</p>
                 )}
               </div>
+              <RecoverableSwitch
+                selectedCategory={selectedCategory}
+                onRecoverableChange={handleRecoverableChange}
+                isUpdate={isUpdate}
+              />
             </div>
           ) : null}
         </div>
@@ -368,6 +380,12 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 <QuantityCounter
                   quantity={quantity}
                   setQuantity={setQuantity}
+                />
+              </div>
+              <div>
+                <RecoverableSwitch
+                  selectedCategory={selectedCategory}
+                  onRecoverableChange={handleRecoverableChange}
                 />
               </div>
 

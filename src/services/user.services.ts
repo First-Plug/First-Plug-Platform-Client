@@ -1,7 +1,6 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 import { UserZod } from "@/types";
 import axios from "axios";
-import { access } from "fs";
 
 export class UserServices {
   static async updateUser(data: UserZod) {
