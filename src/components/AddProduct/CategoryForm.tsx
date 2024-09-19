@@ -393,16 +393,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   setQuantity={setQuantity}
                 />
               </div>
-              <div>
-                <RecoverableSwitch
-                  selectedCategory={selectedCategory}
-                  onRecoverableChange={handleRecoverableChange}
-                  formValues={formValues}
-                  setFormValues={setFormValues}
-                />
-              </div>
 
-              {selectedModel === "Other" && (
+              {selectedModel === "Other" ? (
                 <div className="flex-1 ml-4">
                   <InputProductForm
                     placeholder="Product Name"
@@ -420,7 +412,17 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                     )}
                   </div>
                 </div>
+              ) : (
+                <div className="flex-1 ml-4" />
               )}
+              <div>
+                <RecoverableSwitch
+                  selectedCategory={selectedCategory}
+                  onRecoverableChange={handleRecoverableChange}
+                  formValues={formValues}
+                  setFormValues={setFormValues}
+                />
+              </div>
             </div>
           </div>
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-4 mt-4">

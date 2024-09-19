@@ -184,6 +184,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       ),
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
+    console.log("Final formatData:", formatData);
 
     const model = formatData.attributes.find(
       (attr) => attr.key === "model"

@@ -49,11 +49,13 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
   }, [user, setUserRecoverable, initialDataLoaded]);
 
   useEffect(() => {
-    if (selectedCategory && user?.isRecoverableConfig && !manualChange) {
+    if (isUpdate && formValues?.recoverable !== undefined) {
+      setIsRecoverable(formValues.recoverable);
+      onRecoverableChange(formValues.recoverable);
+    } else if (selectedCategory && user?.isRecoverableConfig && !manualChange) {
       const configValue = user.isRecoverableConfig.get
         ? user.isRecoverableConfig.get(selectedCategory)
         : user.isRecoverableConfig[selectedCategory];
-
       setIsRecoverable(configValue ?? false);
       onRecoverableChange(configValue ?? false);
     }
@@ -62,6 +64,8 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
     user?.isRecoverableConfig,
     onRecoverableChange,
     manualChange,
+    isUpdate,
+    formValues?.recoverable,
   ]);
 
   const handleToggle = (checked: boolean) => {
