@@ -326,6 +326,13 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               className="w-full"
               disabled={quantity > 1 && !isUpdate}
             />
+            <div className="mt-4 ml-2">
+              <RecoverableSwitch
+                selectedCategory={selectedCategory}
+                onRecoverableChange={handleRecoverableChange}
+                isUpdate={isUpdate}
+              />
+            </div>
           </div>
           {selectedModel === "Other" ||
           (isUpdate && watch("name") && selectedModel === "Other") ? (
@@ -343,11 +350,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   <p className="text-red-500">{(errors.name as any).message}</p>
                 )}
               </div>
-              <RecoverableSwitch
-                selectedCategory={selectedCategory}
-                onRecoverableChange={handleRecoverableChange}
-                isUpdate={isUpdate}
-              />
             </div>
           ) : null}
         </div>
