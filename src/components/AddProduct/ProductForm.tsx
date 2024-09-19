@@ -78,6 +78,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     initialData
   );
   const [isProcessing, setIsProcessing] = useState(false);
+  const [formValues, setFormValues] = useState({
+    recoverable: initialData?.recoverable || false,
+  });
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -158,6 +161,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const formatData: Product = {
       ...emptyProduct,
       ...data,
+      recoverable: formValues.recoverable,
       status:
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
@@ -180,6 +184,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       ),
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
+    console.log("Final formatData:", formatData);
 
     const model = formatData.attributes.find(
       (attr) => attr.key === "model"
@@ -302,9 +307,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     const data = methods.getValues();
     const finalAssignedEmail = watch("assignedEmail");
+
     const formattedData: Product = {
       ...emptyProduct,
       ...data,
+      recoverable: data.recoverable,
       status:
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
@@ -428,6 +435,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         quantity={quantity}
                         setQuantity={setQuantity}
                         model={modelValue}
+                        formValues={formValues}
+                        setFormValues={setFormValues}
                       />
                     </div>
                   </section>
