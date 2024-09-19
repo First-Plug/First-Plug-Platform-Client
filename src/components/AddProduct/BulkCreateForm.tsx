@@ -249,16 +249,6 @@ const BulkCreateForm: React.FC<{
       const location = productData.location;
       const status = assignedMember === "None" ? "Available" : "Delivered";
 
-      console.log("Datos del producto a enviar:", {
-        ...initialProductData,
-        assignedEmail: productData.assignedEmail,
-        location: productData.location,
-        serialNumber: productData.serialNumber,
-        recoverable: productData.recoverable, // Verificar si el valor de recoverable es correcto
-        status,
-        attributes: productData.attributes,
-      });
-
       return {
         ...initialProductData,
         assignedEmail: productData.assignedEmail,
@@ -279,10 +269,6 @@ const BulkCreateForm: React.FC<{
       setIsProcessing(true);
       if (Array.isArray(productsData)) {
         await ProductServices.bulkCreateProducts(productsData);
-        console.log(
-          "Datos que se van a enviar al backend para bulk create:",
-          productsData
-        );
         setAlert("bulkCreateProductSuccess");
       } else {
         throw new Error(
