@@ -153,15 +153,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setErrorMessage("");
 
     const isProductNameValid = await validateProductName();
-
     if (!isProductNameValid) return;
 
     const finalAssignedEmail = watch("assignedEmail");
+    const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
 
     const formatData: Product = {
       ...emptyProduct,
       ...data,
-      recoverable: formValues.recoverable,
+      recoverable: currentRecoverable,
       status:
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
@@ -184,7 +184,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       ),
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
-    console.log("Final formatData:", formatData);
 
     const model = formatData.attributes.find(
       (attr) => attr.key === "model"
