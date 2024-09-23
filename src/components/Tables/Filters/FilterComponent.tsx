@@ -24,20 +24,29 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   const [selectAll, setSelectAll] = useState<boolean>(false);
   const [initialized, setInitialized] = useState<boolean>(false);
 
-  useEffect(() => {
-    setFilteredOptions([...options]);
-    setSelectedOptions(initialSelectedOptions || []);
-  }, [options, initialSelectedOptions]);
-
-  //este useEffect hace que el selectAll y todas las opciones esten checked cuando abro el filtro
+  //este useEffect inicializa el componente con las opciones
   useEffect(() => {
     if (!initialized && options.length > 0) {
       setSelectedOptions(options);
       setInitialized(true);
+      console.log("FilterComponent: Initialized with options:", options);
       onChange(options);
     }
   }, [options, initialized, onChange]);
 
+  // este useEffect actualiza el estado interno del componente filtradas o iniciales
+  useEffect(() => {
+    console.log("FilterComponent: Updated options:", options);
+    setFilteredOptions([...options]);
+    setSelectedOptions(initialSelectedOptions || []);
+  }, [options, initialSelectedOptions]);
+
+  useEffect(() => {
+    console.log("FilterComponent: Select all status:", selectAll);
+    console.log("FilterComponent: Selected options:", selectedOptions);
+  }, [selectAll, selectedOptions]);
+
+  //este useEffectmantiene sincronizado el selectAll con las opciones seleccionadas
   useEffect(() => {
     if (
       selectedOptions.length === filteredOptions.length &&
@@ -50,18 +59,35 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   }, [selectedOptions, filteredOptions]);
 
   const handleSearch = (query: string) => {
+    const normalizeString = (str: string) => {
+      return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    };
+
+    const normalizedQuery = normalizeString(query);
+
     const filtered = options.filter((option) =>
-      option.toLowerCase().includes(query.toLowerCase())
+      normalizeString(option).includes(normalizedQuery)
     );
+
     setFilteredOptions(filtered);
+    onChange(filtered);
   };
 
   const handleSelectAll = () => {
     if (selectAll) {
       setSelectedOptions([]);
+      console.log("FilterComponent: Deselected all");
+      setFilteredOptions([...options]);
       onChange([]);
     } else {
       setSelectedOptions(filteredOptions);
+      console.log(
+        "FilterComponent: Selected all filtered options:",
+        filteredOptions
+      );
       onChange(filteredOptions);
     }
     setSelectAll(!selectAll);
@@ -73,6 +99,14 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
       : [...selectedOptions, option];
 
     setSelectedOptions(updatedSelectedOptions);
+    console.log(
+      "FilterComponent: Updated selected options:",
+      updatedSelectedOptions
+    );
+
+    setFilteredOptions(
+      updatedSelectedOptions.length > 0 ? updatedSelectedOptions : options
+    );
     onChange(updatedSelectedOptions);
   };
 
@@ -80,6 +114,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     setSelectedOptions([]);
     setFilteredOptions([...options]);
     setSelectAll(false);
+    console.log("FilterComponent: Cleared all filters");
 
     onChange([]);
     onClearFilter();

@@ -106,6 +106,14 @@ export function RootTable<TData, TValue>({
         : parseInt(localStorage.getItem(tableNameRef)) || pageSize,
   });
 
+  useEffect(() => {
+    console.log("RootTable: Column filters updated:", columnFilters);
+  }, [columnFilters]);
+
+  useEffect(() => {
+    console.log("RootTable: Pagination updated:", pagination);
+  }, [pagination]);
+
   const [filterMenuOpen, setFilterMenuOpen] = useState<string | null>(null);
   const [filterOptions, setFilterOptions] = useState<string[]>([]);
   const filterIconRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -148,6 +156,7 @@ export function RootTable<TData, TValue>({
 
   const handleColumnFiltersChange = (newFilters: ColumnFiltersState) => {
     setColumnFilters(newFilters);
+    console.log("RootTable: Column filters change detected:", newFilters);
     if (onColumnFiltersChange) {
       onColumnFiltersChange(newFilters);
     }
