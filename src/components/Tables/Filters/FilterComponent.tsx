@@ -50,10 +50,23 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   }, [selectedOptions, filteredOptions]);
 
   const handleSearch = (query: string) => {
+    const normalizeString = (str: string) => {
+      return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    };
+
+    const normalizedQuery = normalizeString(query);
+
     const filtered = options.filter((option) =>
-      option.toLowerCase().includes(query.toLowerCase())
+      normalizeString(option).includes(normalizedQuery)
     );
+
     setFilteredOptions(filtered);
+    console.log("FilterComponent: Filtered options after search:", filtered);
+
+    onChange(filtered);
   };
 
   const handleSelectAll = () => {
