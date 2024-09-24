@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { useStore } from "@/models";
-import { UserServices } from "@/services/user.services";
 
 interface RecoverableSwitchProps {
   selectedCategory: string;
@@ -19,45 +18,31 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
   setFormValues,
 }) => {
   const {
-    user: { user, setUserRecoverable },
+    user: { user },
   } = useStore();
   const [isRecoverable, setIsRecoverable] = useState(false);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [manualChange, setManualChange] = useState(false);
 
   useEffect(() => {
-    async function fetchRecoverableConfig() {
-      if (user?.tenantName && !initialDataLoaded) {
-        try {
-          const recoverableConfig = await UserServices.getRecoverableConfig(
-            user.tenantName
-          );
-
-          setUserRecoverable({
-            ...user,
-            isRecoverableConfig: recoverableConfig,
-          });
-
-          setInitialDataLoaded(true);
-        } catch (error) {
-          console.error("Error fetching recoverable config", error);
-        }
+    if (isUpdate && formValues?.recoverable !== undefined) {
+      if (formValues.recoverable !== isRecoverable) {
+        setIsRecoverable(formValues.recoverable);
+        onRecoverableChange(formValues.recoverable);
       }
+      return;
     }
 
-    fetchRecoverableConfig();
-  }, [user, setUserRecoverable, initialDataLoaded]);
+    if (selectedCategory && user?.isRecoverableConfig && !manualChange) {
+      const configValue = user.isRecoverableConfig.get(selectedCategory);
 
-  useEffect(() => {
-    if (isUpdate && formValues?.recoverable !== undefined) {
-      setIsRecoverable(formValues.recoverable);
-      onRecoverableChange(formValues.recoverable);
-    } else if (selectedCategory && user?.isRecoverableConfig && !manualChange) {
-      const configValue = user.isRecoverableConfig.get
-        ? user.isRecoverableConfig.get(selectedCategory)
-        : user.isRecoverableConfig[selectedCategory];
-      setIsRecoverable(configValue ?? false);
-      onRecoverableChange(configValue ?? false);
+      if (configValue !== undefined && configValue !== isRecoverable) {
+        setIsRecoverable(configValue);
+        onRecoverableChange(configValue);
+      } else if (configValue === undefined && isRecoverable) {
+        setIsRecoverable(false);
+        onRecoverableChange(false);
+      }
     }
   }, [
     selectedCategory,
@@ -66,6 +51,7 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
     manualChange,
     isUpdate,
     formValues?.recoverable,
+    isRecoverable,
   ]);
 
   const handleToggle = (checked: boolean) => {
@@ -78,10 +64,6 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
       recoverable: checked,
     });
   };
-
-  useEffect(() => {
-    setManualChange(false);
-  }, [selectedCategory]);
 
   return (
     <div className="flex flex-col space-y-2 mb-10">
