@@ -64,7 +64,6 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     );
 
     setFilteredOptions(filtered);
-    console.log("FilterComponent: Filtered options after search:", filtered);
 
     onChange(filtered);
   };
