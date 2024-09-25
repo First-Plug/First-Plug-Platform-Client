@@ -199,7 +199,7 @@ export function RootTable<TData, TValue>({
       return;
     }
 
-    const originalData = table.getCoreRowModel().rows.map((row) => {
+    const originalData: string[] = table.getCoreRowModel().rows.map((row) => {
       const value = row.getValue(headerId);
       const member = row.original as TeamMember;
 
@@ -219,7 +219,7 @@ export function RootTable<TData, TValue>({
           member.team !== null &&
           "name" in member.team
         ) {
-          return member.team.name;
+          return member.team.name || "Not Assigned";
         }
         return "Not Assigned";
       }
@@ -236,39 +236,73 @@ export function RootTable<TData, TValue>({
       return value ? String(value) : "No Data";
     });
 
-    const filteredOptions = originalData.filter(
-      (value, index, self) => self.indexOf(value) === index
+    const filteredData: string[] = table
+      .getFilteredRowModel()
+      .rows.map((row) => {
+        const value = row.getValue(headerId);
+        const member = row.original as TeamMember;
+
+        if (headerId === "birthDate" || headerId === "startDate") {
+          const dateValue = new Date(member[headerId]);
+          if (!isNaN(dateValue.getTime())) {
+            return dateValue.toLocaleString("en-US", { month: "long" });
+          }
+          return "No Data";
+        }
+
+        if (headerId === "teamId") {
+          if (
+            typeof member.team === "object" &&
+            member.team !== null &&
+            "name" in member.team
+          ) {
+            return member.team.name || "Not Assigned";
+          }
+          return "Not Assigned";
+        }
+
+        if (headerId === "position") {
+          return value ? String(value) : "No Data";
+        }
+
+        if (headerId === "products") {
+          const productCount = (member.products || []).length;
+          return productCount.toString();
+        }
+
+        return value ? String(value) : "No Data";
+      });
+
+    const allOptions = Array.from(new Set(originalData)) as string[];
+    const filteredOptions = Array.from(new Set(filteredData)) as string[];
+
+    const selectedOptions =
+      filteredOptions.length > 0
+        ? allOptions.filter((option) => filteredOptions.includes(option))
+        : [];
+
+    const unselectedOptions = allOptions.filter(
+      (option) => !filteredOptions.includes(option)
     );
 
-    const sortedOptions = filteredOptions.sort((a, b) => {
-      if (headerId === "birthDate" || headerId === "startDate") {
-        const monthIndexA = MONTHS.indexOf(a);
-        const monthIndexB = MONTHS.indexOf(b);
-        if (a === "No Data") return 1;
-        if (b === "No Data") return -1;
-        return monthIndexA - monthIndexB;
-      }
-
-      if (headerId === "position" || headerId === "teamId") {
+    const sortedOptions = [
+      ...selectedOptions.sort((a, b) => {
         if (a === "No Data" || a === "Not Assigned") return 1;
         if (b === "No Data" || b === "Not Assigned") return -1;
-        return a.localeCompare(b, undefined, { sensitivity: "base" });
-      }
-
-      if (headerId === "products") {
-        const numA = parseInt(a, 10);
-        const numB = parseInt(b, 10);
-        return numA - numB;
-      }
-
-      return a.localeCompare(b);
-    });
-
-    if (sortedOptions.length === 0) {
-      sortedOptions.push("No Data");
-    }
+        return a.localeCompare(b);
+      }),
+      ...unselectedOptions.sort((a, b) => {
+        if (a === "No Data" || a === "Not Assigned") return 1;
+        if (b === "No Data" || b === "Not Assigned") return -1;
+        return a.localeCompare(b);
+      }),
+    ];
 
     setFilterOptions(sortedOptions);
+    setSelectedFilterOptions((prev) => ({
+      ...prev,
+      [headerId]: selectedOptions as string[],
+    }));
     setFilterMenuOpen(headerId);
   };
 
