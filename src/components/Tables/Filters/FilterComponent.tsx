@@ -26,11 +26,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     setSelectedOptions(initialSelectedOptions || []);
   }, [initialSelectedOptions]);
 
- 
   useEffect(() => {
-    setFilteredOptions([...options]); // Restablece las opciones filtradas a todas las opciones disponibles
-  }, [options, onClose]); // Incluimos `onClose` para restaurar cuando se cierra el modal
-
+    setFilteredOptions([...options]); 
+  }, [options, onClose]); 
 
   const handleSearch = (query: string) => {
     const filtered = options.filter((option) =>
@@ -51,8 +49,6 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   const handleClearFilter = () => {
     setSelectedOptions([]);
     setFilteredOptions([...options]); 
-
-
     onChange([]);
     onClearFilter();
   };
@@ -70,13 +66,15 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
               type="checkbox"
               checked={selectedOptions.includes(option)}
               onChange={() => handleCheckboxChange(option)}
+              id={option}
               className="mt-2"
             />
-            <label className="ml-2 mt-2 leading-tight flex-1">
+            <label htmlFor={option} className="ml-2 mt-2 leading-tight flex-1">
               {option || "No Data"}
             </label>
           </div>
         ))}
+
       </div>
       <button
         className="mt-4 p-2 bg-red-200 hover:bg-hoverBlue rounded"
