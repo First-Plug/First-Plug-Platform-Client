@@ -61,11 +61,19 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   const sortOptions = () => {
     const selected = filteredOptions
       .filter((option) => selectedOptions.includes(option))
-      .sort((a, b) => a.localeCompare(b));
+      .sort((a, b) => {
+        if (a === "No Data" || a === "Not Assigned") return 1;
+        if (b === "No Data" || b === "Not Assigned") return -1;
+        return a.localeCompare(b);
+      });
 
     const unselected = filteredOptions
       .filter((option) => !selectedOptions.includes(option))
-      .sort((a, b) => a.localeCompare(b));
+      .sort((a, b) => {
+        if (a === "No Data" || a === "Not Assigned") return 1;
+        if (b === "No Data" || b === "Not Assigned") return -1;
+        return a.localeCompare(b);
+      });
 
     return { selected, unselected };
   };
