@@ -27,8 +27,8 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   }, [initialSelectedOptions]);
 
   useEffect(() => {
-    setFilteredOptions([...options]); 
-  }, [options, onClose]); 
+    setFilteredOptions([...options]);
+  }, [options, onClose]);
 
   const handleSearch = (query: string) => {
     const normalizeString = (str: string) => {
@@ -58,9 +58,31 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     onChange(updatedSelectedOptions);
   };
 
+  const sortOptions = () => {
+    const selected = filteredOptions
+      .filter((option) => selectedOptions.includes(option))
+      .sort((a, b) => {
+        if (a === "No Data" || a === "Not Assigned") return 1;
+        if (b === "No Data" || b === "Not Assigned") return -1;
+        return a.localeCompare(b);
+      });
+
+    const unselected = filteredOptions
+      .filter((option) => !selectedOptions.includes(option))
+      .sort((a, b) => {
+        if (a === "No Data" || a === "Not Assigned") return 1;
+        if (b === "No Data" || b === "Not Assigned") return -1;
+        return a.localeCompare(b);
+      });
+
+    return { selected, unselected };
+  };
+
+  const { selected, unselected } = sortOptions();
+
   const handleClearFilter = () => {
     setSelectedOptions([]);
-    setFilteredOptions([...options]); 
+    setFilteredOptions([...options]);
     onChange([]);
     onClearFilter();
   };
@@ -72,7 +94,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
       </div>
       <SearchInput placeholder="Search..." onSearch={handleSearch} />
       <div className="p-2 max-h-60 overflow-y-auto">
-        {filteredOptions.map((option) => (
+        {selected.map((option) => (
           <div key={option} className="mt-2 flex items-start">
             <input
               type="checkbox"
@@ -87,6 +109,23 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
           </div>
         ))}
 
+        {selected.length > 0 && unselected.length > 0 && (
+          <div className="border-t my-2" />
+        )}
+        {unselected.map((option) => (
+          <div key={option} className="mt-2 flex items-start">
+            <input
+              type="checkbox"
+              checked={selectedOptions.includes(option)}
+              onChange={() => handleCheckboxChange(option)}
+              id={option}
+              className="mt-2"
+            />
+            <label htmlFor={option} className="ml-2 mt-2 leading-tight flex-1">
+              {option || "No Data"}
+            </label>
+          </div>
+        ))}
       </div>
       <button
         className="mt-4 p-2 bg-red-200 hover:bg-hoverBlue rounded"
