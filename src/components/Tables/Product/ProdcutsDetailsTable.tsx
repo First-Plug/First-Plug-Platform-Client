@@ -194,18 +194,17 @@ export default function ProdcutsDetailsTable({
   useEffect(() => {
     const handleScroll = () => {
       console.log("Scroll detected in sub-table");
-      setColumnFilters([]); // Limpia los filtros al hacer scroll
+      setColumnFilters([]);
     };
 
     const tableContainer = subTableContainerRef.current;
     if (tableContainer) {
-      console.log("Subtable container found, adding scroll listener");
-      tableContainer.addEventListener("scroll", handleScroll); // Agrega el listener
+      tableContainer.addEventListener("scroll", handleScroll);
     }
 
     return () => {
       if (tableContainer) {
-        tableContainer.removeEventListener("scroll", handleScroll); // Limpia el listener
+        tableContainer.removeEventListener("scroll", handleScroll);
       }
     };
   }, []);

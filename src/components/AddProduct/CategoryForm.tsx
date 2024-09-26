@@ -74,7 +74,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             members.setMembers(fetchedMembers);
           }
 
-          if (isUpdate) {
+          if (isUpdate && !manualChange) {
             const assignedMember = formState.assignedMember as string;
             const assignedEmail = formState.assignedEmail as string;
 
