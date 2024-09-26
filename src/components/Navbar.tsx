@@ -18,7 +18,7 @@ type NavbarProps = {
   placeholder?: string;
 };
 const Titles = {
-  "my-stock": "My Stock",
+  "my-stock": "My Assets",
   "my-team": "My Team",
   orders: "Orders",
   shipments: "Shipments",

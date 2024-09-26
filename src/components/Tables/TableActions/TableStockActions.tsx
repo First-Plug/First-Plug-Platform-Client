@@ -63,14 +63,14 @@ export default observer(function TableStockActions<TData>({
           size="small"
           variant="secondary"
           icon={<DownloadIcon />}
-          body="Export My Stock"
+          body="Export My Assets"
           onClick={handleExportCsv}
         />
 
         <Button
           size="small"
           variant="secondary"
-          body="Load Stock"
+          body="Load Assets"
           icon={<UploadIcon />}
           onClick={() => setAside("LoadStock")}
         />

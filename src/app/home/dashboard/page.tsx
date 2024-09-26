@@ -28,7 +28,7 @@ export default observer(function Dashboard() {
         <section className="grid grid-cols-2 gap-4  max-h-1/2 h-1/2  ">
           {products.length ? (
             <Card
-              Title="My Stock"
+              Title="My Assets"
               titleButton="Shop Now"
               icon={<CustomLink href="/shop" />}
             >
