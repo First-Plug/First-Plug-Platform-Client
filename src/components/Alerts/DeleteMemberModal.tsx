@@ -75,7 +75,7 @@ export const DeleteMemberModal: React.FC<DeleteAlertProps> = observer(
       },
       NoProduct: {
         title: "There are no products to retrieve, and the member will be removed from your team.",
-        description: "This member has no products assigned",
+        description: "This member has no products assigned.",
       },
       None: {
         title: "Are you sure you want to delete this member? 🗑️",
