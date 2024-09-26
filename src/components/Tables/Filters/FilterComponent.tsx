@@ -88,7 +88,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   };
 
   return (
-    <div className="fixed bg-white p-6 w-64 shadow-lg z-50 overflow-visible">
+    <div className="fixed bg-white p-6 w-64 shadow-lg overflow-visible z-50">
       <div className="flex justify-end items-center mb-4">
         <IconX onClick={onClose} className="cursor-pointer" />
       </div>
