@@ -404,6 +404,21 @@ export function RootTable<TData, TValue>({
   }, [filterMenuOpen, refs, update]);
 
   useEffect(() => {
+    const handleScroll = () => {
+      if (filterMenuOpen) {
+        setFilterMenuOpen(null);
+      }
+    };
+
+    const containerRef = tableContainerRef.current;
+    containerRef?.addEventListener("scroll", handleScroll);
+
+    return () => {
+      containerRef?.removeEventListener("scroll", handleScroll);
+    };
+  }, [filterMenuOpen]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         filterMenuOpen &&
@@ -465,7 +480,7 @@ export function RootTable<TData, TValue>({
                   <TableHead
                     key={header.id}
                     style={{ width: `${header.getSize()}px` }}
-                    className="py-3 px-4 border-r text-start text-black font-semibold"
+                    className="py-3 px-4 border-r text-start text-black font-semibold "
                   >
                     <div className="flex w-full justify-between items-center">
                       <div>
