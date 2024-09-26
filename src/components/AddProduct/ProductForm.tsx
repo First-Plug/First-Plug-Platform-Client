@@ -90,14 +90,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
         methods.reset(emptyProduct);
         setSelectedCategory(category);
         setValue("category", category || undefined);
-        setManualChange(false); // Resetea el cambio manual al cambiar la categoría
+        setManualChange(false);
 
         if (user?.isRecoverableConfig && category) {
           const isRecoverable = user.isRecoverableConfig.get(category) || false;
           setValue("recoverable", isRecoverable);
           setFormValues((prev) => ({ ...prev, recoverable: isRecoverable }));
         } else {
-          // Si no existe una configuración, usa un valor predeterminado
           setValue("recoverable", category !== "Merchandising");
         }
       }
