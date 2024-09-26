@@ -28,6 +28,22 @@ export default observer(function AlertProvider() {
   const { fetchMembers, fetchStock } = useFetch();
 
   const Config: Record<AlertType, IConfig> = {
+    memberMissingFields: {
+      title: "Error",
+      type: "error",
+      description: "No products to recover.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    noProductsToRecover: {
+      title: "Error",
+      type: "error",
+      description: "No products to recover.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     ErorPasswordChange: {
       title: "Error",
       type: "error",
