@@ -16,11 +16,11 @@ type TConfig = {
 };
 const Config: Record<EmptyCardType, TConfig> = {
   stock: {
-    title: "My Stock",
+    title: "My Assets",
     image: "/office.svg",
     paragraph: "You don't have any items.",
     ButtonIcon: UploadIcon,
-    buttonText: "Load Stock",
+    buttonText: "Load Assets",
     LinkIcon: ShopIcon,
     link: "/shop",
     linkText: "Shop Now",

@@ -21,7 +21,7 @@ export const AsideTitle = observer(function AsideTitle() {
     case "EditTeam":
       return `Edit Team Name & Assign Members`;
     case "LoadStock":
-      return "Load Stock";
+      return "Load Assets";
     case "LoadMembers":
       return "Load Members";
     case "OrderDetails":
