@@ -70,11 +70,11 @@ export const DeleteMemberModal: React.FC<DeleteAlertProps> = observer(
 
     const informationView = {
       NoRecoverable: {
-        title: "Are you sure you want to delete this member? 🗑️",
+        title: "There are no products to retrieve, and the member will be removed from your team.",
         description: "This member has no recoverable products.",
       },
       NoProduct: {
-        title: "Are you sure you want to delete this member? 🗑️",
+        title: "There are no products to retrieve, and the member will be removed from your team.",
         description: "This member has no products assigned",
       },
       None: {
