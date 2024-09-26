@@ -9,6 +9,7 @@ import Image from "next/image";
 import { LinkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { RelacoteProducts, ReturnPage } from "./AsideContents";
+import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 
 interface MemberAsideDetailsProps {
   className?: string;
@@ -18,7 +19,7 @@ export const MemberAsideDetails = observer(function ({
   className,
 }: MemberAsideDetailsProps) {
   const {
-    members: { members, selectedMember },
+    members: { members, selectedMember, setMemberToEdit },
     aside: { setAside },
     alerts: { setAlert },
     products,
@@ -29,6 +30,8 @@ export const MemberAsideDetails = observer(function ({
   const [productToRemove, setProductToRemove] = useState<Product>();
   const [relocatePage, setRelocatePage] = useState(false);
   const [returnPage, setReturnPage] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [missingMemberData, setMissingMemberData] = useState("");
 
   const handleSelectProducts = (product: Product) => {
     if (selectedProducts.includes(product)) {
@@ -48,6 +51,72 @@ export const MemberAsideDetails = observer(function ({
   };
   const handleReturn = (action: "open" | "close") => {
     setReturnPage(!(action === "close"));
+  };
+
+  function capitalizeAndSeparateCamelCase(text: string) {
+    const separated = text.replace(/([a-z])([A-Z])/g, '$1 $2');
+    return separated.replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  const handleRequestOffBoarding = () => {  
+    const allProductsNotRecoverable = selectedMember.products.every(
+      product => !product.recoverable
+    );
+
+    const getMissingFields = (selectedMember: any): string[] => {
+      const missingFields: string[] = [];
+  
+      const isEmptyString = (value: any) => typeof value === 'string' && value.trim() === '';
+
+      const isInvalidNumber = (value: any) => typeof value === 'number' ? value === 0 : !value;
+    
+      if (isEmptyString(selectedMember.personalEmail)) {
+        missingFields.push('personalEmail');
+      }
+      if (isEmptyString(selectedMember.phone)) {
+        missingFields.push('phone');
+      }
+      if (isInvalidNumber(selectedMember.dni)) {
+        missingFields.push('dni');
+      }
+      if (isEmptyString(selectedMember.country)) {
+        missingFields.push('country');
+      }
+      if (isEmptyString(selectedMember.city)) {
+        missingFields.push('city');
+      }
+      if (isEmptyString(selectedMember.zipCode)) {
+        missingFields.push('zipCode');
+      }
+      if (isEmptyString(selectedMember.address)) {
+        missingFields.push('address');
+      }
+    
+      return missingFields;
+    };
+    
+    if (allProductsNotRecoverable) {
+      setAlert("noProductsToRecover");
+    } 
+    
+    if(!getMissingFields(selectedMember).length){
+      // TODO: next history v2
+      alert("the member has all his data")
+    } else {
+      const missingFields = getMissingFields(selectedMember);
+
+      setMissingMemberData(
+        missingFields
+          .reduce((acc, field, index) => {
+            if (index === 0) {
+              return capitalizeAndSeparateCamelCase(field);
+            }
+            return acc + ' - ' + capitalizeAndSeparateCamelCase(field);
+          }, '')
+      );
+
+      setShowErrorDialog(true)
+    }
   };
 
   return (
@@ -116,6 +185,13 @@ export const MemberAsideDetails = observer(function ({
           <aside className=" absolute  bg-white  py-2    bottom-0   left-0 w-full border-t ">
             <div className="flex    w-5/6 mx-auto gap-2 justify-end">
               <Button
+                body={"Request Offboarding"}
+                variant={"secondary"}
+                disabled={selectedMember.products.length === 0}
+                onClick={() => handleRequestOffBoarding()}
+                className="px-6 w-1/4"
+              />
+              <Button
                 body={"Return"}
                 variant={"secondary"}
                 disabled={selectedProducts.length === 0}
@@ -131,6 +207,18 @@ export const MemberAsideDetails = observer(function ({
               />
             </div>
           </aside>
+          <GenericAlertDialog
+            open={showErrorDialog}
+            onClose={() => setShowErrorDialog(false)}
+            title="Please complete the missing data: "
+            description={missingMemberData}
+            buttonText="Update Member"
+            onButtonClick={() => {
+              setMemberToEdit(selectedMember._id);
+              setAside("EditMember");
+              setShowErrorDialog(false);
+            }}
+          />
         </Fragment>
       )}
     </article>
