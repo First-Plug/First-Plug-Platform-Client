@@ -8,6 +8,8 @@ interface RecoverableSwitchProps {
   isUpdate?: boolean;
   formValues: any;
   setFormValues: React.Dispatch<React.SetStateAction<any>>;
+  manualChange?: boolean;
+  setManualChange?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
@@ -16,13 +18,15 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
   isUpdate = false,
   formValues,
   setFormValues,
+  setManualChange,
+  manualChange,
 }) => {
   const {
     user: { user },
   } = useStore();
   const [isRecoverable, setIsRecoverable] = useState(false);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
-  const [manualChange, setManualChange] = useState(false);
+  // const [manualChange, setManualChange] = useState(false);
 
   useEffect(() => {
     if (isUpdate && formValues?.recoverable !== undefined) {

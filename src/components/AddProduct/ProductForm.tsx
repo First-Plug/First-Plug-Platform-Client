@@ -45,6 +45,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   isUpdate = false,
 }) => {
   const {
+    user: { user },
     aside: { setAside },
     alerts: { setAlert },
   } = useStore();
@@ -81,6 +82,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [formValues, setFormValues] = useState({
     recoverable: initialData?.recoverable || false,
   });
+  const [manualChange, setManualChange] = useState(false);
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -88,10 +90,19 @@ const ProductForm: React.FC<ProductFormProps> = ({
         methods.reset(emptyProduct);
         setSelectedCategory(category);
         setValue("category", category || undefined);
-        setValue("recoverable", category !== "Merchandising");
+        setManualChange(false); // Resetea el cambio manual al cambiar la categoría
+
+        if (user?.isRecoverableConfig && category) {
+          const isRecoverable = user.isRecoverableConfig.get(category) || false;
+          setValue("recoverable", isRecoverable);
+          setFormValues((prev) => ({ ...prev, recoverable: isRecoverable }));
+        } else {
+          // Si no existe una configuración, usa un valor predeterminado
+          setValue("recoverable", category !== "Merchandising");
+        }
       }
     },
-    [isUpdate, setValue, methods]
+    [isUpdate, setValue, methods, user?.isRecoverableConfig, setFormValues]
   );
 
   const validateCategory = async () => {
@@ -436,6 +447,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         model={modelValue}
                         formValues={formValues}
                         setFormValues={setFormValues}
+                        setManualChange={setManualChange}
+                        manualChange={manualChange}
                       />
                     </div>
                   </section>
