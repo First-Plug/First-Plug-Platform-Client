@@ -13,24 +13,32 @@ type TConfig = {
   LinkIcon?: () => JSX.Element;
   linkText?: string;
   link?: string;
+  additionalButtonText?: string;
+  additionalButtonIcon?: () => JSX.Element;
+  additionalOnClick?: () => void;
 };
 const Config: Record<EmptyCardType, TConfig> = {
   stock: {
     title: "My Assets",
     image: "/office.svg",
-    paragraph: "You don't have any items.",
+    paragraph: "You don't have any products.",
     ButtonIcon: UploadIcon,
     buttonText: "Load Assets",
     LinkIcon: ShopIcon,
     link: "/shop",
     linkText: "Shop Now",
+    additionalButtonText: "Add Product",
+    additionalButtonIcon: AddIcon,
+    additionalOnClick: () => {
+      window.location.href = "/home/my-stock/addOneProduct";
+    },
   },
   members: {
     title: "My Team",
     image: "/girl.svg",
     paragraph: "You haven't loaded any employees yet.",
-    ButtonIcon: UploadIcon,
-    buttonText: "Load Team Members",
+    // ButtonIcon: UploadIcon,
+    // buttonText: "Load Team Members",
     LinkIcon: AddIcon,
     link: "/home/my-team/addTeam",
     linkText: "Add Team Member",
@@ -42,8 +50,19 @@ interface EmptyCardProps {
 }
 
 export function EmptyDashboardCard({ type }: EmptyCardProps) {
-  const { title, LinkIcon, buttonText, image, link, linkText, paragraph } =
-    Config[type];
+  const {
+    title,
+    LinkIcon,
+    buttonText,
+    image,
+    link,
+    linkText,
+    paragraph,
+    additionalButtonText,
+    additionalButtonIcon,
+    additionalOnClick,
+    ButtonIcon,
+  } = Config[type];
   return (
     <div className="flex flex-col items-center gap-3  h-full w-full rounded-xl p-4  border border-border ">
       <div className="flex gap-2 w-full">
@@ -67,6 +86,36 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
         </div>
         <p className="text-dark-grey">{paragraph}</p>
       </div>
+      {additionalButtonIcon && (
+        <Button
+          variant="secondary"
+          body={additionalButtonText}
+          size="big"
+          icon={additionalButtonIcon()}
+          className="p-3 rounded-md gap-2"
+          onClick={additionalOnClick}
+        />
+      )}
+      {ButtonIcon && (
+        <Button
+          variant="secondary"
+          body={buttonText}
+          size="big"
+          icon={<ButtonIcon />}
+          className="p-3 rounded-md"
+          // onClick={handleActions}
+        />
+      )}
+      {/* {LinkIcon && (
+        <CustomLink
+          variant="primary"
+          size="big"
+          className="rounded-md flex gap-2"
+          href={link}
+        >
+          <LinkIcon /> {linkText}
+        </CustomLink>
+      )} */}
     </div>
   );
 }
