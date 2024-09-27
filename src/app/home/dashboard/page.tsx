@@ -6,6 +6,7 @@ import {
   EmptyDashboardCard,
   NotificationIcon,
   PageLayout,
+  ShopIcon,
 } from "@/common";
 import { Card, StockCard, TeamHomeCard } from "@/components";
 import { useEffect } from "react";
@@ -14,7 +15,7 @@ import useFetch from "@/hooks/useFetch";
 export default observer(function Dashboard() {
   const {
     members: { members },
-    products: { availableProducts, products, tableProducts },
+    products: { tableProducts },
   } = useStore();
   const { fetchStock } = useFetch();
 
@@ -37,7 +38,11 @@ export default observer(function Dashboard() {
             <Card
               Title="My Assets"
               titleButton="Shop Now"
-              icon={<CustomLink href="/shop" />}
+              icon={
+                <CustomLink href="/shop" className="flex items-center gap-2">
+                  <ShopIcon />
+                </CustomLink>
+              }
             >
               <StockCard products={tableProducts} />
             </Card>

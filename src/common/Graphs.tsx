@@ -30,7 +30,7 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
   };
 
   const options: ChartOptions<"doughnut"> = {
-    responsive: true,
+    // maintainAspectRatio: false,
     plugins: {
       tooltip: {
         callbacks: {
@@ -44,7 +44,7 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
 
   return (
     <figure className="relative mx-auto flex flex-col items-center w-full h-full max-h-full">
-      <div className="absolute w-[90%] h-[90%] flex flex-col gap-4">
+      <div className="absolute w-[50%] h-[50%] flex flex-col gap-4">
         <div className="relative cursor-pointer">
           <Doughnut data={info} options={options} className="object-contain" />
           <div className="absolute inset-0 flex items-center justify-center">
@@ -57,19 +57,19 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
         <figcaption className="flex gap-2 w-full justify-center items-center">
           <div className="flex gap-1 items-center">
             <div
-              className="h-[1rem] w-[1rem]"
+              className="h-[1rem] w-[1rem]  rounded-sm"
               style={{ backgroundColor: assignedColor }}
             ></div>
-            <p>
+            <p className="text-md">
               Assigned | <b>{quantity}</b>
             </p>
           </div>
           <div className="flex gap-1 items-center">
             <div
-              className="h-[1rem] w-[1rem]"
+              className="h-[1rem] w-[1rem] rounded-sm"
               style={{ backgroundColor: availableColor }}
             ></div>
-            <p>
+            <p className="text-md">
               Available | <b>{stock}</b>
             </p>
           </div>

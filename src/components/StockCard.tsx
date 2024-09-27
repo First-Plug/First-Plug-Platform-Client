@@ -48,7 +48,7 @@ export const StockCard = observer(function ({ products }: StockCardProps) {
 
   return (
     <div className="flex p-4 gap-4 justify-between w-full h-full">
-      <div className="flex flex-col justify-start items-start w-full h-full overflow-y-auto">
+      <div className="flex flex-col justify-start items-start w-1/4 h-full overflow-y-auto">
         {CATEGORIES.map((category) => (
           <Button
             key={category}
@@ -64,7 +64,8 @@ export const StockCard = observer(function ({ products }: StockCardProps) {
           />
         ))}
       </div>
-      <div className="w-1/2 h-full flex items-center justify-center">
+
+      <div className="w-3/4 h-full flex items-center justify-center">
         {categoryProducts.length > 0 ? (
           <DoughnutChart
             data={{ stock: availableCount, quantity: assignedCount }}
