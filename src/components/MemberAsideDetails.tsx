@@ -10,6 +10,7 @@ import { LinkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { RelacoteProducts, ReturnPage } from "./AsideContents";
 import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
+import { DeleteMemberModal } from "./Alerts/DeleteMemberModal";
 
 interface MemberAsideDetailsProps {
   className?: string;
@@ -19,7 +20,7 @@ export const MemberAsideDetails = observer(function ({
   className,
 }: MemberAsideDetailsProps) {
   const {
-    members: { members, selectedMember, setMemberToEdit },
+    members: { members, selectedMember, setMemberToEdit, setMembers },
     aside: { setAside },
     alerts: { setAlert },
     products,
@@ -32,6 +33,9 @@ export const MemberAsideDetails = observer(function ({
   const [returnPage, setReturnPage] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
+  const [isOpen, setIsOpen] = useState(false)
+  const [id, setId] = useState<null | string>(null)
+  const [type, setType] = useState<"NoRecoverable" | "NoProduct" | "None">("None")
 
   const handleSelectProducts = (product: Product) => {
     if (selectedProducts.includes(product)) {
@@ -57,6 +61,8 @@ export const MemberAsideDetails = observer(function ({
     const separated = text.replace(/([a-z])([A-Z])/g, '$1 $2');
     return separated.replace(/\b\w/g, (char) => char.toUpperCase());
   }
+
+
 
   const handleRequestOffBoarding = () => {  
     const allProductsNotRecoverable = selectedMember.products.every(
@@ -94,9 +100,17 @@ export const MemberAsideDetails = observer(function ({
     
       return missingFields;
     };
+
+    setId(selectedMember._id)
+
+    if (!selectedMember.products.length) {
+      setType("NoProduct")
+      return setIsOpen(true)
+    }
     
     if (allProductsNotRecoverable) {
-      setAlert("noProductsToRecover");
+      setType("NoRecoverable")
+      return setIsOpen(true)
     } 
     
     if(!getMissingFields(selectedMember).length){
@@ -135,7 +149,7 @@ export const MemberAsideDetails = observer(function ({
           <div className="flex flex-col gap-6   h-full   ">
             <MemberDetail />
             <div className=" flex-grow h-[70%]  ">
-              {selectedMember.products.length ? (
+              {selectedMember?.products?.length ? (
                 <div className="flex flex-col gap-2 h-full">
                   <div className="flex justify-between">
                     <h1 className="font-semibold text-lg">Products</h1>
@@ -187,7 +201,6 @@ export const MemberAsideDetails = observer(function ({
               <Button
                 body={"Request Offboarding"}
                 variant={"secondary"}
-                disabled={selectedMember.products.length === 0}
                 onClick={() => handleRequestOffBoarding()}
                 className="px-6 w-1/4"
               />
@@ -219,6 +232,7 @@ export const MemberAsideDetails = observer(function ({
               setShowErrorDialog(false);
             }}
           />
+          <DeleteMemberModal id={id} isOpen={isOpen} setOpen={setIsOpen} type={type}/>
         </Fragment>
       )}
     </article>
