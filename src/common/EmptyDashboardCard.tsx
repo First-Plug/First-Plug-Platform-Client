@@ -3,6 +3,7 @@ import { AddIcon, ShopIcon, UploadIcon } from "./Icons";
 import { Button } from "./Button";
 import { CustomLink } from "./CustomLink";
 import Image from "next/image";
+import { useStore } from "@/models";
 type EmptyCardType = "stock" | "members";
 type TConfig = {
   title: string;
@@ -63,8 +64,21 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
     additionalOnClick,
     ButtonIcon,
   } = Config[type];
+
+  const {
+    aside: { setAside },
+  } = useStore();
+
+  const handleActions = () => {
+    if (type === "stock") {
+      setAside("LoadStock", "MyStock");
+    }
+
+    if (type === "members") setAside("LoadMembers");
+  };
+
   return (
-    <div className="flex flex-col items-center gap-3  h-full w-full rounded-xl p-4  border border-border ">
+    <div className="flex flex-col items-center gap-3  h-full w-full rounded-xl p-4  border border-border overflow-y-auto scrollbar-custom ">
       <div className="flex gap-2 w-full">
         <h2 className="text-[20px]  text-black font-montserrat font-bold flex-1 md:text-sm lg:text-xl">
           {title}
@@ -86,27 +100,28 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
         </div>
         <p className="text-dark-grey">{paragraph}</p>
       </div>
-      {additionalButtonIcon && (
-        <Button
-          variant="secondary"
-          body={additionalButtonText}
-          size="big"
-          icon={additionalButtonIcon()}
-          className="p-3 rounded-md gap-2"
-          onClick={additionalOnClick}
-        />
-      )}
-      {ButtonIcon && (
-        <Button
-          variant="secondary"
-          body={buttonText}
-          size="big"
-          icon={<ButtonIcon />}
-          className="p-3 rounded-md"
-          // onClick={handleActions}
-        />
-      )}
-      {/* {LinkIcon && (
+      <div className="flex gap-2 ">
+        {additionalButtonIcon && (
+          <Button
+            variant="secondary"
+            body={additionalButtonText}
+            size="big"
+            icon={additionalButtonIcon()}
+            className="p-3 rounded-md gap-2"
+            onClick={additionalOnClick}
+          />
+        )}
+        {ButtonIcon && (
+          <Button
+            variant="secondary"
+            body={buttonText}
+            size="big"
+            icon={<ButtonIcon />}
+            className="p-3 rounded-md"
+            onClick={handleActions}
+          />
+        )}
+        {/* {LinkIcon && (
         <CustomLink
           variant="primary"
           size="big"
@@ -116,6 +131,7 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
           <LinkIcon /> {linkText}
         </CustomLink>
       )} */}
+      </div>
     </div>
   );
 }

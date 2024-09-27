@@ -8,12 +8,19 @@ import {
   PageLayout,
 } from "@/common";
 import { Card, StockCard, TeamHomeCard } from "@/components";
+import { useEffect } from "react";
+import useFetch from "@/hooks/useFetch";
 
 export default observer(function Dashboard() {
   const {
     members: { members },
-    products: { products },
+    products: { availableProducts, products, tableProducts },
   } = useStore();
+  const { fetchStock } = useFetch();
+
+  useEffect(() => {
+    fetchStock();
+  }, [fetchStock]);
 
   return (
     <PageLayout>
@@ -26,13 +33,13 @@ export default observer(function Dashboard() {
           )}
         </section>
         <section className="grid grid-cols-2 gap-4  max-h-1/2 h-1/2  ">
-          {products.length ? (
+          {tableProducts.length ? (
             <Card
               Title="My Assets"
               titleButton="Shop Now"
               icon={<CustomLink href="/shop" />}
             >
-              <StockCard />
+              <StockCard products={tableProducts} />
             </Card>
           ) : (
             <EmptyDashboardCard type="stock" />
