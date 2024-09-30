@@ -33,9 +33,11 @@ export const MemberAsideDetails = observer(function ({
   const [returnPage, setReturnPage] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
-  const [isOpen, setIsOpen] = useState(false)
-  const [id, setId] = useState<null | string>(null)
-  const [type, setType] = useState<"NoRecoverable" | "NoProduct" | "None">("None")
+  const [isOpen, setIsOpen] = useState(false);
+  const [id, setId] = useState<null | string>(null);
+  const [type, setType] = useState<"NoRecoverable" | "NoProduct" | "None">(
+    "None"
+  );
 
   const handleSelectProducts = (product: Product) => {
     if (selectedProducts.includes(product)) {
@@ -58,78 +60,77 @@ export const MemberAsideDetails = observer(function ({
   };
 
   function capitalizeAndSeparateCamelCase(text: string) {
-    const separated = text.replace(/([a-z])([A-Z])/g, '$1 $2');
+    const separated = text.replace(/([a-z])([A-Z])/g, "$1 $2");
     return separated.replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
-
-
-  const handleRequestOffBoarding = () => {  
+  const handleRequestOffBoarding = () => {
     const allProductsNotRecoverable = selectedMember.products.every(
-      product => !product.recoverable
+      (product) => !product.recoverable
     );
 
     const getMissingFields = (selectedMember: any): string[] => {
       const missingFields: string[] = [];
-  
-      const isEmptyString = (value: any) => typeof value === 'string' && value.trim() === '';
 
-      const isInvalidNumber = (value: any) => typeof value === 'number' ? value === 0 : !value;
-    
+      const isEmptyString = (value: any) =>
+        typeof value === "string" && value.trim() === "";
+
+      const isInvalidNumber = (value: any) =>
+        typeof value === "number" ? value === 0 : !value;
+
       if (isEmptyString(selectedMember.personalEmail)) {
-        missingFields.push('personalEmail');
+        missingFields.push("personalEmail");
       }
       if (isEmptyString(selectedMember.phone)) {
-        missingFields.push('phone');
+        missingFields.push("phone");
       }
       if (isInvalidNumber(selectedMember.dni)) {
-        missingFields.push('dni');
+        missingFields.push("dni");
       }
       if (isEmptyString(selectedMember.country)) {
-        missingFields.push('country');
+        missingFields.push("country");
       }
       if (isEmptyString(selectedMember.city)) {
-        missingFields.push('city');
+        missingFields.push("city");
       }
       if (isEmptyString(selectedMember.zipCode)) {
-        missingFields.push('zipCode');
+        missingFields.push("zipCode");
       }
       if (isEmptyString(selectedMember.address)) {
-        missingFields.push('address');
+        missingFields.push("address");
       }
-    
+
       return missingFields;
     };
 
-    setId(selectedMember._id)
+    setId(selectedMember._id);
 
     if (!selectedMember.products.length) {
-      setType("NoProduct")
-      return setIsOpen(true)
+      setType("NoProduct");
+      return setIsOpen(true);
     }
-    
+
     if (allProductsNotRecoverable) {
-      setType("NoRecoverable")
-      return setIsOpen(true)
-    } 
-    
-    if(!getMissingFields(selectedMember).length){
+      setType("NoRecoverable");
+      return setIsOpen(true);
+    }
+
+    if (!getMissingFields(selectedMember).length) {
       // TODO: next history v2
-      alert("the member has all his data")
+      alert("the member has all his data");
     } else {
       const missingFields = getMissingFields(selectedMember);
 
       setMissingMemberData(
-        missingFields
-          .reduce((acc, field, index) => {
-            if (index === 0) {
-              return capitalizeAndSeparateCamelCase(field);
-            }
-            return acc + ' - ' + capitalizeAndSeparateCamelCase(field);
-          }, '')
+        missingFields.reduce((acc, field, index) => {
+          if (index === 0) {
+            return capitalizeAndSeparateCamelCase(field);
+          }
+          return acc + " - " + capitalizeAndSeparateCamelCase(field);
+        }, "")
       );
 
-      setShowErrorDialog(true)
+      setShowErrorDialog(true);
     }
   };
 
@@ -198,12 +199,12 @@ export const MemberAsideDetails = observer(function ({
           </div>
           <aside className=" absolute  bg-white  py-2    bottom-0   left-0 w-full border-t ">
             <div className="flex    w-5/6 mx-auto gap-2 justify-end">
-              <Button
+              {/* <Button
                 body={"Request Offboarding"}
                 variant={"secondary"}
                 onClick={() => handleRequestOffBoarding()}
                 className="px-6 w-1/4"
-              />
+              /> */}
               <Button
                 body={"Return"}
                 variant={"secondary"}
@@ -232,7 +233,12 @@ export const MemberAsideDetails = observer(function ({
               setShowErrorDialog(false);
             }}
           />
-          <DeleteMemberModal id={id} isOpen={isOpen} setOpen={setIsOpen} type={type}/>
+          <DeleteMemberModal
+            id={id}
+            isOpen={isOpen}
+            setOpen={setIsOpen}
+            type={type}
+          />
         </Fragment>
       )}
     </article>
