@@ -7,6 +7,7 @@ import {
   NotificationIcon,
   PageLayout,
   ShopIcon,
+  Gift,
 } from "@/common";
 import { Card, StockCard, TeamHomeCard } from "@/components";
 import { useEffect } from "react";
@@ -17,10 +18,11 @@ export default observer(function Dashboard() {
     members: { members },
     products: { tableProducts },
   } = useStore();
-  const { fetchStock } = useFetch();
+  const { fetchStock, fetchMembers } = useFetch();
 
   useEffect(() => {
     fetchStock();
+    fetchMembers();
   }, [fetchStock]);
 
   return (
@@ -43,7 +45,19 @@ export default observer(function Dashboard() {
             <EmptyDashboardCard type="stock" />
           )}
           {members.length ? (
-            <TeamHomeCard />
+            <>
+              <Card
+                Title="My Team"
+                titleButton="Gift Shop"
+                icon={
+                  <CustomLink href="/shop" className="flex items-center gap-2">
+                    <Gift />
+                  </CustomLink>
+                }
+              >
+                <TeamHomeCard />
+              </Card>
+            </>
           ) : (
             <EmptyDashboardCard type="members" />
           )}

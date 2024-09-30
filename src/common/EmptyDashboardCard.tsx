@@ -40,9 +40,11 @@ const Config: Record<EmptyCardType, TConfig> = {
     paragraph: "You haven't load any members yet.",
     ButtonIcon: UploadIcon,
     buttonText: "Load Team Members",
-    LinkIcon: AddIcon,
-    link: "/home/my-team/addTeam",
-    linkText: "Add Team Member",
+    additionalButtonIcon: AddIcon,
+    additionalButtonText: "Add Team Member",
+    additionalOnClick: () => {
+      window.location.href = "/home/my-team/addTeam";
+    },
   },
 };
 
@@ -105,7 +107,7 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
           <Button
             variant="secondary"
             body={additionalButtonText}
-            size="big"
+            size="small"
             icon={additionalButtonIcon()}
             className="p-3 rounded-md gap-2"
             onClick={additionalOnClick}
@@ -115,22 +117,12 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
           <Button
             variant="secondary"
             body={buttonText}
-            size="big"
+            size="small"
             icon={<ButtonIcon />}
             className="p-3 rounded-md"
             onClick={handleActions}
           />
         )}
-        {/* {LinkIcon && (
-        <CustomLink
-          variant="primary"
-          size="big"
-          className="rounded-md flex gap-2"
-          href={link}
-        >
-          <LinkIcon /> {linkText}
-        </CustomLink>
-      )} */}
       </div>
     </div>
   );
