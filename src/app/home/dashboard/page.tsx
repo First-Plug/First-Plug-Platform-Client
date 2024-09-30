@@ -81,8 +81,8 @@ export default observer(function Dashboard() {
                 <NotificationIcon />
               </h1>
               <p className="font-inter text-sm text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We`re excited to reveal that the Firstplug notifications are
-                coming soon!
+                We&apos;re excited to reveal that the Firstplug notifications
+                are coming soon!
               </p>
             </section>
           </Card>
@@ -93,8 +93,8 @@ export default observer(function Dashboard() {
                 <NotificationIcon />
               </h1>
               <p className="font-inter text-sm text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We`re excited to reveal that the Firstplug notifications are
-                coming soon!
+                We&apos;re excited to reveal that the Firstplug notifications
+                are coming soon!
               </p>
             </section>
           </Card>
