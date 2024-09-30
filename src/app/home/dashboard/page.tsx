@@ -2,8 +2,6 @@
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
 import {
-  Button,
-  CustomLink,
   EmptyDashboardCard,
   NotificationIcon,
   PageLayout,
@@ -12,12 +10,14 @@ import {
 import { Card, StockCard, TeamHomeCard } from "@/components";
 import { useEffect } from "react";
 import useFetch from "@/hooks/useFetch";
+import { UserServices } from "@/services/user.services";
 
 export default observer(function Dashboard() {
   const {
     members: { members },
     products: { tableProducts },
     alerts: { setAlert },
+    user: { user },
   } = useStore();
   const { fetchStock, fetchMembers } = useFetch();
 
@@ -26,8 +26,16 @@ export default observer(function Dashboard() {
     fetchMembers();
   }, [fetchStock]);
 
-  const handleBirthdayGiftClick = () => {
-    setAlert("birthdayGiftAlert");
+  const handleBirthdayGiftClick = async () => {
+    try {
+      const response = await UserServices.notifyBirthdayGiftInterest(
+        user.email,
+        user.tenantName
+      );
+      setAlert("birthdayGiftAlert");
+    } catch (error) {
+      console.error("Failed to send Slack message:", error);
+    }
   };
 
   return (

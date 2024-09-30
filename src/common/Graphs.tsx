@@ -44,7 +44,7 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
 
   return (
     <figure className="relative mx-auto flex flex-col items-center w-full h-full max-h-full">
-      <div className="absolute w-[70%] h-[70%] flex flex-col gap-4">
+      <div className="absolute w-[60%] h-[60%] flex flex-col gap-4">
         <div className="relative cursor-pointer">
           <Doughnut data={info} options={options} className="object-contain" />
           <div className="absolute inset-0 flex items-center justify-center">
