@@ -37,9 +37,9 @@ const Config: Record<EmptyCardType, TConfig> = {
   members: {
     title: "My Team",
     image: "/girl.svg",
-    paragraph: "You haven't loaded any employees yet.",
-    // ButtonIcon: UploadIcon,
-    // buttonText: "Load Team Members",
+    paragraph: "You haven't load any members yet.",
+    ButtonIcon: UploadIcon,
+    buttonText: "Load Team Members",
     LinkIcon: AddIcon,
     link: "/home/my-team/addTeam",
     linkText: "Add Team Member",
