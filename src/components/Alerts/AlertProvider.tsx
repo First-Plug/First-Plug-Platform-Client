@@ -325,6 +325,15 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    birthdayGiftAlert: {
+      title: "Birthday Gifts",
+      type: "succes",
+      description:
+        "We will contact you shortly to share our gifts for your team.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;

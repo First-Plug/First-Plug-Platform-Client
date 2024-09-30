@@ -1,5 +1,5 @@
 "use client";
-import { InfoCircle } from "@/common/Icons";
+import { AddIcon, InfoCircle, UploadIcon } from "@/common/Icons";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
 import {
@@ -9,6 +9,8 @@ import {
   TooltipContent,
   TooltipArrow,
 } from "@radix-ui/react-tooltip";
+import { BirthdayTable } from "./Tables/BirthdayTable";
+import { Button } from "@/common";
 
 const isBirthdayInNext30Days = (birthDateString: string) => {
   const today = new Date();
@@ -21,14 +23,10 @@ const isBirthdayInNext30Days = (birthDateString: string) => {
   return diffDays >= 0 && diffDays <= 30;
 };
 
-const formatBirthDate = (birthDateString: string) => {
-  const birthDate = new Date(birthDateString);
-  return `${birthDate.getDate()}/${birthDate.getMonth() + 1}`;
-};
-
 export const TeamHomeCard = observer(function () {
   const {
     members: { members },
+    aside: { setAside },
   } = useStore();
 
   const membersWithBirthdate = members.filter((member) => member.birthDate);
@@ -37,57 +35,74 @@ export const TeamHomeCard = observer(function () {
     isBirthdayInNext30Days(member.birthDate)
   );
 
-  const handleBirthdayGiftsClick = () => {
-    alert("We will contact you shortly to share our gifts for your team.");
+  const handleAddMemberClick = () => {
+    window.location.href = "/home/my-team/addTeam";
+  };
+  const handleLoadMembersClick = () => {
+    setAside("LoadMembers");
   };
 
   return (
-    <div className="flex gap-2 p-2 w-full h-full ">
-      <section className="flex w-2/3 h-full relative">
+    <div className="flex gap-2 p-2 w-full h-full">
+      <section className="flex w-full h-full relative">
         <div className="flex flex-col gap-2 h-full w-full absolute">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl text-black font-semibold">
+            <h2 className="text-xl text-black font-semibold  flex items-center gap-2">
               Upcoming Birthdays
             </h2>
-            <div className="flex gap-2 items-center">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button className="ml-2 p-1 text-blue/80">
-                      <InfoCircle />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="right"
-                    align="center"
-                    className="bg-blue/80 text-white p-2 rounded-md text-sm"
-                  >
-                    The upcoming birthdays of team members with complete
-                    birthdate information are displayed.
-                    <TooltipArrow className="fill-blue/80" />
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="ml-2 p-1 text-blue/80">
+                    <InfoCircle />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  align="center"
+                  className="bg-blue/80 text-white p-2 rounded-md text-sm"
+                >
+                  The upcoming birthdays of team members, with complete
+                  birthdate information, are displayed.
+                  <TooltipArrow className="fill-blue/80" />
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
-          <div className="flex flex-col overflow-y-auto max-h-[85%] gap-1">
+          <div className="flex flex-col overflow-y-auto max-h-[85%] w-full gap-1 ">
             {membersWithBirthdate.length === 0 ? (
-              <p className="text-dark-grey">
-                The members of your team don't have their full birthdate
-                information
-              </p>
+              <>
+                <p className="text-dark-grey">
+                  The members of your team don't have their full birthdate
+                  information
+                </p>
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    variant="secondary"
+                    body="Add Team Member"
+                    size="small"
+                    icon={<AddIcon />}
+                    className="p-3 rounded-md gap-2"
+                    onClick={handleAddMemberClick}
+                  />
+                  <Button
+                    variant="secondary"
+                    body="Load Team Members"
+                    size="small"
+                    icon={<UploadIcon />}
+                    className="p-3 rounded-md gap-2"
+                    onClick={handleLoadMembersClick}
+                  />
+                </div>
+              </>
             ) : upcomingBirthdays.length === 0 ? (
               <p className="text-dark-grey">
                 There are no upcoming birthdays for your members.
               </p>
             ) : (
-              upcomingBirthdays.map((member) => (
-                <div key={member._id} className="flex justify-between">
-                  <span>{member.fullName}</span>
-                  <span>{formatBirthDate(member.birthDate)}</span>
-                </div>
-              ))
+              <BirthdayTable members={upcomingBirthdays} />
             )}
           </div>
         </div>

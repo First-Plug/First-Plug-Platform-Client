@@ -2,12 +2,12 @@
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
 import {
+  Button,
   CustomLink,
   EmptyDashboardCard,
   NotificationIcon,
   PageLayout,
   ShopIcon,
-  Gift,
 } from "@/common";
 import { Card, StockCard, TeamHomeCard } from "@/components";
 import { useEffect } from "react";
@@ -17,6 +17,7 @@ export default observer(function Dashboard() {
   const {
     members: { members },
     products: { tableProducts },
+    alerts: { setAlert },
   } = useStore();
   const { fetchStock, fetchMembers } = useFetch();
 
@@ -25,19 +26,22 @@ export default observer(function Dashboard() {
     fetchMembers();
   }, [fetchStock]);
 
+  const handleBirthdayGiftClick = () => {
+    setAlert("birthdayGiftAlert");
+  };
+
   return (
     <PageLayout>
       <div className="flex flex-col gap-4 w-full h-full max-h-full  ">
-        <section className="grid grid-cols-2 gap-4  max-h-1/2 h-1/2  ">
+        <section className="grid grid-cols-2 gap-4  max-h-1/2 h-1/2 w-full ">
           {tableProducts.length ? (
             <Card
               Title="My Assets"
               titleButton="Shop Now"
-              icon={
-                <CustomLink href="/shop" className="flex items-center gap-2">
-                  <ShopIcon />
-                </CustomLink>
-              }
+              icon={<ShopIcon />}
+              onClick={() => {
+                window.location.href = "/shop";
+              }}
             >
               <StockCard products={tableProducts} />
             </Card>
@@ -48,12 +52,11 @@ export default observer(function Dashboard() {
             <>
               <Card
                 Title="My Team"
-                titleButton="Gift Shop"
-                icon={
-                  <CustomLink href="/shop" className="flex items-center gap-2">
-                    <Gift />
-                  </CustomLink>
-                }
+                titleButton="Birthday Gift"
+                icon={<ShopIcon />}
+                onClick={() => {
+                  handleBirthdayGiftClick();
+                }}
               >
                 <TeamHomeCard />
               </Card>
