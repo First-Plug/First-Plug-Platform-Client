@@ -10,6 +10,7 @@ import { setAuthInterceptor } from "@/config/axios.config";
 import { Memberservices } from "@/services";
 import { Skeleton } from "../ui/skeleton";
 import QuantityCounter from "./QuantityCounter";
+import RecoverableSwitch from "./RecoverableSwitch";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -21,6 +22,10 @@ interface CategoryFormProps {
   quantity: number;
   setQuantity: (value: number) => void;
   model: string;
+  formValues: any;
+  setFormValues: React.Dispatch<React.SetStateAction<any>>;
+  manualChange: boolean;
+  setManualChange?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = function ({
@@ -33,6 +38,10 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   quantity,
   setQuantity,
   model,
+  formValues,
+  setFormValues,
+  manualChange,
+  setManualChange,
 }) {
   const { members } = useStore();
   const {
@@ -52,6 +61,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 
   const selectedModel = watch("model");
   const [showNameInput, setShowNameInput] = useState(false);
+  const [isRecoverable, setIsRecoverable] = useState(false);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -64,7 +74,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             members.setMembers(fetchedMembers);
           }
 
-          if (isUpdate) {
+          if (isUpdate && !manualChange) {
             const assignedMember = formState.assignedMember as string;
             const assignedEmail = formState.assignedEmail as string;
 
@@ -190,6 +200,11 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       setValue("name", watch("name") || "");
     }
   }, [selectedModel, setValue, watch]);
+
+  const handleRecoverableChange = (value: boolean) => {
+    setIsRecoverable(value);
+    setValue("recoverable", value);
+  };
 
   if (loading) {
     return (
@@ -319,6 +334,17 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               className="w-full"
               disabled={quantity > 1 && !isUpdate}
             />
+            <div className="mt-4 ml-2">
+              <RecoverableSwitch
+                selectedCategory={selectedCategory}
+                onRecoverableChange={handleRecoverableChange}
+                isUpdate={isUpdate}
+                formValues={formValues}
+                setFormValues={setFormValues}
+                setManualChange={setManualChange}
+                manualChange={manualChange}
+              />
+            </div>
           </div>
           {selectedModel === "Other" ||
           (isUpdate && watch("name") && selectedModel === "Other") ? (
@@ -370,8 +396,18 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   setQuantity={setQuantity}
                 />
               </div>
+              <div>
+                <RecoverableSwitch
+                  selectedCategory={selectedCategory}
+                  onRecoverableChange={handleRecoverableChange}
+                  formValues={formValues}
+                  setFormValues={setFormValues}
+                  setManualChange={setManualChange}
+                  manualChange={manualChange}
+                />
+              </div>
 
-              {selectedModel === "Other" && (
+              {selectedModel === "Other" ? (
                 <div className="flex-1 ml-4">
                   <InputProductForm
                     placeholder="Product Name"
@@ -389,6 +425,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                     )}
                   </div>
                 </div>
+              ) : (
+                <div className="flex-1 ml-4" />
               )}
             </div>
           </div>

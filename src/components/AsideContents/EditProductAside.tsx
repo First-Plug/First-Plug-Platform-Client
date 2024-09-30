@@ -14,9 +14,13 @@ export var EditProductAside = observer(() => {
 
   useEffect(() => {
     if (productToEdit) {
-      ProductServices.getProductById(productToEdit).then((res) => {
-        setProduct(res);
-      });
+      ProductServices.getProductById(productToEdit)
+        .then((res) => {
+          setProduct(res);
+        })
+        .catch((error) => {
+          console.error("Error fetching product:", error);
+        });
     }
   }, [productToEdit]);
 

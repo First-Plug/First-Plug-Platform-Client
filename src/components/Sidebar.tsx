@@ -88,7 +88,7 @@ export const Sidebar = function () {
         <SidebarLink
           isSmall={isSidebarSmall}
           icon={<ComputerIcon />}
-          title="My Stock"
+          title="My Assets"
           href="/home/my-stock"
           isActive={pathArray.includes("my-stock")}
         />

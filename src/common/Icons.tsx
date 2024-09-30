@@ -20,6 +20,28 @@ export function HeadsetIcon() {
   );
 }
 
+export function InfoCircle() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      className="w-6 h-6 text-blue-600 fill-current"
+    >
+      {/* Círculo exterior */}
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="2"
+        fill="none"
+      />
+      <rect x="11" y="10" width="2" height="6" fill="currentColor" />
+      <rect x="11" y="7" width="2" height="2" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function Mouse() {
   return (
     <Image

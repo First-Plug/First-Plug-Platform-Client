@@ -50,7 +50,16 @@ const DynamicForm = ({
     setAttributes(updatedAttributes);
     handleAttributesChange(updatedAttributes);
 
-    setValue(fieldKey, value);
+    if (isUpdate) {
+      setValue(
+        `attributes.${attributes.findIndex(
+          (attr) => attr.key === fieldKey
+        )}.value`,
+        value
+      );
+    } else {
+      setValue(fieldKey, value);
+    }
     clearErrors(fieldKey);
     setCustomErrors((prev) => ({ ...prev, [fieldKey]: undefined }));
   };
