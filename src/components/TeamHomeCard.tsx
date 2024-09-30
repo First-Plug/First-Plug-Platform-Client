@@ -71,10 +71,10 @@ export const TeamHomeCard = observer(function () {
             </TooltipProvider>
           </div>
 
-          <div className="flex flex-col overflow-y-auto max-h-[85%] w-full gap-1 ">
+          <div className="flex flex-col overflow-y-auto max-h-[85%] w-full gap-1">
             {membersWithBirthdate.length === 0 ? (
-              <>
-                <p className="text-dark-grey">
+              <div className="flex flex-col items-center justify-center h-full">
+                <p className="text-dark-grey text-center mt-6">
                   The members of your team don't have their full birthdate
                   information
                 </p>
@@ -96,11 +96,13 @@ export const TeamHomeCard = observer(function () {
                     onClick={handleLoadMembersClick}
                   />
                 </div>
-              </>
+              </div>
             ) : upcomingBirthdays.length === 0 ? (
-              <p className="text-dark-grey">
-                There are no upcoming birthdays for your members.
-              </p>
+              <div className="flex items-center justify-center h-full">
+                <p className="text-dark-grey text-center mt-6">
+                  There are no upcoming birthdays for your members.
+                </p>
+              </div>
             ) : (
               <BirthdayTable members={upcomingBirthdays} />
             )}
