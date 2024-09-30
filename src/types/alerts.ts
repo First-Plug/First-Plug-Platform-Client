@@ -30,5 +30,9 @@ export const ALERTS_TYPES = [
   "bulkCreateProductSuccess",
   "bulkCreateProductError",
   "bulkCreateSerialNumberError",
+  "recoverableConfigUpdated",
+  "dataUpdatedSuccessfully",
+  "noProductsToRecover",
+  "memberMissingFields",
 ] as const;
 export type AlertType = (typeof ALERTS_TYPES)[number];

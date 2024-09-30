@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { RootTable } from "../RootTable";
 import {
   LOCATION,
@@ -167,6 +167,7 @@ export default function ProdcutsDetailsTable({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [selectedFilterOptions, setSelectedFilterOptions] = useState({});
   const [key, setKey] = useState(0);
+  const subTableContainerRef = useRef<HTMLDivElement | null>(null);
 
   const resetFilters = () => {
     setColumnFilters([]);
@@ -190,18 +191,41 @@ export default function ProdcutsDetailsTable({
     (product) => product.status !== "Deprecated"
   );
 
+  useEffect(() => {
+    const handleScroll = () => {
+      console.log("Scroll detected in sub-table");
+      setColumnFilters([]);
+    };
+
+    const tableContainer = subTableContainerRef.current;
+    if (tableContainer) {
+      tableContainer.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      if (tableContainer) {
+        tableContainer.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
+
   return (
-    <RootTable
-      key={key}
-      tableType="subRow"
-      data={fiteredProducts}
-      columns={InternalProductsColumns}
-      columnFilters={columnFilters}
-      onColumnFiltersChange={(newFilters) => {
-        console.log("Updating column filters in subtable", newFilters);
-        setColumnFilters(newFilters);
-      }}
-      onClearFilters={onClearFilters}
-    />
+    <div
+      id="subTableContainer"
+      ref={subTableContainerRef}
+      className="overflow-y-auto"
+    >
+      <RootTable
+        key={key}
+        tableType="subRow"
+        data={fiteredProducts}
+        columns={InternalProductsColumns}
+        columnFilters={columnFilters}
+        onColumnFiltersChange={(newFilters) => {
+          setColumnFilters(newFilters);
+        }}
+        onClearFilters={onClearFilters}
+      />
+    </div>
   );
 }

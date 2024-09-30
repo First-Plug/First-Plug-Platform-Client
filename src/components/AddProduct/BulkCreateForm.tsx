@@ -14,7 +14,6 @@ import { AttributeModel, ProductModel, TeamMemberModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
-import { set } from "zod";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -255,6 +254,7 @@ const BulkCreateForm: React.FC<{
         assignedEmail: productData.assignedEmail,
         location: productData.location,
         serialNumber: productData.serialNumber,
+        recoverable: productData.recoverable,
         status,
         attributes: productData.attributes,
       };

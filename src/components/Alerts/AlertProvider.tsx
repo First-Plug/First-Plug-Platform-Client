@@ -28,6 +28,22 @@ export default observer(function AlertProvider() {
   const { fetchMembers, fetchStock } = useFetch();
 
   const Config: Record<AlertType, IConfig> = {
+    memberMissingFields: {
+      title: "Error",
+      type: "error",
+      description: "No products to recover.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    noProductsToRecover: {
+      title: "Error",
+      type: "error",
+      description: "No products to recover.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     ErorPasswordChange: {
       title: "Error",
       type: "error",
@@ -56,6 +72,22 @@ export default observer(function AlertProvider() {
       title: "Success",
       type: "succes",
       description: " User has been successfully updated.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    recoverableConfigUpdated: {
+      title: "Success",
+      type: "succes",
+      description: "Recoverable configuration has been successfully updated.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    dataUpdatedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: " Data has been successfully updated.",
       closeAction: () => {
         setAlert(undefined);
       },
@@ -314,7 +346,7 @@ export default observer(function AlertProvider() {
                 <XIcon />
               </div>
             )}
-            <h2 className="font-semibold text-black text-2xl">{title}</h2>
+            <span className="font-semibold text-black text-2xl">{title}</span>
           </Dialog.Title>
           <Dialog.Description className="text-lg text-center my-2 ">
             {description}

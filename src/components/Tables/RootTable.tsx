@@ -199,46 +199,46 @@ export function RootTable<TData, TValue>({
       return;
     }
 
-    const filteredOptions = table
-      .getFilteredRowModel()
-      .rows.map((row) => {
-        const value = row.getValue(headerId);
+    const originalData = table.getCoreRowModel().rows.map((row) => {
+      const value = row.getValue(headerId);
+      const member = row.original as TeamMember;
 
-        const member = row.original as TeamMember;
-
-        if (headerId === "birthDate" || headerId === "startDate") {
-          if (typeof value === "string" || typeof value === "number") {
-            const dateValue = new Date(value);
-            if (!isNaN(dateValue.getTime())) {
-              return dateValue.toLocaleString("en-US", { month: "long" });
-            }
+      if (headerId === "birthDate" || headerId === "startDate") {
+        if (typeof value === "string" || typeof value === "number") {
+          const dateValue = new Date(value);
+          if (!isNaN(dateValue.getTime())) {
+            return dateValue.toLocaleString("en-US", { month: "long" });
           }
-          return "No Data";
         }
+        return "No Data";
+      }
 
-        if (headerId === "teamId") {
-          if (
-            typeof member.team === "object" &&
-            member.team !== null &&
-            "name" in member.team
-          ) {
-            return member.team.name;
-          }
-          return "Not Assigned";
+      if (headerId === "teamId") {
+        if (
+          typeof member.team === "object" &&
+          member.team !== null &&
+          "name" in member.team
+        ) {
+          return member.team.name;
         }
+        return "Not Assigned";
+      }
 
-        if (headerId === "position") {
-          return value ? String(value) : "No Data";
-        }
-
-        if (headerId === "products") {
-          const productCount = (member.products || []).length;
-          return productCount.toString();
-        }
-
+      if (headerId === "position") {
         return value ? String(value) : "No Data";
-      })
-      .filter((value, index, self) => self.indexOf(value) === index);
+      }
+
+      if (headerId === "products") {
+        const productCount = (member.products || []).length;
+        return productCount.toString();
+      }
+
+      return value ? String(value) : "No Data";
+    });
+
+    const filteredOptions = originalData.filter(
+      (value, index, self) => self.indexOf(value) === index
+    );
 
     const sortedOptions = filteredOptions.sort((a, b) => {
       if (headerId === "birthDate" || headerId === "startDate") {
@@ -279,7 +279,7 @@ export function RootTable<TData, TValue>({
     }
 
     const filteredOptions = table
-      .getFilteredRowModel()
+      .getCoreRowModel()
       .rows.map((row) => {
         const product = getSnapshot(row.original) as ProductTable;
 
@@ -333,15 +333,15 @@ export function RootTable<TData, TValue>({
         }
 
         if (headerId === "currentlyWith") {
-          return product.products[0].assignedMember || "No Data";
+          return product.products[0]?.assignedMember || "No Data";
         }
 
         if (headerId === "status") {
-          return product.products[0].status || "No Data";
+          return product.products[0]?.status || "No Data";
         }
 
         if (headerId === "location") {
-          return product.products[0].location || "No Data";
+          return product.products[0]?.location || "No Data";
         }
 
         return value ? String(value) : "No Data";
@@ -377,6 +377,7 @@ export function RootTable<TData, TValue>({
     if (sortedOptions.length === 0) {
       sortedOptions.push("No Data");
     }
+
     setFilterOptions(sortedOptions);
     setFilterMenuOpen(headerId);
   };
@@ -401,6 +402,21 @@ export function RootTable<TData, TValue>({
       }
     }
   }, [filterMenuOpen, refs, update]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (filterMenuOpen) {
+        setFilterMenuOpen(null);
+      }
+    };
+
+    const containerRef = tableContainerRef.current;
+    containerRef?.addEventListener("scroll", handleScroll);
+
+    return () => {
+      containerRef?.removeEventListener("scroll", handleScroll);
+    };
+  }, [filterMenuOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -464,7 +480,7 @@ export function RootTable<TData, TValue>({
                   <TableHead
                     key={header.id}
                     style={{ width: `${header.getSize()}px` }}
-                    className="py-3 px-4 border-r text-start text-black font-semibold"
+                    className="py-3 px-4 border-r text-start text-black font-semibold "
                   >
                     <div className="flex w-full justify-between items-center">
                       <div>
@@ -495,6 +511,7 @@ export function RootTable<TData, TValue>({
                                   : handleFilterIconClickStock(header.id)
                               }
                             />
+
                             {filterMenuOpen === header.id && (
                               <div
                                 className="fixed z-50"

@@ -45,6 +45,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   isUpdate = false,
 }) => {
   const {
+    user: { user },
     aside: { setAside },
     alerts: { setAlert },
   } = useStore();
@@ -78,6 +79,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
     initialData
   );
   const [isProcessing, setIsProcessing] = useState(false);
+  const [formValues, setFormValues] = useState({
+    recoverable: initialData?.recoverable || false,
+  });
+  const [manualChange, setManualChange] = useState(false);
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -85,10 +90,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
         methods.reset(emptyProduct);
         setSelectedCategory(category);
         setValue("category", category || undefined);
-        setValue("recoverable", category !== "Merchandising");
+        setManualChange(false);
+
+        if (user?.isRecoverableConfig && category) {
+          const isRecoverable = user.isRecoverableConfig.get(category) || false;
+          setValue("recoverable", isRecoverable);
+          setFormValues((prev) => ({ ...prev, recoverable: isRecoverable }));
+        } else {
+          setValue("recoverable", category !== "Merchandising");
+        }
       }
     },
-    [isUpdate, setValue, methods]
+    [isUpdate, setValue, methods, user?.isRecoverableConfig, setFormValues]
   );
 
   const validateCategory = async () => {
@@ -150,14 +163,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setErrorMessage("");
 
     const isProductNameValid = await validateProductName();
-
     if (!isProductNameValid) return;
 
     const finalAssignedEmail = watch("assignedEmail");
+    const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
 
     const formatData: Product = {
       ...emptyProduct,
       ...data,
+      recoverable: currentRecoverable,
       status:
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
@@ -302,9 +316,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     const data = methods.getValues();
     const finalAssignedEmail = watch("assignedEmail");
+
     const formattedData: Product = {
       ...emptyProduct,
       ...data,
+      recoverable: data.recoverable,
       status:
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
@@ -428,6 +444,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         quantity={quantity}
                         setQuantity={setQuantity}
                         model={modelValue}
+                        formValues={formValues}
+                        setFormValues={setFormValues}
+                        setManualChange={setManualChange}
+                        manualChange={manualChange}
                       />
                     </div>
                   </section>

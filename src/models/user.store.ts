@@ -9,4 +9,11 @@ export const UserStore = types
     setUser(user: LoggedInUser) {
       store.user = user;
     },
+    setUserRecoverable(user: LoggedInUser) {
+      if (store.user) {
+        if (user.isRecoverableConfig) {
+          store.user.isRecoverableConfig.replace(user.isRecoverableConfig);
+        }
+      }
+    },
   }));
