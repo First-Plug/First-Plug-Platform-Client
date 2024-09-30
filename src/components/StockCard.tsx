@@ -47,8 +47,8 @@ export const StockCard = observer(function ({ products }: StockCardProps) {
   const assignedCount = categoryProducts.length - availableCount;
 
   return (
-    <div className="flex p-4 gap-4 justify-between w-full h-full">
-      <div className="flex flex-col justify-start items-start w-1/4 h-full overflow-y-auto">
+    <div className="flex p-2 gap-4 justify-between w-full h-full">
+      <div className="flex flex-col justify-start items-start w-2/5 h-full">
         {CATEGORIES.map((category) => {
           const isSelected = selectedCategory === category;
           return (
@@ -74,7 +74,7 @@ export const StockCard = observer(function ({ products }: StockCardProps) {
         })}
       </div>
 
-      <div className="w-3/4 h-full flex items-center justify-center">
+      <div className="w-3/5 h-full flex items-center justify-center ">
         {categoryProducts.length > 0 ? (
           <DoughnutChart
             data={{ stock: availableCount, quantity: assignedCount }}

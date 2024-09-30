@@ -97,7 +97,7 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
         )}
       </div>
       <div className="flex flex-col items-center justify-center  w-full h-full">
-        <div className="w-52 h-52 relative">
+        <div className="w-44 h-44 relative">
           <Image src={image} alt={paragraph} fill />
         </div>
         <p className="text-dark-grey">{paragraph}</p>
