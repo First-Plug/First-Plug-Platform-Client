@@ -199,12 +199,12 @@ export const MemberAsideDetails = observer(function ({
           </div>
           <aside className=" absolute  bg-white  py-2    bottom-0   left-0 w-full border-t ">
             <div className="flex    w-5/6 mx-auto gap-2 justify-end">
-              {/* <Button
+              <Button
                 body={"Request Offboarding"}
                 variant={"secondary"}
                 onClick={() => handleRequestOffBoarding()}
                 className="px-6 w-1/4"
-              /> */}
+              />
               <Button
                 body={"Return"}
                 variant={"secondary"}
