@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, DoughnutChart } from "@/common";
 import {
   HeadSet,
@@ -49,20 +49,29 @@ export const StockCard = observer(function ({ products }: StockCardProps) {
   return (
     <div className="flex p-4 gap-4 justify-between w-full h-full">
       <div className="flex flex-col justify-start items-start w-1/4 h-full overflow-y-auto">
-        {CATEGORIES.map((category) => (
-          <Button
-            key={category}
-            body={category}
-            variant="text"
-            icon={React.createElement(
-              categoryToIconMap[category.toLowerCase()] || Other
-            )}
-            className={`p-2 text-sm rounded-md ${
-              selectedCategory === category ? "bg-lightGrey text-black" : ""
-            }`}
-            onClick={() => setSelectedCategory(category)}
-          />
-        ))}
+        {CATEGORIES.map((category) => {
+          const isSelected = selectedCategory === category;
+          return (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`p-2 text-md font-semibold rounded-md flex items-center gap-2 ${
+                isSelected ? "bg-hoverBlue text-blue/80" : "bg-white text-black"
+              } hover:bg-hoverBlue `}
+            >
+              <span
+                className={`${
+                  isSelected ? "text-black" : "text-black"
+                } flex items-center`}
+              >
+                {React.createElement(
+                  categoryToIconMap[category.toLowerCase()] || Other
+                )}
+              </span>
+              {category}
+            </button>
+          );
+        })}
       </div>
 
       <div className="w-3/4 h-full flex items-center justify-center">
