@@ -100,7 +100,7 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
         <div className="w-44 h-44 relative">
           <Image src={image} alt={paragraph} fill />
         </div>
-        <p className="text-dark-grey">{paragraph}</p>
+        <p className="text-dark-grey text-sm">{paragraph}</p>
       </div>
       <div className="flex gap-2 ">
         {additionalButtonIcon && (

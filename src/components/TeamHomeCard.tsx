@@ -61,7 +61,7 @@ export const TeamHomeCard = observer(function () {
           <div className="flex flex-col overflow-y-auto max-h-[85%] w-full gap-1">
             {membersWithBirthdate.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
-                <p className="text-dark-grey text-center mt-6">
+                <p className="text-dark-grey text-sm text-center mt-6">
                   No birthdates have been completed for any team members
                 </p>
                 <div className="flex gap-2 mt-4">
@@ -84,8 +84,8 @@ export const TeamHomeCard = observer(function () {
                 </div>
               </div>
             ) : upcomingBirthdays.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full w-full">
-                <p className="text-dark-grey text-center mt-6 mb-10">
+              <div className="flex flex-col items-center justify-center h-full w-full mb-2 overflow-hidden">
+                <p className="text-dark-grey text-sm text-center mt-6 mb-6">
                   There are no upcoming birthdays for members with a completed
                   birthdate.
                 </p>
