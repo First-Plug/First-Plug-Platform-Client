@@ -1,5 +1,5 @@
 "use client";
-import { AddIcon, InfoCircle, UploadIcon } from "@/common/Icons";
+import { AddIcon, Cake, InfoCircle, UploadIcon } from "@/common/Icons";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
 import { BirthdayTable } from "./Tables/BirthdayTable";
@@ -84,11 +84,12 @@ export const TeamHomeCard = observer(function () {
                 </div>
               </div>
             ) : upcomingBirthdays.length === 0 ? (
-              <div className="flex items-center justify-center h-full w-full">
-                <p className="text-dark-grey text-center mt-6">
+              <div className="flex flex-col items-center justify-center h-full w-full">
+                <p className="text-dark-grey text-center mt-6 mb-10">
                   There are no upcoming birthdays for members with a completed
                   birthdate.
                 </p>
+                <Cake />
               </div>
             ) : (
               <BirthdayTable members={upcomingBirthdays} />
