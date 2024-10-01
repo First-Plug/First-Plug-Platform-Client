@@ -75,7 +75,7 @@ export const TeamHomeCard = observer(function () {
             {membersWithBirthdate.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
                 <p className="text-dark-grey text-center mt-6">
-                  The members of your team don't have their full birthdate
+                  The members of your team don&apos;t have their full birthdate
                   information
                 </p>
                 <div className="flex gap-2 mt-4">
