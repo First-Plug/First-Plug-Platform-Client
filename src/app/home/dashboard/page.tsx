@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
 import {
   EmptyDashboardCard,
+  InfoCircle,
   NotificationIcon,
   PageLayout,
   ShopIcon,
@@ -40,8 +41,8 @@ export default observer(function Dashboard() {
 
   return (
     <PageLayout>
-      <div className="flex flex-col gap-4 w-full h-full max-h-full  ">
-        <section className="grid grid-cols-2 gap-4  max-h-1/2 h-1/2 w-full ">
+      <div className="flex flex-col gap-4 w-full h-full  ">
+        <section className="grid grid-cols-2 gap-4 h-full w-full ">
           {tableProducts.length ? (
             <Card
               Title="My Assets"
@@ -59,8 +60,8 @@ export default observer(function Dashboard() {
           {members.length ? (
             <>
               <Card
-                Title="My Team"
-                titleButton="Birthday Gift"
+                Title="Upcoming Birthdays"
+                titleButton="Birthday Gifts"
                 icon={<ShopIcon />}
                 onClick={() => {
                   handleBirthdayGiftClick();

@@ -47,15 +47,15 @@ export const StockCard = observer(function ({ products }: StockCardProps) {
   const assignedCount = categoryProducts.length - availableCount;
 
   return (
-    <div className="flex p-2 gap-4 justify-between w-full h-full">
-      <div className="flex flex-col justify-start items-start w-2/5 h-full">
+    <div className="flex p-2 gap-4 justify-between w-full h-full  overflow-hidden ">
+      <div className="flex flex-col justify-start items-start flex-1 min-w-[200px] h-full pr-16">
         {CATEGORIES.map((category) => {
           const isSelected = selectedCategory === category;
           return (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`p-2 text-md font-semibold rounded-md flex items-center gap-2 ${
+              className={`p-2 text-sm font-semibold rounded-md flex items-center gap-2 ${
                 isSelected ? "bg-hoverBlue text-blue/80" : "bg-white text-black"
               } hover:bg-hoverBlue `}
             >
@@ -74,7 +74,7 @@ export const StockCard = observer(function ({ products }: StockCardProps) {
         })}
       </div>
 
-      <div className="w-3/5 h-full flex items-center justify-center ">
+      <div className="flex-grow h-full w-full flex items-center justify-center gap-6 ">
         {categoryProducts.length > 0 ? (
           <DoughnutChart
             data={{ stock: availableCount, quantity: assignedCount }}

@@ -30,7 +30,6 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
   };
 
   const options: ChartOptions<"doughnut"> = {
-    // maintainAspectRatio: false,
     plugins: {
       tooltip: {
         callbacks: {
@@ -43,8 +42,8 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
   };
 
   return (
-    <figure className="relative mx-auto flex flex-col items-center w-full h-full max-h-full">
-      <div className="absolute w-[60%] h-[60%] flex flex-col gap-4">
+    <figure className=" mx-auto flex flex-col items-center w-full h-full  overflow-hidden mt-6   ">
+      <div className=" w-[50%] h-[50%] flex flex-col gap-4 ">
         <div className="relative cursor-pointer">
           <Doughnut data={info} options={options} className="object-contain" />
           <div className="absolute inset-0 flex items-center justify-center">
@@ -54,27 +53,28 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
             </div>
           </div>
         </div>
-        <figcaption className="flex gap-2 w-full justify-center items-center">
-          <div className="flex gap-1 items-center">
-            <div
-              className="h-[1rem] w-[1rem]  rounded-sm"
-              style={{ backgroundColor: assignedColor }}
-            ></div>
-            <p className="text-md">
-              Assigned | <b>{quantity}</b>
-            </p>
-          </div>
-          <div className="flex gap-1 items-center">
-            <div
-              className="h-[1rem] w-[1rem] rounded-sm"
-              style={{ backgroundColor: availableColor }}
-            ></div>
-            <p className="text-md">
-              Available | <b>{stock}</b>
-            </p>
-          </div>
-        </figcaption>
       </div>
+
+      <figcaption className="flex gap-4 w-full justify-center mt-14 items-center">
+        <div className="flex gap-1 items-center">
+          <div
+            className="h-[1rem] w-[1rem]  rounded-sm"
+            style={{ backgroundColor: assignedColor }}
+          ></div>
+          <p className="text-sm font-semibold">
+            Assigned | <b>{quantity}</b>
+          </p>
+        </div>
+        <div className="flex gap-1 items-center">
+          <div
+            className="h-[1rem] w-[1rem] rounded-sm"
+            style={{ backgroundColor: availableColor }}
+          ></div>
+          <p className="text-sm font-semibold">
+            Available | <b>{stock}</b>
+          </p>
+        </div>
+      </figcaption>
     </figure>
   );
 }

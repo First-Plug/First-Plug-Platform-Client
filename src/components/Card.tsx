@@ -1,7 +1,14 @@
 "use client";
 import React, { MouseEvent, ReactNode } from "react";
-import { Button } from "@/common";
+import { Button, InfoCircle } from "@/common";
 import Image from "next/image";
+import {
+  Tooltip,
+  TooltipArrow,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@radix-ui/react-tooltip";
 
 interface CardProps {
   children?: ReactNode;
@@ -35,6 +42,27 @@ export const Card = function ({
           <header className="  flex justify-between  items-center h-full  text-white   ">
             <h2 className="text-[20px]  text-black font-montserrat font-bold flex-1 md:text-sm lg:text-xl">
               {Title}
+              {Title === "Upcoming Birthdays" && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="ml-4 p-1 text-blue/80">
+                        <InfoCircle />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="bottom"
+                      align="center"
+                      className="bg-blue/80 text-white p-2 rounded-md text-sm z-50"
+                    >
+                      Only the birthdays of team members with complete
+                      information and a birthday within the next 30 days are
+                      displayed.
+                      <TooltipArrow className="fill-blue/80" />
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </h2>
             {titleButton && (
               <Button
