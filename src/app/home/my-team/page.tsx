@@ -18,43 +18,33 @@ export default observer(function MyTeam() {
   const timerRef = useRef(false);
 
   useEffect(() => {
-    if (console.timeLog) {
+    const fetchData = async () => {
+      if (!timerRef.current) {
+        console.time("Total time to fetch members and teams");
+        timerRef.current = true;
+      }
+
       try {
-        console.timeLog("Total time to fetch members and teams");
-      } catch {
-        // nada
+        await fetchMembersAndTeams();
+      } catch (error) {
+        console.error("Failed to fetch members and teams:", error);
+      } finally {
+        if (timerRef.current) {
+          console.timeEnd("Total time to fetch members and teams");
+          timerRef.current = null;
+        }
+        setLoading(false);
       }
-    }
+    };
 
-    if (!timerRef.current) {
-      console.time("Total time to fetch members and teams");
-      timerRef.current = true;
-    }
-
-    if (sessionStorage.getItem("accessToken")) {
+    if (
+      sessionStorage.getItem("accessToken") &&
+      !fetchingMembers &&
+      !members.length
+    ) {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
-
-      if (!members.length && !fetchingMembers) {
-        fetchMembersAndTeams()
-          .then(() => {
-            if (timerRef.current) {
-              console.timeEnd("Total time to fetch members and teams");
-              timerRef.current = false;
-            }
-          })
-          .catch((error) => {
-            console.error("Failed to fetch members and teams:", error);
-          })
-          .finally(() => {
-            if (timerRef.current) {
-              console.timeEnd("Total time to fetch members and teams");
-              timerRef.current = false;
-            }
-          });
-      }
+      fetchData();
     }
-
-    setLoading(false);
   }, [members, fetchingMembers]);
 
   return (
