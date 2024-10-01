@@ -3,10 +3,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { BirthdayRoot } from "./BirthdayRoot";
 import { TeamMember } from "@/types";
 
-const formatBirthDate = (birthDateString: string): string => {
-  const birthDate = new Date(birthDateString);
-  const day = birthDate.getDate().toString().padStart(2, "0");
-  const month = (birthDate.getMonth() + 1).toString().padStart(2, "0");
+const formatBirthDate = (dateString) => {
+  const [year, month, day] = dateString.split("-");
   return `${day}/${month}`;
 };
 
