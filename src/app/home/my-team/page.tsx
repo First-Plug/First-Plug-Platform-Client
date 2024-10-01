@@ -14,7 +14,7 @@ export default observer(function MyTeam() {
   const {
     members: { members, fetchingMembers },
   } = useStore();
-  const { fetchMembers } = useFetch();
+  const { fetchMembers, fetchMembersAndTeams } = useFetch();
   const timerRef = useRef(false);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default observer(function MyTeam() {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
 
       if (!members.length && !fetchingMembers) {
-        fetchMembers().then(() => {
+        fetchMembersAndTeams().then(() => {
           if (timerRef.current) {
             console.timeEnd("Total time to fetch members and teams");
             timerRef.current = false;

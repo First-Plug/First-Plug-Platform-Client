@@ -9,6 +9,32 @@ export default function useFetch() {
     teams: { setTeams },
   } = useStore();
 
+  const fetchMembersAndTeams = async (skipLoader?: boolean) => {
+    if (!skipLoader) {
+      setFetchMembers(true);
+    }
+    try {
+      console.time("Total time to fetch members and teams");
+      const [membersResponse, teamsResponse] = await Promise.all([
+        Memberservices.getAllMembers(),
+        TeamServices.getAllTeams(),
+      ]);
+      setTeams(teamsResponse);
+      const transformedMembers = transformData(membersResponse, teamsResponse);
+      setMembers(transformedMembers);
+      console.timeEnd("Total time to fetch members and teams");
+    } catch (error) {
+      if (error.response?.data?.message === "Unauthorized") {
+        sessionStorage.clear();
+        localStorage.removeItem("token");
+        signOut({ callbackUrl: "http://localhost:3000/login" });
+      }
+      console.error("Error fetching members and teams:", error);
+    } finally {
+      setFetchMembers(false);
+    }
+  };
+
   const fetchMembers = async (skipLoader?: boolean) => {
     if (!skipLoader) {
       setFetchMembers(true);
@@ -53,6 +79,11 @@ export default function useFetch() {
   };
 
   const fetchTeams = async () => {
+    const cachedTeams = sessionStorage.getItem("teams");
+    if (cachedTeams) {
+      setTeams(JSON.parse(cachedTeams));
+      return JSON.parse(cachedTeams);
+    }
     try {
       const response = await TeamServices.getAllTeams();
       setTeams(response);
@@ -65,5 +96,5 @@ export default function useFetch() {
       }
     }
   };
-  return { fetchMembers, fetchStock, fetchTeams };
+  return { fetchMembers, fetchStock, fetchTeams, fetchMembersAndTeams };
 }
