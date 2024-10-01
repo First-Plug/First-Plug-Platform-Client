@@ -9,9 +9,11 @@ import {
   ShopIcon,
 } from "@/common";
 import { Card, StockCard, TeamHomeCard } from "@/components";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useFetch from "@/hooks/useFetch";
 import { UserServices } from "@/services/user.services";
+import { BarLoader } from "@/components/Loader/BarLoader";
+import { setAuthInterceptor } from "@/config/axios.config";
 
 export default observer(function Dashboard() {
   const {
@@ -21,11 +23,20 @@ export default observer(function Dashboard() {
     user: { user },
   } = useStore();
   const { fetchStock, fetchMembers } = useFetch();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStock();
-    fetchMembers();
-  }, [fetchStock]);
+    if (sessionStorage.getItem("accessToken")) {
+      setAuthInterceptor(sessionStorage.getItem("accessToken"));
+      if (!members.length) {
+        fetchMembers();
+      }
+      if (!tableProducts.length) {
+        fetchStock();
+      }
+    }
+    setLoading(false);
+  }, [fetchStock, fetchMembers]);
 
   const handleBirthdayGiftClick = async () => {
     try {
@@ -38,6 +49,14 @@ export default observer(function Dashboard() {
       console.error("Failed to send Slack message:", error);
     }
   };
+
+  // if (loading) {
+  //   return (
+  //     <div>
+  //       <BarLoader />
+  //     </div>
+  //   );
+  // }
 
   return (
     <PageLayout>
