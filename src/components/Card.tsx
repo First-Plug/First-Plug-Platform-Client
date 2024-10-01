@@ -53,7 +53,7 @@ export const Card = function ({
                     <TooltipContent
                       side="bottom"
                       align="center"
-                      className="bg-blue/80 text-white p-2 rounded-md text-sm z-50"
+                      className="bg-blue/80 text-white p-2 rounded-md text-xs font-normal z-50"
                     >
                       Only the birthdays of team members with complete
                       information and a birthday within the next 30 days are
