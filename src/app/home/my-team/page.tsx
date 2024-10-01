@@ -15,7 +15,7 @@ export default observer(function MyTeam() {
     members: { members, fetchingMembers },
   } = useStore();
   const { fetchMembers, fetchMembersAndTeams } = useFetch();
-  const timerRef = useRef(false);
+  const timerRef = useRef<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,7 +31,7 @@ export default observer(function MyTeam() {
       } finally {
         if (timerRef.current) {
           console.timeEnd("Total time to fetch members and teams");
-          timerRef.current = null;
+          timerRef.current = false;
         }
         setLoading(false);
       }
