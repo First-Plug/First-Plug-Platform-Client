@@ -159,8 +159,6 @@ const membersColumns: (
         const options = new Set<string>();
         filteredMembers.forEach((member) => {
           if (typeof member.team === "object" && member.team !== null) {
-            // Añadir un console.log para depurar el valor del equipo
-            console.log("Team object:", member.team);
             const teamName = member.team?.name || "Not Assigned";
             options.add(teamName);
           } else {

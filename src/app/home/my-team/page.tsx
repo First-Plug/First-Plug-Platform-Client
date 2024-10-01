@@ -6,7 +6,7 @@ import EmptyTeam from "./EmptyTeam";
 import { observer } from "mobx-react-lite";
 import { BarLoader } from "@/components/Loader/BarLoader";
 import useFetch from "@/hooks/useFetch";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { setAuthInterceptor } from "@/config/axios.config";
 
 export default observer(function MyTeam() {
@@ -15,15 +15,29 @@ export default observer(function MyTeam() {
     members: { members, fetchingMembers },
   } = useStore();
   const { fetchMembers } = useFetch();
+  const timerRef = useRef(false);
+
   useEffect(() => {
+    if (!timerRef.current) {
+      console.time("Total time to fetch members and teams");
+      timerRef.current = true;
+    }
+
     if (sessionStorage.getItem("accessToken")) {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
-      if (!members.length) {
-        fetchMembers();
+
+      if (!members.length && !fetchingMembers) {
+        fetchMembers().then(() => {
+          if (timerRef.current) {
+            console.timeEnd("Total time to fetch members and teams");
+            timerRef.current = false;
+          }
+        });
       }
     }
+
     setLoading(false);
-  }, []);
+  }, [members, fetchingMembers]);
   return (
     <PageLayout>
       {!fetchingMembers && members?.length ? <DataTeam /> : null}

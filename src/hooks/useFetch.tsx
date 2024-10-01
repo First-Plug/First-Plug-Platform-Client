@@ -14,19 +14,24 @@ export default function useFetch() {
       setFetchMembers(true);
     }
     try {
+      console.log("Fetching members...");
+      const start = performance.now(); // Medir tiempo de inicio
       const membersResponse = await Memberservices.getAllMembers();
+      const end = performance.now(); // Medir tiempo de fin
+      console.log(`Members fetched in ${end - start} ms`);
+
+      console.log("Fetching teams...");
+      const teamsStart = performance.now(); // Medir tiempo de inicio
       const teamsResponse = await TeamServices.getAllTeams();
+      const teamsEnd = performance.now(); // Medir tiempo de fin
+      console.log(`Teams fetched in ${teamsEnd - teamsStart} ms`);
+
       setTeams(teamsResponse);
       const transformedMembers = transformData(membersResponse, teamsResponse);
       setMembers(transformedMembers);
 
       return transformedMembers;
     } catch (error) {
-      if (error.response.data.message === "Unauthorized") {
-        sessionStorage.clear();
-        localStorage.removeItem("token");
-        signOut({ callbackUrl: "http://localhost:3000/login" });
-      }
       console.error("Error fetching members:", error);
     } finally {
       setFetchMembers(false);
@@ -53,6 +58,11 @@ export default function useFetch() {
   };
 
   const fetchTeams = async () => {
+    const cachedTeams = sessionStorage.getItem("teams");
+    if (cachedTeams) {
+      setTeams(JSON.parse(cachedTeams));
+      return JSON.parse(cachedTeams);
+    }
     try {
       const response = await TeamServices.getAllTeams();
       setTeams(response);
