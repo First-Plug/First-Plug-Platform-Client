@@ -18,6 +18,14 @@ export default observer(function MyTeam() {
   const timerRef = useRef(false);
 
   useEffect(() => {
+    if (console.timeLog) {
+      try {
+        console.timeLog("Total time to fetch members and teams");
+      } catch {
+        // nada
+      }
+    }
+
     if (!timerRef.current) {
       console.time("Total time to fetch members and teams");
       timerRef.current = true;
@@ -36,6 +44,8 @@ export default observer(function MyTeam() {
           })
           .catch((error) => {
             console.error("Failed to fetch members and teams:", error);
+          })
+          .finally(() => {
             if (timerRef.current) {
               console.timeEnd("Total time to fetch members and teams");
               timerRef.current = false;
@@ -46,6 +56,7 @@ export default observer(function MyTeam() {
 
     setLoading(false);
   }, [members, fetchingMembers]);
+
   return (
     <PageLayout>
       {!fetchingMembers && members?.length ? <DataTeam /> : null}
