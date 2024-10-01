@@ -27,12 +27,20 @@ export default observer(function MyTeam() {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
 
       if (!members.length && !fetchingMembers) {
-        fetchMembersAndTeams().then(() => {
-          if (timerRef.current) {
-            console.timeEnd("Total time to fetch members and teams");
-            timerRef.current = false;
-          }
-        });
+        fetchMembersAndTeams()
+          .then(() => {
+            if (timerRef.current) {
+              console.timeEnd("Total time to fetch members and teams");
+              timerRef.current = false;
+            }
+          })
+          .catch((error) => {
+            console.error("Failed to fetch members and teams:", error);
+            if (timerRef.current) {
+              console.timeEnd("Total time to fetch members and teams");
+              timerRef.current = false;
+            }
+          });
       }
     }
 
