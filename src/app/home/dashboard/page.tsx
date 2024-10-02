@@ -11,8 +11,6 @@ import { Card, StockCard, TeamHomeCard } from "@/components";
 import { useEffect, useState } from "react";
 import useFetch from "@/hooks/useFetch";
 import { UserServices } from "@/services/user.services";
-import { GetServerSideProps } from "next";
-import { Memberservices, ProductServices } from "@/services";
 import { setAuthInterceptor } from "@/config/axios.config";
 
 export default observer(function Dashboard() {
@@ -36,7 +34,7 @@ export default observer(function Dashboard() {
       }
     }
     setLoading(false);
-  }, [fetchStock, fetchMembers]);
+  }, [fetchStock, fetchMembers, fetchMembersAndTeams, members.length, tableProducts.length]);
 
   const handleBirthdayGiftClick = async () => {
     try {
@@ -53,7 +51,7 @@ export default observer(function Dashboard() {
   return (
     <PageLayout>
       <div className="flex flex-col gap-4 w-full h-full  ">
-        <section className="grid grid-cols-2 gap-4 h-full w-full ">
+        <section className="grid grid-cols-2 gap-4 h-1/2 ">
           {tableProducts.length ? (
             <Card
               Title="My Assets"
@@ -68,6 +66,20 @@ export default observer(function Dashboard() {
           ) : (
             <EmptyDashboardCard type="stock" />
           )}
+          <Card Title="Computer Upgrade" className="h-full">
+            <section className="  h-full flex flex-col justify-center items-center">
+              <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
+                Coming Soon!
+                <NotificationIcon />
+              </h1>
+              <p className="font-inter text-md text-dark-grey mb-[1.5rem] mt-[1rem]">
+                We&apos;re excited to reveal that the Firstplug notifications
+                are coming soon!
+              </p>
+            </section>
+          </Card>
+        </section>
+        <section className="grid grid-cols-2 gap-4 h-1/2  ">
           {members.length ? (
             <>
               <Card
@@ -84,27 +96,14 @@ export default observer(function Dashboard() {
           ) : (
             <EmptyDashboardCard type="members" />
           )}
-        </section>
-        <section className="grid grid-cols-2 gap-4  max-h-1/2 h-1/2  ">
-          <Card Title="Notifications">
+
+          <Card Title="Recent Activity" className="h-full">
             <section className="  h-full flex flex-col justify-center items-center">
               <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
                 Coming Soon!
                 <NotificationIcon />
               </h1>
-              <p className="font-inter text-sm text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We&apos;re excited to reveal that the Firstplug notifications
-                are coming soon!
-              </p>
-            </section>
-          </Card>
-          <Card Title="Notifications">
-            <section className="  h-full flex flex-col justify-center items-center">
-              <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
-                Coming Soon!
-                <NotificationIcon />
-              </h1>
-              <p className="font-inter text-sm text-dark-grey mb-[1.5rem] mt-[1rem]">
+              <p className="font-inter text-md text-dark-grey mb-[1.5rem] mt-[1rem]">
                 We&apos;re excited to reveal that the Firstplug notifications
                 are coming soon!
               </p>
@@ -115,27 +114,3 @@ export default observer(function Dashboard() {
     </PageLayout>
   );
 });
-
-export const getServerSideProps: GetServerSideProps = async () => {
-  try {
-    const [membersResponse, stockResponse] = await Promise.all([
-      Memberservices.getAllMembers(),
-      ProductServices.getTableFormat(),
-    ]);
-
-    return {
-      props: {
-        membersData: membersResponse,
-        stockData: stockResponse,
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching data on server:", error);
-    return {
-      props: {
-        membersData: [],
-        stockData: [],
-      },
-    };
-  }
-};

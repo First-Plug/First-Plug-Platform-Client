@@ -55,7 +55,7 @@ export const StockCard = observer(function ({ products }: StockCardProps) {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`p-2 text-sm font-semibold rounded-md flex items-center gap-2 ${
+              className={`p-2 text-md font-semibold rounded-md flex items-center gap-2 ${
                 isSelected ? "bg-hoverBlue text-blue/80" : "bg-white text-black"
               } hover:bg-hoverBlue `}
             >

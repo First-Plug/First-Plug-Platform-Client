@@ -61,7 +61,7 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
             className="h-[1rem] w-[1rem]  rounded-sm"
             style={{ backgroundColor: assignedColor }}
           ></div>
-          <p className="text-sm font-semibold">
+          <p className="text-md font-semibold">
             Assigned | <b>{quantity}</b>
           </p>
         </div>
@@ -70,7 +70,7 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
             className="h-[1rem] w-[1rem] rounded-sm"
             style={{ backgroundColor: availableColor }}
           ></div>
-          <p className="text-sm font-semibold">
+          <p className="text-md font-semibold">
             Available | <b>{stock}</b>
           </p>
         </div>

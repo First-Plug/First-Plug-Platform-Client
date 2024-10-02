@@ -25,7 +25,7 @@ const birthdayColumns: ColumnDef<TeamMember>[] = [
   {
     id: "fullName",
     accessorKey: "fullName",
-    size: 200,
+    size: 300,
     header: "Full Name",
     cell: ({ getValue }) => (
       <span className="font-semibold text-blue-500">{getValue<string>()}</span>
