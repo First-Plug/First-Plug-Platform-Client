@@ -4,7 +4,7 @@ import { Button } from "./Button";
 import { CustomLink } from "./CustomLink";
 import Image from "next/image";
 import { useStore } from "@/models";
-type EmptyCardType = "stock" | "members";
+type EmptyCardType = "stock" | "members" | "computer" | "recentActivity";
 type TConfig = {
   title: string;
   image: string;
@@ -45,6 +45,30 @@ const Config: Record<EmptyCardType, TConfig> = {
     additionalOnClick: () => {
       window.location.href = "/home/my-team/addTeam";
     },
+  },
+  computer: {
+    title: "Computer Update",
+    image: "/orders.svg",
+    paragraph: "There are no recent updates for your computers.",
+    // ButtonIcon: UploadIcon,
+    // buttonText: "Update Computers",
+    // additionalButtonText: "Add Computer",
+    // additionalButtonIcon: AddIcon,
+    // additionalOnClick: () => {
+    //   window.location.href = "/home/computer/addComputer";
+    // },
+  },
+  recentActivity: {
+    title: "Recent Activity",
+    image: "/svg/folder.svg",
+    paragraph: "No recent activity recorded.",
+    // ButtonIcon: UploadIcon,
+    // buttonText: "View Activity",
+    // additionalButtonText: "Check Activity Log",
+    // additionalButtonIcon: AddIcon,
+    // additionalOnClick: () => {
+    //   window.location.href = "/home/recent-activity";
+    // },
   },
 };
 
@@ -100,7 +124,7 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
         <div className="relative w-[50%] h-[50%] lg:w-[80%] lg:h-[80%] max-w-[200px] max-h-[200px]">
           <Image src={image} alt={paragraph} fill className="object-contain" />
         </div>
-        <p className="text-dark-grey text-md lg:text-base text-center">
+        <p className="text-dark-grey text-md lg:text-md text-center">
           {paragraph}
         </p>
       </div>

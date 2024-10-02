@@ -66,7 +66,8 @@ export default observer(function Dashboard() {
           ) : (
             <EmptyDashboardCard type="stock" />
           )}
-          <Card Title="Computer Upgrade" className="h-full">
+          <EmptyDashboardCard type="computer" />
+          {/* <Card Title="Computer computer" className="h-full">
             <section className="  h-full flex flex-col justify-center items-center">
               <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
                 Coming Soon!
@@ -77,7 +78,7 @@ export default observer(function Dashboard() {
                 are coming soon!
               </p>
             </section>
-          </Card>
+          </Card> */}
         </section>
         <section className="grid grid-cols-2 gap-4 h-1/2  ">
           {members.length ? (
@@ -96,8 +97,8 @@ export default observer(function Dashboard() {
           ) : (
             <EmptyDashboardCard type="members" />
           )}
-
-          <Card Title="Recent Activity" className="h-full">
+          <EmptyDashboardCard type="recentActivity" />
+          {/* <Card Title="Recent Activity" className="h-full">
             <section className="  h-full flex flex-col justify-center items-center">
               <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
                 Coming Soon!
@@ -108,7 +109,7 @@ export default observer(function Dashboard() {
                 are coming soon!
               </p>
             </section>
-          </Card>
+          </Card> */}
         </section>
       </div>
     </PageLayout>
