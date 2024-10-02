@@ -42,10 +42,10 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
   };
 
   return (
-    <figure className=" mx-auto flex flex-col items-center w-full h-full  overflow-hidden mt-6   ">
-      <div className=" w-[50%] h-[50%] flex flex-col gap-4 ">
-        <div className="relative cursor-pointer">
-          <Doughnut data={info} options={options} className="object-contain" />
+    <figure className=" flex w-full h-full overflow-hidden ">
+      <div className="flex items-center justify-start w-[60%] h-full min-h-[200px]">
+        <div className="relative w-[80%] h-[80%] cursor-pointer">
+          <Doughnut data={info} options={options} />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex flex-col items-center">
               <span className="text-dark-grey font-medium">Total</span>
@@ -55,22 +55,22 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
         </div>
       </div>
 
-      <figcaption className="flex gap-4 w-full justify-center mt-14 items-center">
-        <div className="flex gap-1 items-center">
+      <figcaption className="flex flex-col justify-center items-center w-[40%] h-full p-4 gap-4 ">
+        <div className="flex gap-2 items-center">
           <div
-            className="h-[1rem] w-[1rem]  rounded-sm"
+            className="h-[1rem] w-[1rem] rounded-sm"
             style={{ backgroundColor: assignedColor }}
           ></div>
-          <p className="text-md font-semibold">
+          <p className="text-sm font-semibold">
             Assigned | <b>{quantity}</b>
           </p>
         </div>
-        <div className="flex gap-1 items-center">
+        <div className="flex gap-2 items-center">
           <div
             className="h-[1rem] w-[1rem] rounded-sm"
             style={{ backgroundColor: availableColor }}
           ></div>
-          <p className="text-md font-semibold">
+          <p className="text-sm font-semibold">
             Available | <b>{stock}</b>
           </p>
         </div>
