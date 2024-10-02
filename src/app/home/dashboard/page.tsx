@@ -3,7 +3,6 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
 import {
   EmptyDashboardCard,
-  InfoCircle,
   NotificationIcon,
   PageLayout,
   ShopIcon,
@@ -12,7 +11,8 @@ import { Card, StockCard, TeamHomeCard } from "@/components";
 import { useEffect, useState } from "react";
 import useFetch from "@/hooks/useFetch";
 import { UserServices } from "@/services/user.services";
-import { BarLoader } from "@/components/Loader/BarLoader";
+import { GetServerSideProps } from "next";
+import { Memberservices, ProductServices } from "@/services";
 import { setAuthInterceptor } from "@/config/axios.config";
 
 export default observer(function Dashboard() {
@@ -40,7 +40,7 @@ export default observer(function Dashboard() {
 
   const handleBirthdayGiftClick = async () => {
     try {
-      const response = await UserServices.notifyBirthdayGiftInterest(
+      await UserServices.notifyBirthdayGiftInterest(
         user.email,
         user.tenantName
       );
@@ -49,14 +49,6 @@ export default observer(function Dashboard() {
       console.error("Failed to send Slack message:", error);
     }
   };
-
-  // if (loading) {
-  //   return (
-  //     <div>
-  //       <BarLoader />
-  //     </div>
-  //   );
-  // }
 
   return (
     <PageLayout>
@@ -123,3 +115,27 @@ export default observer(function Dashboard() {
     </PageLayout>
   );
 });
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  try {
+    const [membersResponse, stockResponse] = await Promise.all([
+      Memberservices.getAllMembers(),
+      ProductServices.getTableFormat(),
+    ]);
+
+    return {
+      props: {
+        membersData: membersResponse,
+        stockData: stockResponse,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching data on server:", error);
+    return {
+      props: {
+        membersData: [],
+        stockData: [],
+      },
+    };
+  }
+};

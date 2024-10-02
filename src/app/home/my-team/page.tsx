@@ -11,6 +11,7 @@ import { setAuthInterceptor } from "@/config/axios.config";
 
 export default observer(function MyTeam() {
   const [loading, setLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
   const {
     members: { members, fetchingMembers },
   } = useStore();
@@ -34,24 +35,28 @@ export default observer(function MyTeam() {
           timerRef.current = false;
         }
         setLoading(false);
+        setHasFetched(true);
       }
     };
 
     if (
       sessionStorage.getItem("accessToken") &&
       !fetchingMembers &&
-      !members.length
+      members.length === 0 &&
+      !hasFetched
     ) {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
       fetchData();
+    } else {
+      setLoading(false);
     }
-  }, [members, fetchingMembers]);
+  }, [fetchMembersAndTeams, members.length, fetchingMembers, hasFetched]);
+
+  if (loading || fetchingMembers) return <BarLoader />;
 
   return (
     <PageLayout>
-      {!fetchingMembers && members?.length ? <DataTeam /> : null}
-      {!fetchingMembers && !members.length && !loading && <EmptyTeam />}
-      {fetchingMembers && <BarLoader />}
+      {members.length > 0 ? <DataTeam /> : <EmptyTeam />}{" "}
     </PageLayout>
   );
 });
