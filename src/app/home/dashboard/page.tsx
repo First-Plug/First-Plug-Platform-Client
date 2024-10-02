@@ -22,14 +22,14 @@ export default observer(function Dashboard() {
     alerts: { setAlert },
     user: { user },
   } = useStore();
-  const { fetchStock, fetchMembers } = useFetch();
+  const { fetchStock, fetchMembers, fetchMembersAndTeams } = useFetch();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (sessionStorage.getItem("accessToken")) {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
       if (!members.length) {
-        fetchMembers();
+        fetchMembersAndTeams();
       }
       if (!tableProducts.length) {
         fetchStock();

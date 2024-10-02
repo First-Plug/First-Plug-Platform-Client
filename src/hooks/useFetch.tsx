@@ -13,15 +13,43 @@ export default function useFetch() {
     if (!skipLoader) {
       setFetchMembers(true);
     }
+    const cachedMembers = localStorage.getItem("members");
+    const cachedTeams = localStorage.getItem("teams");
+
+    if (cachedMembers && cachedTeams) {
+      setMembers(JSON.parse(cachedMembers));
+      setTeams(JSON.parse(cachedTeams));
+    }
+
     try {
       console.time("Total time to fetch members and teams");
+
       const [membersResponse, teamsResponse] = await Promise.all([
         Memberservices.getAllMembers(),
         TeamServices.getAllTeams(),
       ]);
-      setTeams(teamsResponse);
-      const transformedMembers = transformData(membersResponse, teamsResponse);
-      setMembers(transformedMembers);
+
+      const cachedMembersParsed = JSON.parse(cachedMembers || "[]");
+      const cachedTeamsParsed = JSON.parse(cachedTeams || "[]");
+
+      const membersChanged =
+        JSON.stringify(cachedMembersParsed) !== JSON.stringify(membersResponse);
+      const teamsChanged =
+        JSON.stringify(cachedTeamsParsed) !== JSON.stringify(teamsResponse);
+
+      if (membersChanged || teamsChanged) {
+        console.log("Actualizando localStorage con nuevos datos");
+        localStorage.setItem("members", JSON.stringify(membersResponse));
+        localStorage.setItem("teams", JSON.stringify(teamsResponse));
+
+        const transformedMembers = transformData(
+          membersResponse,
+          teamsResponse
+        );
+        setMembers(transformedMembers);
+        setTeams(teamsResponse);
+      }
+
       console.timeEnd("Total time to fetch members and teams");
     } catch (error) {
       if (error.response?.data?.message === "Unauthorized") {
