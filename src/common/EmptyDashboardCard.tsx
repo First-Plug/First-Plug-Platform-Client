@@ -80,9 +80,9 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-3  h-full w-full rounded-xl p-4  border border-border overflow-y-auto scrollbar-custom ">
-      <div className="flex gap-2 w-full">
-        <h2 className="text-[20px]  text-black font-montserrat font-bold flex-1 md:text-sm lg:text-xl">
+    <div className="flex flex-col items-center gap-3 h-full w-full rounded-xl p-4  border border-border overflow-hidden ">
+      <div className="flex gap-2 w-full  items-center justify-between">
+        <h2 className="text-[20px]  text-black font-montserrat font-bold flex-1 md:text-sm lg:text-xl truncate">
           {title}
         </h2>
         {LinkIcon && (
@@ -96,13 +96,15 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
           </CustomLink>
         )}
       </div>
-      <div className="flex flex-col items-center justify-center  w-full h-full">
-        <div className="w-44 h-44 relative">
-          <Image src={image} alt={paragraph} fill />
+      <div className="flex flex-col items-center justify-center flex-1">
+        <div className="relative w-[50%] h-[50%] lg:w-[80%] lg:h-[80%] max-w-[200px] max-h-[200px]">
+          <Image src={image} alt={paragraph} fill className="object-contain" />
         </div>
-        <p className="text-dark-grey text-sm">{paragraph}</p>
+        <p className="text-dark-grey text-md lg:text-base text-center">
+          {paragraph}
+        </p>
       </div>
-      <div className="flex gap-2 ">
+      <div className="flex gap-2 flex-wrap justify-center mt-2">
         {additionalButtonIcon && (
           <Button
             variant="secondary"
