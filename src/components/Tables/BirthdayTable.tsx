@@ -2,6 +2,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { BirthdayRoot } from "./BirthdayRoot";
 import { TeamMember } from "@/types";
+import { TeamCard } from "@/common";
 
 const daysUntilNextBirthday = (birthDateString: string) => {
   const today = new Date();
@@ -43,6 +44,23 @@ const birthdayColumns: ColumnDef<TeamMember>[] = [
       return daysA - daysB;
     },
     cell: ({ getValue }) => <span>{formatBirthDate(getValue<string>())}</span>,
+  },
+  {
+    id: "team",
+    accessorKey: "team",
+    size: 100,
+    header: "Team",
+    cell: ({ cell }) => {
+      const team = cell.row.original.team;
+      if (!team) {
+        return null;
+      }
+      return (
+        <section className="flex justify-start">
+          <TeamCard team={team} />
+        </section>
+      );
+    },
   },
 ];
 
