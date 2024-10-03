@@ -22,7 +22,11 @@ export default function useFetch() {
 
       return transformedMembers;
     } catch (error) {
-      if (error.response.data.message === "Unauthorized") {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message === "Unauthorized"
+      ) {
         sessionStorage.clear();
         localStorage.removeItem("token");
         signOut({ callbackUrl: "http://localhost:3000/login" });

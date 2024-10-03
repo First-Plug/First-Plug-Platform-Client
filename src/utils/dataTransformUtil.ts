@@ -11,6 +11,7 @@ export const transformData = (
 
   return members.map((member) => ({
     ...member,
+    birthDate: member.birthDate || null,
     team:
       member.team && typeof member.team === "string"
         ? teamMap[member.team]

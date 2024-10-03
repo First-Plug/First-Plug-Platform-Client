@@ -28,7 +28,8 @@ export function InputProductForm({
   readOnly = false,
 }: InputProps) {
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange && onChange(e);
+    const newValue = e.target.value === "" ? null : e.target.value;
+    onChange && onChange({ ...e, target: { ...e.target, value: newValue } });
   };
 
   const today = new Date().toISOString().split("T")[0];
@@ -40,7 +41,7 @@ export function InputProductForm({
       <input
         name={name}
         type={type}
-        value={formattedValue}
+        value={formattedValue || ""}
         onChange={(e) => {
           onChange(e);
           if (type === "date") {
