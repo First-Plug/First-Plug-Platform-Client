@@ -91,7 +91,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
           }
         } else if (data[key] !== initialData?.[key]) {
           if (key === "acquisitionDate" || key === "birthDate") {
-            changes[key] = formatAcquisitionDate(data[key]);
+            changes[key] = data[key] ? formatAcquisitionDate(data[key]) : null;
           } else {
             changes[key] = data[key];
           }
