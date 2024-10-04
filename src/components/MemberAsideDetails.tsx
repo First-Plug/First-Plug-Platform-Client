@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import { RelacoteProducts, ReturnPage } from "./AsideContents";
 import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { DeleteMemberModal } from "./Alerts/DeleteMemberModal";
+import { useFetchMember } from "@/members/hooks";
+import { Loader } from "./Loader";
 
 interface MemberAsideDetailsProps {
   className?: string;
@@ -20,11 +22,13 @@ export const MemberAsideDetails = observer(function ({
   className,
 }: MemberAsideDetailsProps) {
   const {
-    members: { members, selectedMember, setMemberToEdit, setMembers },
+    members: { memberToEdit, setMemberToEdit },
     aside: { setAside },
     alerts: { setAlert },
     products,
   } = useStore();
+
+  const { data: member, isLoading, isError } = useFetchMember(memberToEdit);
 
   const router = useRouter();
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
@@ -43,9 +47,11 @@ export const MemberAsideDetails = observer(function ({
     if (selectedProducts.includes(product)) {
       return setSelectedProducts((s) => s.filter((id) => id !== product));
     }
-
     setSelectedProducts((s) => [...s, product]);
   };
+
+  if (isLoading) return <Loader />;
+  if (isError || !member) return <div>Error loading member data</div>;
 
   const handleNavtoStock = () => {
     setAside(undefined);
@@ -65,7 +71,7 @@ export const MemberAsideDetails = observer(function ({
   }
 
   const handleRequestOffBoarding = () => {
-    const allProductsNotRecoverable = selectedMember.products.every(
+    const allProductsNotRecoverable = member.products.every(
       (product) => !product.recoverable
     );
 
@@ -103,9 +109,9 @@ export const MemberAsideDetails = observer(function ({
       return missingFields;
     };
 
-    setId(selectedMember._id);
+    setId(member._id);
 
-    if (!selectedMember.products.length) {
+    if (!member.products.length) {
       setType("NoProduct");
       return setIsOpen(true);
     }
@@ -115,11 +121,11 @@ export const MemberAsideDetails = observer(function ({
       return setIsOpen(true);
     }
 
-    if (!getMissingFields(selectedMember).length) {
+    if (!getMissingFields(member).length) {
       // TODO: next history v2
       alert("the member has all his data");
     } else {
-      const missingFields = getMissingFields(selectedMember);
+      const missingFields = getMissingFields(member);
 
       setMissingMemberData(
         missingFields.reduce((acc, field, index) => {
@@ -148,20 +154,20 @@ export const MemberAsideDetails = observer(function ({
       ) : (
         <Fragment>
           <div className="flex flex-col gap-6   h-full   ">
-            <MemberDetail />
+            <MemberDetail memberId={memberToEdit} />
             <div className=" flex-grow h-[70%]  ">
-              {selectedMember?.products?.length ? (
+              {member?.products?.length ? (
                 <div className="flex flex-col gap-2 h-full">
                   <div className="flex justify-between">
                     <h1 className="font-semibold text-lg">Products</h1>
                     <p className="border border-black text-black font-bold  rounded-full h-6 w-6  grid place-items-center  text-sm">
-                      {selectedMember.products.length || 0}
+                      {member.products.length || 0}
                     </p>
                   </div>
 
                   <div className="flex flex-col gap-2 overflow-y-auto  scrollbar-custom flex-grow max-h-full h-full  mb-6 ">
-                    {selectedMember.products.length
-                      ? selectedMember.products.map((product) => (
+                    {member.products.length
+                      ? member.products.map((product) => (
                           <ProductDetail
                             product={product}
                             key={product._id}
@@ -228,7 +234,7 @@ export const MemberAsideDetails = observer(function ({
             description={missingMemberData}
             buttonText="Update Member"
             onButtonClick={() => {
-              setMemberToEdit(selectedMember._id);
+              setMemberToEdit(member._id);
               setAside("EditMember");
               setShowErrorDialog(false);
             }}
