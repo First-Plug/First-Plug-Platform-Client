@@ -6,6 +6,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DeleteAction } from "../Alerts";
 import { RootTable } from "./RootTable";
 import FormatedDate from "./helpers/FormatedDate";
+import { useFetchMembers } from "@/members/hooks";
 
 const MONTHS = [
   "January",
@@ -264,11 +265,13 @@ const membersColumns: (
 interface TableMembersProps {
   members: TeamMember[];
 }
-export function MembersTable({ members }: { members: TeamMember[] }) {
+export function MembersTable({ members: propMembers }: TableMembersProps) {
   const {
     members: { setSelectedMember, setMembers, setMemberToEdit },
     aside: { setAside },
   } = useStore();
+
+  const { data: fetchedMembers = [], isLoading, isError } = useFetchMembers();
 
   const handleEdit = (memberId: TeamMember["_id"]) => {
     setMemberToEdit(memberId);
@@ -276,7 +279,7 @@ export function MembersTable({ members }: { members: TeamMember[] }) {
   };
   const handleDelete = async (memberId: TeamMember["_id"]) => {
     try {
-      await Memberservices.deleteMember(memberId);
+      await Memberservices.deleteMember(memberId); // eventualmente MUTACION
       const res = await Memberservices.getAllMembers();
       setMembers(res);
       alert("Member has been deleted!");
@@ -289,6 +292,8 @@ export function MembersTable({ members }: { members: TeamMember[] }) {
     setAside("MemberDetails");
   };
 
+  const membersToRender = propMembers.length > 0 ? propMembers : fetchedMembers;
+
   return (
     <RootTable
       tableType="members"
@@ -296,9 +301,9 @@ export function MembersTable({ members }: { members: TeamMember[] }) {
         handleEdit,
         handleDelete,
         handleViewDetail,
-        members
+        membersToRender
       )}
-      data={members}
+      data={membersToRender}
       pageSize={12}
       tableNameRef="membersTable"
     />

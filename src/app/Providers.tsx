@@ -2,8 +2,10 @@
 
 import { setAuthInterceptor } from "@/config/axios.config";
 import { RootStore, RootStoreContext } from "@/models";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SessionProvider, getSession } from "next-auth/react";
-import { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect } from "react";
 
 type ProvidersProps = {
   children: ReactNode;
@@ -20,6 +22,8 @@ export default function Providers({ children }: ProvidersProps) {
     user: {},
     alerts: {},
   });
+  const queryClient = new QueryClient();
+
   useEffect(() => {
     const setupAxiosInterceptor = async () => {
       const session = await getSession();
@@ -33,7 +37,12 @@ export default function Providers({ children }: ProvidersProps) {
   }, []);
   return (
     <RootStoreContext.Provider value={store}>
-      <SessionProvider>{children}</SessionProvider>
+      <SessionProvider>
+        <QueryClientProvider client={queryClient}>
+          {children}
+          <ReactQueryDevtools initialIsOpen />
+        </QueryClientProvider>
+      </SessionProvider>
     </RootStoreContext.Provider>
   );
 }

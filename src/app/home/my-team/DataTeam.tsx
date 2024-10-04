@@ -1,15 +1,26 @@
 "use client";
-import { BarLoader } from "@/components/Loader/BarLoader";
 import { MembersTable } from "@/components/Tables";
-import { useStore } from "@/models";
-import { observer } from "mobx-react-lite";
-export default observer(function DataTeam() {
-  const {
-    members: { members },
-  } = useStore();
+import { useFetchMembers } from "@/members/hooks";
+import { TeamMember } from "@/types";
+
+const DataTeam = () => {
+  const { data: members = [], isLoading, isError } = useFetchMembers();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error loading members...</div>;
+  }
+
+  const plainMembers: TeamMember[] = members;
+
   return (
-    <div className=" h-full max-h-full ">
-      <MembersTable members={members} />
+    <div className="h-full max-h-full">
+      <MembersTable members={plainMembers} />
     </div>
   );
-});
+};
+
+export default DataTeam;
