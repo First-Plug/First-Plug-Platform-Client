@@ -72,6 +72,13 @@ export default function SettingsForm() {
           );
           setAuthInterceptor(refreshData.backendTokens.accessToken);
           otherFieldsUpdated = true;
+
+          await session.update({
+            user: {
+              ...session.data.user,
+              ...refreshData.user,
+            },
+          });
         }
 
         if (recoverableUpdated || otherFieldsUpdated) {
