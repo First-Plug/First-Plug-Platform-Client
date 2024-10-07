@@ -80,7 +80,7 @@ export const zodMemberCsvSchema = z.object({
   "Last Name *": z.string().min(1),
   "Email *": z.string().email(),
   "Start Date": z.string().optional(),
-  "Birth Date": z.string().optional(),
+  birthDate: z.string().optional(),
   Team: z.string().optional(),
   "Job Position": z.string().optional(),
   "Personal Email": z.string().optional(),
