@@ -62,6 +62,7 @@ export function DropdownInputProductForm({
     ) {
       setIsOpen(false);
       setSearchTerm(selectedOption || "");
+      onChange && onChange("none");
     }
   };
 
