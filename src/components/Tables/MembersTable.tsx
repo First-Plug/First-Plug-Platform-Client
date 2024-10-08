@@ -6,7 +6,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DeleteAction } from "../Alerts";
 import { RootTable } from "./RootTable";
 import FormatedDate from "./helpers/FormatedDate";
-import { useFetchMembers } from "@/members/hooks";
+import { useFetchMembers, usePrefetchMember } from "@/members/hooks";
 
 const MONTHS = [
   "January",
@@ -27,12 +27,14 @@ const membersColumns: (
   handleEdit: (memberId: TeamMember["_id"]) => void,
   handleDelete: (memberId: TeamMember["_id"]) => void,
   handleViewDetail: (memberId: TeamMember["_id"]) => void,
+  prefetchMember: (id: string) => void,
   members: TeamMember[],
   filteredMembers?: TeamMember[]
 ) => ColumnDef<TeamMember>[] = (
   handleEdit,
   handleDelete,
   handleViewDetail,
+  prefetchMember,
   members,
   filteredMembers = members
 ) => [
@@ -240,6 +242,7 @@ const membersColumns: (
         <Button
           variant="text"
           onClick={() => handleEdit(row.original._id)}
+          onMouseEnter={() => prefetchMember(row.original._id)}
           icon={
             <PenIcon
               strokeWidth={2}
@@ -266,6 +269,7 @@ interface TableMembersProps {
   members: TeamMember[];
 }
 export function MembersTable({ members: propMembers }: TableMembersProps) {
+  const prefetchMember = usePrefetchMember();
   const {
     members: { setSelectedMember, setMembers, setMemberToEdit },
     aside: { setAside },
@@ -301,6 +305,7 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
         handleEdit,
         handleDelete,
         handleViewDetail,
+        prefetchMember,
         membersToRender
       )}
       data={membersToRender}

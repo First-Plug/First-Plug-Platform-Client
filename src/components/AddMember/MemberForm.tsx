@@ -13,7 +13,7 @@ import AdditionalData from "./AdditionalData";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { transformData } from "@/utils/dataTransformUtil";
-import { useUpdateMember } from "@/members/hooks";
+import { useCreateMember, useUpdateMember } from "@/members/hooks";
 
 interface MemberFormProps {
   initialData?: TeamMember;
@@ -31,6 +31,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
   } = useStore();
 
   const updateMemberMutation = useUpdateMember();
+  const createMemberMutation = useCreateMember();
 
   const methods = useForm({
     resolver: zodResolver(zodCreateMembertModel),
@@ -130,13 +131,11 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
         // setAlert("updateMember");
       } else {
-        const response = await Memberservices.createMember({
+        createMemberMutation.mutate({
           ...data,
           ...(teamId && { team: teamId }),
         });
-        addMember(response);
-        setAlert("createMember");
-        methods.reset(initialData);
+        methods.reset();
       }
 
       const updateMembers = await Memberservices.getAllMembers();
