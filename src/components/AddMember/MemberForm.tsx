@@ -13,6 +13,7 @@ import AdditionalData from "./AdditionalData";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { transformData } from "@/utils/dataTransformUtil";
+import { useUpdateMember } from "@/members/hooks";
 
 interface MemberFormProps {
   initialData?: TeamMember;
@@ -28,6 +29,8 @@ const MemberForm: React.FC<MemberFormProps> = ({
     alerts: { setAlert },
     teams: { getOrCreateTeam, setTeams },
   } = useStore();
+
+  const updateMemberMutation = useUpdateMember();
 
   const methods = useForm({
     resolver: zodResolver(zodCreateMembertModel),
@@ -106,28 +109,28 @@ const MemberForm: React.FC<MemberFormProps> = ({
         delete changes.products;
       }
 
-      // if (Array.isArray(changes.products) && changes.products.length === 0) {
-      //   delete changes.products;
-      // }
-
-      let response;
+      // let response;
       setIsProcessing(true);
       if (isUpdate && initialData) {
-        response = await Memberservices.updateMember(initialData._id, {
-          ...changes,
-          ...(teamId && { team: teamId }),
+        // response = await Memberservices.updateMember(initialData._id, {
+        //   ...changes,
+        //   ...(teamId && { team: teamId }),
+        // });
+        updateMemberMutation.mutate({
+          id: initialData._id,
+          data: { ...changes, ...(teamId && { team: teamId }) },
         });
 
-        updateMember(response);
-        initialData = { ...initialData, ...response };
+        // updateMember(response);
+        // initialData = { ...initialData, ...response };
 
         if (changes.dni === undefined && initialData.dni !== undefined) {
           initialData.dni = initialData.dni;
         }
 
-        setAlert("updateMember");
+        // setAlert("updateMember");
       } else {
-        response = await Memberservices.createMember({
+        const response = await Memberservices.createMember({
           ...data,
           ...(teamId && { team: teamId }),
         });

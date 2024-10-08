@@ -6,9 +6,19 @@ import { BarLoader } from "@/components/Loader/BarLoader";
 import { useEffect } from "react";
 import { setAuthInterceptor } from "@/config/axios.config";
 import { useFetchMembers } from "@/members/hooks";
+import { useStore } from "@/models";
 
 export default function MyTeam() {
-  const { data: members = [], isLoading } = useFetchMembers();
+  const { data: members = [], isLoading, isFetching } = useFetchMembers();
+  const {
+    members: { setMembers },
+  } = useStore();
+
+  useEffect(() => {
+    if (members.length) {
+      setMembers(members);
+    }
+  }, [members, setMembers]);
 
   useEffect(() => {
     if (sessionStorage.getItem("accessToken")) {
@@ -17,8 +27,13 @@ export default function MyTeam() {
   }, []);
   return (
     <PageLayout>
-      {isLoading && <BarLoader />}
-      {!isLoading && members.length ? <DataTeam /> : <EmptyTeam />}
+      {isLoading || isFetching ? (
+        <BarLoader />
+      ) : members.length ? (
+        <DataTeam />
+      ) : (
+        <EmptyTeam />
+      )}
     </PageLayout>
   );
 }
