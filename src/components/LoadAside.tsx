@@ -21,6 +21,7 @@ import { useToast } from "./ui/use-toast";
 import { DownloadStock } from "./Download";
 import { parseMembers } from "@/utils/parseMembers";
 import useFetch from "@/hooks/useFetch";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const LoadAside = function () {
   const [csvInfo, setCsvInfo] = useState(EMPTY_FILE_INFO);
@@ -32,6 +33,7 @@ export const LoadAside = function () {
     alerts: { setAlert },
   } = useStore();
 
+  const queryClient = useQueryClient();
   const { fetchMembers, fetchStock } = useFetch();
 
   const clearCsvData = () => {
@@ -109,8 +111,8 @@ export const LoadAside = function () {
         if (success) {
           try {
             await CsvServices.bulkCreateTeams(data.members);
-            await fetchStock();
-            await fetchMembers();
+            queryClient.invalidateQueries({ queryKey: ["members"] });
+
             clearCsvData();
             setAside(undefined);
             setAlert("csvSuccess");
