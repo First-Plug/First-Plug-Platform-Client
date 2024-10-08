@@ -11,6 +11,7 @@ export const MemberStore = types
     aside: types.optional(types.enumeration(["EditMember", "None"]), "None"),
     relocateChange: types.optional(types.boolean, false),
     fetchingMembers: types.optional(types.boolean, false),
+    offBoardingFullName: types.optional(types.string, ""),
   })
   .views((store) => ({
     get membersTable(): TeamMemberTable[] {
@@ -85,6 +86,9 @@ export const MemberStore = types
     },
     setFilter(filterTeams: string[]) {
       store.teamFilterItems.replace(filterTeams);
+    },
+    setMemberOffBoarding(fullName: string) {
+      store.offBoardingFullName = fullName;
     },
     addMember(member: TeamMember) {
       store.members.push(member);

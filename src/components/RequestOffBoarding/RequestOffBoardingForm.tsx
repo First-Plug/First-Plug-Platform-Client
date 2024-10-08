@@ -5,7 +5,6 @@ import { DropdownInputProductForm } from "../AddProduct/DropDownProductForm";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { FormProvider, useForm } from "react-hook-form";
 import { ProductOffBoarding } from "@/app/home/my-team/requestOffBoarding/[id]/page";
 import { useStore } from "@/models";
 
@@ -68,7 +67,7 @@ export const RequestOffBoardingForm = ({
   const router = useRouter();
   const {
     aside: { setAside },
-    members: { setMemberToEdit },
+    members: { setMemberToEdit, members: memberStore },
   } = useStore();
 
   const [status, setStatus] = useState<
@@ -191,6 +190,8 @@ export const RequestOffBoardingForm = ({
             (item) => item.product._id === newProduct.product._id
           );
 
+          setStatus("is-member-available");
+
           if (productExists) {
             return prev.map((item) =>
               item.product._id === newProduct.product._id
@@ -204,9 +205,7 @@ export const RequestOffBoardingForm = ({
       }
 
       setSelectedMember(member);
-      return isMemberAvailable
-        ? setStatus("is-member-available")
-        : setStatus("not-member-available");
+      setStatus("not-member-available");
     }
   };
 
@@ -267,7 +266,7 @@ export const RequestOffBoardingForm = ({
               setAside("EditMember");
             }}
           >
-            Complete Shipment Details
+            Fill In Shipping Details
           </Button>
         )}
       </div>

@@ -74,6 +74,7 @@ export default function SettingsForm() {
           otherFieldsUpdated = true;
 
           await session.update({
+            backendTokens: refreshData.backendTokens,
             user: {
               ...session.data.user,
               ...refreshData.user,
