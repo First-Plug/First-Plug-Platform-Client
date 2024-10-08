@@ -6,36 +6,47 @@ import { TeamMember } from "@/types";
 export const useDeleteMember = () => {
   const queryClient = useQueryClient();
   const {
-    members: { deleteMember: deleteMemberFromStore },
+    members: { setMembers },
+    alerts: { setAlert },
   } = useStore();
 
   return useMutation({
     mutationFn: (id: string) => deleteMember(id),
+
     onMutate: async (id: string) => {
+      // Cancelar cualquier fetch en curso
       await queryClient.cancelQueries({ queryKey: ["members"] });
 
+      // Obtener el estado anterior de los miembros
       const previousMembers = queryClient.getQueryData<TeamMember[]>([
         "members",
       ]);
 
+      // Actualizar el cache de React Query de manera optimista
       queryClient.setQueryData<TeamMember[]>(
         ["members"],
         (oldMembers) => oldMembers?.filter((member) => member._id !== id) || []
       );
 
+      // Retornar el estado anterior para poder hacer un rollback en caso de error
       return { previousMembers };
     },
+
+    // Restaurar el estado anterior si hubo un error
     onError: (error, id, context) => {
+      console.error("Error deleting member:", error);
       if (context?.previousMembers) {
-        queryClient.invalidateQueries({ queryKey: ["members"] });
+        queryClient.setQueryData(["members"], context.previousMembers);
       }
     },
-    onSuccess: (data, id) => {
-      queryClient.invalidateQueries({ queryKey: ["members"] });
-      deleteMemberFromStore(id);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+
+    // No recargar desde el servidor; solo actualizar el store de MobX
+    onSuccess: () => {
+      setAlert("deleteMember");
+      const updatedMembers = queryClient.getQueryData<TeamMember[]>([
+        "members",
+      ]);
+      setMembers(updatedMembers || []); // Esto sincroniza MobX con los datos cacheados
     },
   });
 };

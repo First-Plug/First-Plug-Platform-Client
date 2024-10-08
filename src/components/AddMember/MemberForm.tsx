@@ -43,25 +43,13 @@ const MemberForm: React.FC<MemberFormProps> = ({
     formState: { isSubmitting },
   } = methods;
 
-  const [isProcessing, setIsProcessing] = useState(false);
+  // const [isProcessing, setIsProcessing] = useState(false);
 
   const formatAcquisitionDate = (date: string) => {
     if (!date) return "";
     const d = new Date(date);
     return isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
   };
-
-  function handleApiError(error: any) {
-    const errorMessage = error.response?.data?.message || "";
-
-    if (errorMessage.includes("DNI")) {
-      return "errorDniInUse";
-    } else if (errorMessage.includes("Email")) {
-      return "errorEmailInUse";
-    } else {
-      return "errorCreateMember";
-    }
-  }
 
   const handleSaveMember = async (data: TeamMember) => {
     try {
@@ -110,32 +98,20 @@ const MemberForm: React.FC<MemberFormProps> = ({
         delete changes.products;
       }
 
-      // let response;
-      setIsProcessing(true);
       if (isUpdate && initialData) {
-        // response = await Memberservices.updateMember(initialData._id, {
-        //   ...changes,
-        //   ...(teamId && { team: teamId }),
-        // });
         updateMemberMutation.mutate({
           id: initialData._id,
           data: { ...changes, ...(teamId && { team: teamId }) },
         });
 
-        // updateMember(response);
-        // initialData = { ...initialData, ...response };
-
         if (changes.dni === undefined && initialData.dni !== undefined) {
           initialData.dni = initialData.dni;
         }
-
-        // setAlert("updateMember");
       } else {
         createMemberMutation.mutate({
           ...data,
           ...(teamId && { team: teamId }),
         });
-        methods.reset();
       }
 
       const updateMembers = await Memberservices.getAllMembers();
@@ -144,11 +120,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       setMembers(transformedMembers);
       setTeams(updatedTeams);
-    } catch (error: any) {
-      const alertType = handleApiError(error);
-      setAlert(alertType);
-      setIsProcessing(false);
-    }
+    } catch (error: any) {}
   };
 
   return (
@@ -186,7 +158,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
               onClick={() => {
                 handleSubmit(handleSaveMember)();
               }}
-              disabled={isSubmitting || isProcessing}
+              disabled={isSubmitting}
             />
           </aside>
         </div>

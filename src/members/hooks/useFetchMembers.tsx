@@ -6,6 +6,5 @@ export const useFetchMembers = () => {
     queryKey: ["members"],
     queryFn: getAllMembers,
     staleTime: 1000 * 60 * 5, // aca tengo que definir cuanto tiempo quiero que duren los datos antes del refetch
-    // cacheTime: 1000 * 60 * 30, // aca tengo que definir cuanto tiempo quiero que duren los datos en cache
   });
 };

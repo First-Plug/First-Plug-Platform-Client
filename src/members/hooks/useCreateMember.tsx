@@ -3,6 +3,7 @@ import { createMember } from "../actions";
 import { TeamMember } from "@/types";
 import { useStore } from "@/models";
 import { cast } from "mobx-state-tree";
+import handleApiError from "../helpers/handleApiError";
 
 export const useCreateMember = () => {
   const queryClient = useQueryClient();
@@ -80,7 +81,10 @@ export const useCreateMember = () => {
     },
     // si hay error, se restaura el estado anterior
     onError: (error, variables, context) => {
-      console.log("Error en la mutación:", error);
+      const alertType = handleApiError(error);
+      setAlert(alertType);
+
+      // Restaurar cache anterior en caso de error
       queryClient.setQueryData(["members"], context?.previousMembers);
     },
     // finalizada la operacion se invalida la query para que tenga obtenga los datos mas recientes del backend

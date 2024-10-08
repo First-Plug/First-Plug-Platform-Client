@@ -22,7 +22,13 @@ export default function Providers({ children }: ProvidersProps) {
     user: {},
     alerts: {},
   });
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        gcTime: 1000 * 60 * 30, // 30 minutos una vez que los componentes se desmontan se guarda el cache por 30 minutos
+      },
+    },
+  });
 
   useEffect(() => {
     const setupAxiosInterceptor = async () => {

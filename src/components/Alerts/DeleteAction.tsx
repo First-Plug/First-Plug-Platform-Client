@@ -14,6 +14,7 @@ import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
 import { Loader } from "../Loader";
 import useFetch from "@/hooks/useFetch";
+import { useDeleteMember } from "@/members/hooks";
 
 type DeleteTypes = "product" | "member" | "team" | "memberUnassign";
 
@@ -34,6 +35,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
   ({ type, id, onConfirm, trigger, teamId }) => {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const deleteMemberMutation = useDeleteMember();
     const {
       products: { deleteProduct },
       alerts: { setAlert },
@@ -87,11 +89,21 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
           return;
         }
         setLoading(true);
-        await Memberservices.deleteMember(id);
-        await fetchMembers();
-        setOpen(false);
-        setAlert("deleteMember");
-        setLoading(false);
+
+        // Aquí usas la mutación en lugar de hacer una recarga completa.
+        deleteMemberMutation.mutate(id, {
+          onSuccess: () => {
+            // Mostrar la alerta de éxito
+            setOpen(false);
+
+            setAlert("deleteMember");
+
+            setLoading(false);
+          },
+          onError: (error) => {
+            setLoading(false);
+          },
+        });
       } catch (error) {
         setOpen(false);
         setLoading(false);

@@ -112,8 +112,8 @@ export const MemberStore = types
     setAside(aside: "EditMember" | "None") {
       store.aside = aside;
     },
-    deleteMember(member: TeamMember) {
-      const index = store.members.findIndex((m) => m._id === member._id);
+    deleteMember(memberId: string) {
+      const index = store.members.findIndex((m) => m._id === memberId);
       if (index > -1) {
         store.members.splice(index, 1);
       }
