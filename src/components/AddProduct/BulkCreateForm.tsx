@@ -14,6 +14,7 @@ import { AttributeModel, ProductModel, TeamMemberModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -23,6 +24,7 @@ const BulkCreateForm: React.FC<{
   setIsProcessing?: (isProcessing: boolean) => void;
 }> = ({ initialData, quantity, onBack, isProcessing, setIsProcessing }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const numProducts = quantity;
 
@@ -269,6 +271,7 @@ const BulkCreateForm: React.FC<{
       setIsProcessing(true);
       if (Array.isArray(productsData)) {
         await ProductServices.bulkCreateProducts(productsData);
+        queryClient.invalidateQueries({ queryKey: ["members"] });
         setAlert("bulkCreateProductSuccess");
       } else {
         throw new Error(

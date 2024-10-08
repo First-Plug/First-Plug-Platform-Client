@@ -15,6 +15,7 @@ import { observer } from "mobx-react-lite";
 import { Loader } from "../Loader";
 import useFetch from "@/hooks/useFetch";
 import { useDeleteMember } from "@/members/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 
 type DeleteTypes = "product" | "member" | "team" | "memberUnassign";
 
@@ -40,7 +41,8 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
       products: { deleteProduct },
       alerts: { setAlert },
     } = useStore();
-    const { fetchStock, fetchMembers, fetchTeams } = useFetch();
+    const { fetchStock, fetchTeams } = useFetch();
+    const queryClient = useQueryClient();
     const checkMemberProducts = async () => {
       try {
         const member = await Memberservices.getOneMember(id);
@@ -67,7 +69,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         await ProductServices.deleteProduct(id);
         deleteProduct(id);
         await fetchStock();
-        await fetchMembers();
+        queryClient.invalidateQueries({ queryKey: ["members"] });
         deleteProduct(id);
         setOpen(false);
         setLoading(false);
@@ -146,7 +148,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         }
         setLoading(true);
         await TeamServices.removeFromTeam(teamId, id);
-        await fetchMembers();
+        queryClient.invalidateQueries({ queryKey: ["members"] });
         await fetchTeams();
         setOpen(false);
         setAlert("memberUnassigned");

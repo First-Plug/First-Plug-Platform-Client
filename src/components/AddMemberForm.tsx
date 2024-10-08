@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { ProductServices } from "@/services";
 import CategoryIcons from "./AsideContents/EditTeamAside/CategoryIcons";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -45,7 +46,8 @@ export const AddMemberForm = observer(function ({
     aside: { setAside },
   } = useStore();
 
-  const { fetchMembers, fetchStock } = useFetch();
+  const { fetchStock } = useFetch();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setSearchedMembers(members);
@@ -87,7 +89,7 @@ export const AddMemberForm = observer(function ({
     try {
       if (selectedMember === null && noneOption) {
         await reassignProduct(currentProduct._id, updatedProduct);
-        await fetchMembers();
+        queryClient.invalidateQueries({ queryKey: ["members"] });
         await fetchStock();
         setAside(undefined);
         setAlert("assignedProductSuccess");
@@ -107,7 +109,7 @@ export const AddMemberForm = observer(function ({
         }
 
         await ProductServices.updateProduct(currentProduct._id, updatedProduct);
-        await fetchMembers();
+        queryClient.invalidateQueries({ queryKey: ["members"] });
         await fetchStock();
         setAside(undefined);
         setAlert("assignedProductSuccess");

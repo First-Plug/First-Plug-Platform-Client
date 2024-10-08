@@ -9,6 +9,7 @@ import { useStore } from "@/models";
 import { transformData } from "@/utils/dataTransformUtil";
 import useFetch from "@/hooks/useFetch";
 import { Skeleton } from "./ui/skeleton";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AddMembersToTeamFormProps {
   selectedMembers?: TeamMember[];
@@ -30,7 +31,7 @@ export const AddMembersToTeamForm = observer(function ({
     members: { members },
     teams: { teams },
   } = useStore();
-  const { fetchMembers } = useFetch();
+  const queryClient = useQueryClient();
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [currentMembers, setCurrentMembers] = useState<TeamMember[]>(members);
   const [membersToAdd, setMembersToAdd] = useState<TeamMember[]>([]);
@@ -102,7 +103,7 @@ export const AddMembersToTeamForm = observer(function ({
         await Promise.all(allMembersToDelete);
       }
 
-      await fetchMembers();
+      queryClient.invalidateQueries({ queryKey: ["members"] });
       setInitialData();
     } catch (error) {
       return error;
@@ -112,7 +113,7 @@ export const AddMembersToTeamForm = observer(function ({
     setLoading(true);
     try {
       await editTeam();
-      await fetchMembers();
+      queryClient.invalidateQueries({ queryKey: ["members"] });
     } catch (error) {
       setLoading(false);
       return error;

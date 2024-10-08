@@ -9,7 +9,7 @@ import { TeamDetails } from "..";
 import { TeamMember } from "@/types";
 import { transformData } from "@/utils/dataTransformUtil";
 import { DeleteAction } from "../Alerts";
-import useFetch from "@/hooks/useFetch";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EditTeamsAsideProps {
   className?: string | "";
@@ -26,7 +26,7 @@ export const EditTeamsAside = observer(function ({
     members: { setMembers },
   } = useStore();
 
-  const { fetchMembers } = useFetch();
+  const queryClient = useQueryClient();
 
   const [selectedTeams, setSelectedTeams] = useState<Team[]>([]);
   const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export const EditTeamsAside = observer(function ({
       const updatedMembers = await Memberservices.getAllMembers();
       const updatedTeams = await TeamServices.getAllTeams();
       const transformedMembers = transformData(updatedMembers, updatedTeams);
-      await fetchMembers();
+      queryClient.invalidateQueries({ queryKey: ["members"] });
       setTeams(updatedTeams);
       setMembers(transformedMembers);
       setAlert("deleteTeam");

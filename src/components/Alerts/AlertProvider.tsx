@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { XCircleIcon } from "lucide-react";
 import { CheckIcon } from "@/common";
 import useFetch from "@/hooks/useFetch";
+import { useQueryClient } from "@tanstack/react-query";
 
 function XIcon() {
   return <XCircleIcon className="text-white " size={40} />;
@@ -26,6 +27,7 @@ export default observer(function AlertProvider() {
   } = useStore();
   const router = useRouter();
   const { fetchMembers, fetchStock } = useFetch();
+  const queryClient = useQueryClient();
 
   const Config: Record<AlertType, IConfig> = {
     memberMissingFields: {
@@ -138,7 +140,7 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " This member has been successfully updated.",
       closeAction: async () => {
-        await fetchMembers();
+        queryClient.invalidateQueries({ queryKey: ["members"] });
         await fetchStock();
         setAside(undefined);
         setAlert(undefined);
@@ -166,7 +168,7 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " This Member has been successfully added to your team.",
       closeAction: async () => {
-        await fetchMembers();
+        queryClient.invalidateQueries({ queryKey: ["members"] });
         setAlert(undefined);
         router.push("/home/my-team");
       },

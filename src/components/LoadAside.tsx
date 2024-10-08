@@ -15,7 +15,7 @@ import {
   csvPrdocutSchema,
   csvSquema,
 } from "@/types";
-import { CsvServices, Memberservices, ProductServices } from "@/services";
+import { CsvServices } from "@/services";
 import { isCsvCompleted, parseProduct } from "@/utils";
 import { useToast } from "./ui/use-toast";
 import { DownloadStock } from "./Download";
@@ -34,7 +34,7 @@ export const LoadAside = function () {
   } = useStore();
 
   const queryClient = useQueryClient();
-  const { fetchMembers, fetchStock } = useFetch();
+  const { fetchStock } = useFetch();
 
   const clearCsvData = () => {
     setCsvInfo(EMPTY_FILE_INFO);
@@ -67,7 +67,7 @@ export const LoadAside = function () {
           try {
             await CsvServices.bulkCreateProducts(data.prdoucts);
             await fetchStock();
-            await fetchMembers();
+            queryClient.invalidateQueries({ queryKey: ["members"] });
             setAside(undefined);
             setAlert("csvSuccess");
             clearCsvData();

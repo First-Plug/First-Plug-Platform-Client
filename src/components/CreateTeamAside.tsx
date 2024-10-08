@@ -9,6 +9,7 @@ import { TeamMember } from "@/types";
 import { AddMembersToTeamForm } from "./AddMembersToTeamForm";
 import { transformData } from "@/utils/dataTransformUtil";
 import useFetch from "@/hooks/useFetch";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CreateTeamAsideProps {
   className?: string;
@@ -37,7 +38,7 @@ export const CreateTeamAside = observer(function ({
     setSelectedMembers([...selectedMembers, member]);
   };
 
-  const { fetchMembers } = useFetch();
+  const queryClient = useQueryClient();
   const handleCreateTeam = async () => {
     setIsCreating(true);
     try {
@@ -48,7 +49,7 @@ export const CreateTeamAside = observer(function ({
         });
         await Promise.all(memberUpdates);
       }
-      await fetchMembers();
+      queryClient.invalidateQueries({ queryKey: ["members"] });
       setAlert("createTeam");
       setAside(undefined);
     } catch (error) {
