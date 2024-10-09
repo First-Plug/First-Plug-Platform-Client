@@ -11,6 +11,8 @@ import Logo from "../../public/logo1.png";
 import { ShopIcon } from "@/common/Icons";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
+import { UserServices } from "@/services/user.services";
 
 type NavbarProps = {
   title?: string;
@@ -29,9 +31,8 @@ export const Navbar = function ({
   searchInput,
   placeholder,
 }: NavbarProps) {
-  const router = useRouter();
   const pathName = usePathname();
-  const { status } = useSession();
+  const { status, data } = useSession();
 
   return (
     <nav className="flex justify-between items-center min-h-[10vh] max-h-[10vh] h-[10vh] px-4   ">
@@ -55,7 +56,12 @@ export const Navbar = function ({
               variant={"text"}
               className={"py-2 px-4 bg-none text-sm"}
               onClick={() => {
-                router.push("/shop");
+                const {
+                  user: { email, tenantName },
+                } = data;
+
+                window.open(CATALOGO_FIRST_PLUG, "_blank");
+                UserServices.notifyShop(email, tenantName);
               }}
             />
           </div>
