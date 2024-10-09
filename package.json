@@ -29,7 +29,7 @@
     "@tanstack/react-table": "^8.12.0",
     "avvvatars-react": "^0.4.2",
     "axios": "^1.6.7",
-    "chart.js": "^4.4.0",
+    "chart.js": "^4.4.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "cmdk": "^1.0.0",
