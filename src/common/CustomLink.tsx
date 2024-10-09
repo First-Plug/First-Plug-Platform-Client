@@ -12,6 +12,7 @@ interface CustomLinkProps {
   disabled?: Disabled;
   variant?: Variant;
   size?: Size;
+  onClick?: () => void;
 }
 
 const customLinkStyle = {
@@ -41,10 +42,12 @@ export function CustomLink({
   disabled,
   variant,
   size,
+  onClick,
 }: CustomLinkProps) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       target={href.startsWith("http") ? "_blank" : undefined}
       className={`text-blue font-lg font-bold font-sans ${className} ${
         disabled
