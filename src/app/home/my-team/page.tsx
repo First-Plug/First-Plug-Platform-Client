@@ -21,7 +21,6 @@ export default observer(function MyTeam() {
   useEffect(() => {
     const fetchData = async () => {
       if (!timerRef.current) {
-        console.time("Total time to fetch members and teams");
         timerRef.current = true;
       }
 
@@ -31,7 +30,6 @@ export default observer(function MyTeam() {
         console.error("Failed to fetch members and teams:", error);
       } finally {
         if (timerRef.current) {
-          console.timeEnd("Total time to fetch members and teams");
           timerRef.current = false;
         }
         setLoading(false);

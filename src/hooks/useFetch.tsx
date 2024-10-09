@@ -22,8 +22,6 @@ export default function useFetch() {
     }
 
     try {
-      console.time("Total time to fetch members and teams");
-
       const [membersResponse, teamsResponse] = await Promise.all([
         Memberservices.getAllMembers(),
         TeamServices.getAllTeams(),
@@ -38,7 +36,6 @@ export default function useFetch() {
         JSON.stringify(cachedTeamsParsed) !== JSON.stringify(teamsResponse);
 
       if (membersChanged || teamsChanged) {
-        console.log("Actualizando localStorage con nuevos datos");
         localStorage.setItem("members", JSON.stringify(membersResponse));
         localStorage.setItem("teams", JSON.stringify(teamsResponse));
 
@@ -49,8 +46,6 @@ export default function useFetch() {
         setMembers(transformedMembers);
         setTeams(teamsResponse);
       }
-
-      console.timeEnd("Total time to fetch members and teams");
     } catch (error) {
       if (error.response?.data?.message === "Unauthorized") {
         sessionStorage.clear();
