@@ -16,7 +16,7 @@ export const useAddToTeam = () => {
 
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
-      updateTeam(data); // Update the MobX store with the updated team
+      updateTeam(data); // actualizo el estado de MobX
     },
     onError: (error) => {
       console.error("Error adding member to team:", error);

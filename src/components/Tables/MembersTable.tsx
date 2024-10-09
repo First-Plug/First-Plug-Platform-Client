@@ -251,7 +251,6 @@ const membersColumns: (
           <Button
             variant="text"
             onMouseEnter={() => {
-              console.log("Prefetching member for edit:", row.original._id);
               prefetchMember(row.original._id);
             }}
             onClick={() => handleEdit(row.original._id)}
@@ -291,7 +290,7 @@ interface TableMembersProps {
 export function MembersTable({ members: propMembers }: TableMembersProps) {
   const prefetchMember = usePrefetchMember();
   const {
-    members: { setSelectedMember, setMembers, setMemberToEdit },
+    members: { setMemberToEdit },
     aside: { setAside },
   } = useStore();
 

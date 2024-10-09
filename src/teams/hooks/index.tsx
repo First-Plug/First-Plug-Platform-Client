@@ -7,3 +7,4 @@ export * from "./useUpdateTeam";
 export * from "./useAssociateTeamToMember";
 export * from "./useRemoveFromTeam";
 export * from "./useChangeTeamForMember";
+export * from "./usePreFetchTeams";

@@ -14,7 +14,11 @@ import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
 import { Loader } from "../Loader";
 import useFetch from "@/hooks/useFetch";
-import { useDeleteMember, useFetchMembers } from "@/members/hooks";
+import {
+  useDeleteMember,
+  useFetchMember,
+  useFetchMembers,
+} from "@/members/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromTeam } from "@/teams/hooks";
 
@@ -37,8 +41,10 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
   ({ type, id, onConfirm, trigger, teamId }) => {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+
     const deleteMemberMutation = useDeleteMember();
     const removeFromTeamMutation = useRemoveFromTeam();
+
     const {
       products: { deleteProduct },
       alerts: { setAlert },
@@ -47,23 +53,18 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
     const { fetchStock } = useFetch();
     const queryClient = useQueryClient();
     const { data: membersData } = useFetchMembers();
+    const { data: memberData, isLoading: isLoadingMember } = useFetchMember(id);
 
-    const checkMemberProducts = async () => {
-      try {
-        const member = await Memberservices.getOneMember(id);
-        const hasRecoverableProducts = member.products.some(
-          (product) => product.recoverable
-        );
+    const checkMemberProducts = () => {
+      if (!memberData) return false;
 
-        if (hasRecoverableProducts) {
-          return false;
-        }
+      const hasRecoverableProducts = memberData.products.some(
+        (product) => product.recoverable
+      );
 
-        return true;
-      } catch (error) {
-        return false;
-      }
+      return !hasRecoverableProducts;
     };
+
     const handleDeleteProduct = async () => {
       try {
         if (!id) {
@@ -145,24 +146,33 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
       setOpen(true);
     };
 
-    const handleUnassignMember = async () => {
-      try {
-        if (!id || !teamId) {
-          throw new Error("Member ID or Team ID is undefined");
-        }
-        setLoading(true);
-        // removeFromTeamMutation.mutate({ memberId: id, teamId });
-        await TeamServices.removeFromTeam(teamId, id);
-        queryClient.invalidateQueries({ queryKey: ["members"] });
-        queryClient.invalidateQueries({ queryKey: ["teams"] });
-        setOpen(false);
-        setAlert("memberUnassigned");
-        setLoading(false);
-        onConfirm();
-      } catch (error) {
-        setOpen(false);
-        setLoading(false);
+    const handleUnassignMember = () => {
+      if (!id || !teamId) {
+        throw new Error("Member ID or Team ID is undefined");
       }
+
+      setLoading(true);
+
+      removeFromTeamMutation.mutate(
+        { memberId: id, teamId },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["members"] });
+            queryClient.invalidateQueries({ queryKey: ["teams"] });
+            setOpen(false);
+            setAlert("memberUnassigned");
+            setLoading(false);
+            if (onConfirm) {
+              onConfirm();
+            }
+          },
+          onError: (error) => {
+            console.error("Error removing member from team:", error);
+            setLoading(false);
+            setOpen(false);
+          },
+        }
+      );
     };
 
     const DeleteConfig: Record<DeleteTypes, ConfigType> = {

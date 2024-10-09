@@ -6,7 +6,6 @@ export const useRemoveFromTeam = () => {
   const queryClient = useQueryClient();
   const {
     teams: { updateTeam },
-    alerts: { setAlert },
   } = useStore();
 
   return useMutation({
@@ -16,10 +15,8 @@ export const useRemoveFromTeam = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       updateTeam(data);
-      //   setAlert("removeFromTeamSuccess");
     },
     onError: (error) => {
-      console.error("Error removing member from team:", error);
       //   setAlert("removeFromTeamError");
     },
   });

@@ -31,7 +31,6 @@ export const EditTeamsAside = observer(function ({
   const queryClient = useQueryClient();
   const { data: membersData, isLoading: isLoadingMembers } = useFetchMembers();
   const { data: teamsData, isLoading: isLoadingTeams } = useFetchTeams();
-  const deleteTeamMutation = useDeleteTeam();
 
   if (membersData) {
     setMembers(membersData);

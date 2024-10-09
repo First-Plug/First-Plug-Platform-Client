@@ -5,7 +5,7 @@ import { useStore } from "@/models";
 
 type CreateTeamProps = {
   name: string;
-  color: string;
+  color?: string;
 };
 
 export const useCreateTeam = () => {
@@ -16,14 +16,15 @@ export const useCreateTeam = () => {
   } = useStore();
 
   const mutation = useMutation({
-    mutationFn: (newTeam: CreateTeamProps) => createTeams(newTeam),
+    mutationFn: (newTeam: CreateTeamProps) => {
+      const teamPayload = { name: newTeam.name };
+      return createTeams(teamPayload);
+    },
 
     onMutate: async (newTeam) => {
-      console.log("Equipo antes de mutar (optimista):", newTeam);
       await queryClient.cancelQueries({ queryKey: ["teams"] });
 
       const previousTeams = queryClient.getQueryData<Team[]>(["teams"]);
-      console.log("Equipos anteriores en el cache:", previousTeams);
 
       // Crear un equipo optimista
       const optimisticTeam: Team = {
@@ -32,7 +33,6 @@ export const useCreateTeam = () => {
         color: newTeam.color || "#000000",
         __v: 0,
       };
-      console.log("Equipo optimista creado:", optimisticTeam);
 
       // Agregar el equipo optimista a la lista de equipos
       queryClient.setQueryData<Team[]>(["teams"], (oldTeams) => {
@@ -44,23 +44,16 @@ export const useCreateTeam = () => {
     },
 
     onSuccess: (data) => {
-      console.log("Mutación exitosa, equipo real desde el servidor:", data);
-      // Remover el equipo optimista y agregar el equipo real
       queryClient.setQueryData<Team[]>(["teams"], (oldTeams) => {
         if (!oldTeams) return [data];
-
-        // Reemplazar el equipo optimista por el real
         return oldTeams.map((team) => (team._id === data._id ? data : team));
       });
 
-      // Actualizar el store de MobX
-      addTeam(data);
+      addTeam(data); // Actualiza el MobX store
       setAlert("createTeam");
     },
 
     onError: (error, variables, context) => {
-      console.error("Error al crear el equipo:", error);
-
       // Restaurar el cache anterior en caso de error
       queryClient.setQueryData(["teams"], context?.previousTeams);
     },
