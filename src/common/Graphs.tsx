@@ -56,7 +56,7 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
         </div>
       </div>
 
-      <figcaption className="flex flex-col justify-center items-center w-[40%] h-full p-4 gap-4 ">
+      <figcaption className="flex flex-col justify-center items-start w-[40%] h-full p-4 gap-4 ">
         <div className="flex gap-2 items-center">
           <div
             className="h-[1rem] w-[1rem] rounded-sm"
