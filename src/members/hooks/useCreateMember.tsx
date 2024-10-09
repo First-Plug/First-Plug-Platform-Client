@@ -16,13 +16,11 @@ export const useCreateMember = () => {
     mutationFn: (newMember: TeamMember) => createMember(newMember),
 
     onMutate: async (newMember) => {
-      console.log("Miembro antes de mutar (optimista):", newMember);
       await queryClient.cancelQueries({ queryKey: ["members"] });
 
       const previousMembers = queryClient.getQueryData<TeamMember[]>([
         "members",
       ]);
-      console.log("Miembros anteriores en el cache:", previousMembers);
       // Crear un miembro optimista
       const optimisticMember: TeamMember = {
         _id: Math.random().toString(),
@@ -50,21 +48,15 @@ export const useCreateMember = () => {
         dni: newMember.dni || 0,
         isDeleted: false,
       };
-      console.log("Miembro optimista creado:", optimisticMember);
 
       // Agregar el miembro optimista a la lista de miembros
       queryClient.setQueryData<TeamMember[]>(["members"], (oldMembers) => {
         if (!oldMembers) return [optimisticMember];
         return [...oldMembers, optimisticMember];
       });
-      console.log(
-        "Cache actualizado con miembro optimista:",
-        queryClient.getQueryData(["members"])
-      );
       return { previousMembers, optimisticMember };
     },
     onSuccess: (data) => {
-      console.log("Mutación exitosa, miembro real desde el servidor:", data);
       // Remover el miembro optimista y agregar el miembro real
       queryClient.setQueryData<TeamMember[]>(["members"], (oldMembers) => {
         if (!oldMembers) return [data];

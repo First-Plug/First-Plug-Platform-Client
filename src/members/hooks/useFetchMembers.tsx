@@ -5,6 +5,6 @@ export const useFetchMembers = () => {
   return useQuery({
     queryKey: ["members"],
     queryFn: getAllMembers,
-    staleTime: 1000 * 60 * 5, // aca tengo que definir cuanto tiempo quiero que duren los datos antes del refetch
+    staleTime: 1000 * 60 * 30, // aca tengo que definir cuanto tiempo quiero que duren los datos antes del refetch
   });
 };

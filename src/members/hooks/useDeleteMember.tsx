@@ -1,17 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteMember } from "../actions";
+import { deleteMemberAction } from "../actions";
 import { useStore } from "@/models";
 import { TeamMember } from "@/types";
 
 export const useDeleteMember = () => {
   const queryClient = useQueryClient();
   const {
-    members: { setMembers },
+    members: { setMembers, deleteMember },
     alerts: { setAlert },
   } = useStore();
 
   return useMutation({
-    mutationFn: (id: string) => deleteMember(id),
+    mutationFn: (id: string) => deleteMemberAction(id),
 
     onMutate: async (id: string) => {
       // Cancelar cualquier fetch en curso
@@ -41,11 +41,12 @@ export const useDeleteMember = () => {
     },
 
     // No recargar desde el servidor; solo actualizar el store de MobX
-    onSuccess: () => {
+    onSuccess: (data, id) => {
       setAlert("deleteMember");
       const updatedMembers = queryClient.getQueryData<TeamMember[]>([
         "members",
       ]);
+      deleteMember(id);
       setMembers(updatedMembers || []); // Esto sincroniza MobX con los datos cacheados
     },
   });
