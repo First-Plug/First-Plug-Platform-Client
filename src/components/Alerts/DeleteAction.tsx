@@ -14,8 +14,9 @@ import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
 import { Loader } from "../Loader";
 import useFetch from "@/hooks/useFetch";
-import { useDeleteMember } from "@/members/hooks";
+import { useDeleteMember, useFetchMembers } from "@/members/hooks";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRemoveFromTeam } from "@/teams/hooks";
 
 type DeleteTypes = "product" | "member" | "team" | "memberUnassign";
 
@@ -37,12 +38,16 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const deleteMemberMutation = useDeleteMember();
+    const removeFromTeamMutation = useRemoveFromTeam();
     const {
       products: { deleteProduct },
       alerts: { setAlert },
     } = useStore();
-    const { fetchStock, fetchTeams } = useFetch();
+
+    const { fetchStock } = useFetch();
     const queryClient = useQueryClient();
+    const { data: membersData } = useFetchMembers();
+
     const checkMemberProducts = async () => {
       try {
         const member = await Memberservices.getOneMember(id);
@@ -92,10 +97,9 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         }
         setLoading(true);
 
-        // Aquí usas la mutación en lugar de hacer una recarga completa.
+        // Uso la mutacion para no hacer una recarga completa
         deleteMemberMutation.mutate(id, {
           onSuccess: () => {
-            // Mostrar la alerta de éxito
             setOpen(false);
 
             setAlert("deleteMember");
@@ -113,8 +117,8 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
     };
 
     const checkIfTeamHasMembers = async (teamId: string) => {
-      const members = await Memberservices.getAllMembers();
-      const teamMembers = members?.filter(
+      if (!membersData) return false;
+      const teamMembers = membersData?.filter(
         (member) =>
           member.team &&
           typeof member.team === "object" &&
@@ -147,9 +151,10 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
           throw new Error("Member ID or Team ID is undefined");
         }
         setLoading(true);
+        // removeFromTeamMutation.mutate({ memberId: id, teamId });
         await TeamServices.removeFromTeam(teamId, id);
         queryClient.invalidateQueries({ queryKey: ["members"] });
-        await fetchTeams();
+        queryClient.invalidateQueries({ queryKey: ["teams"] });
         setOpen(false);
         setAlert("memberUnassigned");
         setLoading(false);

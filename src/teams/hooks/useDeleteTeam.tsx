@@ -19,7 +19,7 @@ export const useDeleteTeam = () => {
       const previousTeams = queryClient.getQueryData<Team[]>(["teams"]);
 
       queryClient.setQueryData<Team[]>(
-        ["members"],
+        ["teams"],
         (oldTeams) => oldTeams?.filter((team) => team._id !== id) || []
       );
       return { previousTeams };
@@ -30,9 +30,9 @@ export const useDeleteTeam = () => {
       }
     },
     onSuccess: (data, id) => {
+      removeTeam(id);
       setAlert("deleteTeam");
       const updatedTeams = queryClient.getQueryData<Team[]>(["teams"]);
-      removeTeam(id);
       setTeams(updatedTeams || []);
     },
     onSettled: () => {

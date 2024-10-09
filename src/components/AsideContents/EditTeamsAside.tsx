@@ -10,6 +10,8 @@ import { TeamMember } from "@/types";
 import { transformData } from "@/utils/dataTransformUtil";
 import { DeleteAction } from "../Alerts";
 import { useQueryClient } from "@tanstack/react-query";
+import { useFetchMembers } from "@/members/hooks";
+import { useFetchTeams, useDeleteTeam } from "@/teams/hooks";
 
 interface EditTeamsAsideProps {
   className?: string | "";
@@ -27,10 +29,23 @@ export const EditTeamsAside = observer(function ({
   } = useStore();
 
   const queryClient = useQueryClient();
+  const { data: membersData, isLoading: isLoadingMembers } = useFetchMembers();
+  const { data: teamsData, isLoading: isLoadingTeams } = useFetchTeams();
+  const deleteTeamMutation = useDeleteTeam();
+
+  if (membersData) {
+    setMembers(membersData);
+  }
+
+  if (teamsData) {
+    setTeams(teamsData);
+  }
 
   const [selectedTeams, setSelectedTeams] = useState<Team[]>([]);
   const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
+
   const [isUpdating, setIsUpdating] = useState(false);
+
   const handleCheckbox = (team: Team) => {
     setSelectedTeams((prevSelectedTeams) => {
       const isSelected = prevSelectedTeams.some(
@@ -60,12 +75,12 @@ export const EditTeamsAside = observer(function ({
     try {
       await TeamServices.bulkDeleteTeams(selectedTeams.map((team) => team._id));
 
-      const updatedMembers = await Memberservices.getAllMembers();
-      const updatedTeams = await TeamServices.getAllTeams();
-      const transformedMembers = transformData(updatedMembers, updatedTeams);
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      setTeams(updatedTeams);
-      setMembers(transformedMembers);
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      // const transformedMembers = transformData(updatedMembers, updatedTeams);
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      // setTeams(updatedTeams);
+      // setMembers(transformedMembers);
       setAlert("deleteTeam");
       setSelectedTeams([]);
     } catch (error) {

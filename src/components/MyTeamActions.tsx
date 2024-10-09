@@ -5,6 +5,8 @@ import { AsideType } from "@/types";
 import { observer } from "mobx-react-lite";
 import { Table } from "@tanstack/react-table";
 import { MyTeamViewHeader } from "./MyTeamViewHeader";
+import { useFetchTeams } from "@/teams/hooks";
+import { BarLoader } from "./Loader/BarLoader";
 
 interface MyTeamActionsProps<TData> {
   table: Table<TData>;
@@ -13,9 +15,12 @@ export const MyTeamActions = observer(function <TData>({
   table,
 }: MyTeamActionsProps<TData>) {
   const {
-    teams: { teams },
     aside: { setAside },
   } = useStore();
+
+  const { data: teamData, isLoading, isError } = useFetchTeams();
+  if (isLoading) return <BarLoader />;
+  if (isError) return <div>Failed to load teams</div>;
   const handleAside = (type: AsideType) => {
     setAside(type);
   };
@@ -43,7 +48,7 @@ export const MyTeamActions = observer(function <TData>({
           <Button
             body="Edit Team"
             variant={"text"}
-            disabled={teams.length === 0}
+            disabled={teamData.length === 0}
             icon={<PenIcon />}
             className={"p-2 text-sm rounded-md"}
             onClick={() => handleAside("EditTeam")}
