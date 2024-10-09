@@ -93,6 +93,8 @@ export const LoadAside = function () {
           .map((member) => {
             return {
               ...member,
+              birthDate:
+                member["Birth Date"] === "" ? null : member["Birth Date"],
             };
           })
           .filter((e) => isCsvCompleted(e));

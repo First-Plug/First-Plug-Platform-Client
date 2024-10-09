@@ -20,7 +20,7 @@ export const TeamMemberModel = types.model({
   apartment: types.optional(types.string, ""),
   additionalInfo: types.optional(types.string, ""),
   startDate: types.optional(types.string, ""),
-  birthDate: types.optional(types.string, ""),
+  birthDate: types.maybeNull(types.string),
   teamId: types.optional(types.string, ""),
   products: types.optional(types.array(ProductModel), []),
   team: types.optional(types.union(types.string, TeamModel), "Not Assigned"),
@@ -84,7 +84,7 @@ export const zodCreateMembertModel = z.object({
   apartment: z.string().trim().optional(),
   additionalInfo: z.string().trim().optional(),
   startDate: z.string().trim().optional(),
-  birthDate: z.string().trim().optional(),
+  birthDate: z.string().nullable().optional(),
   products: z.array(zodCreateProductModel).optional(),
   team: z.string().trim().optional(),
   dni: z
