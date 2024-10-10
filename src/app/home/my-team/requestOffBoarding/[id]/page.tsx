@@ -61,6 +61,14 @@ export default function Page({ params }: { params: { id: string } }) {
     return () => subscription.unsubscribe();
   }, [watch, params.id]);
 
+  // useEffect(() => {
+  //   const storedProducts = localStorage.getItem(`products_${params.id}`);
+  //   if (storedProducts) {
+  //     const parsedProducts = JSON.parse(storedProducts);
+  //     methods.reset({ products: parsedProducts });
+  //   }
+  // }, [params.id, methods]);
+
   const onSubmit = (data: any) => {
     console.log("Form Data Submitted:", data);
     alert("Confirmando offboarding");

@@ -31,13 +31,7 @@ const validateBillingInfo = (user: User): boolean => {
     "apartment",
   ] as const;
 
-  for (const field of requiredFields) {
-    const value = user[field as keyof User];
-    if (value === undefined || value === null || value.trim() === "") {
-      return false;
-    }
-  }
-  return true;
+  return requiredFields.every((field) => user[field]?.trim() !== "");
 };
 
 const validateMemberBillingInfo = (user: User): boolean => {
@@ -49,13 +43,10 @@ const validateMemberBillingInfo = (user: User): boolean => {
     "apartment",
   ] as const;
 
-  for (const field of requiredFields) {
+  return requiredFields.every((field) => {
     const value = user[field as keyof User];
-    if (value === undefined || value === null || value.trim() === "") {
-      return false;
-    }
-  }
-  return true;
+    return value !== undefined && value !== null && value.trim() !== "";
+  });
 };
 
 export const RequestOffBoardingForm = ({ product, index, members }: Props) => {
@@ -66,11 +57,39 @@ export const RequestOffBoardingForm = ({ product, index, members }: Props) => {
     aside: { setAside },
     members: { setMemberToEdit },
   } = useStore();
-
+  const [formStatus, setFormStatus] = useState<string>("none");
   const selectedMember = watch(`products.${index}.newMember`);
   const relocation = watch(`products.${index}.relocation`);
 
-  const handleDropdown = (relocation: DropdownOption) => {
+  useEffect(() => {
+    const getStatus = () => {
+      if (relocation === "New employee") {
+        const foundMember = members.find(
+          (member) =>
+            `${member.firstName} ${member.lastName}` ===
+            selectedMember?.fullName
+        );
+
+        if (!foundMember) return "selectMembers";
+        if (!validateMemberBillingInfo(foundMember))
+          return "not-member-available";
+        return "is-member-available";
+      }
+
+      if (relocation === "My office") {
+        if (!validateBillingInfo(session.user))
+          return "not-billing-information";
+      }
+
+      return "none";
+    };
+
+    const newStatus = getStatus();
+
+    setFormStatus(newStatus);
+  }, [selectedMember, relocation, members, session.user]);
+
+  const handleDropdown = (relocation: string) => {
     if (relocation === "My office") {
       if (!validateBillingInfo(session.user)) {
         setValue(`products.${index}.relocation`, "My office");
@@ -96,14 +115,14 @@ export const RequestOffBoardingForm = ({ product, index, members }: Props) => {
     const member = members.find(
       (member) => `${member.firstName} ${member.lastName}` === memberFullName
     );
-
     if (memberFullName === "None") {
       setValue(`products.${index}.relocation`, "");
       setValue(`products.${index}.newMember`, null);
-    } else {
+    } else if (member) {
       setValue(`products.${index}.relocation`, "New employee");
       setValue(`products.${index}.newMember`, member);
     }
+    return member;
   };
 
   const getStatus = () => {
@@ -124,11 +143,13 @@ export const RequestOffBoardingForm = ({ product, index, members }: Props) => {
     return "none";
   };
 
+  const status = getStatus();
+
   const handleClick = (status: string) => {
     if (status === "not-billing-information") {
       router.push("/home/settings");
     } else if (status === "not-member-available") {
-      setMemberToEdit(selectedMember._id);
+      setMemberToEdit(selectedMember?._id);
       setAside("EditMember");
     }
   };
@@ -145,25 +166,33 @@ export const RequestOffBoardingForm = ({ product, index, members }: Props) => {
             <Controller
               name={`products.${index}.newMember`}
               control={control}
-              render={({ field: { onChange, value, name } }) => (
-                <DropdownInputProductForm
-                  name={name}
-                  options={[
-                    "None",
-                    ...members.map(
-                      (member) => `${member.firstName} ${member.lastName}`
-                    ),
-                  ]}
-                  placeholder="Reassigned Member"
-                  title="Reassigned Member*"
-                  onChange={(selectedValue: string) => {
-                    onChange(selectedValue);
-                    handleDropdownMembers(selectedValue); // Update location based on member
-                  }}
-                  searchable={true}
-                  selectedOption={value || ""}
-                />
-              )}
+              render={({ field: { onChange, value, name } }) => {
+                const selectedFullName =
+                  value && typeof value === "object"
+                    ? `${value.firstName} ${value.lastName}`
+                    : value || "";
+
+                return (
+                  <DropdownInputProductForm
+                    name={name}
+                    options={[
+                      "None",
+                      ...members.map(
+                        (member) => `${member.firstName} ${member.lastName}`
+                      ),
+                    ]}
+                    placeholder="Reassigned Member"
+                    title="Reassigned Member*"
+                    onChange={(selectedValue: string) => {
+                      const selectedMember =
+                        handleDropdownMembers(selectedValue);
+                      onChange(selectedMember);
+                    }}
+                    searchable={true}
+                    selectedOption={selectedFullName}
+                  />
+                );
+              }}
             />
           </div>
           <div className="flex- bg-green-200 p-4">
@@ -187,20 +216,14 @@ export const RequestOffBoardingForm = ({ product, index, members }: Props) => {
             />
           </div>
           <div className="flex-1 p-2 flex items-center">
-            {status === "not-billing-information" && (
-              <Button size="default" onClick={() => handleClick(status)}>
+            {formStatus === "not-billing-information" && (
+              <Button size="default" onClick={() => handleClick(formStatus)}>
                 Complete Company Details
               </Button>
             )}
 
-            {status === "not-member-available" && (
-              <Button
-                size="default"
-                onClick={() => {
-                  setMemberToEdit(selectedMember?._id);
-                  setAside("EditMember");
-                }}
-              >
+            {formStatus === "not-member-available" && (
+              <Button size="default" onClick={() => handleClick(formStatus)}>
                 Complete Shipment Details
               </Button>
             )}

@@ -7,10 +7,15 @@ export const AsideStore = types
   .model({
     type: types.maybe(types.enumeration(ASIDE_TYPES)),
     csvContext: types.maybe(types.string),
+    isClosed: types.optional(types.boolean, true),
   })
   .actions((store) => ({
     setAside(type: Maybe<AsideType>, csvContext?: string) {
       store.type = type;
       store.csvContext = csvContext;
+    },
+    closeAside() {
+      store.type = undefined;
+      store.isClosed = true;
     },
   }));
