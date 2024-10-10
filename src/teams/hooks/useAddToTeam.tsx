@@ -13,13 +13,29 @@ export const useAddToTeam = () => {
   return useMutation({
     mutationFn: ({ teamId, memberId }: { teamId: string; memberId: string }) =>
       addToTeam(teamId, memberId),
+    onMutate: async ({ teamId, memberId }) => {
+      await queryClient.cancelQueries({ queryKey: ["teams"] });
+
+      const previousTeams = queryClient.getQueryData<Team[]>(["teams"]);
+
+      queryClient.setQueryData<Team[]>(["teams"], (oldTeams) => {
+        return oldTeams?.map((team) =>
+          team._id === teamId ? { ...team } : team
+        );
+      });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      return { previousTeams };
+    },
 
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
-      updateTeam(data); // actualizo el estado de MobX
+      updateTeam(data);
     },
-    onError: (error) => {
-      console.error("Error adding member to team:", error);
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["teams"], context?.previousTeams);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
     },
   });
 };

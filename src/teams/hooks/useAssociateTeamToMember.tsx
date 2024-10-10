@@ -14,8 +14,10 @@ export const useAssociateTeamToMember = () => {
       associateTeamToMember(teamId, memberId),
 
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["teams"] });
       updateTeam(data);
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+
       //   setAlert("associateTeamSuccess");
     },
     onError: (error) => {

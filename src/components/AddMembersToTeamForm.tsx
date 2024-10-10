@@ -9,6 +9,7 @@ import { transformData } from "@/utils/dataTransformUtil";
 import { Skeleton } from "./ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAddToTeam, useRemoveFromTeam } from "@/teams/hooks";
+import { TeamServices } from "@/services";
 
 interface AddMembersToTeamFormProps {
   selectedMembers?: TeamMember[];
@@ -54,7 +55,7 @@ export const AddMembersToTeamForm = observer(function ({
   };
   useEffect(() => {
     setInitialData();
-  }, [members, team]);
+  }, []);
 
   const handleSearch = (query: string) => {
     setSearchedMembers(
@@ -89,38 +90,47 @@ export const AddMembersToTeamForm = observer(function ({
     }
   };
 
-  const handleConfirmChanges = async () => {
-    setLoading(true);
+  const editTeam = async () => {
     try {
       if (membersToAdd.length > 0) {
-        await Promise.all(
-          membersToAdd.map((member) =>
-            addToTeamMutation.mutateAsync({
-              teamId: team._id,
-              memberId: member._id,
-            })
-          )
+        const allMembersToAdd = membersToAdd.map((member) =>
+          TeamServices.addToTeam(team._id, member._id)
         );
+        await Promise.all(allMembersToAdd);
       }
       if (membersToDelete.length > 0) {
-        await Promise.all(
-          membersToDelete.map((member) =>
-            removeFromTeamMutation.mutateAsync({
-              teamId: team._id,
-              memberId: member._id,
-            })
-          )
+        const allMembersToDelete = membersToDelete.map((member) =>
+          TeamServices.removeFromTeam(team._id, member._id)
         );
+        await Promise.all(allMembersToDelete);
       }
 
       await queryClient.invalidateQueries({ queryKey: ["members"] });
+      await queryClient.invalidateQueries({ queryKey: ["teams"] });
       setInitialData();
     } catch (error) {
-      console.error("Error applying team changes:", error);
+      return error;
+    }
+  };
+  const handleConfirmChanges = async () => {
+    setLoading(true);
+    try {
+      await editTeam();
+    } catch (error) {
+      setLoading(false);
+      return error;
     } finally {
+      setInitialData();
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+    };
+  }, [queryClient]);
 
   const confirmBtnStatus =
     membersToAdd.length === 0 && membersToDelete.length === 0; // USAR ESTE VALOR PARA DEFINIR SI HAY CAMBIOS EN LOS USER SELECCIONADOS.

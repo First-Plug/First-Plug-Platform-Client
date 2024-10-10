@@ -13,8 +13,9 @@ export const useRemoveFromTeam = () => {
       removeFromTeam(teamId, memberId),
 
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["teams"] });
       updateTeam(data);
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
     },
     onError: (error) => {
       //   setAlert("removeFromTeamError");
