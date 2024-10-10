@@ -1,17 +1,15 @@
 "use client";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
-import {
-  EmptyDashboardCard,
-  NotificationIcon,
-  PageLayout,
-  ShopIcon,
-} from "@/common";
+import { EmptyDashboardCard, PageLayout, ShopIcon } from "@/common";
 import { Card, StockCard, TeamHomeCard } from "@/components";
 import { useEffect, useState } from "react";
 import useFetch from "@/hooks/useFetch";
 import { UserServices } from "@/services/user.services";
 import { setAuthInterceptor } from "@/config/axios.config";
+import { useFetchTeams } from "@/teams/hooks";
+import { useFetchMembers } from "@/members/hooks";
+import { BarLoader } from "@/components/Loader/BarLoader";
 
 export default observer(function Dashboard() {
   const {
@@ -20,6 +18,10 @@ export default observer(function Dashboard() {
     alerts: { setAlert },
     user: { user },
   } = useStore();
+
+  const { data: membersData, isLoading: membersLoading } = useFetchMembers();
+  const { data: teamsData, isLoading: teamsLoading } = useFetchTeams();
+
   const { fetchStock, fetchMembers, fetchMembersAndTeams } = useFetch();
   const [loading, setLoading] = useState(true);
 
@@ -47,6 +49,10 @@ export default observer(function Dashboard() {
       console.error("Failed to send Slack message:", error);
     }
   };
+
+  if (membersLoading || teamsLoading) {
+    return <BarLoader />;
+  }
 
   return (
     <PageLayout>
@@ -81,7 +87,7 @@ export default observer(function Dashboard() {
           </Card> */}
         </section>
         <section className="grid grid-cols-2 gap-4 h-1/2  ">
-          {members.length ? (
+          {membersData.length ? (
             <>
               <Card
                 Title="Upcoming Birthdays"
@@ -91,7 +97,7 @@ export default observer(function Dashboard() {
                   handleBirthdayGiftClick();
                 }}
               >
-                <TeamHomeCard />
+                <TeamHomeCard members={membersData} />
               </Card>
             </>
           ) : (
