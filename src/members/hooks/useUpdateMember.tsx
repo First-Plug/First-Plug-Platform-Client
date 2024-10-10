@@ -51,11 +51,14 @@ export const useUpdateMember = () => {
       }
     },
 
-    onSuccess: (data) => {
+    onSuccess: (data, id) => {
+      queryClient.setQueryData<TeamMember[]>(["members"], (oldMembers) =>
+        oldMembers.map((member) => (member._id === data._id ? data : member))
+      );
       updateMemberInStore(data);
       setAlert("updateMember");
+      // Invalidar solo si es necesario
       queryClient.invalidateQueries({ queryKey: ["teams"] });
-      queryClient.invalidateQueries({ queryKey: ["members"] });
     },
 
     onSettled: (data, error, variables) => {

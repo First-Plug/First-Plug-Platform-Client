@@ -26,7 +26,6 @@ export const useCreateTeam = () => {
 
       const previousTeams = queryClient.getQueryData<Team[]>(["teams"]);
 
-      // Crear un equipo optimista
       const optimisticTeam: Team = {
         _id: Math.random().toString(),
         name: newTeam.name || "Unnamed Team (optimistic)",
@@ -34,7 +33,6 @@ export const useCreateTeam = () => {
         __v: 0,
       };
 
-      // Agregar el equipo optimista a la lista de equipos
       queryClient.setQueryData<Team[]>(["teams"], (oldTeams) => {
         if (!oldTeams) return [optimisticTeam];
         return [...oldTeams, optimisticTeam];
@@ -46,21 +44,18 @@ export const useCreateTeam = () => {
     onSuccess: (data) => {
       queryClient.setQueryData<Team[]>(["teams"], (oldTeams) => {
         if (!oldTeams) return [data];
-        return oldTeams.map((team) => (team._id === data._id ? data : team));
+        return [...oldTeams, data];
       });
-
-      addTeam(data); // Actualiza el MobX store
+      addTeam(data);
       setAlert("createTeam");
     },
 
     onError: (error, variables, context) => {
-      // Restaurar el cache anterior en caso de error
       queryClient.setQueryData(["teams"], context?.previousTeams);
     },
 
     onSettled: () => {
-      // Invalida las queries para obtener los datos más recientes del backend
-      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      // queryClient.invalidateQueries({ queryKey: ["teams"] });
     },
   });
 
