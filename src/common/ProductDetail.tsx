@@ -207,8 +207,8 @@ export default function ProductDetail({
         <section className="flex items-center  gap-2  ">
           <section className="flex gap-2 items-start">
             <div className="flex gap-2 items-start">
-              <ProductImage category={product.category} />
-              <span className="font-semibold">{product.category}</span>
+              <ProductImage category={product?.category} />
+              <span className="font-semibold">{product?.category}</span>
             </div>
 
             <hr />

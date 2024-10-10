@@ -20,7 +20,7 @@ export const MemberAsideDetails = observer(function ({
   className,
 }: MemberAsideDetailsProps) {
   const {
-    members: { members, selectedMember, setMemberToEdit, setMembers },
+    members: { members, selectedMember, setMemberToEdit, setSelectedMember },
     aside: { setAside },
     alerts: { setAlert },
     products,
@@ -117,7 +117,12 @@ export const MemberAsideDetails = observer(function ({
 
     if (!getMissingFields(selectedMember).length) {
       // TODO: next history v2
-      alert("the member has all his data");
+
+      setSelectedMember(selectedMember._id);
+
+      router.push(`/home/my-team/requestOffBoarding/${selectedMember._id}`);
+
+      setAside(undefined);
     } else {
       const missingFields = getMissingFields(selectedMember);
 
