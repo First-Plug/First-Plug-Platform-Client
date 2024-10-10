@@ -63,4 +63,20 @@ export class UserServices {
       throw error;
     }
   }
+
+  static async notifyShop(email: string, tenantName: string) {
+    try {
+      const response = await HTTPRequests.post(
+        `${BASE_URL}/api/user/notify-shop`,
+        {
+          email,
+          tenantName,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error notifying Slack for birthday gift interest", error);
+      throw error;
+    }
+  }
 }
