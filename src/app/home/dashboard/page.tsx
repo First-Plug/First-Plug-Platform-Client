@@ -12,6 +12,8 @@ import { useEffect, useState } from "react";
 import useFetch from "@/hooks/useFetch";
 import { UserServices } from "@/services/user.services";
 import { setAuthInterceptor } from "@/config/axios.config";
+import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
+import { useSession } from "next-auth/react";
 
 export default observer(function Dashboard() {
   const {
@@ -48,6 +50,8 @@ export default observer(function Dashboard() {
     }
   };
 
+  const { data } = useSession();
+
   return (
     <PageLayout>
       <div className="flex flex-col gap-4 w-full h-full  ">
@@ -58,7 +62,12 @@ export default observer(function Dashboard() {
               titleButton="Shop Now"
               icon={<ShopIcon />}
               onClick={() => {
-                window.location.href = "/shop";
+                const {
+                  user: { email, tenantName },
+                } = data;
+
+                window.open(CATALOGO_FIRST_PLUG, "_blank");
+                UserServices.notifyShop(email, tenantName);
               }}
             >
               <StockCard products={tableProducts} />

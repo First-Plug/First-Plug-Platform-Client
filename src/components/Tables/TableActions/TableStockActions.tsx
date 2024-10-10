@@ -5,6 +5,9 @@ import { observer } from "mobx-react-lite";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useFilterReset } from "../Filters/FilterResetContext";
+import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
+import { UserServices } from "@/services/user.services";
+import { useSession } from "next-auth/react";
 
 interface ITableStockActions<TData> {
   table: Table<TData>;
@@ -34,6 +37,8 @@ export default observer(function TableStockActions<TData>({
       console.error("Failed to export products CSV:", error);
     }
   };
+
+  const { data } = useSession();
 
   return (
     <div className=" flex items-center justify-between   h-full w-full ">
@@ -81,7 +86,12 @@ export default observer(function TableStockActions<TData>({
           icon={<ShopIcon />}
           body="Shop Now"
           onClick={() => {
-            router.push("/shop");
+            const {
+              user: { email, tenantName },
+            } = data;
+
+            window.open(CATALOGO_FIRST_PLUG, "_blank");
+            UserServices.notifyShop(email, tenantName);
           }}
         />
       </div>
