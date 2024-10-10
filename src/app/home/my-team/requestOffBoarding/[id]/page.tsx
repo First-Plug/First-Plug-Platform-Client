@@ -16,7 +16,6 @@ export interface ProductOffBoarding {
   relocation: DropdownOption;
   available: boolean;
   newMember?: any;
-  index: number;
 }
 
 export default function Page({ params }: { params: { id: string } }) {

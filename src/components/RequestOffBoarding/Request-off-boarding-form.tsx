@@ -128,7 +128,6 @@ export const RequestOffBoardingForm = ({
             product,
             relocation: "My office",
             available: false,
-            index,
           };
 
           const productExists = prev.some(
@@ -151,7 +150,6 @@ export const RequestOffBoardingForm = ({
             product,
             relocation: "My office",
             available: true,
-            index,
           };
 
           const productExists = prev.some(
@@ -178,7 +176,6 @@ export const RequestOffBoardingForm = ({
           product,
           relocation: "FP warehouse",
           available: true,
-          index,
         };
 
         const productExists = prev.some(
@@ -236,7 +233,6 @@ export const RequestOffBoardingForm = ({
           newMember: member,
           relocation: "New member",
           available: true,
-          index,
         };
 
         const productExists = prev.some(
@@ -269,7 +265,6 @@ export const RequestOffBoardingForm = ({
         newMember: member,
         relocation: "New member",
         available: false,
-        index,
       };
 
       return setProducts((prev) => {
