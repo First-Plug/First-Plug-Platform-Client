@@ -7,7 +7,7 @@ import { Product, TeamMember } from "@/types";
 import { RequestOffBoardingForm } from "../../../../../components/RequestOffBoarding/Request-off-boarding-form";
 import { useStore } from "../../../../../models/root.store";
 
-const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New member"] as const;
+const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
 type DropdownOption = (typeof DROPDOWN_OPTIONS)[number];
 

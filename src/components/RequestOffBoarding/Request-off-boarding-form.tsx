@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { ProductOffBoarding } from "@/app/home/my-team/requestOffBoarding/[id]/page";
 import { useStore } from "@/models";
 
-const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New member"];
+const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
 
 const DROPDOWN_OPTIONS_TYPES = [...DROPDOWN_OPTIONS, "None"] as const;
 
@@ -92,7 +92,7 @@ export const RequestOffBoardingForm = ({
     if (initialValue) {
       setSelectedOption(initialValue.relocation);
 
-      if (initialValue.relocation === "New member") {
+      if (initialValue.relocation === "New employee") {
         setValue(initialValue.newMember.fullName);
         if (!validateMemberBillingInfo(initialValue.newMember)) {
           setStatus("not-member-available");
@@ -101,7 +101,7 @@ export const RequestOffBoardingForm = ({
       }
 
       if (initialValue.relocation === "My office") {
-        setArrayOptions(arrayOptions.filter((item) => item !== "New member"));
+        setArrayOptions(arrayOptions.filter((item) => item !== "New employee"));
         setValue("None");
         setDisabledOption(false);
         if (validateBillingInfo(session.user)) {
@@ -114,7 +114,7 @@ export const RequestOffBoardingForm = ({
       if (initialValue.relocation === "FP warehouse") {
         setValue("None");
         setDisabledOption(false);
-        setArrayOptions(arrayOptions.filter((item) => item !== "New member"));
+        setArrayOptions(arrayOptions.filter((item) => item !== "New employee"));
       }
     }
   }, []);
@@ -194,7 +194,7 @@ export const RequestOffBoardingForm = ({
       });
     }
 
-    if (relocation === "New member") {
+    if (relocation === "New employee") {
       setStatus("selectMembers");
       return setProducts((prev) =>
         prev.map((item) =>
@@ -208,10 +208,10 @@ export const RequestOffBoardingForm = ({
 
   const handleDropdownMembers = (memberFullName: string) => {
     if (memberFullName === "None") {
-      setArrayOptions(arrayOptions.filter((item) => item !== "New member"));
+      setArrayOptions(arrayOptions.filter((item) => item !== "New employee"));
       setSelectedOption("");
       setDisabledOption(false);
-      if (selectedOption === "New member") {
+      if (selectedOption === "New employee") {
         setStatus("none");
       }
       return setProducts((prev) => {
@@ -220,7 +220,7 @@ export const RequestOffBoardingForm = ({
     }
 
     setDisabledOption(true);
-    setSelectedOption("New member");
+    setSelectedOption("New employee");
     const member = members.find(
       (member) => `${member.firstName} ${member.lastName}` === memberFullName
     );
@@ -231,7 +231,7 @@ export const RequestOffBoardingForm = ({
         const newProduct: ProductOffBoarding = {
           product,
           newMember: member,
-          relocation: "New member",
+          relocation: "New employee",
           available: true,
         };
 
@@ -247,7 +247,7 @@ export const RequestOffBoardingForm = ({
               ? {
                   ...item,
                   newMember: member,
-                  relocation: "New member",
+                  relocation: "New employee",
                   available: true,
                 }
               : item
@@ -263,7 +263,7 @@ export const RequestOffBoardingForm = ({
       const newProduct: ProductOffBoarding = {
         product,
         newMember: member,
-        relocation: "New member",
+        relocation: "New employee",
         available: false,
       };
 
@@ -278,7 +278,7 @@ export const RequestOffBoardingForm = ({
               ? {
                   ...item,
                   newMember: member,
-                  relocation: "New member",
+                  relocation: "New employee",
                   available: false,
                 }
               : item
