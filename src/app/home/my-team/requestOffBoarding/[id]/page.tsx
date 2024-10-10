@@ -16,12 +16,14 @@ export interface ProductOffBoarding {
   relocation: DropdownOption;
   available: boolean;
   newMember?: any;
+  index: number;
 }
 
 export default function Page({ params }: { params: { id: string } }) {
   const [selectedMember, setSelectedMember] = useState<TeamMember>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [products, setProducts] = useState<ProductOffBoarding[]>([]);
+
   const {
     members: { setMemberOffBoarding },
   } = useStore();
@@ -42,7 +44,6 @@ export default function Page({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   useEffect(() => {
-    // Guardar productos en localStorage cuando cambien
     localStorage.setItem(`products_${params.id}`, JSON.stringify(products));
   }, [products, params.id]);
 
@@ -56,32 +57,16 @@ export default function Page({ params }: { params: { id: string } }) {
     products.every((product) => product.available) &&
     products.length === recoverableProducts.length;
 
-  const [assignAll, setAssignAll] = useState(false);
-
-  const handleAssignAllChange = () => {};
-
   return (
     <div className="min-h-[90vh] flex flex-col gap-4">
-      <div className="flex gap-4">
-        <div className="">
+      <div className="flex flex-col gap-2">
+        <div>
           <h2>
             All recoverable assets will be requested and the member will be
             removed from your team.
           </h2>
 
           <span>Please confirm the relocation of each product.</span>
-        </div>
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            className="mr-2"
-            checked={assignAll}
-            onChange={handleAssignAllChange}
-          />
-
-          <p className="text-md font-semibold">
-            Apply &quot;Product 1&quot; settings to all Products
-          </p>
         </div>
       </div>
 
@@ -97,6 +82,7 @@ export default function Page({ params }: { params: { id: string } }) {
                 key={product._id}
                 product={product}
                 index={index}
+                products={products}
                 setProducts={setProducts}
                 initialValue={initialProduct}
                 members={members}
@@ -112,8 +98,11 @@ export default function Page({ params }: { params: { id: string } }) {
             className="mr-[39px] w-[200px] h-[40px] rounded-lg"
             type="submit"
             disabled={!isAvailable}
+            onClick={() => {
+              alert("Confirmando offboarding");
+            }}
           >
-            Save
+            Confirm offboard
           </Button>
         </div>
       </section>

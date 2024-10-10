@@ -17,6 +17,7 @@ type DropdownOption = (typeof DROPDOWN_OPTIONS_TYPES)[number];
 export interface Props {
   product: Product;
   index: number;
+  products: ProductOffBoarding[];
   setProducts: React.Dispatch<React.SetStateAction<ProductOffBoarding[]>>;
   members: any;
   initialValue?: ProductOffBoarding;
@@ -127,6 +128,7 @@ export const RequestOffBoardingForm = ({
             product,
             relocation: "My office",
             available: false,
+            index,
           };
 
           const productExists = prev.some(
@@ -149,6 +151,7 @@ export const RequestOffBoardingForm = ({
             product,
             relocation: "My office",
             available: true,
+            index,
           };
 
           const productExists = prev.some(
@@ -175,6 +178,7 @@ export const RequestOffBoardingForm = ({
           product,
           relocation: "FP warehouse",
           available: true,
+          index,
         };
 
         const productExists = prev.some(
@@ -210,6 +214,9 @@ export const RequestOffBoardingForm = ({
       setArrayOptions(arrayOptions.filter((item) => item !== "New member"));
       setSelectedOption("");
       setDisabledOption(false);
+      if (selectedOption === "New member") {
+        setStatus("none");
+      }
       return setProducts((prev) => {
         return prev.filter((item) => item.product._id !== product._id);
       });
@@ -223,16 +230,14 @@ export const RequestOffBoardingForm = ({
 
     const isMemberAvailable = validateMemberBillingInfo(member);
     if (isMemberAvailable) {
-      // Caso cuando hay un miembro disponible
       return setProducts((prev) => {
         const newProduct: ProductOffBoarding = {
           product,
           newMember: member,
           relocation: "New member",
           available: true,
+          index,
         };
-
-        console.log(newProduct); // Para verificar que el nuevo producto se está creando correctamente
 
         const productExists = prev.some(
           (item) => item.product._id === newProduct.product._id
@@ -241,55 +246,49 @@ export const RequestOffBoardingForm = ({
         setStatus("is-member-available");
 
         if (productExists) {
-          // Actualiza el producto existente
-          return prev.map((item) =>
-            item.product._id === newProduct.product._id
-              ? {
-                  ...item,
-                  newMember: member, // Actualiza el nuevo miembro
-                  relocation: "New member", // Mantiene la ubicación
-                  available: true, // Asegúrate de que esté disponible
-                }
-              : item
-          );
-        } else {
-          // Si el producto no existe, agrega el nuevo
-          return [...prev, newProduct];
-        }
-      });
-    } else {
-      // Caso cuando no hay un miembro disponible
-      setSelectedMember(member);
-      setStatus("not-member-available");
-
-      // Guarda la nueva información del producto pero establece `available` en false
-      const newProduct: ProductOffBoarding = {
-        product,
-        newMember: member,
-        relocation: "New member",
-        available: false, // Establece como no disponible
-      };
-
-      return setProducts((prev) => {
-        // Asegúrate de que se guarde el nuevo producto o se actualice el existente
-        const productExists = prev.some(
-          (item) => item.product._id === newProduct.product._id
-        );
-
-        if (productExists) {
-          // Si el producto existe, actualiza su estado
           return prev.map((item) =>
             item.product._id === newProduct.product._id
               ? {
                   ...item,
                   newMember: member,
                   relocation: "New member",
-                  available: false, // Asegúrate de que esté no disponible
+                  available: true,
                 }
               : item
           );
         } else {
-          // Si no existe, simplemente añade el nuevo
+          return [...prev, newProduct];
+        }
+      });
+    } else {
+      setSelectedMember(member);
+      setStatus("not-member-available");
+
+      const newProduct: ProductOffBoarding = {
+        product,
+        newMember: member,
+        relocation: "New member",
+        available: false,
+        index,
+      };
+
+      return setProducts((prev) => {
+        const productExists = prev.some(
+          (item) => item.product._id === newProduct.product._id
+        );
+
+        if (productExists) {
+          return prev.map((item) =>
+            item.product._id === newProduct.product._id
+              ? {
+                  ...item,
+                  newMember: member,
+                  relocation: "New member",
+                  available: false,
+                }
+              : item
+          );
+        } else {
           return [...prev, newProduct];
         }
       });
@@ -317,8 +316,8 @@ export const RequestOffBoardingForm = ({
                 (member) => `${member.firstName} ${member.lastName}`
               ),
             ]}
-            placeholder="Selected member"
-            title="Select member*"
+            placeholder="Reassigned Member"
+            title="Reassigned Member*"
             name={`products.${index}`}
             onChange={handleDropdownMembers}
             searchable={true}
@@ -328,19 +327,19 @@ export const RequestOffBoardingForm = ({
         <div className="flex- bg-green-200 p-4">
           <DropdownInputProductForm
             options={arrayOptions}
-            placeholder="Relocation place"
-            title="Relocation place*"
+            placeholder="New Location"
+            title="New Location*"
             name={`products.${index}`}
             onChange={handleDropdown}
             selectedOption={selectedOption}
-            disabled={disabledOption}
             searchable={true}
+            disabled={disabledOption}
           />
         </div>
         <div className="flex-1 p-2 flex items-center">
           {status === "not-billing-information" && (
             <Button size="default" onClick={handleClick}>
-              Fill In Billing Information
+              Complete Company Details
             </Button>
           )}
 
@@ -352,7 +351,7 @@ export const RequestOffBoardingForm = ({
                 setAside("EditMember");
               }}
             >
-              Fill In Shipping Details
+              Complete Shipment Details
             </Button>
           )}
         </div>
