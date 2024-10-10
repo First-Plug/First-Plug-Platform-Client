@@ -1,4 +1,4 @@
-import { Button, SectionTitle } from "@/common";
+import { Button, PageLayout, SectionTitle } from "@/common";
 import ProductDetail from "@/common/ProductDetail";
 import { Product, User } from "@/types";
 import { DropdownInputProductForm } from "../AddProduct/DropDownProductForm";
@@ -297,60 +297,62 @@ export const RequestOffBoardingForm = ({
   };
 
   return (
-    <section className="space-y-4">
-      <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
-      <div className="flex space-x-2">
-        <div className="flex-1 p-4">
-          <ProductDetail product={product} />
-        </div>
-        <div className="flex-3 p-4">
-          <DropdownInputProductForm
-            options={[
-              "None",
-              ...members.map(
-                (member) => `${member.firstName} ${member.lastName}`
-              ),
-            ]}
-            placeholder="Reassigned Member"
-            title="Reassigned Member*"
-            name={`products.${index}`}
-            onChange={handleDropdownMembers}
-            searchable={true}
-            selectedOption={value}
-          />
-        </div>
-        <div className="flex- bg-green-200 p-4">
-          <DropdownInputProductForm
-            options={arrayOptions}
-            placeholder="New Location"
-            title="New Location*"
-            name={`products.${index}`}
-            onChange={handleDropdown}
-            selectedOption={selectedOption}
-            searchable={true}
-            disabled={disabledOption}
-          />
-        </div>
-        <div className="flex-1 p-2 flex items-center">
-          {status === "not-billing-information" && (
-            <Button size="default" onClick={handleClick}>
-              Complete Company Details
-            </Button>
-          )}
+    <PageLayout>
+      <section className="space-y-4">
+        <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
+        <div className="flex space-x-2">
+          <div className="flex-1 p-4">
+            <ProductDetail product={product} />
+          </div>
+          <div className="flex-3 p-4">
+            <DropdownInputProductForm
+              options={[
+                "None",
+                ...members.map(
+                  (member) => `${member.firstName} ${member.lastName}`
+                ),
+              ]}
+              placeholder="Reassigned Member"
+              title="Reassigned Member*"
+              name={`products.${index}`}
+              onChange={handleDropdownMembers}
+              searchable={true}
+              selectedOption={value}
+            />
+          </div>
+          <div className="flex- bg-green-200 p-4">
+            <DropdownInputProductForm
+              options={arrayOptions}
+              placeholder="New Location"
+              title="New Location*"
+              name={`products.${index}`}
+              onChange={handleDropdown}
+              selectedOption={selectedOption}
+              searchable={true}
+              disabled={disabledOption}
+            />
+          </div>
+          <div className="flex-1 p-2 flex items-center">
+            {status === "not-billing-information" && (
+              <Button size="default" onClick={handleClick}>
+                Complete Company Details
+              </Button>
+            )}
 
-          {status === "not-member-available" && (
-            <Button
-              size="default"
-              onClick={() => {
-                setMemberToEdit(selectedMember._id);
-                setAside("EditMember");
-              }}
-            >
-              Complete Shipment Details
-            </Button>
-          )}
+            {status === "not-member-available" && (
+              <Button
+                size="default"
+                onClick={() => {
+                  setMemberToEdit(selectedMember._id);
+                  setAside("EditMember");
+                }}
+              >
+                Complete Shipment Details
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </PageLayout>
   );
 };
