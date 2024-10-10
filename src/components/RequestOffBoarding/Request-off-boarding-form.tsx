@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ProductOffBoarding } from "@/app/home/my-team/requestOffBoarding/[id]/page";
 import { useStore } from "@/models";
+import { Controller, useFormContext } from "react-hook-form";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
 
@@ -17,10 +18,7 @@ type DropdownOption = (typeof DROPDOWN_OPTIONS_TYPES)[number];
 export interface Props {
   product: Product;
   index: number;
-  products: ProductOffBoarding[];
-  setProducts: React.Dispatch<React.SetStateAction<ProductOffBoarding[]>>;
   members: any;
-  initialValue?: ProductOffBoarding;
 }
 
 const validateBillingInfo = (user: User): boolean => {
@@ -60,239 +58,78 @@ const validateMemberBillingInfo = (user: User): boolean => {
   return true;
 };
 
-export const RequestOffBoardingForm = ({
-  product,
-  index,
-  setProducts,
-  members,
-  initialValue,
-}: Props) => {
+export const RequestOffBoardingForm = ({ product, index, members }: Props) => {
   const { data: session } = useSession();
   const router = useRouter();
+  const { setValue, watch, control } = useFormContext();
   const {
     aside: { setAside },
-    members: { setMemberToEdit, members: memberStore },
+    members: { setMemberToEdit },
   } = useStore();
 
-  const [status, setStatus] = useState<
-    | "not-billing-information"
-    | "none"
-    | "selectMembers"
-    | "is-member-available"
-    | "not-member-available"
-  >();
-
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [selectedOption, setSelectedOption] = useState<DropdownOption | "">("");
-  const [disabledOption, setDisabledOption] = useState(true);
-  const [value, setValue] = useState("");
-  const [arrayOptions, setArrayOptions] = useState(DROPDOWN_OPTIONS);
-
-  useEffect(() => {
-    if (initialValue) {
-      setSelectedOption(initialValue.relocation);
-
-      if (initialValue.relocation === "New employee") {
-        setValue(initialValue.newMember.fullName);
-        if (!validateMemberBillingInfo(initialValue.newMember)) {
-          setStatus("not-member-available");
-        } else {
-        }
-      }
-
-      if (initialValue.relocation === "My office") {
-        setArrayOptions(arrayOptions.filter((item) => item !== "New employee"));
-        setValue("None");
-        setDisabledOption(false);
-        if (validateBillingInfo(session.user)) {
-          setStatus("none");
-        } else {
-          setStatus("not-billing-information");
-        }
-      }
-
-      if (initialValue.relocation === "FP warehouse") {
-        setValue("None");
-        setDisabledOption(false);
-        setArrayOptions(arrayOptions.filter((item) => item !== "New employee"));
-      }
-    }
-  }, []);
+  const selectedMember = watch(`products.${index}.newMember`);
+  const relocation = watch(`products.${index}.relocation`);
 
   const handleDropdown = (relocation: DropdownOption) => {
     if (relocation === "My office") {
       if (!validateBillingInfo(session.user)) {
-        setStatus("not-billing-information");
-        return setProducts((prev) => {
-          const newProduct: ProductOffBoarding = {
-            product,
-            relocation: "My office",
-            available: false,
-          };
-
-          const productExists = prev.some(
-            (item) => item.product._id === newProduct.product._id
-          );
-
-          if (productExists) {
-            return prev.map((item) =>
-              item.product._id === newProduct.product._id
-                ? { ...item, ...newProduct }
-                : item
-            );
-          } else {
-            return [...prev, newProduct];
-          }
-        });
+        setValue(`products.${index}.relocation`, "My office");
+        setValue(`products.${index}.available`, false);
       } else {
-        return setProducts((prev) => {
-          const newProduct: ProductOffBoarding = {
-            product,
-            relocation: "My office",
-            available: true,
-          };
-
-          const productExists = prev.some(
-            (item) => item.product._id === newProduct.product._id
-          );
-
-          if (productExists) {
-            return prev.map((item) =>
-              item.product._id === newProduct.product._id
-                ? { ...item, ...newProduct }
-                : item
-            );
-          } else {
-            return [...prev, newProduct];
-          }
-        });
+        setValue(`products.${index}.relocation`, "My office");
+        setValue(`products.${index}.available`, true);
       }
     }
 
     if (relocation === "FP warehouse") {
-      setStatus("none");
-      return setProducts((prev) => {
-        const newProduct: ProductOffBoarding = {
-          product,
-          relocation: "FP warehouse",
-          available: true,
-        };
-
-        const productExists = prev.some(
-          (item) => item.product._id === newProduct.product._id
-        );
-
-        if (productExists) {
-          return prev.map((item) =>
-            item.product._id === newProduct.product._id
-              ? { ...item, ...newProduct }
-              : item
-          );
-        } else {
-          return [...prev, newProduct];
-        }
-      });
+      setValue(`products.${index}.relocation`, "FP warehouse");
+      setValue(`products.${index}.available`, true);
     }
 
     if (relocation === "New employee") {
-      setStatus("selectMembers");
-      return setProducts((prev) =>
-        prev.map((item) =>
-          item.product._id === product._id
-            ? { ...item, available: false }
-            : item
-        )
-      );
+      setValue(`products.${index}.relocation`, "New employee");
+      setValue(`products.${index}.available`, false);
     }
   };
 
   const handleDropdownMembers = (memberFullName: string) => {
-    if (memberFullName === "None") {
-      setArrayOptions(arrayOptions.filter((item) => item !== "New employee"));
-      setSelectedOption("");
-      setDisabledOption(false);
-      if (selectedOption === "New employee") {
-        setStatus("none");
-      }
-      return setProducts((prev) => {
-        return prev.filter((item) => item.product._id !== product._id);
-      });
-    }
-
-    setDisabledOption(true);
-    setSelectedOption("New employee");
     const member = members.find(
       (member) => `${member.firstName} ${member.lastName}` === memberFullName
     );
 
-    const isMemberAvailable = validateMemberBillingInfo(member);
-    if (isMemberAvailable) {
-      return setProducts((prev) => {
-        const newProduct: ProductOffBoarding = {
-          product,
-          newMember: member,
-          relocation: "New employee",
-          available: true,
-        };
-
-        const productExists = prev.some(
-          (item) => item.product._id === newProduct.product._id
-        );
-
-        setStatus("is-member-available");
-
-        if (productExists) {
-          return prev.map((item) =>
-            item.product._id === newProduct.product._id
-              ? {
-                  ...item,
-                  newMember: member,
-                  relocation: "New employee",
-                  available: true,
-                }
-              : item
-          );
-        } else {
-          return [...prev, newProduct];
-        }
-      });
+    if (memberFullName === "None") {
+      setValue(`products.${index}.relocation`, "");
+      setValue(`products.${index}.newMember`, null);
     } else {
-      setSelectedMember(member);
-      setStatus("not-member-available");
-
-      const newProduct: ProductOffBoarding = {
-        product,
-        newMember: member,
-        relocation: "New employee",
-        available: false,
-      };
-
-      return setProducts((prev) => {
-        const productExists = prev.some(
-          (item) => item.product._id === newProduct.product._id
-        );
-
-        if (productExists) {
-          return prev.map((item) =>
-            item.product._id === newProduct.product._id
-              ? {
-                  ...item,
-                  newMember: member,
-                  relocation: "New employee",
-                  available: false,
-                }
-              : item
-          );
-        } else {
-          return [...prev, newProduct];
-        }
-      });
+      setValue(`products.${index}.relocation`, "New employee");
+      setValue(`products.${index}.newMember`, member);
     }
   };
 
-  const handleClick = () => {
+  const getStatus = () => {
+    if (relocation === "New employee") {
+      const foundMember = members.find(
+        (m) => `${m.firstName} ${m.lastName}` === selectedMember
+      );
+      if (!foundMember) return "selectMembers";
+      if (!validateMemberBillingInfo(foundMember))
+        return "not-member-available";
+      return "is-member-available";
+    }
+
+    if (relocation === "My office") {
+      if (!validateBillingInfo(session.user)) return "not-billing-information";
+    }
+
+    return "none";
+  };
+
+  const handleClick = (status: string) => {
     if (status === "not-billing-information") {
       router.push("/home/settings");
+    } else if (status === "not-member-available") {
+      setMemberToEdit(selectedMember._id);
+      setAside("EditMember");
     }
   };
 
@@ -305,36 +142,53 @@ export const RequestOffBoardingForm = ({
             <ProductDetail product={product} />
           </div>
           <div className="flex-3 p-4">
-            <DropdownInputProductForm
-              options={[
-                "None",
-                ...members.map(
-                  (member) => `${member.firstName} ${member.lastName}`
-                ),
-              ]}
-              placeholder="Reassigned Member"
-              title="Reassigned Member*"
-              name={`products.${index}`}
-              onChange={handleDropdownMembers}
-              searchable={true}
-              selectedOption={value}
+            <Controller
+              name={`products.${index}.newMember`}
+              control={control}
+              render={({ field: { onChange, value, name } }) => (
+                <DropdownInputProductForm
+                  name={name}
+                  options={[
+                    "None",
+                    ...members.map(
+                      (member) => `${member.firstName} ${member.lastName}`
+                    ),
+                  ]}
+                  placeholder="Reassigned Member"
+                  title="Reassigned Member*"
+                  onChange={(selectedValue: string) => {
+                    onChange(selectedValue);
+                    handleDropdownMembers(selectedValue); // Update location based on member
+                  }}
+                  searchable={true}
+                  selectedOption={value || ""}
+                />
+              )}
             />
           </div>
           <div className="flex- bg-green-200 p-4">
-            <DropdownInputProductForm
-              options={arrayOptions}
-              placeholder="New Location"
-              title="New Location*"
-              name={`products.${index}`}
-              onChange={handleDropdown}
-              selectedOption={selectedOption}
-              searchable={true}
-              disabled={disabledOption}
+            <Controller
+              name={`products.${index}.relocation`}
+              control={control}
+              render={({ field: { onChange, value, name } }) => (
+                <DropdownInputProductForm
+                  name={name}
+                  options={DROPDOWN_OPTIONS}
+                  placeholder="New Location"
+                  title="New Location*"
+                  onChange={(selectedValue: string) => {
+                    onChange(selectedValue);
+                    handleDropdown(selectedValue);
+                  }}
+                  searchable={true}
+                  selectedOption={value || ""}
+                />
+              )}
             />
           </div>
           <div className="flex-1 p-2 flex items-center">
             {status === "not-billing-information" && (
-              <Button size="default" onClick={handleClick}>
+              <Button size="default" onClick={() => handleClick(status)}>
                 Complete Company Details
               </Button>
             )}
@@ -343,7 +197,7 @@ export const RequestOffBoardingForm = ({
               <Button
                 size="default"
                 onClick={() => {
-                  setMemberToEdit(selectedMember._id);
+                  setMemberToEdit(selectedMember?._id);
                   setAside("EditMember");
                 }}
               >
