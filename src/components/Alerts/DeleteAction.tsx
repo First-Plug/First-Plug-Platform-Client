@@ -76,7 +76,6 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         deleteProduct(id);
         await fetchStock();
         queryClient.invalidateQueries({ queryKey: ["members"] });
-        deleteProduct(id);
         setOpen(false);
         setLoading(false);
         setAlert("deleteStock");

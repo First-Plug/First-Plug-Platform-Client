@@ -25,12 +25,13 @@ export default function MyTeam() {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
     }
   }, []);
+
   return (
     <PageLayout>
       {isLoading || isFetching ? (
         <BarLoader />
       ) : members.length ? (
-        <DataTeam />
+        <DataTeam members={members} />
       ) : (
         <EmptyTeam />
       )}

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
 import { Memberservices, TeamServices } from "@/services";
 import { useStore } from "@/models/root.store";
-import { TeamMember, zodCreateMembertModel } from "@/types";
+import { Team, TeamMember, zodCreateMembertModel } from "@/types";
 import PersonalData from "./PersonalData";
 import memberImage from "../../../public/member.png";
 import EmployeeData from "./EmployeeData";
@@ -14,6 +14,8 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { transformData } from "@/utils/dataTransformUtil";
 import { useCreateMember, useUpdateMember } from "@/members/hooks";
+import { useGetOrCreateTeam } from "@/teams/hooks";
+import { QueryClient } from "@tanstack/react-query";
 
 interface MemberFormProps {
   initialData?: TeamMember;
@@ -27,8 +29,9 @@ const MemberForm: React.FC<MemberFormProps> = ({
   const {
     members: { addMember, setMembers, updateMember },
     alerts: { setAlert },
-    teams: { getOrCreateTeam, setTeams },
+    teams: { setTeams },
   } = useStore();
+  const queryClient = new QueryClient();
 
   const updateMemberMutation = useUpdateMember();
   const createMemberMutation = useCreateMember();
@@ -50,7 +53,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
     const d = new Date(date);
     return isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
   };
-
+  const { getOrCreateTeam } = useGetOrCreateTeam();
   const handleSaveMember = async (data: TeamMember) => {
     try {
       let teamId: string | "";
@@ -114,9 +117,16 @@ const MemberForm: React.FC<MemberFormProps> = ({
         });
       }
 
-      const updateMembers = await Memberservices.getAllMembers();
-      const updatedTeams = await TeamServices.getAllTeams();
-      const transformedMembers = transformData(updateMembers, updatedTeams);
+      await queryClient.invalidateQueries({ queryKey: ["members"] });
+      await queryClient.invalidateQueries({ queryKey: ["teams"] });
+
+      // Actualiza el estado global de MobX si es necesario
+      const updatedMembers = queryClient.getQueryData<TeamMember[]>([
+        "members",
+      ]);
+      const updatedTeams = queryClient.getQueryData<Team[]>(["teams"]);
+
+      const transformedMembers = transformData(updatedMembers, updatedTeams);
 
       setMembers(transformedMembers);
       setTeams(updatedTeams);

@@ -150,10 +150,8 @@ const membersColumns: (
     header: "Team",
     size: 150,
     cell: ({ cell }) => {
-      const team = cell.row.original.team;
-      if (!team) {
-        return null;
-      }
+      const team = cell.row.original.team || null;
+
       return (
         <section className="flex justify-center">
           <TeamCard team={team} />
@@ -289,14 +287,13 @@ interface TableMembersProps {
 }
 export function MembersTable({ members: propMembers }: TableMembersProps) {
   const prefetchMember = usePrefetchMember();
+  const { data: fetchedMembers = [], isLoading, isError } = useFetchMembers();
+  const deleteMemberMutation = useDeleteMember();
+
   const {
-    members: { setMemberToEdit },
+    members: { setMemberToEdit, setSelectedMember },
     aside: { setAside },
   } = useStore();
-
-  const { data: fetchedMembers = [], isLoading, isError } = useFetchMembers();
-
-  const deleteMemberMutation = useDeleteMember();
 
   const handleEdit = (memberId: TeamMember["_id"]) => {
     setMemberToEdit(memberId);
@@ -316,6 +313,7 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
 
   const handleViewDetail = (memberId: TeamMember["_id"]) => {
     setMemberToEdit(memberId);
+    setSelectedMember(memberId);
     setAside("MemberDetails");
   };
 

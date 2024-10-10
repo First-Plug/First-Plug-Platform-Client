@@ -30,11 +30,9 @@ export const useUpdateMember = () => {
 
       // Crear un miembro optimista
       const optimisticMember = { ...previousMember, ...data };
-      console.log("Miembro antes de mutar (optimista):", optimisticMember);
 
       // Actualizar el cache con el miembro optimista
       queryClient.setQueryData<TeamMember>(["members", id], optimisticMember);
-      console.log("Cache actualizado con miembro optimista:", optimisticMember);
 
       return { previousMember };
     },
@@ -54,15 +52,16 @@ export const useUpdateMember = () => {
     },
 
     onSuccess: (data) => {
-      console.log("Mutación exitosa, miembro real desde el servidor:", data);
       updateMemberInStore(data);
       setAlert("updateMember");
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
     },
 
     onSettled: (data, error, variables) => {
-      console.log("Mutación completada. Invalidando queries...");
       queryClient.invalidateQueries({ queryKey: ["members", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
     },
   });
 

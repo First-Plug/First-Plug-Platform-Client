@@ -28,6 +28,8 @@ export const MemberAsideDetails = observer(function ({
     products,
   } = useStore();
 
+  //aca podria optimizar este fetch para ver si los datos ya estan en el cache y aprovecharlos
+  //(como hago un prefetch en el icono con el cual accedo a este componente, los datos ya deberian estar dispobibles)
   const { data: member, isLoading, isError } = useFetchMember(memberToEdit);
 
   const router = useRouter();

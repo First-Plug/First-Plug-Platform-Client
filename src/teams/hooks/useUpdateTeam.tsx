@@ -15,9 +15,12 @@ export const useUpdateTeam = () => {
       updateTeam(id, team),
 
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["teams"] });
       updateStoreTeam(data);
-      //   setAlert("updateTeamSuccess");
+      // setAlert("updateTeamSuccess");
+
+      // Opcionalmente puedes refetchear directamente desde el store si es necesario
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
     },
     onError: (error) => {
       console.error("Error updating team:", error);
