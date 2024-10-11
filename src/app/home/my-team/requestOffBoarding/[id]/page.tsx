@@ -115,6 +115,7 @@ export default function Page({ params }: { params: { id: string } }) {
                         key={product._id}
                         product={product}
                         index={index}
+                        totalProducts={selectedMember.products.length}
                         // products={products}
                         // setProducts={setProducts}
                         // initialValue={initialProduct}

@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ProductOffBoarding } from "@/app/home/my-team/requestOffBoarding/[id]/page";
 import { useStore } from "@/models";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
 
@@ -19,6 +19,7 @@ export interface Props {
   product: Product;
   index: number;
   members: any;
+  totalProducts: number;
 }
 
 const validateBillingInfo = (user: User): boolean => {
@@ -49,17 +50,95 @@ const validateMemberBillingInfo = (user: User): boolean => {
   });
 };
 
-export const RequestOffBoardingForm = ({ product, index, members }: Props) => {
+export const RequestOffBoardingForm = ({
+  product,
+  index,
+  members,
+  totalProducts,
+}: Props) => {
   const { data: session } = useSession();
   const router = useRouter();
-  const { setValue, watch, control } = useFormContext();
+  const { setValue, watch, control, clearErrors } = useFormContext();
   const {
     aside: { setAside },
     members: { setMemberToEdit },
   } = useStore();
   const [formStatus, setFormStatus] = useState<string>("none");
+  const [applyToAll, setApplyToAll] = useState(false);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>(
+    Array(totalProducts).fill("")
+  );
+
   const selectedMember = watch(`products.${index}.newMember`);
   const relocation = watch(`products.${index}.relocation`);
+
+  const firstProductMember = useWatch({ name: "products.0.newMember" });
+  const firstProductRelocation = useWatch({ name: "products.0.relocation" });
+
+  // useEffect(() => {
+  //   if (applyToAll && index === 0) {
+  //     for (let i = 1; i < totalProducts; i++) {
+  //       setValue(`products.${i}.newMember`, firstProductMember);
+  //       setValue(`products.${i}.relocation`, firstProductRelocation);
+  //       clearErrors([`products.${i}.newMember`, `products.${i}.relocation`]);
+  //     }
+  //   }
+  // }, [
+  //   applyToAll,
+  //   firstProductMember,
+  //   firstProductRelocation,
+  //   totalProducts,
+  //   setValue,
+  //   clearErrors,
+  // ]);
+
+  const handleAssignAllChange = () => {
+    const newApplyToAll = !applyToAll;
+    setApplyToAll(newApplyToAll);
+
+    // Capturar valores del primer producto
+    const firstAssignedMember = watch(`products.0.newMember`);
+    const firstRelocation = watch(`products.0.relocation`);
+
+    console.log("Apply to All:", newApplyToAll);
+    console.log("First Assigned Member:", firstAssignedMember);
+    console.log("First Relocation:", firstRelocation);
+
+    // Comprobar si hay valores y manejar el caso "None"
+    if (firstAssignedMember === undefined) {
+      console.log("First Assigned Member is undefined");
+    } else if (firstAssignedMember === "None") {
+      console.log("First Assigned Member is 'None'");
+    } else {
+      console.log("First Assigned Member:", firstAssignedMember);
+    }
+
+    if (newApplyToAll) {
+      // Si el checkbox está activo, replicar los valores a todos los productos
+      for (let i = 1; i < totalProducts; i++) {
+        console.log(`Product ${i} before setting:`);
+        console.log(`New Member: ${watch(`products.${i}.newMember`)}`);
+        console.log(`Relocation: ${watch(`products.${i}.relocation`)}`);
+
+        // Replicar el valor de "None" explícitamente
+        if (firstAssignedMember === "None") {
+          setValue(`products.${i}.newMember`, "None");
+          console.log(`Product ${i} newMember set to: None`);
+        } else if (firstAssignedMember) {
+          setValue(`products.${i}.newMember`, firstAssignedMember);
+          console.log(`Product ${i} newMember set to:`, firstAssignedMember);
+        }
+
+        if (firstRelocation) {
+          setValue(`products.${i}.relocation`, firstRelocation);
+          console.log(`Product ${i} relocation set to:`, firstRelocation);
+        }
+
+        // Limpiar errores
+        clearErrors([`products.${i}.newMember`, `products.${i}.relocation`]);
+      }
+    }
+  };
 
   useEffect(() => {
     const getStatus = () => {
@@ -157,6 +236,20 @@ export const RequestOffBoardingForm = ({ product, index, members }: Props) => {
   return (
     <PageLayout>
       <section className="space-y-4">
+        {index === 0 && totalProducts > 1 && (
+          <div className="flex items-center mt-2">
+            <input
+              type="checkbox"
+              className="mr-2"
+              checked={applyToAll}
+              onChange={handleAssignAllChange}
+            />
+            <p className="text-md font-semibold">
+              Apply &quot;Product 1&quot; settings to all Products
+            </p>
+          </div>
+        )}
+
         <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
         <div className="flex space-x-2">
           <div className="flex-1 p-4">
