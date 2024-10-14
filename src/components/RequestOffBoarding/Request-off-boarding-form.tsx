@@ -2,12 +2,11 @@ import { Button, PageLayout, SectionTitle } from "@/common";
 import ProductDetail from "@/common/ProductDetail";
 import { Product, User } from "@/types";
 import { DropdownInputProductForm } from "../AddProduct/DropDownProductForm";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { ProductOffBoarding } from "@/app/home/my-team/requestOffBoarding/[id]/page";
 import { useStore } from "@/models";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
 
@@ -65,20 +64,14 @@ export const RequestOffBoardingForm = ({
   } = useStore();
   const [formStatus, setFormStatus] = useState<string>("none");
   const [applyToAll, setApplyToAll] = useState(false);
-  const [selectedLocations, setSelectedLocations] = useState<string[]>(
-    Array(totalProducts).fill("")
-  );
+  const [isPropagating, setIsPropagating] = useState(false);
 
   const selectedMember = watch(`products.${index}.newMember`);
   const relocation = watch(`products.${index}.relocation`);
 
-  const [isPropagating, setIsPropagating] = useState(false);
-
   const propagateFirstProductValues = () => {
     const firstProduct = watch("products.0");
     const { newMember, relocation } = firstProduct || {};
-
-    console.log("First Product State:", { newMember, relocation });
 
     if (!newMember && !relocation) {
       console.log("No valid selection in first product. Aborting propagation.");
@@ -86,7 +79,6 @@ export const RequestOffBoardingForm = ({
     }
 
     const memberEmail = newMember?.email || "";
-    const memberName = getMemberName(newMember);
 
     setIsPropagating(true);
 
@@ -97,7 +89,6 @@ export const RequestOffBoardingForm = ({
       });
 
       const locationToSet = relocation || "";
-      console.log(`Setting relocation for product ${i}:`, locationToSet);
       setValue(`products.${i}.relocation`, locationToSet, {
         shouldValidate: true,
       });
@@ -120,19 +111,8 @@ export const RequestOffBoardingForm = ({
     }
   };
 
-  const getMemberName = (member) => {
-    if (!isValidMember(member)) return "None";
-    return `${member.firstName} ${member.lastName}`.trim();
-  };
-
-  const isValidMember = (member) => {
-    return member?.firstName || member?.lastName || member?.email;
-  };
-
   useEffect(() => {
     const subscription = watch((value, { name }) => {
-      console.log("Watcher triggered:", { name, value });
-
       if (applyToAll && !isPropagating) {
         if (
           name === "products.0.newMember" ||
@@ -145,11 +125,6 @@ export const RequestOffBoardingForm = ({
 
     return () => subscription.unsubscribe();
   }, [applyToAll, watch, totalProducts, isPropagating]);
-
-  const handleOptionLabel = (member) => {
-    if (!member || typeof member !== "object") return "None";
-    return `${member.firstName} ${member.lastName}`.trim();
-  };
 
   useEffect(() => {
     const getStatus = () => {
