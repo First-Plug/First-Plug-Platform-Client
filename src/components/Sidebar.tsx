@@ -11,12 +11,14 @@ import {
   DashboardIcon,
 } from "@/common/Icons";
 import { usePathname } from "next/navigation";
+import { usePrefetchAssets } from "@/assets/hooks";
 
 export const Sidebar = function () {
   const path = usePathname();
   const pathArray = path.split("/");
   const [showLogo, setShowLogo] = useState<boolean>(true);
   const [isSidebarSmall, setIsSidebarSmall] = useState<boolean>(false);
+  const { prefetchAssets } = usePrefetchAssets();
 
   const toggleSidebarSize = () => {
     setIsSidebarSmall(!isSidebarSmall);
@@ -92,6 +94,10 @@ export const Sidebar = function () {
           title="My Assets"
           href="/home/my-stock"
           isActive={pathArray.includes("my-stock")}
+          onMouseEnter={() => {
+            console.log("Prefetching assets...");
+            prefetchAssets();
+          }}
         />
 
         {/* <SidebarLink
@@ -120,6 +126,10 @@ export const Sidebar = function () {
           title="Settings"
           href="/home/settings"
           isActive={pathArray.includes("settings")}
+          onMouseEnter={() => {
+            console.log("Prefetching assets...");
+            prefetchAssets();
+          }}
         />
       </section>
     </aside>
