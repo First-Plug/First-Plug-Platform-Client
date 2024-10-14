@@ -2,7 +2,7 @@ import { Button, PageLayout, SectionTitle } from "@/common";
 import ProductDetail from "@/common/ProductDetail";
 import { Product, User } from "@/types";
 import { DropdownInputProductForm } from "../AddProduct/DropDownProductForm";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ProductOffBoarding } from "@/app/home/my-team/requestOffBoarding/[id]/page";
@@ -72,72 +72,83 @@ export const RequestOffBoardingForm = ({
   const selectedMember = watch(`products.${index}.newMember`);
   const relocation = watch(`products.${index}.relocation`);
 
-  const firstProductMember = useWatch({ name: "products.0.newMember" });
-  const firstProductRelocation = useWatch({ name: "products.0.relocation" });
+  const [isPropagating, setIsPropagating] = useState(false);
 
-  // useEffect(() => {
-  //   if (applyToAll && index === 0) {
-  //     for (let i = 1; i < totalProducts; i++) {
-  //       setValue(`products.${i}.newMember`, firstProductMember);
-  //       setValue(`products.${i}.relocation`, firstProductRelocation);
-  //       clearErrors([`products.${i}.newMember`, `products.${i}.relocation`]);
-  //     }
-  //   }
-  // }, [
-  //   applyToAll,
-  //   firstProductMember,
-  //   firstProductRelocation,
-  //   totalProducts,
-  //   setValue,
-  //   clearErrors,
-  // ]);
+  const propagateFirstProductValues = () => {
+    const firstProduct = watch("products.0");
+    const { newMember, relocation } = firstProduct || {};
+
+    console.log("First Product State:", { newMember, relocation });
+
+    if (!newMember && !relocation) {
+      console.log("No valid selection in first product. Aborting propagation.");
+      return;
+    }
+
+    const memberEmail = newMember?.email || "";
+    const memberName = getMemberName(newMember);
+
+    setIsPropagating(true);
+
+    for (let i = 1; i < totalProducts; i++) {
+      setValue(`products.${i}.newMember`, newMember, { shouldValidate: true });
+      setValue(`products.${i}.assignedEmail`, memberEmail, {
+        shouldValidate: true,
+      });
+
+      const locationToSet = relocation || "";
+      console.log(`Setting relocation for product ${i}:`, locationToSet);
+      setValue(`products.${i}.relocation`, locationToSet, {
+        shouldValidate: true,
+      });
+    }
+
+    setIsPropagating(false);
+  };
 
   const handleAssignAllChange = () => {
     const newApplyToAll = !applyToAll;
     setApplyToAll(newApplyToAll);
 
-    // Capturar valores del primer producto
-    const firstAssignedMember = watch(`products.0.newMember`);
-    const firstRelocation = watch(`products.0.relocation`);
-
-    console.log("Apply to All:", newApplyToAll);
-    console.log("First Assigned Member:", firstAssignedMember);
-    console.log("First Relocation:", firstRelocation);
-
-    // Comprobar si hay valores y manejar el caso "None"
-    if (firstAssignedMember === undefined) {
-      console.log("First Assigned Member is undefined");
-    } else if (firstAssignedMember === "None") {
-      console.log("First Assigned Member is 'None'");
-    } else {
-      console.log("First Assigned Member:", firstAssignedMember);
-    }
-
     if (newApplyToAll) {
-      // Si el checkbox está activo, replicar los valores a todos los productos
-      for (let i = 1; i < totalProducts; i++) {
-        console.log(`Product ${i} before setting:`);
-        console.log(`New Member: ${watch(`products.${i}.newMember`)}`);
-        console.log(`Relocation: ${watch(`products.${i}.relocation`)}`);
-
-        // Replicar el valor de "None" explícitamente
-        if (firstAssignedMember === "None") {
-          setValue(`products.${i}.newMember`, "None");
-          console.log(`Product ${i} newMember set to: None`);
-        } else if (firstAssignedMember) {
-          setValue(`products.${i}.newMember`, firstAssignedMember);
-          console.log(`Product ${i} newMember set to:`, firstAssignedMember);
-        }
-
-        if (firstRelocation) {
-          setValue(`products.${i}.relocation`, firstRelocation);
-          console.log(`Product ${i} relocation set to:`, firstRelocation);
-        }
-
-        // Limpiar errores
-        clearErrors([`products.${i}.newMember`, `products.${i}.relocation`]);
+      const firstProduct = watch("products.0");
+      if (firstProduct.newMember || firstProduct.relocation) {
+        propagateFirstProductValues();
+      } else {
+        console.log("Select All checked, but no valid selection to propagate.");
       }
     }
+  };
+
+  const getMemberName = (member) => {
+    if (!isValidMember(member)) return "None";
+    return `${member.firstName} ${member.lastName}`.trim();
+  };
+
+  const isValidMember = (member) => {
+    return member?.firstName || member?.lastName || member?.email;
+  };
+
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      console.log("Watcher triggered:", { name, value });
+
+      if (applyToAll && !isPropagating) {
+        if (
+          name === "products.0.newMember" ||
+          name === "products.0.relocation"
+        ) {
+          propagateFirstProductValues();
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [applyToAll, watch, totalProducts, isPropagating]);
+
+  const handleOptionLabel = (member) => {
+    if (!member || typeof member !== "object") return "None";
+    return `${member.firstName} ${member.lastName}`.trim();
   };
 
   useEffect(() => {
@@ -190,19 +201,19 @@ export const RequestOffBoardingForm = ({
     }
   };
 
-  const handleDropdownMembers = (memberFullName: string) => {
-    const member = members.find(
-      (member) => `${member.firstName} ${member.lastName}` === memberFullName
-    );
-    if (memberFullName === "None") {
-      setValue(`products.${index}.relocation`, "");
-      setValue(`products.${index}.newMember`, null);
-    } else if (member) {
-      setValue(`products.${index}.relocation`, "New employee");
-      setValue(`products.${index}.newMember`, member);
-    }
-    return member;
-  };
+  // const handleDropdownMembers = (memberFullName: string) => {
+  //   const member = members.find(
+  //     (member) => `${member.firstName} ${member.lastName}` === memberFullName
+  //   );
+  //   if (memberFullName === "None") {
+  //     setValue(`products.${index}.relocation`, "");
+  //     setValue(`products.${index}.newMember`, null);
+  //   } else if (member) {
+  //     setValue(`products.${index}.relocation`, "New employee");
+  //     setValue(`products.${index}.newMember`, member);
+  //   }
+  //   return member;
+  // };
 
   const getStatus = () => {
     if (relocation === "New employee") {
@@ -263,7 +274,9 @@ export const RequestOffBoardingForm = ({
                 const selectedFullName =
                   value && typeof value === "object"
                     ? `${value.firstName} ${value.lastName}`
-                    : value || "";
+                    : value === ""
+                    ? "None"
+                    : value;
 
                 return (
                   <DropdownInputProductForm
@@ -277,9 +290,36 @@ export const RequestOffBoardingForm = ({
                     placeholder="Reassigned Member"
                     title="Reassigned Member*"
                     onChange={(selectedValue: string) => {
-                      const selectedMember =
-                        handleDropdownMembers(selectedValue);
-                      onChange(selectedMember);
+                      const selectedMember = members.find(
+                        (member) =>
+                          `${member.firstName} ${member.lastName}` ===
+                          selectedValue
+                      );
+
+                      if (selectedValue === "None") {
+                        setValue(`products.${index}.newMember`, "None", {
+                          shouldValidate: true,
+                        });
+                        setValue(`products.${index}.relocation`, "", {
+                          shouldValidate: true,
+                        });
+                      } else if (selectedMember) {
+                        setValue(
+                          `products.${index}.newMember`,
+                          selectedMember,
+                          {
+                            shouldValidate: true,
+                          }
+                        );
+                        setValue(
+                          `products.${index}.relocation`,
+                          "New employee",
+                          {
+                            shouldValidate: true,
+                          }
+                        );
+                      }
+                      onChange(selectedValue);
                     }}
                     searchable={true}
                     selectedOption={selectedFullName}
@@ -299,8 +339,10 @@ export const RequestOffBoardingForm = ({
                   placeholder="New Location"
                   title="New Location*"
                   onChange={(selectedValue: string) => {
-                    onChange(selectedValue);
-                    handleDropdown(selectedValue);
+                    if (value !== selectedValue) {
+                      onChange(selectedValue);
+                      handleDropdown(selectedValue);
+                    }
                   }}
                   searchable={true}
                   selectedOption={value || ""}
