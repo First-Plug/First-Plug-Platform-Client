@@ -4,6 +4,9 @@ import { Button } from "./Button";
 import { CustomLink } from "./CustomLink";
 import Image from "next/image";
 import { useStore } from "@/models";
+import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
+import { useSession } from "next-auth/react";
+import { UserServices } from "@/services/user.services";
 type EmptyCardType = "stock" | "members" | "computer" | "recentActivity";
 type TConfig = {
   title: string;
@@ -17,6 +20,7 @@ type TConfig = {
   additionalButtonText?: string;
   additionalButtonIcon?: () => JSX.Element;
   additionalOnClick?: () => void;
+  onClickLink?: () => void;
 };
 const Config: Record<EmptyCardType, TConfig> = {
   stock: {
@@ -26,7 +30,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     ButtonIcon: UploadIcon,
     buttonText: "Load Assets",
     LinkIcon: ShopIcon,
-    link: "/shop",
+    link: CATALOGO_FIRST_PLUG,
     linkText: "Shop Now",
     additionalButtonText: "Add Product",
     additionalButtonIcon: AddIcon,
@@ -103,6 +107,8 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
     if (type === "members") setAside("LoadMembers");
   };
 
+  const { data } = useSession();
+
   return (
     <div className="flex flex-col items-center gap-3 h-full w-full rounded-xl p-4  border border-border overflow-hidden ">
       <div className="flex gap-2 w-full  items-center justify-between">
@@ -113,8 +119,20 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
           <CustomLink
             variant="secondary"
             size="small"
-            className="rounded-md flex   gap-2"
+            className="rounded-md flex gap-2"
             href={link}
+            onClick={
+              CATALOGO_FIRST_PLUG === link
+                ? () => {
+                    const {
+                      user: { email, tenantName },
+                    } = data;
+
+                    window.open(CATALOGO_FIRST_PLUG, "_blank");
+                    UserServices.notifyShop(email, tenantName);
+                  }
+                : null
+            }
           >
             <LinkIcon /> {linkText}
           </CustomLink>
