@@ -74,16 +74,6 @@ export default function Page({ params }: { params: { id: string } }) {
     alert("Confirmando offboarding");
   };
 
-  const recoverableProducts =
-    selectedMember?.products?.filter(
-      (product) => product.recoverable === true
-    ) || [];
-
-  const isAvailable =
-    products.length > 0 &&
-    products.every((product) => product.available) &&
-    products.length === recoverableProducts.length;
-
   return (
     <PageLayout>
       <FormProvider {...methods}>
@@ -130,7 +120,7 @@ export default function Page({ params }: { params: { id: string } }) {
                 variant="primary"
                 className="mr-[39px] w-[200px] h-[40px] rounded-lg"
                 type="submit"
-                disabled={!isAvailable}
+                disabled={false}
                 onClick={() => {
                   alert("Confirmando offboarding");
                 }}

@@ -65,28 +65,26 @@ export const RequestOffBoardingForm = ({
   const [formStatus, setFormStatus] = useState<string>("none");
   const [applyToAll, setApplyToAll] = useState(false);
   const [isPropagating, setIsPropagating] = useState(false);
+  const [dropdownOptions, setDropdownOptions] = useState(DROPDOWN_OPTIONS);
+  const [isDisabledDropdown, setIsDisabledDropdown] = useState(true);
 
   const selectedMember = watch(`products.${index}.newMember`);
   const relocation = watch(`products.${index}.relocation`);
 
   const propagateFirstProductValues = () => {
     const firstProduct = watch("products.0");
-    const { newMember, relocation } = firstProduct || {};
+    const { newMember, relocation, available } = firstProduct || {};
 
     if (!newMember && !relocation) {
       console.log("No valid selection in first product. Aborting propagation.");
       return;
     }
 
-    const memberEmail = newMember?.email || "";
-
     setIsPropagating(true);
 
     for (let i = 1; i < totalProducts; i++) {
       setValue(`products.${i}.newMember`, newMember, { shouldValidate: true });
-      setValue(`products.${i}.assignedEmail`, memberEmail, {
-        shouldValidate: true,
-      });
+      setValue(`products.${i}.available`, available, { shouldValidate: true });
 
       const locationToSet = relocation || "";
       setValue(`products.${i}.relocation`, locationToSet, {
@@ -130,22 +128,28 @@ export const RequestOffBoardingForm = ({
     const getStatus = () => {
       if (relocation === "New employee") {
         const foundMember = members.find(
-          (member) =>
-            `${member.firstName} ${member.lastName}` ===
-            selectedMember?.fullName
+          (m) => `${m.firstName} ${m.lastName}` === selectedMember
         );
-
         if (!foundMember) return "selectMembers";
-        if (!validateMemberBillingInfo(foundMember))
+        if (!validateMemberBillingInfo(foundMember)) {
+          setValue(`products.${index}.available`, false, {
+            shouldValidate: true,
+          });
           return "not-member-available";
+        }
         return "is-member-available";
       }
 
       if (relocation === "My office") {
-        if (!validateBillingInfo(session.user))
+        if (!validateBillingInfo(session.user)) {
+          setValue(`products.${index}.available`, false, {
+            shouldValidate: true,
+          });
           return "not-billing-information";
+        }
       }
 
+      setDropdownOptions(["My office", "FP warehouse"]);
       return "none";
     };
 
@@ -172,49 +176,18 @@ export const RequestOffBoardingForm = ({
 
     if (relocation === "New employee") {
       setValue(`products.${index}.relocation`, "New employee");
-      setValue(`products.${index}.available`, false);
+      setValue(`products.${index}.available`, true);
     }
   };
-
-  // const handleDropdownMembers = (memberFullName: string) => {
-  //   const member = members.find(
-  //     (member) => `${member.firstName} ${member.lastName}` === memberFullName
-  //   );
-  //   if (memberFullName === "None") {
-  //     setValue(`products.${index}.relocation`, "");
-  //     setValue(`products.${index}.newMember`, null);
-  //   } else if (member) {
-  //     setValue(`products.${index}.relocation`, "New employee");
-  //     setValue(`products.${index}.newMember`, member);
-  //   }
-  //   return member;
-  // };
-
-  const getStatus = () => {
-    if (relocation === "New employee") {
-      const foundMember = members.find(
-        (m) => `${m.firstName} ${m.lastName}` === selectedMember
-      );
-      if (!foundMember) return "selectMembers";
-      if (!validateMemberBillingInfo(foundMember))
-        return "not-member-available";
-      return "is-member-available";
-    }
-
-    if (relocation === "My office") {
-      if (!validateBillingInfo(session.user)) return "not-billing-information";
-    }
-
-    return "none";
-  };
-
-  const status = getStatus();
 
   const handleClick = (status: string) => {
     if (status === "not-billing-information") {
       router.push("/home/settings");
     } else if (status === "not-member-available") {
-      setMemberToEdit(selectedMember?._id);
+      const foundMember = members.find(
+        (member) => `${member.firstName} ${member.lastName}` === selectedMember
+      );
+      setMemberToEdit(foundMember?._id);
       setAside("EditMember");
     }
   };
@@ -278,6 +251,11 @@ export const RequestOffBoardingForm = ({
                         setValue(`products.${index}.relocation`, "", {
                           shouldValidate: true,
                         });
+                        setValue(`products.${index}.available`, true, {
+                          shouldValidate: true,
+                        });
+                        setDropdownOptions(["My office", "FP warehouse"]);
+                        setIsDisabledDropdown(false);
                       } else if (selectedMember) {
                         setValue(
                           `products.${index}.newMember`,
@@ -293,6 +271,11 @@ export const RequestOffBoardingForm = ({
                             shouldValidate: true,
                           }
                         );
+                        setValue(`products.${index}.available`, true, {
+                          shouldValidate: true,
+                        });
+                        setDropdownOptions(DROPDOWN_OPTIONS);
+                        setIsDisabledDropdown(true);
                       }
                       onChange(selectedValue);
                     }}
@@ -310,7 +293,7 @@ export const RequestOffBoardingForm = ({
               render={({ field: { onChange, value, name } }) => (
                 <DropdownInputProductForm
                   name={name}
-                  options={DROPDOWN_OPTIONS}
+                  options={dropdownOptions}
                   placeholder="New Location"
                   title="New Location*"
                   onChange={(selectedValue: string) => {
@@ -319,6 +302,7 @@ export const RequestOffBoardingForm = ({
                       handleDropdown(selectedValue);
                     }
                   }}
+                  disabled={isDisabledDropdown}
                   searchable={true}
                   selectedOption={value || ""}
                 />
