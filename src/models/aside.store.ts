@@ -13,6 +13,7 @@ export const AsideStore = types
     setAside(type: Maybe<AsideType>, csvContext?: string) {
       store.type = type;
       store.csvContext = csvContext;
+      store.isClosed = false;
     },
     closeAside() {
       store.type = undefined;

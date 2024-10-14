@@ -2,11 +2,12 @@
 
 import { Button, PageLayout } from "@/common";
 import { useEffect, useState } from "react";
-import { useForm, FormProvider, Form } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { Memberservices } from "@/services";
 import { Product, TeamMember } from "@/types";
 import { RequestOffBoardingForm } from "../../../../../components/RequestOffBoarding/Request-off-boarding-form";
 import { useStore } from "../../../../../models/root.store";
+import { observer } from "mobx-react-lite";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
@@ -19,13 +20,14 @@ export interface ProductOffBoarding {
   newMember?: any;
 }
 
-export default function Page({ params }: { params: { id: string } }) {
-  const [selectedMember, setSelectedMember] = useState<TeamMember>(null);
+const Page = ({ params }: { params: { id: string } }) => {
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
-  const [products, setProducts] = useState<ProductOffBoarding[]>([]);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   const {
     members: { setMemberOffBoarding },
+    aside: { isClosed },
   } = useStore();
 
   const methods = useForm({
@@ -34,7 +36,7 @@ export default function Page({ params }: { params: { id: string } }) {
     },
   });
 
-  const { handleSubmit, watch, reset } = methods;
+  const { handleSubmit, watch } = methods;
 
   useEffect(() => {
     Memberservices.getAllMembers().then(setMembers);
@@ -42,14 +44,7 @@ export default function Page({ params }: { params: { id: string } }) {
       setMemberOffBoarding(`${res.firstName} ${res.lastName}`);
       setSelectedMember(res);
     });
-  }, [params.id]);
-
-  useEffect(() => {
-    const storedProducts = localStorage.getItem(`products_${params.id}`);
-    if (storedProducts) {
-      setProducts(JSON.parse(storedProducts));
-    }
-  }, [params.id]);
+  }, [params.id, isClosed]);
 
   useEffect(() => {
     const subscription = watch((values) => {
@@ -61,17 +56,19 @@ export default function Page({ params }: { params: { id: string } }) {
     return () => subscription.unsubscribe();
   }, [watch, params.id]);
 
-  // useEffect(() => {
-  //   const storedProducts = localStorage.getItem(`products_${params.id}`);
-  //   if (storedProducts) {
-  //     const parsedProducts = JSON.parse(storedProducts);
-  //     methods.reset({ products: parsedProducts });
-  //   }
-  // }, [params.id, methods]);
+  useEffect(() => {
+    const subscription = watch((values) => {
+      const areProductsValid = values.products.every(
+        (product: ProductOffBoarding) => product.relocation && product.available
+      );
+      setIsButtonDisabled(!areProductsValid);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   const onSubmit = (data: any) => {
+    // send data in backend
     console.log("Form Data Submitted:", data);
-    alert("Confirmando offboarding");
   };
 
   return (
@@ -95,35 +92,26 @@ export default function Page({ params }: { params: { id: string } }) {
                 {selectedMember?.products
                   ?.filter((product) => product.recoverable === true)
                   .map((product, index) => {
-                    const initialProduct =
-                      products?.length > 0 && product?._id
-                        ? products.find((p) => p.product?._id === product._id)
-                        : null;
-
                     return (
                       <RequestOffBoardingForm
                         key={product._id}
                         product={product}
                         index={index}
                         totalProducts={selectedMember.products.length}
-                        // products={products}
-                        // setProducts={setProducts}
-                        // initialValue={initialProduct}
-                        members={members}
+                        members={members.filter(
+                          (member) => member.email !== selectedMember.email
+                        )}
                       />
                     );
                   })}
               </div>
             </div>
-            <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
+            <aside className="absolute flex justify-end items-center bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
               <Button
                 variant="primary"
                 className="mr-[39px] w-[200px] h-[40px] rounded-lg"
                 type="submit"
-                disabled={false}
-                onClick={() => {
-                  alert("Confirmando offboarding");
-                }}
+                disabled={isButtonDisabled}
               >
                 Confirm offboard
               </Button>
@@ -133,4 +121,6 @@ export default function Page({ params }: { params: { id: string } }) {
       </FormProvider>
     </PageLayout>
   );
-}
+};
+
+export default observer(Page);

@@ -2,7 +2,7 @@ import { Button, PageLayout, SectionTitle } from "@/common";
 import ProductDetail from "@/common/ProductDetail";
 import { Product, User } from "@/types";
 import { DropdownInputProductForm } from "../AddProduct/DropDownProductForm";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/models";
@@ -11,8 +11,6 @@ import { Controller, useFormContext } from "react-hook-form";
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
 
 const DROPDOWN_OPTIONS_TYPES = [...DROPDOWN_OPTIONS, "None"] as const;
-
-type DropdownOption = (typeof DROPDOWN_OPTIONS_TYPES)[number];
 
 export interface Props {
   product: Product;
@@ -28,24 +26,31 @@ const validateBillingInfo = (user: User): boolean => {
     "state",
     "zipCode",
     "address",
-    "apartment",
   ] as const;
 
   return requiredFields.every((field) => user[field]?.trim() !== "");
 };
 
 const validateMemberBillingInfo = (user: User): boolean => {
+  console.log(user);
   const requiredFields = [
     "country",
     "city",
     "zipCode",
     "address",
-    "apartment",
+    "personalEmail",
+    "phone",
+    "dni",
   ] as const;
 
   return requiredFields.every((field) => {
     const value = user[field as keyof User];
-    return value !== undefined && value !== null && value.trim() !== "";
+    return (
+      value !== undefined &&
+      value !== null &&
+      (typeof value === "number" || value.trim() !== "") &&
+      value.toString().trim() !== ""
+    );
   });
 };
 
@@ -124,39 +129,63 @@ export const RequestOffBoardingForm = ({
     return () => subscription.unsubscribe();
   }, [applyToAll, watch, totalProducts, isPropagating]);
 
+  const getStatus = () => {
+    if (relocation === "New employee") {
+      const foundMember = members.find(
+        (m) => `${m.firstName} ${m.lastName}` === selectedMember
+      );
+      if (!foundMember) return "selectMembers";
+      if (!validateMemberBillingInfo(foundMember)) {
+        return "not-member-available";
+      }
+      return "is-member-available";
+    }
+
+    if (relocation === "My office") {
+      if (!validateBillingInfo(session.user)) {
+        return "not-billing-information";
+      }
+    }
+
+    setDropdownOptions(["My office", "FP warehouse"]);
+    if (!applyToAll) {
+      setIsDisabledDropdown(false);
+    }
+    return "none";
+  };
+
   useEffect(() => {
-    const getStatus = () => {
-      if (relocation === "New employee") {
-        const foundMember = members.find(
-          (m) => `${m.firstName} ${m.lastName}` === selectedMember
-        );
-        if (!foundMember) return "selectMembers";
-        if (!validateMemberBillingInfo(foundMember)) {
-          setValue(`products.${index}.available`, false, {
-            shouldValidate: true,
-          });
-          return "not-member-available";
-        }
-        return "is-member-available";
-      }
-
-      if (relocation === "My office") {
-        if (!validateBillingInfo(session.user)) {
-          setValue(`products.${index}.available`, false, {
-            shouldValidate: true,
-          });
-          return "not-billing-information";
-        }
-      }
-
-      setDropdownOptions(["My office", "FP warehouse"]);
-      return "none";
-    };
-
     const newStatus = getStatus();
 
     setFormStatus(newStatus);
   }, [selectedMember, relocation, members, session.user]);
+
+  useEffect(() => {
+    const newStatus = getStatus();
+
+    if (
+      newStatus === "not-member-available" ||
+      newStatus === "not-billing-information"
+    ) {
+      const currentAvailableValue = watch(`products.${index}.available`);
+
+      if (currentAvailableValue !== false) {
+        setValue(`products.${index}.available`, false, {
+          shouldValidate: true,
+        });
+      }
+    }
+
+    setFormStatus(newStatus);
+  }, [
+    selectedMember,
+    relocation,
+    members,
+    session.user,
+    index,
+    watch,
+    setValue,
+  ]);
 
   const handleDropdown = (relocation: string) => {
     if (relocation === "My office") {
@@ -191,6 +220,45 @@ export const RequestOffBoardingForm = ({
       setAside("EditMember");
     }
   };
+
+  useLayoutEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (
+        applyToAll &&
+        name?.startsWith("products.") &&
+        name !== "products.0"
+      ) {
+        const productIndex = Number(name.split(".")[1]);
+        if (!isNaN(productIndex)) {
+          setTimeout(() => {
+            const firstProductNewMember = watch("products.0.newMember");
+
+            const firstProductRelocation = watch("products.0.relocation");
+
+            const currentProductNewMember = watch(
+              `products.${productIndex}.newMember`
+            );
+
+            const currentProductrelocation = watch(
+              `products.${productIndex}.relocation`
+            );
+
+            const isEmailDifferent =
+              firstProductNewMember !== currentProductNewMember;
+
+            const isLocationDifferent =
+              firstProductRelocation !== currentProductrelocation;
+
+            if (isEmailDifferent || isLocationDifferent) {
+              setApplyToAll(false);
+            }
+          }, 100);
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, applyToAll]);
 
   return (
     <PageLayout>
