@@ -10,13 +10,12 @@ import { Controller, useFormContext } from "react-hook-form";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
 
-const DROPDOWN_OPTIONS_TYPES = [...DROPDOWN_OPTIONS, "None"] as const;
-
 export interface Props {
   product: Product;
   index: number;
   members: any;
   totalProducts: number;
+  products: Product[];
 }
 
 const validateBillingInfo = (user: User): boolean => {
@@ -55,6 +54,7 @@ const validateMemberBillingInfo = (user: User): boolean => {
 
 export const RequestOffBoardingForm = ({
   product,
+  products,
   index,
   members,
   totalProducts,
@@ -92,6 +92,9 @@ export const RequestOffBoardingForm = ({
 
       const locationToSet = relocation || "";
       setValue(`products.${i}.relocation`, locationToSet, {
+        shouldValidate: true,
+      });
+      setValue(`products.${i}.product`, products[i - 1], {
         shouldValidate: true,
       });
     }
@@ -194,10 +197,16 @@ export const RequestOffBoardingForm = ({
         setValue(`products.${index}.newMember`, "None", {
           shouldValidate: true,
         });
+        setValue(`products.${index}.product`, products[index], {
+          shouldValidate: true,
+        });
       } else {
         setValue(`products.${index}.relocation`, "My office");
         setValue(`products.${index}.available`, true);
         setValue(`products.${index}.newMember`, "None", {
+          shouldValidate: true,
+        });
+        setValue(`products.${index}.product`, products[index], {
           shouldValidate: true,
         });
       }
@@ -207,11 +216,17 @@ export const RequestOffBoardingForm = ({
       setValue(`products.${index}.relocation`, "FP warehouse");
       setValue(`products.${index}.available`, true);
       setValue(`products.${index}.newMember`, "None", { shouldValidate: true });
+      setValue(`products.${index}.product`, products[index], {
+        shouldValidate: true,
+      });
     }
 
     if (relocation === "New employee") {
       setValue(`products.${index}.relocation`, "New employee");
       setValue(`products.${index}.available`, true);
+      setValue(`products.${index}.product`, products[index], {
+        shouldValidate: true,
+      });
       setIsDisabledDropdown(true);
     } else {
       setIsDisabledDropdown(false);
@@ -331,6 +346,9 @@ export const RequestOffBoardingForm = ({
                         setValue(`products.${index}.available`, true, {
                           shouldValidate: true,
                         });
+                        setValue(`products.${index}.product`, products[index], {
+                          shouldValidate: true,
+                        });
                         setDropdownOptions(["My office", "FP warehouse"]);
                         setIsDisabledDropdown(false);
                       } else if (selectedMember) {
@@ -349,6 +367,9 @@ export const RequestOffBoardingForm = ({
                           }
                         );
                         setValue(`products.${index}.available`, true, {
+                          shouldValidate: true,
+                        });
+                        setValue(`products.${index}.product`, products[index], {
                           shouldValidate: true,
                         });
                         setDropdownOptions(DROPDOWN_OPTIONS);

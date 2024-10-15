@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, PageLayout } from "@/common";
+import { Button, LoaderSpinner, PageLayout } from "@/common";
 import { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Memberservices } from "@/services";
@@ -8,6 +8,7 @@ import { Product, TeamMember } from "@/types";
 import { RequestOffBoardingForm } from "../../../../../components/RequestOffBoarding/Request-off-boarding-form";
 import { useStore } from "../../../../../models/root.store";
 import { observer } from "mobx-react-lite";
+import { useRouter } from "next/navigation";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
@@ -24,6 +25,8 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const {
     members: { setMemberOffBoarding },
@@ -63,12 +66,28 @@ const Page = ({ params }: { params: { id: string } }) => {
       );
       setIsButtonDisabled(!areProductsValid);
     });
-    return () => subscription.unsubscribe();
-  }, [watch]);
 
-  const onSubmit = (data: any) => {
-    // send data in backend
-    console.log("Form Data Submitted:", data);
+    return () => subscription.unsubscribe();
+  }, [watch, isClosed]);
+
+  const onSubmit = async (data: any) => {
+    const sendData = data.products.map((productToSend) => {
+      if (productToSend.newMember !== "None") {
+        productToSend.newMember = members.find(
+          (member) => member.fullName === productToSend.newMember
+        );
+      }
+
+      return productToSend;
+    });
+
+    const [firstItem, ...rest] = sendData;
+
+    setIsLoading(true);
+    await Memberservices.offboardingMember(params.id, rest);
+    setIsLoading(false);
+
+    router.push("/home/my-team");
   };
 
   return (
@@ -99,6 +118,9 @@ const Page = ({ params }: { params: { id: string } }) => {
                       <RequestOffBoardingForm
                         key={product._id}
                         product={product}
+                        products={selectedMember?.products?.filter(
+                          (product) => product.recoverable === true
+                        )}
                         index={index}
                         totalProducts={selectedMember.products.length}
                         members={members.filter(
@@ -116,7 +138,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                 type="submit"
                 disabled={isButtonDisabled}
               >
-                Confirm offboard
+                {isLoading ? <LoaderSpinner /> : "Confirm offboard"}
               </Button>
             </aside>
           </div>
