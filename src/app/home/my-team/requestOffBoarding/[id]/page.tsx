@@ -75,8 +75,8 @@ const Page = ({ params }: { params: { id: string } }) => {
     <PageLayout>
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="h-full w-full">
-            <div className="absolute h-[90%] w-[80%] overflow-y-auto scrollbar-custom pr-4">
+          <div className="w-full">
+            <div className="pr-4">
               <div className="flex flex-col gap-2">
                 <div>
                   <h2>
@@ -88,7 +88,10 @@ const Page = ({ params }: { params: { id: string } }) => {
                 </div>
               </div>
 
-              <div className="flex-1">
+              <div
+                className="overflow-y-auto scrollbar-custom"
+                style={{ maxHeight: "calc(90vh - 150px)" }}
+              >
                 {selectedMember?.products
                   ?.filter((product) => product.recoverable === true)
                   .map((product, index) => {

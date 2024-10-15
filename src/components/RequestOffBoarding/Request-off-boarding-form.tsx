@@ -288,7 +288,7 @@ export const RequestOffBoardingForm = ({
 
         <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
         <div className="flex space-x-2">
-          <div className="flex-1 p-4">
+          <div className="w-[35%] p-4">
             <ProductDetail product={product} />
           </div>
           <div className="flex-3 p-4">
