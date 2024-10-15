@@ -6,32 +6,37 @@ import { Product } from "@/types";
 export const useDeleteAsset = () => {
   const queryClient = useQueryClient();
   const {
-    products: { deleteProduct, setProducts },
+    products: { deleteProduct },
     alerts: { setAlert },
   } = useStore();
 
   return useMutation({
-    mutationFn: (id: string) => deleteAsset(id),
+    mutationFn: async (id: string) => {
+      const response = await deleteAsset(id);
+
+      return response;
+    },
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: ["assets"] });
-
       const previousAssets = queryClient.getQueryData<Product[]>(["assets"]);
-      queryClient.setQueryData<Product[]>(["assets"], (oldAsset) =>
-        oldAsset?.filter((asset) => asset._id !== id)
+
+      queryClient.setQueryData<Product[]>(["assets"], (oldAssets) =>
+        oldAssets?.filter((asset) => asset._id !== id)
       );
+
+      deleteProduct(id);
 
       return { previousAssets };
     },
-    onError: (error, variables, context) => {
+    onError: (error, _, context) => {
       if (context?.previousAssets) {
-        queryClient.setQueryData(["assets"], context?.previousAssets);
-        console.error("Delete failed:", error);
+        queryClient.setQueryData(["assets"], context.previousAssets);
       }
+      console.error("Error deleting product:", error);
+      setAlert("errorDeleteStock");
     },
-    onSuccess: (_, id) => {
-      const deletedAsset = queryClient.getQueryData<Product[]>(["assets"]);
-      deleteProduct(id);
-      setProducts(deletedAsset || []);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
       setAlert("deleteStock");
     },
   });

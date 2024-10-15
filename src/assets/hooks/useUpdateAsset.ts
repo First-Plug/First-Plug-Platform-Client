@@ -13,7 +13,6 @@ interface MutationContext {
 }
 type BackendResponse = Product | { message: string };
 
-// Type guard para verificar si la respuesta es un producto
 function isProduct(response: BackendResponse): response is Product {
   return (response as Product)._id !== undefined;
 }
@@ -55,12 +54,6 @@ export const useUpdateAsset = () => {
 
     onSuccess: (response, { id }) => {
       if (isProduct(response)) {
-        console.log(
-          `Producto ${response._id} actualizado correctamente`,
-          response
-        );
-
-        // Actualiza los datos con la respuesta del backend
         queryClient.setQueryData<Product[]>(["assets"], (oldAssets = []) =>
           oldAssets.map((asset) =>
             asset._id === response._id ? response : asset

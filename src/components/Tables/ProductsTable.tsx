@@ -6,7 +6,6 @@ import { observer } from "mobx-react-lite";
 import { RootTable } from "./RootTable";
 import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
-import { useFilterReset } from "./Filters/FilterResetContext";
 import "./table.css";
 import { useEffect, useState } from "react";
 

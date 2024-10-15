@@ -213,6 +213,7 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " The product has been successfully deleted.",
       closeAction: () => {
+        // queryClient.invalidateQueries({ queryKey: ["assets"] });
         setAlert(undefined);
       },
     },
@@ -280,7 +281,7 @@ export default observer(function AlertProvider() {
         " There was an error deleting the product. Please try again.",
       closeAction: () => {
         setAlert(undefined);
-        router.push("/home/my-team");
+        router.push("/home/my-stock");
       },
     },
     errorDeleteMember: {

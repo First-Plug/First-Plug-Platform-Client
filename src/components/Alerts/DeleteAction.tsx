@@ -9,7 +9,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import { Memberservices, ProductServices, TeamServices } from "@/services";
 import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
 import { Loader } from "../Loader";
@@ -21,7 +20,7 @@ import {
 } from "@/members/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromTeam } from "@/teams/hooks";
-import { usePrefetchAsset } from "@/assets/hooks";
+import { useDeleteAsset, usePrefetchAsset } from "@/assets/hooks";
 
 type DeleteTypes = "product" | "member" | "team" | "memberUnassign";
 
@@ -45,13 +44,13 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
 
     const deleteMemberMutation = useDeleteMember();
     const removeFromTeamMutation = useRemoveFromTeam();
+    const deleAssetMutation = useDeleteAsset();
 
     const {
       products: { deleteProduct },
       alerts: { setAlert },
     } = useStore();
 
-    const { fetchStock } = useFetch();
     const queryClient = useQueryClient();
     const { prefetchAsset } = usePrefetchAsset();
     const { data: membersData } = useFetchMembers();
@@ -71,23 +70,32 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
       return !hasRecoverableProducts;
     };
 
-    const handleDeleteProduct = async () => {
+    const handleDeleteProduct = async (id: string) => {
       try {
-        if (!id) {
-          throw new Error("Product ID is undefined");
-        }
+        if (!id) throw new Error("Product ID is undefined");
 
         setLoading(true);
-        await ProductServices.deleteProduct(id);
-        deleteProduct(id);
-        await fetchStock();
-        queryClient.invalidateQueries({ queryKey: ["members"] });
+
+        deleAssetMutation.mutate(id, {
+          onSuccess: () => {
+            setOpen(false);
+            setAlert("deleteStock");
+            setLoading(false);
+          },
+          onError: (error) => {
+            setLoading(false);
+          },
+        });
+        deleteProductFromStore(id);
+      } catch (error) {
+        console.error("Error deleting product:", error);
         setOpen(false);
         setLoading(false);
-        setAlert("deleteStock");
-      } catch (error) {
-        setOpen(false);
       }
+    };
+
+    const deleteProductFromStore = (id: string) => {
+      deleteProduct(id);
     };
 
     const handleDeleteMember = async () => {
@@ -103,13 +111,10 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         }
         setLoading(true);
 
-        // Uso la mutacion para no hacer una recarga completa
         deleteMemberMutation.mutate(id, {
           onSuccess: () => {
             setOpen(false);
-
             setAlert("deleteMember");
-
             setLoading(false);
           },
           onError: (error) => {
@@ -151,7 +156,6 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
       if (type === "product") {
         try {
           await prefetchAsset(id);
-          console.log(`Producto ${id} pre-fetched con éxito`);
         } catch (error) {
           console.error(`Error al prefetch del producto ${id}:`, error);
         }
@@ -192,7 +196,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
       product: {
         title: " Are you sure you want to delete this product? 🗑️",
         description: "This product will be permanently deleted",
-        deleteAction: handleDeleteProduct,
+        deleteAction: () => handleDeleteProduct(id),
       },
       member: {
         title:
