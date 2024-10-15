@@ -10,33 +10,22 @@ import { setAuthInterceptor } from "@/config/axios.config";
 import { useFetchTeams } from "@/teams/hooks";
 import { useFetchMembers } from "@/members/hooks";
 import { BarLoader } from "@/components/Loader/BarLoader";
+import { useGetTableAssets } from "@/assets/hooks";
+import { Loader } from "@/components/Loader";
 
 export default observer(function Dashboard() {
   const {
-    members: { members },
-    products: { tableProducts },
     alerts: { setAlert },
     user: { user },
   } = useStore();
 
-  const { data: membersData, isLoading: membersLoading } = useFetchMembers();
-  const { data: teamsData, isLoading: teamsLoading } = useFetchTeams();
+  const { data: membersData, isLoading: isLoadingTeams } = useFetchMembers();
+  const { data: teamsData, isLoading: isLoadingMembers } = useFetchTeams();
+  const { data: assets, isLoading: isLoadingAssets } = useGetTableAssets();
 
-  const { fetchStock, fetchMembers, fetchMembersAndTeams } = useFetch();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (sessionStorage.getItem("accessToken")) {
-      setAuthInterceptor(sessionStorage.getItem("accessToken"));
-      if (!members.length) {
-        fetchMembersAndTeams();
-      }
-      if (!tableProducts.length) {
-        fetchStock();
-      }
-    }
-    setLoading(false);
-  }, [fetchStock, fetchMembers, fetchMembersAndTeams, members.length, tableProducts.length]);
+  if (isLoadingTeams || isLoadingMembers || isLoadingAssets) {
+    return <Loader />;
+  }
 
   const handleBirthdayGiftClick = async () => {
     try {
@@ -50,15 +39,11 @@ export default observer(function Dashboard() {
     }
   };
 
-  if (membersLoading || teamsLoading) {
-    return <BarLoader />;
-  }
-
   return (
     <PageLayout>
       <div className="flex flex-col gap-4 w-full h-full  ">
         <section className="grid grid-cols-2 gap-4 h-1/2 ">
-          {tableProducts.length ? (
+          {assets.length ? (
             <Card
               Title="My Assets"
               titleButton="Shop Now"
@@ -67,24 +52,12 @@ export default observer(function Dashboard() {
                 window.location.href = "/shop";
               }}
             >
-              <StockCard products={tableProducts} />
+              <StockCard products={assets} />
             </Card>
           ) : (
             <EmptyDashboardCard type="stock" />
           )}
           <EmptyDashboardCard type="computer" />
-          {/* <Card Title="Computer computer" className="h-full">
-            <section className="  h-full flex flex-col justify-center items-center">
-              <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
-                Coming Soon!
-                <NotificationIcon />
-              </h1>
-              <p className="font-inter text-md text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We&apos;re excited to reveal that the Firstplug notifications
-                are coming soon!
-              </p>
-            </section>
-          </Card> */}
         </section>
         <section className="grid grid-cols-2 gap-4 h-1/2  ">
           {membersData.length ? (
@@ -104,18 +77,6 @@ export default observer(function Dashboard() {
             <EmptyDashboardCard type="members" />
           )}
           <EmptyDashboardCard type="recentActivity" />
-          {/* <Card Title="Recent Activity" className="h-full">
-            <section className="  h-full flex flex-col justify-center items-center">
-              <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
-                Coming Soon!
-                <NotificationIcon />
-              </h1>
-              <p className="font-inter text-md text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We&apos;re excited to reveal that the Firstplug notifications
-                are coming soon!
-              </p>
-            </section>
-          </Card> */}
         </section>
       </div>
     </PageLayout>

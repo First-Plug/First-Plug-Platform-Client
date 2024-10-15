@@ -11,9 +11,21 @@ export const usePrefetchAssets = () => {
 
   const prefetchAssets = async () => {
     try {
-      const data = await getTableAssets();
-      queryClient.setQueryData(["assets"], data);
-      setTable(data);
+      let assets = queryClient.getQueryData<ProductTable[]>(["assets"]);
+
+      if (!assets) {
+        assets = await queryClient.fetchQuery<ProductTable[]>({
+          queryKey: ["assets"],
+          queryFn: getTableAssets,
+          staleTime: 1000 * 60 * 5,
+        });
+      }
+
+      if (Array.isArray(assets)) {
+        setTable(assets);
+      } else {
+        console.error("Los assets no tienen el formato esperado.");
+      }
     } catch (error) {
       console.error("Error prefetching assets:", error);
     }
