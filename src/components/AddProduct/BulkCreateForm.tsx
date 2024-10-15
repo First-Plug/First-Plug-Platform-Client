@@ -1,20 +1,18 @@
 "use client";
 
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { observer } from "mobx-react-lite";
 import { Button, PageLayout, SectionTitle } from "@/common";
 import { DropdownInputProductForm } from "@/components/AddProduct/DropDownProductForm";
 import { InputProductForm } from "@/components/AddProduct/InputProductForm";
-import { ProductServices } from "@/services/product.services";
 import { Memberservices } from "@/services";
 import { getSnapshot, Instance } from "mobx-state-tree";
 import { AttributeModel, ProductModel, TeamMemberModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
-import { useQueryClient } from "@tanstack/react-query";
+import { useBulkCreateAssets } from "@/assets/hooks";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -23,8 +21,8 @@ const BulkCreateForm: React.FC<{
   isProcessing?: boolean;
   setIsProcessing?: (isProcessing: boolean) => void;
 }> = ({ initialData, quantity, onBack, isProcessing, setIsProcessing }) => {
-  const router = useRouter();
-  const queryClient = useQueryClient();
+  const { mutate: bulkCreateAssets, status } = useBulkCreateAssets();
+  const isLoading = status === "pending";
 
   const numProducts = quantity;
 
@@ -269,22 +267,27 @@ const BulkCreateForm: React.FC<{
 
     try {
       setIsProcessing(true);
-      if (Array.isArray(productsData)) {
-        await ProductServices.bulkCreateProducts(productsData);
-        queryClient.invalidateQueries({ queryKey: ["members"] });
-        setAlert("bulkCreateProductSuccess");
-      } else {
-        throw new Error(
-          "El formato de los datos de los productos no es un array."
-        );
-      }
+      bulkCreateAssets(productsData, {
+        onSuccess: () => {
+          setAlert("bulkCreateProductSuccess");
+          setIsProcessing(false);
+          onBack();
+        },
+        onError: (error) => {
+          console.error("Error en bulkCreate:", error);
+          if (
+            error.response?.data?.message === "Serial Number already exists"
+          ) {
+            setAlert("bulkCreateSerialNumberError");
+          } else {
+            setAlert("bulkCreateProductError");
+          }
+          setIsProcessing(false);
+        },
+      });
     } catch (error) {
-      if (error.response?.data?.message === "Serial Number already exists") {
-        setAlert("bulkCreateSerialNumberError");
-      } else {
-        setAlert("bulkCreateProductError");
-        setIsProcessing(false);
-      }
+      console.error("Error durante la creación:", error);
+      setIsProcessing(false);
     }
   };
 
@@ -463,7 +466,7 @@ const BulkCreateForm: React.FC<{
                   variant="primary"
                   size="big"
                   type="submit"
-                  disabled={isSubmitting || isProcessing}
+                  disabled={isSubmitting || isLoading}
                 />
               </div>
             </aside>

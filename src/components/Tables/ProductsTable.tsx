@@ -175,7 +175,6 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   const {
     products: { setTable, availableProducts, onlyAvaliable },
   } = useStore();
-  const { resetFilters } = useFilterReset();
   const [clearAll, setClearAll] = useState(false);
   const [resetSubTableFilters, setResetSubTableFilters] = useState<
     (() => void) | null
