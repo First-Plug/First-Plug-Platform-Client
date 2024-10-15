@@ -13,6 +13,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useStore } from "@/models";
 import { observer } from "mobx-react-lite";
+import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
+import { UserServices } from "@/services/user.services";
+
 
 type NavbarProps = {
   title?: string;
@@ -31,9 +34,8 @@ export const Navbar = observer(function ({
   searchInput,
   placeholder,
 }: NavbarProps) {
-  const router = useRouter();
   const pathName = usePathname();
-  const { status } = useSession();
+  const { status, data } = useSession();
 
   const {
     members: { offBoardingFullName },
@@ -65,7 +67,12 @@ export const Navbar = observer(function ({
               variant={"text"}
               className={"py-2 px-4 bg-none text-sm"}
               onClick={() => {
-                router.push("/shop");
+                const {
+                  user: { email, tenantName },
+                } = data;
+
+                window.open(CATALOGO_FIRST_PLUG, "_blank");
+                UserServices.notifyShop(email, tenantName);
               }}
             />
           </div>

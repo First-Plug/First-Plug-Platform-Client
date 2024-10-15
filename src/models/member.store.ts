@@ -67,6 +67,10 @@ export const MemberStore = types
       store.fetchingMembers = fetchValue;
     },
     setMembers(members: TeamMember[]) {
+      if (!members || !Array.isArray(members)) {
+        console.error("members is undefined or not an array");
+        return;
+      }
       const membersG = members.map((member) => ({
         ...member,
         //@ts-ignore

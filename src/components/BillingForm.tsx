@@ -17,7 +17,7 @@ export var BillingForm = observer(function BillingForm({ form }: Props) {
   return user ? (
     <section className="w-full flex flex-col gap-5  border rounded-md p-4  ">
       <h2 className="text-xl font-montserrat font-bold text-black">
-        Billing Information
+        Company Information
       </h2>
       <div className="grid grid-cols-4 gap-4">
         <SettingsSubForm form={form} keyValue="country" />
