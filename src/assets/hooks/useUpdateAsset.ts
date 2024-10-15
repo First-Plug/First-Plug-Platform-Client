@@ -11,6 +11,12 @@ interface UpdateAssetProps {
 interface MutationContext {
   previousAsset?: Product;
 }
+type BackendResponse = Product | { message: string };
+
+// Type guard para verificar si la respuesta es un producto
+function isProduct(response: BackendResponse): response is Product {
+  return (response as Product)._id !== undefined;
+}
 
 export const useUpdateAsset = () => {
   const queryClient = useQueryClient();
@@ -20,7 +26,7 @@ export const useUpdateAsset = () => {
   } = useStore();
 
   const mutation = useMutation<
-    Product,
+    BackendResponse,
     unknown,
     UpdateAssetProps,
     MutationContext
@@ -31,14 +37,11 @@ export const useUpdateAsset = () => {
       await queryClient.cancelQueries({ queryKey: ["assets", id] });
 
       const previousAsset = queryClient.getQueryData<Product>(["assets", id]);
-
       const optimisticAsset = { ...previousAsset, ...data };
 
       queryClient.setQueryData<Product>(["assets", id], optimisticAsset);
 
-      if (previousAsset) {
-        updateProduct(optimisticAsset);
-      }
+      if (previousAsset) updateProduct(optimisticAsset);
 
       return { previousAsset };
     },
@@ -50,19 +53,30 @@ export const useUpdateAsset = () => {
       console.error("Error al actualizar el asset:", error);
     },
 
-    onSuccess: (updatedAsset) => {
-      if (!updatedAsset.category) {
-        console.error("Product update response is missing the category.");
-        return;
+    onSuccess: (response, { id }) => {
+      if (isProduct(response)) {
+        console.log(
+          `Producto ${response._id} actualizado correctamente`,
+          response
+        );
+
+        // Actualiza los datos con la respuesta del backend
+        queryClient.setQueryData<Product[]>(["assets"], (oldAssets = []) =>
+          oldAssets.map((asset) =>
+            asset._id === response._id ? response : asset
+          )
+        );
+        updateProduct(response);
+      } else {
+        const optimisticAsset = queryClient.getQueryData<Product>([
+          "assets",
+          id,
+        ]);
+        if (optimisticAsset) {
+          updateProduct(optimisticAsset);
+        }
       }
 
-      queryClient.setQueryData<Product[]>(["assets"], (oldAssets = []) =>
-        oldAssets.map((asset) =>
-          asset._id === updatedAsset._id ? updatedAsset : asset
-        )
-      );
-
-      updateProduct(updatedAsset);
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       setAlert("updateStock");
     },

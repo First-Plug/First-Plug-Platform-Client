@@ -21,7 +21,6 @@ export default observer(function EditProduct({
 
   const handleEditProduct = () => {
     if (prefetchedProduct) {
-      console.log("Setting product to edit:", prefetchedProduct);
       setProductToEdit(prefetchedProduct);
       setAside("EditProduct");
     } else {

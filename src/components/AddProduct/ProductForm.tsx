@@ -46,7 +46,7 @@ const categoryComponents = {
   Other: othersData,
 };
 
-const ProductForm: React.FC<{ initialData?: Product; isUpdate: boolean }> = ({
+const ProductForm: React.FC<ProductFormProps> = ({
   initialData,
   isUpdate = false,
 }) => {
@@ -64,7 +64,12 @@ const ProductForm: React.FC<{ initialData?: Product; isUpdate: boolean }> = ({
   const router = useRouter();
   const methods = useForm({
     resolver: zodResolver(zodCreateProductModel),
-    defaultValues: initialData || emptyProduct,
+    defaultValues: {
+      ...emptyProduct,
+      ...initialData,
+      category: initialData?.category || undefined,
+      serialNumber: initialData?.serialNumber || undefined,
+    },
   });
   const {
     handleSubmit,
@@ -99,7 +104,10 @@ const ProductForm: React.FC<{ initialData?: Product; isUpdate: boolean }> = ({
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
       if (!isUpdate) {
-        methods.reset(emptyProduct);
+        methods.reset({
+          ...emptyProduct,
+          category: category,
+        });
         setSelectedCategory(category);
         setValue("category", category || undefined);
         setManualChange(false);
@@ -180,6 +188,10 @@ const ProductForm: React.FC<{ initialData?: Product; isUpdate: boolean }> = ({
     const finalAssignedEmail = watch("assignedEmail");
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
 
+    // if (data.serialNumber === null) {
+    //   setValue("serialNumber", "");
+    // }
+
     const formatData: Product = {
       ...emptyProduct,
       ...data,
@@ -204,7 +216,9 @@ const ProductForm: React.FC<{ initialData?: Product; isUpdate: boolean }> = ({
           };
         })
       ),
-      serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
+      ...(data.serialNumber?.trim()
+        ? { serialNumber: data.serialNumber.trim() }
+        : {}),
     };
 
     const model = formatData.attributes.find(
@@ -286,6 +300,7 @@ const ProductForm: React.FC<{ initialData?: Product; isUpdate: boolean }> = ({
         });
 
         if (Object.keys(changes).length === 0) {
+          console.log("No changes detected");
           setShowSuccessDialog(true);
           return;
         }
@@ -325,6 +340,7 @@ const ProductForm: React.FC<{ initialData?: Product; isUpdate: boolean }> = ({
   };
 
   const handleMutationError = (error: any, isUpdate: boolean) => {
+    console.error("Error durante la mutación:", error);
     if (error.response?.data?.message === "Serial Number already exists") {
       setErrorMessage("Serial Number already exists");
     } else {
@@ -341,6 +357,7 @@ const ProductForm: React.FC<{ initialData?: Product; isUpdate: boolean }> = ({
 
   const handleNext = async () => {
     const isProductNameValid = await validateProductName();
+    console.log("Nombre de producto válido:", isProductNameValid);
     if (!isProductNameValid) return;
 
     const data = methods.getValues();
@@ -445,6 +462,10 @@ const ProductForm: React.FC<{ initialData?: Product; isUpdate: boolean }> = ({
   const modelValue = watch("attributes").find(
     (attr) => attr.key === "model"
   )?.value;
+
+  // useEffect(() => {
+  //   console.log("Errores actuales del formulario:", errors);
+  // }, [errors]);
 
   return (
     <FormProvider {...methods}>
