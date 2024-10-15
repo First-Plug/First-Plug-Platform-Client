@@ -13,6 +13,7 @@ import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
 import { useBulkCreateAssets } from "@/assets/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -23,6 +24,8 @@ const BulkCreateForm: React.FC<{
 }> = ({ initialData, quantity, onBack, isProcessing, setIsProcessing }) => {
   const { mutate: bulkCreateAssets, status } = useBulkCreateAssets();
   const isLoading = status === "pending";
+
+  const queryClient = useQueryClient();
 
   const numProducts = quantity;
 
@@ -57,6 +60,7 @@ const BulkCreateForm: React.FC<{
   const productInstance = ProductModel.create(initialProductData);
 
   const {
+    products: { setProducts },
     alerts: { setAlert },
   } = useStore();
 
@@ -268,10 +272,15 @@ const BulkCreateForm: React.FC<{
     try {
       setIsProcessing(true);
       bulkCreateAssets(productsData, {
-        onSuccess: () => {
-          setAlert("bulkCreateProductSuccess");
+        onSuccess: (data) => {
+          setProducts(data); // Actualiza el store de MobX con los nuevos productos
+
+          queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
+            setAlert("bulkCreateProductSuccess");
+            onBack(); // Navegar después de actualizar los datos
+          });
+
           setIsProcessing(false);
-          onBack();
         },
         onError: (error) => {
           console.error("Error en bulkCreate:", error);

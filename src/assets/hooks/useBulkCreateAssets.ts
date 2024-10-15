@@ -12,6 +12,20 @@ export const useBulkCreateAssets = () => {
 
   return useMutation<Product[], any, Product[]>({
     mutationFn: bulkCreateAssets,
+    onMutate: async (newProducts: Product[]) => {
+      await queryClient.cancelQueries({ queryKey: ["assets"] });
+
+      setProducts(newProducts);
+
+      const previousProducts = queryClient.getQueryData<Product[]>(["assets"]);
+
+      queryClient.setQueryData<Product[]>(["assets"], (old) => [
+        ...(old || []),
+        ...newProducts,
+      ]);
+
+      return { previousProducts };
+    },
     onSuccess: (data) => {
       setProducts(data);
       queryClient.invalidateQueries({ queryKey: ["assets"] });

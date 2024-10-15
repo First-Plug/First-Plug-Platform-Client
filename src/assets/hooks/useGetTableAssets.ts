@@ -8,8 +8,8 @@ export const useGetTableAssets = () => {
     queryFn: getTableAssets,
     staleTime: 1000 * 60 * 30,
     // cacheTime: 1000 * 60 * 60,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    refetchOnMount: false,
+    // refetchOnWindowFocus: true,
+    // refetchOnReconnect: true,
+    // refetchOnMount: false,
   });
 };
