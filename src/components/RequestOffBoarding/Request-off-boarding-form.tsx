@@ -32,7 +32,6 @@ const validateBillingInfo = (user: User): boolean => {
 };
 
 const validateMemberBillingInfo = (user: User): boolean => {
-  console.log(user);
   const requiredFields = [
     "country",
     "city",
@@ -192,20 +191,30 @@ export const RequestOffBoardingForm = ({
       if (!validateBillingInfo(session.user)) {
         setValue(`products.${index}.relocation`, "My office");
         setValue(`products.${index}.available`, false);
+        setValue(`products.${index}.newMember`, "None", {
+          shouldValidate: true,
+        });
       } else {
         setValue(`products.${index}.relocation`, "My office");
         setValue(`products.${index}.available`, true);
+        setValue(`products.${index}.newMember`, "None", {
+          shouldValidate: true,
+        });
       }
     }
 
     if (relocation === "FP warehouse") {
       setValue(`products.${index}.relocation`, "FP warehouse");
       setValue(`products.${index}.available`, true);
+      setValue(`products.${index}.newMember`, "None", { shouldValidate: true });
     }
 
     if (relocation === "New employee") {
       setValue(`products.${index}.relocation`, "New employee");
       setValue(`products.${index}.available`, true);
+      setIsDisabledDropdown(true);
+    } else {
+      setIsDisabledDropdown(false);
     }
   };
 
