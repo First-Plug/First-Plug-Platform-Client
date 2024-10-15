@@ -65,7 +65,7 @@ const Config: Record<EmptyCardType, TConfig> = {
   },
   members: {
     image: "/girl.svg",
-    paragraph: "You haven't loaded any employees yet.",
+    paragraph: "You haven't load any employees yet.",
     ButtonIcon: UploadIcon,
     buttonText: "Load Team Members",
     additionalButtonIcon: AddIcon,

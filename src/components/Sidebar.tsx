@@ -8,6 +8,7 @@ import {
   SettingsIcon,
   ArrowLeft,
   ArrowRight,
+  DashboardIcon,
 } from "@/common/Icons";
 import { usePathname } from "next/navigation";
 
@@ -70,13 +71,13 @@ export const Sidebar = function () {
       </div>
 
       <section className="flex flex-col flex-[2] gap-4">
-        {/* <SidebarLink
+        <SidebarLink
           isSmall={isSidebarSmall}
           icon={<DashboardIcon />}
           title="Dashboard"
           href="/home/dashboard"
           isActive={pathArray.includes("dashboard")}
-        /> */}
+        />
         <SidebarLink
           isSmall={isSidebarSmall}
           icon={<PersonsGroupIcon />}
