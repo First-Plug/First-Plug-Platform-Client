@@ -8,10 +8,12 @@ import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
 import { useFilterReset } from "./Filters/FilterResetContext";
 import "./table.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ProductsTableProps {
+  assets: ProductTable[];
   onClearFilters: () => void;
+  onlyAvailable: boolean;
 }
 
 export const productColumns = (
@@ -168,9 +170,10 @@ export const productColumns = (
 
 export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   onClearFilters,
+  assets,
 }) {
   const {
-    products: { tableProducts, availableProducts, onlyAvaliable },
+    products: { setTable, availableProducts, onlyAvaliable },
   } = useStore();
   const { resetFilters } = useFilterReset();
   const [clearAll, setClearAll] = useState(false);
@@ -191,15 +194,19 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     }
   };
 
-  const columns = productColumns(
-    onlyAvaliable ? availableProducts : tableProducts
-  );
+  useEffect(() => {
+    if (assets.length) {
+      setTable(assets);
+    }
+  }, [assets, setTable]);
+
+  const columns = productColumns(onlyAvaliable ? availableProducts : assets);
 
   return (
     <RootTable
       tableType="stock"
       tableNameRef="productsTable"
-      data={onlyAvaliable ? availableProducts : tableProducts}
+      data={onlyAvaliable ? availableProducts : assets}
       columns={columns}
       getRowCanExpand={() => true}
       onClearFilters={handleClearAllFilters}

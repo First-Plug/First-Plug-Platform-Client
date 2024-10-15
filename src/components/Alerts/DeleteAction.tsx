@@ -21,6 +21,7 @@ import {
 } from "@/members/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromTeam } from "@/teams/hooks";
+import { usePrefetchAsset } from "@/assets/hooks";
 
 type DeleteTypes = "product" | "member" | "team" | "memberUnassign";
 
@@ -52,8 +53,13 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
 
     const { fetchStock } = useFetch();
     const queryClient = useQueryClient();
+    const { prefetchAsset } = usePrefetchAsset();
     const { data: membersData } = useFetchMembers();
-    const { data: memberData, isLoading: isLoadingMember } = useFetchMember(id);
+    let memberData;
+    if (type === "member") {
+      const { data, isLoading: isLoadingMember } = useFetchMember(id);
+      memberData = data;
+    }
 
     const checkMemberProducts = () => {
       if (!memberData) return false;
@@ -140,6 +146,14 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         if (hasMembers) {
           setAlert("errorDeleteTeamWithMembers");
           return;
+        }
+      }
+      if (type === "product") {
+        try {
+          await prefetchAsset(id);
+          console.log(`Producto ${id} pre-fetched con éxito`);
+        } catch (error) {
+          console.error(`Error al prefetch del producto ${id}:`, error);
         }
       }
       setOpen(true);

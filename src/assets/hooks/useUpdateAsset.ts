@@ -8,6 +8,10 @@ interface UpdateAssetProps {
   data: Partial<Product>;
 }
 
+interface MutationContext {
+  previousAsset?: Product;
+}
+
 export const useUpdateAsset = () => {
   const queryClient = useQueryClient();
   const {
@@ -15,10 +19,15 @@ export const useUpdateAsset = () => {
     alerts: { setAlert },
   } = useStore();
 
-  const mutation = useMutation({
-    mutationFn: ({ id, data }: UpdateAssetProps) => updateAsset(id, data),
+  const mutation = useMutation<
+    Product,
+    unknown,
+    UpdateAssetProps,
+    MutationContext
+  >({
+    mutationFn: ({ id, data }) => updateAsset(id, data),
 
-    onMutate: async ({ id, data }: UpdateAssetProps) => {
+    onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ["assets", id] });
 
       const previousAsset = queryClient.getQueryData<Product>(["assets", id]);
@@ -27,17 +36,26 @@ export const useUpdateAsset = () => {
 
       queryClient.setQueryData<Product>(["assets", id], optimisticAsset);
 
+      if (previousAsset) {
+        updateProduct(optimisticAsset);
+      }
+
       return { previousAsset };
     },
 
-    onError: (error, { id }: UpdateAssetProps, context: any) => {
+    onError: (error, { id }, context) => {
       if (context?.previousAsset) {
         queryClient.setQueryData(["assets", id], context.previousAsset);
       }
       console.error("Error al actualizar el asset:", error);
     },
 
-    onSuccess: (updatedAsset: Product) => {
+    onSuccess: (updatedAsset) => {
+      if (!updatedAsset.category) {
+        console.error("Product update response is missing the category.");
+        return;
+      }
+
       queryClient.setQueryData<Product[]>(["assets"], (oldAssets = []) =>
         oldAssets.map((asset) =>
           asset._id === updatedAsset._id ? updatedAsset : asset
@@ -45,9 +63,7 @@ export const useUpdateAsset = () => {
       );
 
       updateProduct(updatedAsset);
-
       queryClient.invalidateQueries({ queryKey: ["assets"] });
-
       setAlert("updateStock");
     },
   });

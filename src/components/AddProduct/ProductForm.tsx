@@ -25,6 +25,12 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
 import BulkCreateForm from "./BulkCreateForm";
+import {
+  useBulkCreateAssets,
+  useCreateAsset,
+  useUpdateAsset,
+} from "@/assets/hooks";
+import { Loader } from "lucide-react";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -40,15 +46,21 @@ const categoryComponents = {
   Other: othersData,
 };
 
-const ProductForm: React.FC<ProductFormProps> = ({
+const ProductForm: React.FC<{ initialData?: Product; isUpdate: boolean }> = ({
   initialData,
   isUpdate = false,
 }) => {
+  if (!initialData) return <Loader />;
   const {
     user: { user },
     aside: { setAside },
     alerts: { setAlert },
   } = useStore();
+
+  const createAsset = useCreateAsset();
+  const updateAsset = useUpdateAsset();
+  const bulkCreateAssets = useBulkCreateAssets();
+
   const router = useRouter();
   const methods = useForm({
     resolver: zodResolver(zodCreateProductModel),
@@ -277,35 +289,52 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowSuccessDialog(true);
           return;
         }
-        await ProductServices.updateProduct(initialData._id, changes);
-        setAlert("updateStock");
-        setAside(undefined);
+        updateAsset.mutate(
+          { id: initialData._id, data: changes },
+          {
+            onSuccess: () => {
+              setAlert("updateStock");
+              setAside(undefined);
+              setShowSuccessDialog(true);
+            },
+            onError: (error) => handleMutationError(error, true),
+          }
+        );
       } else {
         if (quantity > 1) {
           setBulkInitialData(formatData);
           setShowBulkCreate(true);
         } else {
-          await ProductServices.createProduct(formatData);
-          setAlert("createProduct");
+          createAsset.mutate(formatData, {
+            onSuccess: () => {
+              setAlert("createProduct");
+              methods.reset();
+              setSelectedCategory(undefined);
+              setAssignedEmail(undefined);
+              setShowSuccessDialog(true);
+            },
+            onError: (error) => handleMutationError(error, false),
+          });
         }
       }
-      methods.reset();
-      setSelectedCategory(undefined);
-      setAssignedEmail(undefined);
-      setShowSuccessDialog(true);
     } catch (error) {
-      if (error.response?.data?.message === "Serial Number already exists") {
-        setErrorMessage("Serial Number already exists");
-      } else {
-        setErrorMessage(
-          `Error ${
-            isUpdate ? "updating" : "creating"
-          } your product, please check the data and try again.`
-        );
-      }
-      setShowErrorDialog(true);
+      handleMutationError(error, isUpdate);
+    } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleMutationError = (error: any, isUpdate: boolean) => {
+    if (error.response?.data?.message === "Serial Number already exists") {
+      setErrorMessage("Serial Number already exists");
+    } else {
+      setErrorMessage(
+        `Error ${
+          isUpdate ? "updating" : "creating"
+        } your product, please check the data and try again.`
+      );
+    }
+    setShowErrorDialog(true);
   };
 
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };

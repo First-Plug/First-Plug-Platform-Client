@@ -95,7 +95,6 @@ export const Sidebar = function () {
           href="/home/my-stock"
           isActive={pathArray.includes("my-stock")}
           onMouseEnter={() => {
-            console.log("Prefetching assets...");
             prefetchAssets();
           }}
         />

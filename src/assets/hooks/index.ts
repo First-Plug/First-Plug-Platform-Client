@@ -10,3 +10,4 @@ export * from "./useReassignAssets";
 export * from "./useExportCsv";
 export * from "./usePreFetchAssets";
 export * from "./usePreFetchAsset";
+export * from "./useGetTableAssets";

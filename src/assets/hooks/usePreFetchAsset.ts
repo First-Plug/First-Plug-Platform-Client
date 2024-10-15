@@ -7,8 +7,9 @@ export const usePrefetchAsset = () => {
 
   const prefetchAsset = async (id: string) => {
     try {
-      await queryClient.prefetchQuery<Product>({
-        queryKey: ["asset", id],
+      console.log(`Prefetching asset with ID: ${id}`);
+      await queryClient.prefetchQuery({
+        queryKey: ["assets", id],
         queryFn: () => getAssetById(id),
         staleTime: 1000 * 60 * 10,
       });
