@@ -77,7 +77,7 @@ export const EditTeamsAside = observer(function ({
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       // const transformedMembers = transformData(updatedMembers, updatedTeams);
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+      // queryClient.invalidateQueries({ queryKey: ["members"] });
       // setTeams(updatedTeams);
       // setMembers(transformedMembers);
       setAlert("deleteTeam");
