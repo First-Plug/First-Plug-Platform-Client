@@ -47,7 +47,7 @@ export function MiniCake() {
       viewBox="0 0 24 24"
       stroke-width={1.5}
       stroke="currentColor"
-      className="size-10 text-gray-700"
+      className="size-6 text-gray-700"
     >
       <path
         stroke-linecap="round"
