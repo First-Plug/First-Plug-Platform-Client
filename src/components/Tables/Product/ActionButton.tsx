@@ -54,13 +54,10 @@ export function ActionButton({ product }: ActionButtonProps) {
   const { action, text } = ActionConfig[product.status];
 
   return (
-    <Button
-      onClick={action}
-      className="rounded-md"
-      variant="text"
-      onMouseEnter={prefetchAssignData}
-    >
-      {text}
-    </Button>
+    <div onMouseEnter={prefetchAssignData}>
+      <Button onClick={action} className="rounded-md" variant="text">
+        {text}
+      </Button>
+    </div>
   );
 }

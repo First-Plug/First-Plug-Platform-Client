@@ -13,7 +13,8 @@ export const usePrefetchAssignData = (productId: string) => {
 
   const prefetchAssignData = async () => {
     try {
-      // Prefetch the product
+      console.log("Prefetching assign data...");
+
       const cachedProduct = queryClient.getQueryData<Product>([
         "assets",
         productId,
@@ -30,7 +31,7 @@ export const usePrefetchAssignData = (productId: string) => {
         throw new Error("Failed to fetch product");
       }
 
-      // Set the product in the store
+      console.log("Product prefetched", product);
       setProductToAssing(product);
 
       // Prefetch the members if not already cached
@@ -42,9 +43,10 @@ export const usePrefetchAssignData = (productId: string) => {
           queryKey: ["members"],
           queryFn: getAllMembers,
         });
-        // Update MobX store with members
+        console.log("Members prefetched", members);
         setMembers(members);
       } else {
+        console.log("Members found in cache", cachedMembers);
         setMembers(cachedMembers);
       }
     } catch (error) {
