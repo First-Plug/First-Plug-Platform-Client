@@ -59,7 +59,6 @@ export const TeamHomeCard = observer(function ({
   } = useStore();
 
   const membersWithBirthdate = members.filter((member) => member.birthDate);
-  console.log("Miembros con fecha de nacimiento:", membersWithBirthdate);
 
   const upcomingBirthdays = sortBirthdaysByUpcoming(
     membersWithBirthdate.filter((member) =>
