@@ -13,8 +13,6 @@ export const usePrefetchAssignData = (productId: string) => {
 
   const prefetchAssignData = async () => {
     try {
-      console.log("Prefetching assign data...");
-
       const cachedProduct = queryClient.getQueryData<Product>([
         "assets",
         productId,
@@ -30,11 +28,8 @@ export const usePrefetchAssignData = (productId: string) => {
       if (!product) {
         throw new Error("Failed to fetch product");
       }
-
-      console.log("Product prefetched", product);
       setProductToAssing(product);
 
-      // Prefetch the members if not already cached
       const cachedMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
       if (!cachedMembers) {
         const members: TeamMember[] = await queryClient.fetchQuery<
@@ -43,10 +38,8 @@ export const usePrefetchAssignData = (productId: string) => {
           queryKey: ["members"],
           queryFn: getAllMembers,
         });
-        console.log("Members prefetched", members);
         setMembers(members);
       } else {
-        console.log("Members found in cache", cachedMembers);
         setMembers(cachedMembers);
       }
     } catch (error) {
