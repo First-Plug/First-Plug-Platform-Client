@@ -66,7 +66,7 @@ export const LoadAside = function () {
         if (success) {
           try {
             await CsvServices.bulkCreateProducts(data.prdoucts);
-            await fetchStock();
+            queryClient.invalidateQueries({ queryKey: ["assets"] });
             queryClient.invalidateQueries({ queryKey: ["members"] });
             setAside(undefined);
             setAlert("csvSuccess");

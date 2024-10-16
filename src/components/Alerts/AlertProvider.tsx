@@ -116,6 +116,7 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " Product successfully assigned.",
       closeAction: () => {
+        queryClient.invalidateQueries({ queryKey: ["members"] });
         setAlert(undefined);
       },
     },
@@ -152,7 +153,8 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " Your product has been successfully updated.",
       closeAction: async () => {
-        queryClient.invalidateQueries({ queryKey: ["assets"] });
+        queryClient.invalidateQueries({ queryKey: ["members"] });
+        // queryClient.invalidateQueries({ queryKey: ["assets"] });
         // await fetchStock();
         setAlert(undefined);
       },
