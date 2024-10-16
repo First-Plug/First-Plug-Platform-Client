@@ -12,16 +12,33 @@ const formatBirthDate = (dateString) => {
   const [year, month, day] = cleanDate.split("-");
   return `${day}/${month}`;
 };
+
 const isBirthdayToday = (birthDateString: string) => {
   const today = new Date();
-  const [year, month, day] = birthDateString.split("-").map(Number);
-
-  const birthdayThisYear = new Date(today.getFullYear(), month - 1, day);
-
-  return (
-    today.getDate() === birthdayThisYear.getDate() &&
-    today.getMonth() === birthdayThisYear.getMonth()
+  today.setHours(0, 0, 0, 0);
+  const todayUTC = Date.UTC(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
   );
+
+  const cleanDate = birthDateString.includes("T")
+    ? birthDateString.split("T")[0]
+    : birthDateString;
+
+  if (!cleanDate || typeof cleanDate !== "string" || !cleanDate.includes("-")) {
+    console.error(`Invalid birth date format: ${cleanDate}`);
+    return false;
+  }
+  const [year, month, day] = cleanDate.split("-").map(Number);
+
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    console.error(`Failed to parse birth date: ${cleanDate}`);
+    return false;
+  }
+  const birthdayUTC = Date.UTC(today.getFullYear(), month - 1, day);
+
+  return todayUTC === birthdayUTC;
 };
 
 const birthdayColumns: ColumnDef<TeamMember>[] = [
