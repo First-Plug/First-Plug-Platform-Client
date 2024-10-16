@@ -8,7 +8,12 @@ import { TeamMember } from "@/types";
 
 const isBirthdayInNext30Days = (birthDateString: string) => {
   const today = new Date();
-  const birthDate = new Date(birthDateString);
+
+  const birthDate = new Date(
+    birthDateString.includes("T")
+      ? birthDateString.split("T")[0]
+      : birthDateString
+  );
   birthDate.setFullYear(today.getFullYear());
 
   const diffTime = birthDate.getTime() - today.getTime();
@@ -16,6 +21,7 @@ const isBirthdayInNext30Days = (birthDateString: string) => {
 
   return diffDays >= 0 && diffDays <= 30;
 };
+
 const sortBirthdaysByUpcoming = (members: TeamMember[]) => {
   const today = new Date();
 
@@ -23,15 +29,12 @@ const sortBirthdaysByUpcoming = (members: TeamMember[]) => {
     const birthDateA = new Date(a.birthDate);
     const birthDateB = new Date(b.birthDate);
 
-    // Cambiamos el año de ambos cumpleaños al año actual para poder compararlos
     birthDateA.setFullYear(today.getFullYear());
     birthDateB.setFullYear(today.getFullYear());
 
-    // Comparar solo el día y mes
     const monthDayA = `${birthDateA.getMonth() + 1}-${birthDateA.getDate()}`;
     const monthDayB = `${birthDateB.getMonth() + 1}-${birthDateB.getDate()}`;
 
-    // Verificar si el cumpleaños es hoy
     const isTodayA =
       birthDateA.getDate() === today.getDate() &&
       birthDateA.getMonth() === today.getMonth();
@@ -39,7 +42,6 @@ const sortBirthdaysByUpcoming = (members: TeamMember[]) => {
       birthDateB.getDate() === today.getDate() &&
       birthDateB.getMonth() === today.getMonth();
 
-    // Si el cumpleaños de A es hoy, debería estar primero
     if (isTodayA) return -1;
     if (isTodayB) return 1;
 
