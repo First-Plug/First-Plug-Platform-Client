@@ -19,7 +19,7 @@ export const MyTeamActions = observer(function <TData>({
   } = useStore();
 
   // const { data: teamData, isLoading, isError } = useFetchTeams();
-  // const prefetchTeams = usePrefetchTeams();
+  const prefetchTeams = usePrefetchTeams();
 
   // if (isLoading) return <BarLoader />;
   // if (isError) return <div>Failed to load teams</div>;
@@ -28,9 +28,9 @@ export const MyTeamActions = observer(function <TData>({
     setAside(type);
   };
 
-  // const handleEditTeamHover = () => {
-  //   prefetchTeams();
-  // };
+  const handleEditTeamHover = () => {
+    prefetchTeams();
+  };
 
   return (
     <section className="flex flex-col gap-1 w-full h-full">
@@ -60,7 +60,7 @@ export const MyTeamActions = observer(function <TData>({
             // disabled={teamData.length === 0}
             icon={<PenIcon />}
             className={"p-2 text-sm rounded-md"}
-            // onMouseEnter={handleEditTeamHover}
+            onMouseEnter={handleEditTeamHover}
             onClick={() => handleAside("EditTeam")}
           />
         </div>
