@@ -141,7 +141,8 @@ export default observer(function AlertProvider() {
       description: " This member has been successfully updated.",
       closeAction: async () => {
         queryClient.invalidateQueries({ queryKey: ["members"] });
-        await fetchStock();
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
+        // await fetchStock();
         setAside(undefined);
         setAlert(undefined);
       },
@@ -151,7 +152,8 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " Your product has been successfully updated.",
       closeAction: async () => {
-        await fetchStock();
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
+        // await fetchStock();
         setAlert(undefined);
       },
     },
@@ -178,7 +180,8 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " Your product has been successfully created.",
       closeAction: async () => {
-        await fetchStock();
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
+        // await fetchStock();
         setAlert(undefined);
         router.push("/home/my-stock");
       },
@@ -306,7 +309,8 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: "Products have been successfully created.",
       closeAction: async () => {
-        await fetchStock();
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
+        // await fetchStock();
         setAlert(undefined);
         router.push("/home/my-stock");
       },

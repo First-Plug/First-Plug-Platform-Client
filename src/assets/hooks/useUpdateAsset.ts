@@ -6,6 +6,7 @@ import { Product } from "@/types";
 interface UpdateAssetProps {
   id: string;
   data: Partial<Product>;
+  showSuccessAlert?: boolean;
 }
 
 interface MutationContext {
@@ -52,7 +53,7 @@ export const useUpdateAsset = () => {
       console.error("Error al actualizar el asset:", error);
     },
 
-    onSuccess: (response, { id }) => {
+    onSuccess: (response, { id, showSuccessAlert = true }) => {
       if (isProduct(response)) {
         queryClient.setQueryData<Product[]>(["assets"], (oldAssets = []) =>
           oldAssets.map((asset) =>
@@ -71,7 +72,9 @@ export const useUpdateAsset = () => {
       }
 
       queryClient.invalidateQueries({ queryKey: ["assets"] });
-      setAlert("updateStock");
+      if (showSuccessAlert) {
+        setAlert("updateStock");
+      }
     },
   });
 

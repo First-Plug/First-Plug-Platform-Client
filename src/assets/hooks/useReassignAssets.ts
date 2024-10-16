@@ -18,7 +18,7 @@ export const useReassignAssets = () => {
   return useMutation({
     mutationFn: ({ id, data }: ReassignAssetProps) => reassignAsset(id, data),
     onMutate: async ({ id, data }: ReassignAssetProps) => {
-      await queryClient.cancelQueries({ queryKey: ["assets", "reassign", id] });
+      await queryClient.cancelQueries({ queryKey: ["assets", id] });
 
       const previousAsset = queryClient.getQueryData<Product>(["assets", id]);
 

@@ -46,7 +46,6 @@ export function ActionButton({ product }: ActionButtonProps) {
 
     setAside("ReassignProduct");
     setSelectedMemberEmail(product.assignedEmail);
-    // Usa el producto cacheado si está disponible
     setProductToAssing(cachedProduct || product);
   };
 

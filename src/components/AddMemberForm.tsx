@@ -14,9 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ProductServices } from "@/services";
 import CategoryIcons from "./AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
+import { useUpdateAsset } from "@/assets/hooks";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -46,8 +46,8 @@ export const AddMemberForm = observer(function ({
     aside: { setAside },
   } = useStore();
 
-  const { fetchStock } = useFetch();
   const queryClient = useQueryClient();
+  const { mutate: updateAssetMutation } = useUpdateAsset();
 
   useEffect(() => {
     setSearchedMembers(members);
@@ -88,9 +88,13 @@ export const AddMemberForm = observer(function ({
     setIsAssigning(true);
     try {
       if (selectedMember === null && noneOption) {
-        await reassignProduct(currentProduct._id, updatedProduct);
+        updateAssetMutation({
+          id: currentProduct._id,
+          data: updatedProduct,
+          showSuccessAlert: false,
+        });
         queryClient.invalidateQueries({ queryKey: ["members"] });
-        await fetchStock();
+        // queryClient.invalidateQueries({ queryKey: ["assets"] });
         setAside(undefined);
         setAlert("assignedProductSuccess");
       } else if (selectedMember) {
@@ -108,9 +112,13 @@ export const AddMemberForm = observer(function ({
             currentMember?.firstName + " " + currentMember?.lastName || "";
         }
 
-        await ProductServices.updateProduct(currentProduct._id, updatedProduct);
+        updateAssetMutation({
+          id: currentProduct._id,
+          data: updatedProduct,
+          showSuccessAlert: false,
+        });
         queryClient.invalidateQueries({ queryKey: ["members"] });
-        await fetchStock();
+        // queryClient.invalidateQueries({ queryKey: ["assets"] });
         setAside(undefined);
         setAlert("assignedProductSuccess");
       }
