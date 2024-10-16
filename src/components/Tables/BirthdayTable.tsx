@@ -3,23 +3,42 @@ import { ColumnDef } from "@tanstack/react-table";
 import { BirthdayRoot } from "./BirthdayRoot";
 import { TeamMember } from "@/types";
 import { TeamCard } from "@/common";
-
-const daysUntilNextBirthday = (birthDateString: string) => {
-  const today = new Date();
-  const birthDate = new Date(birthDateString);
-  birthDate.setFullYear(today.getFullYear());
-
-  if (birthDate < today) {
-    birthDate.setFullYear(today.getFullYear() + 1);
-  }
-
-  const diffTime = birthDate.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-};
+import { MiniCake } from "@/common";
 
 const formatBirthDate = (dateString) => {
-  const [year, month, day] = dateString.split("-");
+  const cleanDate = dateString.includes("T")
+    ? dateString.split("T")[0]
+    : dateString;
+  const [year, month, day] = cleanDate.split("-");
   return `${day}/${month}`;
+};
+
+const isBirthdayToday = (birthDateString: string) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayUTC = Date.UTC(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+
+  const cleanDate = birthDateString.includes("T")
+    ? birthDateString.split("T")[0]
+    : birthDateString;
+
+  if (!cleanDate || typeof cleanDate !== "string" || !cleanDate.includes("-")) {
+    console.error(`Invalid birth date format: ${cleanDate}`);
+    return false;
+  }
+  const [year, month, day] = cleanDate.split("-").map(Number);
+
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    console.error(`Failed to parse birth date: ${cleanDate}`);
+    return false;
+  }
+  const birthdayUTC = Date.UTC(today.getFullYear(), month - 1, day);
+
+  return todayUTC === birthdayUTC;
 };
 
 const birthdayColumns: ColumnDef<TeamMember>[] = [
@@ -37,13 +56,15 @@ const birthdayColumns: ColumnDef<TeamMember>[] = [
     accessorKey: "birthDate",
     size: 100,
     header: "Date of Birth",
-
-    sortingFn: (rowA, rowB) => {
-      const daysA = daysUntilNextBirthday(rowA.original.birthDate);
-      const daysB = daysUntilNextBirthday(rowB.original.birthDate);
-      return daysA - daysB;
+    cell: ({ row, getValue }) => {
+      const isToday = isBirthdayToday(row.original.birthDate);
+      return (
+        <span className="font-semibold text-blue-500 flex items-center gap-1 justify-between">
+          {formatBirthDate(getValue<string>())}
+          {isToday && <MiniCake />}
+        </span>
+      );
     },
-    cell: ({ getValue }) => <span>{formatBirthDate(getValue<string>())}</span>,
   },
   {
     id: "team",

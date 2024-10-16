@@ -4,10 +4,16 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
 import { BirthdayTable } from "./Tables/BirthdayTable";
 import { Button } from "@/common";
+import { TeamMember } from "@/types";
 
 const isBirthdayInNext30Days = (birthDateString: string) => {
   const today = new Date();
-  const birthDate = new Date(birthDateString);
+
+  const birthDate = new Date(
+    birthDateString.includes("T")
+      ? birthDateString.split("T")[0]
+      : birthDateString
+  );
   birthDate.setFullYear(today.getFullYear());
 
   const diffTime = birthDate.getTime() - today.getTime();
@@ -16,7 +22,7 @@ const isBirthdayInNext30Days = (birthDateString: string) => {
   return diffDays >= 0 && diffDays <= 30;
 };
 
-const sortBirthdaysByUpcoming = (members: any[]) => {
+const sortBirthdaysByUpcoming = (members: TeamMember[]) => {
   const today = new Date();
 
   return members.sort((a, b) => {
@@ -26,10 +32,20 @@ const sortBirthdaysByUpcoming = (members: any[]) => {
     birthDateA.setFullYear(today.getFullYear());
     birthDateB.setFullYear(today.getFullYear());
 
-    if (birthDateA < today) birthDateA.setFullYear(today.getFullYear() + 1);
-    if (birthDateB < today) birthDateB.setFullYear(today.getFullYear() + 1);
+    const monthDayA = `${birthDateA.getMonth() + 1}-${birthDateA.getDate()}`;
+    const monthDayB = `${birthDateB.getMonth() + 1}-${birthDateB.getDate()}`;
 
-    return birthDateA.getTime() - birthDateB.getTime();
+    const isTodayA =
+      birthDateA.getDate() === today.getDate() &&
+      birthDateA.getMonth() === today.getMonth();
+    const isTodayB =
+      birthDateB.getDate() === today.getDate() &&
+      birthDateB.getMonth() === today.getMonth();
+
+    if (isTodayA) return -1;
+    if (isTodayB) return 1;
+
+    return monthDayA.localeCompare(monthDayB);
   });
 };
 
