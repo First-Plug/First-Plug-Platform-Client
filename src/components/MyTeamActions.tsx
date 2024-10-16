@@ -7,6 +7,7 @@ import { Table } from "@tanstack/react-table";
 import { MyTeamViewHeader } from "./MyTeamViewHeader";
 import { useFetchTeams, usePrefetchTeams } from "@/teams/hooks";
 import { BarLoader } from "./Loader/BarLoader";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MyTeamActionsProps<TData> {
   table: Table<TData>;
@@ -18,13 +19,17 @@ export const MyTeamActions = observer(function <TData>({
     aside: { setAside },
   } = useStore();
 
-  // const { data: teamData, isLoading, isError } = useFetchTeams();
+  const queryClient = useQueryClient();
   const prefetchTeams = usePrefetchTeams();
 
-  // if (isLoading) return <BarLoader />;
-  // if (isError) return <div>Failed to load teams</div>;
-
-  const handleAside = (type: AsideType) => {
+  const handleAside = async (type: AsideType) => {
+    const cachedData = queryClient.getQueryData(["teams"]);
+    if (!cachedData) {
+      await queryClient.fetchQuery({
+        queryKey: ["teams"],
+        queryFn: prefetchTeams,
+      });
+    }
     setAside(type);
   };
 

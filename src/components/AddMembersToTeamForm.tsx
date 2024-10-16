@@ -124,16 +124,17 @@ export const AddMembersToTeamForm = observer(function ({
       setLoading(false);
     }
   };
-
   useEffect(() => {
     return () => {
-      queryClient.invalidateQueries({ queryKey: ["members"] });
-      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      if (membersToAdd.length > 0 || membersToDelete.length > 0) {
+        queryClient.invalidateQueries({ queryKey: ["members"] });
+        queryClient.invalidateQueries({ queryKey: ["teams"] });
+      }
     };
-  }, [queryClient]);
+  }, [membersToAdd, membersToDelete, queryClient]);
 
   const confirmBtnStatus =
-    membersToAdd.length === 0 && membersToDelete.length === 0; // USAR ESTE VALOR PARA DEFINIR SI HAY CAMBIOS EN LOS USER SELECCIONADOS.
+    membersToAdd.length === 0 && membersToDelete.length === 0;
 
   return (
     <section className="flex flex-col gap-4 h-full">

@@ -42,6 +42,7 @@ export const CreateTeamAside = observer(function ({
   };
 
   const handleCreateTeam = async () => {
+    console.log("Creating team");
     setIsCreating(true);
     try {
       const newTeam = await createTeamMutation.mutateAsync({ name });
