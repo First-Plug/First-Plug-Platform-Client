@@ -3,23 +3,25 @@ import { ColumnDef } from "@tanstack/react-table";
 import { BirthdayRoot } from "./BirthdayRoot";
 import { TeamMember } from "@/types";
 import { TeamCard } from "@/common";
-
-const daysUntilNextBirthday = (birthDateString: string) => {
-  const today = new Date();
-  const birthDate = new Date(birthDateString);
-  birthDate.setFullYear(today.getFullYear());
-
-  if (birthDate < today) {
-    birthDate.setFullYear(today.getFullYear() + 1);
-  }
-
-  const diffTime = birthDate.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-};
+import { MiniCake } from "@/common";
 
 const formatBirthDate = (dateString) => {
-  const [year, month, day] = dateString.split("-");
+  const cleanDate = dateString.includes("T")
+    ? dateString.split("T")[0]
+    : dateString;
+  const [year, month, day] = cleanDate.split("-");
   return `${day}/${month}`;
+};
+const isBirthdayToday = (birthDateString: string) => {
+  const today = new Date();
+  const [year, month, day] = birthDateString.split("-").map(Number);
+
+  const birthdayThisYear = new Date(today.getFullYear(), month - 1, day);
+
+  return (
+    today.getDate() === birthdayThisYear.getDate() &&
+    today.getMonth() === birthdayThisYear.getMonth()
+  );
 };
 
 const birthdayColumns: ColumnDef<TeamMember>[] = [
@@ -28,21 +30,21 @@ const birthdayColumns: ColumnDef<TeamMember>[] = [
     accessorKey: "fullName",
     size: 300,
     header: "Full Name",
-    cell: ({ getValue }) => (
-      <span className="font-semibold text-blue-500">{getValue<string>()}</span>
-    ),
+    cell: ({ row, getValue }) => {
+      const isToday = isBirthdayToday(row.original.birthDate);
+      return (
+        <span className="font-semibold text-blue-500 flex items-center gap-2 justify-between">
+          {getValue<string>()}
+          {isToday && <MiniCake />}
+        </span>
+      );
+    },
   },
   {
     id: "birthDate",
     accessorKey: "birthDate",
     size: 100,
     header: "Date of Birth",
-
-    sortingFn: (rowA, rowB) => {
-      const daysA = daysUntilNextBirthday(rowA.original.birthDate);
-      const daysB = daysUntilNextBirthday(rowB.original.birthDate);
-      return daysA - daysB;
-    },
     cell: ({ getValue }) => <span>{formatBirthDate(getValue<string>())}</span>,
   },
   {
