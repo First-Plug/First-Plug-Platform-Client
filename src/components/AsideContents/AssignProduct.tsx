@@ -4,7 +4,6 @@ import { AddMemberForm } from "../AddMemberForm";
 import { useEffect, useState } from "react";
 import { Product, TeamMember } from "@/types";
 import { observer } from "mobx-react-lite";
-import { Memberservices, ProductServices } from "@/services";
 import { setAuthInterceptor } from "@/config/axios.config";
 import { Skeleton } from "../ui/skeleton";
 import { useFetchAssetById } from "@/assets/hooks";

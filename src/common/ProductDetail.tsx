@@ -68,6 +68,7 @@ const MembersList = observer(function MembersList({
           product: product,
         });
         queryClient.invalidateQueries({ queryKey: ["members"] });
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
         setRelocateResult("success");
         setRelocateStauts("success");
         handleSuccess();
