@@ -11,3 +11,4 @@ export * from "./useExportCsv";
 export * from "./usePreFetchAssets";
 export * from "./usePreFetchAsset";
 export * from "./useGetTableAssets";
+export * from "./usePreFetchAssignData";

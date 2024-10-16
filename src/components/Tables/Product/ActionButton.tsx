@@ -2,6 +2,7 @@
 import { Button } from "@/common";
 import { useStore } from "@/models";
 import { Product } from "@/types";
+import { usePrefetchAssignData } from "@/assets/hooks";
 
 type ActionType = {
   text: string;
@@ -21,6 +22,8 @@ export function ActionButton({ product }: ActionButtonProps) {
       setProductToAssing,
     },
   } = useStore();
+
+  const { prefetchAssignData } = usePrefetchAssignData(product._id);
 
   const handleAssignAction = () => {
     setAside("AssignProduct");
@@ -51,7 +54,12 @@ export function ActionButton({ product }: ActionButtonProps) {
   const { action, text } = ActionConfig[product.status];
 
   return (
-    <Button onClick={action} className="rounded-md" variant="text">
+    <Button
+      onClick={action}
+      className="rounded-md"
+      variant="text"
+      onMouseEnter={prefetchAssignData}
+    >
       {text}
     </Button>
   );
