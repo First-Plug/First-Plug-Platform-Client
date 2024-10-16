@@ -94,7 +94,7 @@ const Page = ({ params }: { params: { id: string } }) => {
     <PageLayout>
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="w-full">
+          <div className="w-full h-screen overflow-y-auto scrollbar-custom">
             <div className="pr-4">
               <div className="flex flex-col gap-2">
                 <div>
@@ -107,13 +107,12 @@ const Page = ({ params }: { params: { id: string } }) => {
                 </div>
               </div>
 
-              <div
-                className="overflow-y-auto scrollbar-custom"
-                style={{ maxHeight: "calc(90vh - 150px)" }}
-              >
+              <div className="flex-1">
                 {selectedMember?.products
                   ?.filter((product) => product.recoverable === true)
-                  .map((product, index) => {
+                  .map((product, index, array) => {
+                    const isLastItem = index === array.length - 1;
+
                     return (
                       <RequestOffBoardingForm
                         key={product._id}
@@ -126,6 +125,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                         members={members.filter(
                           (member) => member.email !== selectedMember.email
                         )}
+                        className={isLastItem ? "mb-[300px]" : ""}
                       />
                     );
                   })}

@@ -16,6 +16,7 @@ export interface Props {
   members: any;
   totalProducts: number;
   products: Product[];
+  className: string;
 }
 
 const validateBillingInfo = (user: User): boolean => {
@@ -58,6 +59,7 @@ export const RequestOffBoardingForm = ({
   index,
   members,
   totalProducts,
+  className,
 }: Props) => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -286,7 +288,7 @@ export const RequestOffBoardingForm = ({
 
   return (
     <PageLayout>
-      <section className="space-y-4">
+      <section className={`space-y-4 ${className}`}>
         {index === 0 && totalProducts > 1 && (
           <div className="flex items-center mt-2">
             <input
