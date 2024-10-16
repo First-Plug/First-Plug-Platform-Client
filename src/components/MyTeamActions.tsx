@@ -18,24 +18,26 @@ export const MyTeamActions = observer(function <TData>({
     aside: { setAside },
   } = useStore();
 
-  const { data: teamData, isLoading, isError } = useFetchTeams();
-  const prefetchTeams = usePrefetchTeams();
+  // const { data: teamData, isLoading, isError } = useFetchTeams();
+  // const prefetchTeams = usePrefetchTeams();
 
-  if (isLoading) return <BarLoader />;
-  if (isError) return <div>Failed to load teams</div>;
+  // if (isLoading) return <BarLoader />;
+  // if (isError) return <div>Failed to load teams</div>;
 
   const handleAside = (type: AsideType) => {
     setAside(type);
   };
 
-  const handleEditTeamHover = () => {
-    prefetchTeams();
-  };
+  // const handleEditTeamHover = () => {
+  //   prefetchTeams();
+  // };
 
   return (
     <section className="flex flex-col gap-1 w-full h-full">
       <MyTeamViewHeader />
-
+      {/* {isLoading ? (
+        <BarLoader />
+      ) : ( */}
       <div className="w-full flex justify-between  items-center    gap-2  ">
         <div className="flex gap-2 items-center ">
           {/* <SearchInput
@@ -55,14 +57,15 @@ export const MyTeamActions = observer(function <TData>({
           <Button
             body="Edit Team"
             variant={"text"}
-            disabled={teamData.length === 0}
+            // disabled={teamData.length === 0}
             icon={<PenIcon />}
             className={"p-2 text-sm rounded-md"}
-            onMouseEnter={handleEditTeamHover}
+            // onMouseEnter={handleEditTeamHover}
             onClick={() => handleAside("EditTeam")}
           />
         </div>
       </div>
+      {/* )} */}
     </section>
   );
 });
