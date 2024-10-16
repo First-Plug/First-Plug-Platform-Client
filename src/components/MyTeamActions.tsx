@@ -21,8 +21,8 @@ export const MyTeamActions = observer(function <TData>({
   const { data: teamData, isLoading, isError } = useFetchTeams();
   const prefetchTeams = usePrefetchTeams();
 
-  // if (isLoading) return <BarLoader />;
-  // if (isError) return <div>Failed to load teams</div>;
+  if (isLoading) return <BarLoader />;
+  if (isError) return <div>Failed to load teams</div>;
 
   const handleAside = (type: AsideType) => {
     setAside(type);
