@@ -47,22 +47,24 @@ const birthdayColumns: ColumnDef<TeamMember>[] = [
     accessorKey: "fullName",
     size: 300,
     header: "Full Name",
-    cell: ({ row, getValue }) => {
-      const isToday = isBirthdayToday(row.original.birthDate);
-      return (
-        <span className="font-semibold text-blue-500 flex items-center gap-2 justify-between">
-          {getValue<string>()}
-          {isToday && <MiniCake />}
-        </span>
-      );
-    },
+    cell: ({ getValue }) => (
+      <span className="font-semibold text-blue-500">{getValue<string>()}</span>
+    ),
   },
   {
     id: "birthDate",
     accessorKey: "birthDate",
     size: 100,
     header: "Date of Birth",
-    cell: ({ getValue }) => <span>{formatBirthDate(getValue<string>())}</span>,
+    cell: ({ row, getValue }) => {
+      const isToday = isBirthdayToday(row.original.birthDate);
+      return (
+        <span className="font-semibold text-blue-500 flex items-center gap-1 justify-between">
+          {formatBirthDate(getValue<string>())}
+          {isToday && <MiniCake />}
+        </span>
+      );
+    },
   },
   {
     id: "team",
