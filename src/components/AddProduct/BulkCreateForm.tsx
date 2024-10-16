@@ -6,7 +6,6 @@ import { observer } from "mobx-react-lite";
 import { Button, PageLayout, SectionTitle } from "@/common";
 import { DropdownInputProductForm } from "@/components/AddProduct/DropDownProductForm";
 import { InputProductForm } from "@/components/AddProduct/InputProductForm";
-import { Memberservices } from "@/services";
 import { getSnapshot, Instance } from "mobx-state-tree";
 import { AttributeModel, ProductModel, TeamMemberModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
@@ -14,6 +13,8 @@ import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
 import { useBulkCreateAssets } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
+import { useFetchMembers } from "@/members/hooks";
+import { getMemberFullName } from "@/members/helpers/getMemberFullName";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -135,22 +136,18 @@ const BulkCreateForm: React.FC<{
 
     return () => subscription.unsubscribe();
   }, [watch, assignAll]);
+  const { data: fetchedMembers } = useFetchMembers();
 
   useEffect(() => {
-    const fetchMembers = async () => {
-      const fetchedMembers = await Memberservices.getAllMembers();
+    if (fetchedMembers) {
       setMembers(fetchedMembers as Instance<typeof TeamMemberModel>[]);
       const memberFullNames = [
         "None",
-        ...fetchedMembers.map(
-          (member) => `${member.firstName} ${member.lastName}`
-        ),
+        ...fetchedMembers.map(getMemberFullName),
       ];
       setAssignedEmailOptions(memberFullNames);
       setLoading(false);
-    };
-
-    fetchMembers();
+    }
   }, []);
 
   const handleAssignedMemberChange = (
@@ -273,11 +270,11 @@ const BulkCreateForm: React.FC<{
       setIsProcessing(true);
       bulkCreateAssets(productsData, {
         onSuccess: (data) => {
-          setProducts(data); // Actualiza el store de MobX con los nuevos productos
+          setProducts(data);
 
           queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
             setAlert("bulkCreateProductSuccess");
-            onBack(); // Navegar después de actualizar los datos
+            onBack();
           });
 
           setIsProcessing(false);

@@ -1,8 +1,6 @@
 "use client";
 import { Button, SectionTitle, PageLayout } from "@/common";
-import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
-import { Memberservices, TeamServices } from "@/services";
 import { useStore } from "@/models/root.store";
 import { Team, TeamMember, zodCreateMembertModel } from "@/types";
 import PersonalData from "./PersonalData";
@@ -27,7 +25,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
   isUpdate = false,
 }) => {
   const {
-    members: { addMember, setMembers, updateMember },
+    members: { setMembers },
     alerts: { setAlert },
     teams: { setTeams },
   } = useStore();

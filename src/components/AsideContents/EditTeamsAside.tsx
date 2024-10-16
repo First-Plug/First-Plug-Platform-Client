@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Button, LoaderSpinner } from "@/common";
-import { Memberservices, TeamServices } from "../../services";
+import { TeamServices } from "../../services";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
 import { Team } from "@/types/teams";
