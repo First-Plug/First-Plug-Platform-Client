@@ -14,6 +14,8 @@ import { UserServices } from "@/services/user.services";
 import { setAuthInterceptor } from "@/config/axios.config";
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { useSession } from "next-auth/react";
+import { ComputerUpdateCard } from "@/components/Dashboard/ComputerUpdateCard";
+import ComputerAgeChart from "@/components/Dashboard/ComputerAgeChart";
 
 export default observer(function Dashboard() {
   const {
@@ -24,6 +26,7 @@ export default observer(function Dashboard() {
   } = useStore();
   const { fetchStock, fetchMembers, fetchMembersAndTeams } = useFetch();
   const [loading, setLoading] = useState(true);
+  const [avgAge, setAvgAge] = useState<number>(0);
 
   useEffect(() => {
     if (sessionStorage.getItem("accessToken")) {
@@ -33,6 +36,21 @@ export default observer(function Dashboard() {
       }
       if (!tableProducts.length) {
         fetchStock();
+      }
+      const productsWithAcquisitionDate = tableProducts
+        .flatMap((tableProduct) => tableProduct.products)
+        .filter((product) => product.acquisitionDate);
+
+      const totalYears = productsWithAcquisitionDate.map((product) => {
+        const acquisitionDate = new Date(product.acquisitionDate);
+        return (
+          (Date.now() - acquisitionDate.getTime()) / (1000 * 60 * 60 * 24 * 365)
+        );
+      });
+
+      if (totalYears.length) {
+        const avg = totalYears.reduce((a, b) => a + b, 0) / totalYears.length;
+        setAvgAge(avg);
       }
     }
     setLoading(false);
@@ -75,20 +93,35 @@ export default observer(function Dashboard() {
           ) : (
             <EmptyDashboardCard type="stock" />
           )}
-          <EmptyDashboardCard type="computer" />
-          {/* <Card Title="Computer computer" className="h-full">
-            <section className="  h-full flex flex-col justify-center items-center">
-              <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
-                Coming Soon!
-                <NotificationIcon />
-              </h1>
-              <p className="font-inter text-md text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We&apos;re excited to reveal that the Firstplug notifications
-                are coming soon!
-              </p>
-            </section>
-          </Card> */}
+
+          {tableProducts.length ? (
+            <Card
+              Title="Computer Updates"
+              RightContent={
+                <ComputerAgeChart products={tableProducts} avgAge={avgAge} />
+              }
+              FooterContent={
+                <p className="text-dark-grey font-medium text-sm">
+                  Avg computer age:{" "}
+                  <span
+                    style={{
+                      color:
+                        avgAge < 3 ? "green" : avgAge < 5 ? "yellow" : "red",
+                    }}
+                  >
+                    {avgAge.toFixed(2)} years
+                  </span>
+                </p>
+              }
+            >
+              <div className="mt-4"></div>
+              <ComputerUpdateCard products={tableProducts} />
+            </Card>
+          ) : (
+            <EmptyDashboardCard type="computer" />
+          )}
         </section>
+
         <section className="grid grid-cols-2 gap-4 h-1/2  ">
           {members.length ? (
             <>
@@ -107,18 +140,6 @@ export default observer(function Dashboard() {
             <EmptyDashboardCard type="members" />
           )}
           <EmptyDashboardCard type="recentActivity" />
-          {/* <Card Title="Recent Activity" className="h-full">
-            <section className="  h-full flex flex-col justify-center items-center">
-              <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
-                Coming Soon!
-                <NotificationIcon />
-              </h1>
-              <p className="font-inter text-md text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We&apos;re excited to reveal that the Firstplug notifications
-                are coming soon!
-              </p>
-            </section>
-          </Card> */}
         </section>
       </div>
     </PageLayout>
