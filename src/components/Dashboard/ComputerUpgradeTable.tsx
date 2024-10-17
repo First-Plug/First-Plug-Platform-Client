@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { BirthdayRoot } from "../Tables/BirthdayRoot";
-import { Product } from "@/types";
+import { Product, User } from "@/types";
+import { UserServices } from "@/services/user.services";
 
 interface ComputerStatus {
   brandModel: string;
@@ -13,14 +14,49 @@ interface ComputerStatus {
 
 interface ComputerUpgradeTableProps {
   products: Product[];
+  email: string;
+  tenantName: string;
+  alert: (alert: string) => void;
 }
+
+const handleSlackNotification = async (
+  product: ComputerStatus,
+  email: string,
+  tenantName: string,
+  alert: (alert: string) => void
+) => {
+  try {
+    const { brandModel, serial, yearsSinceAcquisition, status, location } =
+      product;
+
+    await UserServices.notifyComputerUpgrade({
+      email,
+      tenantName,
+      category: "Computer",
+      brand: brandModel.split(" ")[0],
+      model: brandModel.split(" ").slice(1).join(" "),
+      serialNumber: serial,
+      acquisitionDate: `${yearsSinceAcquisition} years`,
+      status,
+      location,
+    });
+
+    alert("computerUpgradeAlert");
+  } catch (error) {
+    console.error("Error sending notification:", error);
+  }
+};
+
 const getStatus = (years: number) => {
-  if (years >= 3) return "Expired";
-  if (years >= 2.5) return "Close to Expire";
+  if (years >= 3) return "Upgrade recommended";
+  if (years >= 2.5) return "Time for upgrade";
   return "Ok";
 };
 
-const computerColumns: ColumnDef<ComputerStatus>[] = [
+const computerColumns = (
+  email: string,
+  tenantName: string
+): ColumnDef<ComputerStatus>[] => [
   {
     id: "brandModel",
     accessorKey: "brandModel",
@@ -59,18 +95,21 @@ const computerColumns: ColumnDef<ComputerStatus>[] = [
     accessorKey: "status",
     size: 200,
     header: "Status",
-    cell: ({ getValue }) => {
+    cell: ({ row, getValue }) => {
       const status = getValue<string>();
+
       return (
         <button
           className={` p-2 font-semibold ${
-            status === "Expired"
+            status === "Upgrade recommended"
               ? " text-blue hover:bg-hoverBlue rounded-full"
-              : status === "Close to Expire"
+              : status === "Time for upgrade"
               ? " text-blue hover:bg-hoverBlue rounded-full"
               : "bg-green-500"
           }`}
-          //   onClick={() => handleSlackNotification(getValue<string>())}
+          onClick={() =>
+            handleSlackNotification(row.original, email, tenantName, alert)
+          }
         >
           {status}
         </button>
@@ -89,6 +128,8 @@ const computerColumns: ColumnDef<ComputerStatus>[] = [
 
 export const ComputerUpgradeTable = ({
   products,
+  email,
+  tenantName,
 }: ComputerUpgradeTableProps) => {
   const computersWithStatus = useMemo(() => {
     return products
@@ -115,5 +156,10 @@ export const ComputerUpgradeTable = ({
       });
   }, [products]);
 
-  return <BirthdayRoot columns={computerColumns} data={computersWithStatus} />;
+  return (
+    <BirthdayRoot
+      columns={computerColumns(email, tenantName)}
+      data={computersWithStatus}
+    />
+  );
 };

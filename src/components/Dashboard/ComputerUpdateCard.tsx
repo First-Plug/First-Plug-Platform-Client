@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import ProgressCircle from "./ProgressCircle";
 import { ComputerUpgradeTable } from "./ComputerUpgradeTable";
+import { useStore } from "@/models";
 
 interface ComputerUpdateCardProps {
   products: any[];
 }
 
 export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
+  const {
+    user: { user },
+    alerts: { setAlert },
+  } = useStore();
+
   const [productsWithDate, setProductsWithDate] = useState<number>(0);
   const [productsWithoutDate, setProductsWithoutDate] = useState<number>(0);
   const [computersToUpgrade, setComputersToUpgrade] = useState<any[]>([]);
@@ -44,7 +50,12 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
       </div>
       {computersToUpgrade.length > 0 ? (
         <div className="w-full mt-4">
-          <ComputerUpgradeTable products={computersToUpgrade} />
+          <ComputerUpgradeTable
+            products={computersToUpgrade}
+            email={user.email}
+            tenantName={user.tenantName}
+            alert={setAlert}
+          />
         </div>
       ) : (
         <p className="text-sm text-green-500 font-medium">

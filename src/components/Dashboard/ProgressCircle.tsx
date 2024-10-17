@@ -23,7 +23,7 @@ const ProgressCircle = ({
   return (
     <div className="flex flex-col items-start w-full">
       <p className="mb-2 text-dark-grey font-medium text-sm">
-        Computer with Completed Acquisition Date
+        Computers with completed Acquisition Date:
       </p>
       <div className="flex flex-row items-center justify-start w-full gap-4">
         <figcaption className="flex flex-row items-center justify-start gap-4">
@@ -33,7 +33,7 @@ const ProgressCircle = ({
               style={{ backgroundColor: "#4FE8B7" }}
             ></div>
             <p className="text-sm font-semibold">
-              Complete Date | <b>{productsWithDate}</b>
+              Completed | <b>{productsWithDate}</b>
             </p>
           </div>
           <div className="flex gap-2 items-center">
@@ -42,7 +42,7 @@ const ProgressCircle = ({
               style={{ backgroundColor: "#FFC6D3" }}
             ></div>
             <p className="text-sm font-semibold">
-              Non-Completed Date | <b>{productsWithoutDate}</b>
+              Non completed | <b>{productsWithoutDate}</b>
             </p>
           </div>
         </figcaption>
