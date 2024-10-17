@@ -63,7 +63,7 @@ const Page = ({ params }: { params: { id: string } }) => {
     const subscription = watch((values) => {
       const areProductsValid = values.products.every(
         (product: ProductOffBoarding) => product.relocation && product.available
-      );
+      );      
       setIsButtonDisabled(!areProductsValid);
     });
 
@@ -81,10 +81,8 @@ const Page = ({ params }: { params: { id: string } }) => {
       return productToSend;
     });
 
-    const [firstItem, ...rest] = sendData;
-
     setIsLoading(true);
-    await Memberservices.offboardingMember(params.id, rest);
+    await Memberservices.offboardingMember(params.id, sendData);
     setIsLoading(false);
 
     router.push("/home/my-team");
@@ -121,11 +119,14 @@ const Page = ({ params }: { params: { id: string } }) => {
                           (product) => product.recoverable === true
                         )}
                         index={index}
-                        totalProducts={selectedMember.products.length}
+                        totalProducts={selectedMember.products.filter(
+                          (product) => product.recoverable === true
+                        ).length}
                         members={members.filter(
                           (member) => member.email !== selectedMember.email
                         )}
                         className={isLastItem ? "mb-[300px]" : ""}
+                        setIsButtonDisabled={setIsButtonDisabled}
                       />
                     );
                   })}

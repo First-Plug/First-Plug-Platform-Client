@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/models";
 import { Controller, useFormContext } from "react-hook-form";
+import { observer } from "mobx-react-lite";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
 
@@ -17,6 +18,7 @@ export interface Props {
   totalProducts: number;
   products: Product[];
   className: string;
+  setIsButtonDisabled: (param: boolean) => void
 }
 
 const validateBillingInfo = (user: User): boolean => {
@@ -53,19 +55,20 @@ const validateMemberBillingInfo = (user: User): boolean => {
   });
 };
 
-export const RequestOffBoardingForm = ({
+export const RequestOffBoardingForm = observer(({
   product,
   products,
   index,
   members,
   totalProducts,
   className,
+  setIsButtonDisabled
 }: Props) => {
   const { data: session } = useSession();
   const router = useRouter();
   const { setValue, watch, control, clearErrors } = useFormContext();
   const {
-    aside: { setAside },
+    aside: { setAside, isClosed },
     members: { setMemberToEdit },
   } = useStore();
   const [formStatus, setFormStatus] = useState<string>("none");
@@ -96,7 +99,7 @@ export const RequestOffBoardingForm = ({
       setValue(`products.${i}.relocation`, locationToSet, {
         shouldValidate: true,
       });
-      setValue(`products.${i}.product`, products[i - 1], {
+      setValue(`products.${i}.product`, products[i], {
         shouldValidate: true,
       });
     }
@@ -117,6 +120,42 @@ export const RequestOffBoardingForm = ({
       }
     }
   };
+
+  useEffect(() => {
+    let allAvailable = true;
+  
+    products.forEach((product, index) => {
+      const newStatus = getStatus();
+  
+      if (
+        newStatus === "not-member-available" ||
+        newStatus === "not-billing-information"
+      ) {
+        const currentAvailableValue = watch(`products.${index}.available`);
+  
+        if (currentAvailableValue !== false) {
+          setValue(`products.${index}.available`, false, {
+            shouldValidate: true,
+          });
+        }
+        allAvailable = false; 
+      } else {
+        const currentAvailableValue = watch(`products.${index}.available`);
+  
+        if (currentAvailableValue !== true) {
+          setValue(`products.${index}.available`, true, {
+            shouldValidate: true,
+          });
+        }
+      }
+    });
+  
+    if (allAvailable) {
+      setIsButtonDisabled(false); 
+    } else {
+      setIsButtonDisabled(true);
+    }
+  }, [isClosed]);
 
   useEffect(() => {
     const subscription = watch((value, { name }) => {
@@ -426,4 +465,4 @@ export const RequestOffBoardingForm = ({
       </section>
     </PageLayout>
   );
-};
+});
