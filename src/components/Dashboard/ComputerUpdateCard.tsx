@@ -2,9 +2,18 @@ import { useEffect, useState } from "react";
 import ProgressCircle from "./ProgressCircle";
 import { ComputerUpgradeTable } from "./ComputerUpgradeTable";
 import { useStore } from "@/models";
+import { UserServices } from "@/services/user.services";
 
 interface ComputerUpdateCardProps {
   products: any[];
+}
+
+interface ComputerStatus {
+  brandModel: string;
+  serial: string;
+  yearsSinceAcquisition: number;
+  status: string;
+  location: string;
 }
 
 export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
@@ -40,6 +49,33 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
     setComputersToUpgrade(computersNeedingUpgrade);
   }, [products]);
 
+  const handleSlackNotification = async (
+    product: ComputerStatus,
+    email: string,
+    tenantName: string
+  ) => {
+    try {
+      const { brandModel, serial, yearsSinceAcquisition, status, location } =
+        product;
+
+      await UserServices.notifyComputerUpgrade({
+        email,
+        tenantName,
+        category: "Computer",
+        brand: brandModel.split(" ")[0],
+        model: brandModel.split(" ").slice(1).join(" "),
+        serialNumber: serial,
+        acquisitionDate: `${yearsSinceAcquisition} years`,
+        status,
+        location,
+      });
+
+      setAlert("computerUpgradeAlert");
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  };
+
   return (
     <div className="flex flex-col items-start">
       <div className="mb-4">
@@ -54,7 +90,7 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
             products={computersToUpgrade}
             email={user.email}
             tenantName={user.tenantName}
-            alert={setAlert}
+            handleSlackNotification={handleSlackNotification}
           />
         </div>
       ) : (

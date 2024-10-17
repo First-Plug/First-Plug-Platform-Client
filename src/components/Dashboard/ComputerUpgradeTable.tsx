@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { BirthdayRoot } from "../Tables/BirthdayRoot";
 import { Product, User } from "@/types";
-import { UserServices } from "@/services/user.services";
 
 interface ComputerStatus {
   brandModel: string;
@@ -16,36 +15,12 @@ interface ComputerUpgradeTableProps {
   products: Product[];
   email: string;
   tenantName: string;
-  alert: (alert: string) => void;
+  handleSlackNotification: (
+    product: ComputerStatus,
+    email: string,
+    tenantName: string
+  ) => Promise<void>;
 }
-
-const handleSlackNotification = async (
-  product: ComputerStatus,
-  email: string,
-  tenantName: string,
-  alert: (alert: string) => void
-) => {
-  try {
-    const { brandModel, serial, yearsSinceAcquisition, status, location } =
-      product;
-
-    await UserServices.notifyComputerUpgrade({
-      email,
-      tenantName,
-      category: "Computer",
-      brand: brandModel.split(" ")[0],
-      model: brandModel.split(" ").slice(1).join(" "),
-      serialNumber: serial,
-      acquisitionDate: `${yearsSinceAcquisition} years`,
-      status,
-      location,
-    });
-
-    alert("computerUpgradeAlert");
-  } catch (error) {
-    console.error("Error sending notification:", error);
-  }
-};
 
 const getStatus = (years: number) => {
   if (years >= 3) return "Upgrade recommended";
@@ -55,7 +30,12 @@ const getStatus = (years: number) => {
 
 const computerColumns = (
   email: string,
-  tenantName: string
+  tenantName: string,
+  handleSlackNotification: (
+    product: ComputerStatus,
+    email: string,
+    tenantName: string
+  ) => Promise<void>
 ): ColumnDef<ComputerStatus>[] => [
   {
     id: "brandModel",
@@ -108,7 +88,7 @@ const computerColumns = (
               : "bg-green-500"
           }`}
           onClick={() =>
-            handleSlackNotification(row.original, email, tenantName, alert)
+            handleSlackNotification(row.original, email, tenantName)
           }
         >
           {status}
@@ -130,6 +110,7 @@ export const ComputerUpgradeTable = ({
   products,
   email,
   tenantName,
+  handleSlackNotification,
 }: ComputerUpgradeTableProps) => {
   const computersWithStatus = useMemo(() => {
     return products
@@ -158,7 +139,7 @@ export const ComputerUpgradeTable = ({
 
   return (
     <BirthdayRoot
-      columns={computerColumns(email, tenantName)}
+      columns={computerColumns(email, tenantName, handleSlackNotification)}
       data={computersWithStatus}
     />
   );
