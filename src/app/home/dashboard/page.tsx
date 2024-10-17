@@ -54,7 +54,7 @@ export default observer(function Dashboard() {
       }
     }
     setLoading(false);
-  }, [fetchStock, fetchMembers, fetchMembersAndTeams, members.length, tableProducts.length]);
+  }, [fetchStock, fetchMembers, fetchMembersAndTeams, tableProducts, members.length, tableProducts.length]);
 
   const handleBirthdayGiftClick = async () => {
     try {

@@ -1,6 +1,6 @@
-import { Product } from "@/types";
 import { useEffect, useState } from "react";
 import ProgressCircle from "./ProgressCircle";
+import { ComputerUpgradeTable } from "./ComputerUpgradeTable";
 
 interface ComputerUpdateCardProps {
   products: any[];
@@ -9,6 +9,7 @@ interface ComputerUpdateCardProps {
 export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
   const [productsWithDate, setProductsWithDate] = useState<number>(0);
   const [productsWithoutDate, setProductsWithoutDate] = useState<number>(0);
+  const [computersToUpgrade, setComputersToUpgrade] = useState<any[]>([]);
 
   useEffect(() => {
     const realProducts = products.flatMap((category) => category.products);
@@ -21,6 +22,16 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
 
     setProductsWithDate(totalWithDate);
     setProductsWithoutDate(totalWithoutDate);
+
+    const computersNeedingUpgrade = realProducts.filter((product) => {
+      const acquisitionDate = new Date(product.acquisitionDate);
+      const yearsSinceAcquisition =
+        (Date.now() - acquisitionDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+
+      return yearsSinceAcquisition >= 2.5; // 2.5 años o más
+    });
+
+    setComputersToUpgrade(computersNeedingUpgrade);
   }, [products]);
 
   return (
@@ -31,6 +42,15 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
           productsWithoutDate={productsWithoutDate}
         />
       </div>
+      {computersToUpgrade.length > 0 ? (
+        <div className="w-full mt-4">
+          <ComputerUpgradeTable products={computersToUpgrade} />
+        </div>
+      ) : (
+        <p className="text-sm text-green-500 font-medium">
+          All computers are up to date. No upgrades required at the moment.
+        </p>
+      )}
     </div>
   );
 };
