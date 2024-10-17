@@ -14,9 +14,13 @@ Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface ComputerAgeChartProps {
   products: any[];
+  onAvgAgeCalculated: (avgAge: number) => void;
 }
 
-const ComputerAgeChart = ({ products }: ComputerAgeChartProps) => {
+const ComputerAgeChart = ({
+  products,
+  onAvgAgeCalculated,
+}: ComputerAgeChartProps) => {
   const [avgAge, setAvgAge] = useState<number>(0);
 
   useEffect(() => {
@@ -37,6 +41,7 @@ const ComputerAgeChart = ({ products }: ComputerAgeChartProps) => {
     if (totalYears.length) {
       const avg = totalYears.reduce((a, b) => a + b, 0) / totalYears.length;
       setAvgAge(avg);
+      onAvgAgeCalculated(avg);
     }
   }, [products]);
 

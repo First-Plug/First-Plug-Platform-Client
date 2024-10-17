@@ -41,6 +41,10 @@ export default observer(function Dashboard() {
     setLoading(false);
   }, [fetchStock, fetchMembers, fetchMembersAndTeams, members, tableProducts]);
 
+  const handleAvgAgeCalculated = (calculatedAvgAge: number) => {
+    setAvgAge(calculatedAvgAge);
+  };
+
   const handleBirthdayGiftClick = async () => {
     try {
       await UserServices.notifyBirthdayGiftInterest(
@@ -82,7 +86,12 @@ export default observer(function Dashboard() {
           {tableProducts.length ? (
             <Card
               Title="Computer Updates"
-              RightContent={<ComputerAgeChart products={tableProducts} />}
+              RightContent={
+                <ComputerAgeChart
+                  products={tableProducts}
+                  onAvgAgeCalculated={handleAvgAgeCalculated}
+                />
+              }
               FooterContent={
                 <p className="text-dark-grey font-medium text-sm">
                   Avg computer age:{" "}
