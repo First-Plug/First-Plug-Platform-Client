@@ -37,24 +37,9 @@ export default observer(function Dashboard() {
       if (!tableProducts.length) {
         fetchStock();
       }
-      const productsWithAcquisitionDate = tableProducts
-        .flatMap((tableProduct) => tableProduct.products)
-        .filter((product) => product.acquisitionDate);
-
-      const totalYears = productsWithAcquisitionDate.map((product) => {
-        const acquisitionDate = new Date(product.acquisitionDate);
-        return (
-          (Date.now() - acquisitionDate.getTime()) / (1000 * 60 * 60 * 24 * 365)
-        );
-      });
-
-      if (totalYears.length) {
-        const avg = totalYears.reduce((a, b) => a + b, 0) / totalYears.length;
-        setAvgAge(avg);
-      }
     }
     setLoading(false);
-  }, [fetchStock, fetchMembers, fetchMembersAndTeams, tableProducts, members.length, tableProducts.length]);
+  }, [fetchStock, fetchMembers, fetchMembersAndTeams, members, tableProducts]);
 
   const handleBirthdayGiftClick = async () => {
     try {
@@ -97,9 +82,7 @@ export default observer(function Dashboard() {
           {tableProducts.length ? (
             <Card
               Title="Computer Updates"
-              RightContent={
-                <ComputerAgeChart products={tableProducts} avgAge={avgAge} />
-              }
+              RightContent={<ComputerAgeChart products={tableProducts} />}
               FooterContent={
                 <p className="text-dark-grey font-medium text-sm">
                   Avg computer age:{" "}

@@ -8,16 +8,38 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface ComputerAgeChartProps {
   products: any[];
-  avgAge: number;
 }
 
-const ComputerAgeChart = ({ avgAge }: ComputerAgeChartProps) => {
+const ComputerAgeChart = ({ products }: ComputerAgeChartProps) => {
+  const [avgAge, setAvgAge] = useState<number>(0);
+
+  useEffect(() => {
+    const allProducts = products.flatMap((category) => category.products);
+
+    const productsWithAcquisitionDate = allProducts.filter(
+      (product) => product.acquisitionDate && product.acquisitionDate !== ""
+    );
+
+    const totalYears = productsWithAcquisitionDate.map((product) => {
+      const acquisitionDate = new Date(product.acquisitionDate);
+      const yearsSinceAcquisition =
+        (Date.now() - acquisitionDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+
+      return yearsSinceAcquisition;
+    });
+
+    if (totalYears.length) {
+      const avg = totalYears.reduce((a, b) => a + b, 0) / totalYears.length;
+      setAvgAge(avg);
+    }
+  }, [products]);
+
   const data = {
     labels: ["1 ", "2 ", "3", "4 ", "5", "6", "7", "8", "9", "10"],
     datasets: [

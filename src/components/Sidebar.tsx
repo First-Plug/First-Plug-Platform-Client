@@ -23,6 +23,8 @@ export const Sidebar = function () {
     setShowLogo(!showLogo);
   };
 
+  console.log("Current Path: ", path);
+
   return (
     <aside
       className={` min-h-screen  flex flex-col shadow-sm shadow-grey transition-all ${
@@ -76,14 +78,14 @@ export const Sidebar = function () {
           icon={<DashboardIcon />}
           title="Dashboard"
           href="/home/dashboard"
-          isActive={pathArray.includes("dashboard")}
+          isActive={path === "/home/dashboard"}
         />
         <SidebarLink
           isSmall={isSidebarSmall}
           icon={<PersonsGroupIcon />}
           title="My Team"
           href="/home/my-team"
-          isActive={pathArray.includes("my-team")}
+          isActive={path === "/home/my-team"}
         />
 
         <SidebarLink
@@ -91,7 +93,7 @@ export const Sidebar = function () {
           icon={<ComputerIcon />}
           title="My Assets"
           href="/home/my-stock"
-          isActive={pathArray.includes("my-stock")}
+          isActive={path === "/home/my-stock"}
         />
 
         {/* <SidebarLink
