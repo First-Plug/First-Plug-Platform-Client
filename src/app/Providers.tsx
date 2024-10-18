@@ -51,6 +51,10 @@ export default function Providers({ children }: ProvidersProps) {
     setupAxiosInterceptor();
   }, []);
 
+  if (!persister) {
+    return null;
+  }
+
   return (
     <RootStoreContext.Provider value={store}>
       <SessionProvider>
