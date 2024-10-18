@@ -19,9 +19,9 @@ export default observer(function Dashboard() {
   const { data: teamsData, isLoading: isLoadingMembers } = useFetchTeams();
   const { data: assets, isLoading: isLoadingAssets } = useGetTableAssets();
 
-  console.log("Members Data:", membersData);
-  console.log("Teams Data:", teamsData);
-  console.log("Assets Data:", assets);
+  // console.log("Members Data:", membersData);
+  // console.log("Teams Data:", teamsData);
+  // console.log("Assets Data:", assets);
 
   if (isLoadingTeams || isLoadingMembers || isLoadingAssets) {
     return <Loader />;

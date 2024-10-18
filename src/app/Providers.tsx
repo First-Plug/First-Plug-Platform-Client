@@ -5,9 +5,12 @@ import { RootStore, RootStoreContext } from "@/models";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import {
+  PersistQueryClientProvider,
+  persistQueryClientRestore,
+} from "@tanstack/react-query-persist-client";
 import { SessionProvider, getSession } from "next-auth/react";
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
 
 type ProvidersProps = {
   children: ReactNode;
@@ -24,13 +27,16 @@ export default function Providers({ children }: ProvidersProps) {
     user: {},
     alerts: {},
   });
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        gcTime: 1000 * 60 * 30,
+  const queryClient = useMemo(() => {
+    return new QueryClient({
+      defaultOptions: {
+        queries: {
+          gcTime: 1000 * 60 * 30,
+        },
       },
-    },
-  });
+    });
+  }, []);
+
   const [persister, setPersister] = useState<any>(null);
 
   useEffect(() => {
@@ -57,6 +63,26 @@ export default function Providers({ children }: ProvidersProps) {
     );
     console.log("Persisted data:", persistedData);
   }, []);
+
+  useEffect(() => {
+    const restoreData = async () => {
+      try {
+        await persistQueryClientRestore({
+          queryClient,
+          persister,
+          maxAge: 1000 * 60 * 60 * 24, // 24 horas
+        });
+
+        const cachedData = window.localStorage.getItem(
+          "REACT_QUERY_OFFLINE_CACHE"
+        );
+        console.log("Datos restaurados:", cachedData);
+      } catch (error) {
+        console.error("Error restaurando los datos persistidos:", error);
+      }
+    };
+    restoreData();
+  }, [persister, queryClient]);
 
   if (!persister) {
     return null;
