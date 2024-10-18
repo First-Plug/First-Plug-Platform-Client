@@ -68,7 +68,7 @@ export const Card = function ({
                 </TooltipProvider>
               )}
             </h2>
-            <div className="flex flex-col justify-center items-center">
+            <div className="flex flex-col justify-center items-center ">
               {RightContent && <div>{RightContent}</div>}
               {FooterContent && (
                 <div className="text-dark-grey font-medium text-sm">

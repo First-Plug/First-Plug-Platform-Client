@@ -97,7 +97,7 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
           />
         ) : (
           <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-green-500 font-medium text-center">
+            <p className="text-dark-grey text-md text-center mt-6 mb-6">
               All computers are up to date. No upgrades required at the moment.
             </p>
           </div>
