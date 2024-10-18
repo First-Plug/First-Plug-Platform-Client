@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { SessionProvider, getSession } from "next-auth/react";
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 
 type ProvidersProps = {
   children: ReactNode;
@@ -31,12 +31,15 @@ export default function Providers({ children }: ProvidersProps) {
       },
     },
   });
-
-  const persister = createSyncStoragePersister({
-    storage: window.localStorage,
-  });
+  const [persister, setPersister] = useState<any>(null);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const localPersister = createSyncStoragePersister({
+        storage: window.localStorage,
+      });
+      setPersister(localPersister);
+    }
     const setupAxiosInterceptor = async () => {
       const session = await getSession();
       const accessToken = session?.backendTokens.accessToken;
