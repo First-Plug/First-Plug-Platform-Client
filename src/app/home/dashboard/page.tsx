@@ -98,7 +98,7 @@ export default observer(function Dashboard() {
                   <span
                     style={{
                       color:
-                        avgAge < 3
+                        avgAge < 2.5
                           ? "#4FE8B7"
                           : avgAge < 5
                           ? "black"
