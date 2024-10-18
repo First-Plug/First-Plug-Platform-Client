@@ -1,12 +1,7 @@
 "use client";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
-import {
-  EmptyDashboardCard,
-  NotificationIcon,
-  PageLayout,
-  ShopIcon,
-} from "@/common";
+import { EmptyDashboardCard, PageLayout, ShopIcon } from "@/common";
 import { Card, StockCard, TeamHomeCard } from "@/components";
 import { useEffect, useState } from "react";
 import useFetch from "@/hooks/useFetch";
@@ -14,6 +9,9 @@ import { UserServices } from "@/services/user.services";
 import { setAuthInterceptor } from "@/config/axios.config";
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { useSession } from "next-auth/react";
+import { ComputerUpdateCard } from "@/components/Dashboard/ComputerUpdateCard";
+import ComputerAgeChart from "@/components/Dashboard/ComputerAgeChart";
+import { getBarColor } from "@/components/Dashboard/GetBarColor";
 
 export default observer(function Dashboard() {
   const {
@@ -24,6 +22,7 @@ export default observer(function Dashboard() {
   } = useStore();
   const { fetchStock, fetchMembers, fetchMembersAndTeams } = useFetch();
   const [loading, setLoading] = useState(true);
+  const [avgAge, setAvgAge] = useState<number>(0);
 
   useEffect(() => {
     if (sessionStorage.getItem("accessToken")) {
@@ -36,7 +35,11 @@ export default observer(function Dashboard() {
       }
     }
     setLoading(false);
-  }, [fetchStock, fetchMembers, fetchMembersAndTeams, members.length, tableProducts.length]);
+  }, [fetchStock, fetchMembers, fetchMembersAndTeams, members, tableProducts]);
+
+  const handleAvgAgeCalculated = (calculatedAvgAge: number) => {
+    setAvgAge(calculatedAvgAge);
+  };
 
   const handleBirthdayGiftClick = async () => {
     try {
@@ -75,20 +78,43 @@ export default observer(function Dashboard() {
           ) : (
             <EmptyDashboardCard type="stock" />
           )}
-          <EmptyDashboardCard type="computer" />
-          {/* <Card Title="Computer computer" className="h-full">
-            <section className="  h-full flex flex-col justify-center items-center">
-              <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
-                Coming Soon!
-                <NotificationIcon />
-              </h1>
-              <p className="font-inter text-md text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We&apos;re excited to reveal that the Firstplug notifications
-                are coming soon!
-              </p>
-            </section>
-          </Card> */}
+
+          {tableProducts.length ? (
+            <Card
+              Title="Computer Updates"
+              RightContent={
+                <ComputerAgeChart
+                  products={tableProducts}
+                  onAvgAgeCalculated={handleAvgAgeCalculated}
+                />
+              }
+              FooterContent={
+                <p className="text-dark-grey font-medium text-sm">
+                  Avg computer age:{" "}
+                  <span
+                    style={{
+                      backgroundColor: getBarColor(
+                        avgAge,
+                        Math.ceil(avgAge * 2) / 2
+                      ),
+                      color: "black",
+                      padding: "0 4px",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {avgAge.toFixed(2)} years
+                  </span>
+                </p>
+              }
+            >
+              <div className="mt-4"></div>
+              <ComputerUpdateCard products={tableProducts} />
+            </Card>
+          ) : (
+            <EmptyDashboardCard type="computer" />
+          )}
         </section>
+
         <section className="grid grid-cols-2 gap-4 h-1/2  ">
           {members.length ? (
             <>
@@ -107,18 +133,6 @@ export default observer(function Dashboard() {
             <EmptyDashboardCard type="members" />
           )}
           <EmptyDashboardCard type="recentActivity" />
-          {/* <Card Title="Recent Activity" className="h-full">
-            <section className="  h-full flex flex-col justify-center items-center">
-              <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
-                Coming Soon!
-                <NotificationIcon />
-              </h1>
-              <p className="font-inter text-md text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We&apos;re excited to reveal that the Firstplug notifications
-                are coming soon!
-              </p>
-            </section>
-          </Card> */}
         </section>
       </div>
     </PageLayout>

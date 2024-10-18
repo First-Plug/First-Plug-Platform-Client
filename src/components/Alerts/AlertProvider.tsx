@@ -334,6 +334,15 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    computerUpgradeAlert: {
+      title: "Upgrade Request Received",
+      type: "succes",
+      description:
+        "Thank you for your request. We will process the upgrade and contact you shortly.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;

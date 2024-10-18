@@ -30,7 +30,12 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
   };
 
   const options: ChartOptions<"doughnut"> = {
+    // responsive: true,
+    // maintainAspectRatio: false,
     plugins: {
+      legend: {
+        display: false,
+      },
       tooltip: {
         callbacks: {
           label: function (context) {

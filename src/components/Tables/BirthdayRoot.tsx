@@ -31,7 +31,7 @@ export function BirthdayRoot<TData>({
   });
 
   return (
-    <div className="w-full overflow-x-auto ">
+    <div className="w-full overflow-y-auto scrollbar-custom">
       <Table className="w-full table-auto bg-white border border-gray-300">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -42,7 +42,7 @@ export function BirthdayRoot<TData>({
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="py-3 px-4 border-r text-start text-black font-semibold "
+                  className="py-2 px-4 border-r text-start text-black font-semibold "
                 >
                   <div className="flex w-full justify-between items-center">
                     <div>
