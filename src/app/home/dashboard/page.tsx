@@ -98,7 +98,11 @@ export default observer(function Dashboard() {
                   <span
                     style={{
                       color:
-                        avgAge < 3 ? "#9747FF" : avgAge < 5 ? "yellow" : "red",
+                        avgAge < 3
+                          ? "#4FE8B7"
+                          : avgAge < 5
+                          ? "black"
+                          : "#FFC6D3",
                     }}
                   >
                     {avgAge.toFixed(2)} years

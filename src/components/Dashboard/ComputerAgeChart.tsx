@@ -45,15 +45,38 @@ const ComputerAgeChart = ({
     }
   }, [products]);
 
+  const roundedAvgAge = Math.ceil(avgAge * 2);
+
+  const getBarColor = (age: number) => {
+    if (avgAge <= 2.5) {
+      return age <= avgAge ? "#4FE8B7" : "#d3d3d3";
+    } else if (avgAge > 2.5 && avgAge <= 4) {
+      return age <= avgAge ? "#FFD700" : "#d3d3d3";
+    } else {
+      return age <= avgAge ? "#FFC6D3" : "#d3d3d3";
+    }
+  };
+
   const data = {
-    labels: ["1 ", "2 ", "3", "4 ", "5", "6", "7", "8", "9", "10"],
+    labels: [
+      "0-6 months",
+      "6-12 months",
+      "12-18 months",
+      "18-24 months",
+      "24-30 months",
+      "30-36 months",
+      "36-42 months",
+      "42-48 months",
+      "48-54 months",
+      "54-60 months",
+    ],
+
     datasets: [
       {
         label: "Computer Age",
-
-        data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        backgroundColor: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((year) =>
-          year <= avgAge ? "#4FE8B7" : "#d3d3d3"
+        data: [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5],
+        backgroundColor: [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map((age) =>
+          getBarColor(age)
         ),
         borderWidth: 0.2,
         borderRadius: 4,
@@ -67,7 +90,7 @@ const ComputerAgeChart = ({
       y: {
         display: false,
         beginAtZero: true,
-        max: 10,
+        max: 5,
       },
       x: {
         display: false,

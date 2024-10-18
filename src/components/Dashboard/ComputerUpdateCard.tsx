@@ -27,7 +27,9 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
   const [computersToUpgrade, setComputersToUpgrade] = useState<any[]>([]);
 
   useEffect(() => {
-    const realProducts = products.flatMap((category) => category.products);
+    const realProducts = products
+      .flatMap((category) => category.products)
+      .filter((product) => product.category === "Computer");
 
     const totalWithDate = realProducts.filter(
       (product) => product.acquisitionDate && product.acquisitionDate !== ""
@@ -85,7 +87,7 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
         />
       </div>
 
-      <div className="w-full mt-4 flex-grow overflow-y-auto scrollbar-custom">
+      <div className="w-full mt-4 flex-grow overflow-y-auto scrollbar-custom ">
         {computersToUpgrade.length > 0 ? (
           <ComputerUpgradeTable
             products={computersToUpgrade}
@@ -94,9 +96,11 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
             handleSlackNotification={handleSlackNotification}
           />
         ) : (
-          <p className="text-sm text-green-500 font-medium">
-            All computers are up to date. No upgrades required at the moment.
-          </p>
+          <div className="flex items-center justify-center h-full">
+            <p className="text-sm text-green-500 font-medium text-center">
+              All computers are up to date. No upgrades required at the moment.
+            </p>
+          </div>
         )}
       </div>
     </div>
