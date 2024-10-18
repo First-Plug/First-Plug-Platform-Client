@@ -90,7 +90,7 @@ export const Card = function ({
           </header>
         )}
       </div>
-      <div className=" max-h-[85%] h-[85%] flex-grow  overflow-y-auto relative ">
+      <div className=" max-h-[85%] h-[85%] flex-grow  relative">
         {children ? (
           <div className={`absolute    w-full   h-full     `}>{children}</div>
         ) : (

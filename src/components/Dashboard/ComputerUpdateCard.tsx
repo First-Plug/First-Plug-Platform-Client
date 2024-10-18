@@ -77,27 +77,28 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
   };
 
   return (
-    <div className="flex flex-col items-start">
-      <div className="mb-4">
+    <div className="flex flex-col items-start h-full p-2">
+      <div className="mb-4 flex-shrink-0">
         <ProgressCircle
           productsWithDate={productsWithDate}
           productsWithoutDate={productsWithoutDate}
         />
       </div>
-      {computersToUpgrade.length > 0 ? (
-        <div className="w-full mt-4">
+
+      <div className="w-full mt-4 flex-grow overflow-y-auto scrollbar-custom">
+        {computersToUpgrade.length > 0 ? (
           <ComputerUpgradeTable
             products={computersToUpgrade}
             email={user.email}
             tenantName={user.tenantName}
             handleSlackNotification={handleSlackNotification}
           />
-        </div>
-      ) : (
-        <p className="text-sm text-green-500 font-medium">
-          All computers are up to date. No upgrades required at the moment.
-        </p>
-      )}
+        ) : (
+          <p className="text-sm text-green-500 font-medium">
+            All computers are up to date. No upgrades required at the moment.
+          </p>
+        )}
+      </div>
     </div>
   );
 };

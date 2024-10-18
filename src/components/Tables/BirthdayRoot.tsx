@@ -31,7 +31,7 @@ export function BirthdayRoot<TData>({
   });
 
   return (
-    <div className="w-full overflow-x-auto ">
+    <div className="w-full overflow-y-auto scrollbar-custom">
       <Table className="w-full table-auto bg-white border border-gray-300">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

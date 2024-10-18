@@ -74,7 +74,7 @@ export const TeamHomeCard = observer(function () {
     <div className="flex gap-2 p-2 w-full h-full ">
       <section className="flex w-full h-full relative">
         <div className="flex flex-col gap-2 h-full w-full absolute">
-          <div className="flex flex-col overflow-y-auto max-h-[85%] w-full gap-1">
+          <div className="flex flex-col overflow-y-auto  w-full gap-1">
             {membersWithBirthdate.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
                 <Cake />

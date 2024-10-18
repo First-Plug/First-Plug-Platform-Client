@@ -53,7 +53,7 @@ const ComputerAgeChart = ({
 
         data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         backgroundColor: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((year) =>
-          year <= avgAge ? "#9747FF" : "#d3d3d3"
+          year <= avgAge ? "#4FE8B7" : "#d3d3d3"
         ),
         borderWidth: 0.2,
         borderRadius: 4,
