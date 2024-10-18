@@ -51,7 +51,7 @@ const ComputerAgeChart = ({
     if (avgAge <= 2.5) {
       return age <= avgAge ? "#4FE8B7" : "#d3d3d3";
     } else if (avgAge > 2.5 && avgAge <= 4) {
-      return age <= avgAge ? "#FFD700" : "#d3d3d3";
+      return age <= avgAge ? "#f5efd0" : "#d3d3d3";
     } else {
       return age <= avgAge ? "#FFC6D3" : "#d3d3d3";
     }
