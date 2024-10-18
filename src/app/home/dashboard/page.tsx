@@ -1,12 +1,7 @@
 "use client";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
-import {
-  EmptyDashboardCard,
-  NotificationIcon,
-  PageLayout,
-  ShopIcon,
-} from "@/common";
+import { EmptyDashboardCard, PageLayout, ShopIcon } from "@/common";
 import { Card, StockCard, TeamHomeCard } from "@/components";
 import { useEffect, useState } from "react";
 import useFetch from "@/hooks/useFetch";
@@ -16,6 +11,7 @@ import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { useSession } from "next-auth/react";
 import { ComputerUpdateCard } from "@/components/Dashboard/ComputerUpdateCard";
 import ComputerAgeChart from "@/components/Dashboard/ComputerAgeChart";
+import { getBarColor } from "@/components/Dashboard/GetBarColor";
 
 export default observer(function Dashboard() {
   const {
@@ -97,8 +93,13 @@ export default observer(function Dashboard() {
                   Avg computer age:{" "}
                   <span
                     style={{
-                      color:
-                        avgAge < 5 ? "black" : avgAge < 5 ? "black" : "#FFC6D3",
+                      backgroundColor: getBarColor(
+                        avgAge,
+                        Math.ceil(avgAge * 2) / 2
+                      ),
+                      color: "black",
+                      padding: "0 4px",
+                      borderRadius: "4px",
                     }}
                   >
                     {avgAge.toFixed(2)} years

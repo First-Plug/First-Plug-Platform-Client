@@ -9,6 +9,7 @@ import {
   Legend,
 } from "chart.js";
 import React, { useEffect, useState } from "react";
+import { getBarColor } from "./GetBarColor";
 
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -47,16 +48,6 @@ const ComputerAgeChart = ({
 
   const roundedAvgAge = Math.ceil(avgAge * 2) / 2;
 
-  const getBarColor = (age: number) => {
-    if (age <= 2.5) {
-      return age <= roundedAvgAge ? "#4FE8B7" : "#d3d3d3";
-    } else if (age > 2.5 && age <= 3) {
-      return age <= roundedAvgAge ? "#f5efd0" : "#d3d3d3";
-    } else {
-      return age <= roundedAvgAge ? "#FFC6D3" : "#d3d3d3";
-    }
-  };
-
   const data = {
     labels: [
       "0-6 months",
@@ -76,7 +67,7 @@ const ComputerAgeChart = ({
         label: "Computer Age",
         data: [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5],
         backgroundColor: [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map((age) =>
-          getBarColor(age)
+          age <= roundedAvgAge ? getBarColor(age, roundedAvgAge) : "#d3d3d3"
         ),
         borderWidth: 0.2,
         borderRadius: 4,
