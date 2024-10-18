@@ -9,6 +9,7 @@ interface ComputerStatus {
   yearsSinceAcquisition: number;
   status: string;
   location: string;
+  assignedMember?: string;
 }
 
 interface ComputerUpgradeTableProps {
@@ -100,9 +101,16 @@ const computerColumns = (
     id: "location",
     accessorKey: "location",
     header: "Location",
-    cell: ({ getValue }) => (
-      <span className="font-semibold text-blue-500">{getValue<string>()}</span>
-    ),
+    cell: ({ row }) => {
+      const location = row.original.location;
+      const fullName = row.original.assignedMember || "Unknown Member";
+
+      return (
+        <span className="font-semibold text-blue-500">
+          {location === "Employee" ? fullName : location}
+        </span>
+      );
+    },
   },
 ];
 
@@ -132,7 +140,11 @@ export const ComputerUpgradeTable = ({
           serial: product.serialNumber || "N/A",
           yearsSinceAcquisition,
           status: getStatus(yearsSinceAcquisition),
-          location: product.location || "Unknown",
+          location:
+            product.location === "Employee"
+              ? product.assignedMember || "Unknown"
+              : product.location,
+          assignedMember: product.assignedMember,
         };
       });
   }, [products]);
