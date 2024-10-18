@@ -45,15 +45,15 @@ const ComputerAgeChart = ({
     }
   }, [products]);
 
-  const roundedAvgAge = Math.ceil(avgAge * 2);
+  const roundedAvgAge = Math.ceil(avgAge * 2) / 2;
 
   const getBarColor = (age: number) => {
-    if (avgAge <= 2.5) {
-      return age <= avgAge ? "#4FE8B7" : "#d3d3d3";
-    } else if (avgAge > 2.5 && avgAge <= 4) {
-      return age <= avgAge ? "#f5efd0" : "#d3d3d3";
+    if (age <= 2.5) {
+      return age <= roundedAvgAge ? "#4FE8B7" : "#d3d3d3";
+    } else if (age > 2.5 && age <= 3) {
+      return age <= roundedAvgAge ? "#f5efd0" : "#d3d3d3";
     } else {
-      return age <= avgAge ? "#FFC6D3" : "#d3d3d3";
+      return age <= roundedAvgAge ? "#FFC6D3" : "#d3d3d3";
     }
   };
 
