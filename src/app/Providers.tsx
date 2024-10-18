@@ -2,8 +2,10 @@
 
 import { setAuthInterceptor } from "@/config/axios.config";
 import { RootStore, RootStoreContext } from "@/models";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { SessionProvider, getSession } from "next-auth/react";
 import React, { ReactNode, useEffect } from "react";
 
@@ -25,9 +27,13 @@ export default function Providers({ children }: ProvidersProps) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        gcTime: 1000 * 60 * 30, // 30 minutos una vez que los componentes se desmontan se guarda el cache por 30 minutos
+        gcTime: 1000 * 60 * 30,
       },
     },
+  });
+
+  const persister = createSyncStoragePersister({
+    storage: window.localStorage,
   });
 
   useEffect(() => {
@@ -41,13 +47,17 @@ export default function Providers({ children }: ProvidersProps) {
 
     setupAxiosInterceptor();
   }, []);
+
   return (
     <RootStoreContext.Provider value={store}>
       <SessionProvider>
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 }}
+        >
           {children}
           <ReactQueryDevtools initialIsOpen />
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
       </SessionProvider>
     </RootStoreContext.Provider>
   );
