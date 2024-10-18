@@ -51,6 +51,13 @@ export default function Providers({ children }: ProvidersProps) {
     setupAxiosInterceptor();
   }, []);
 
+  useEffect(() => {
+    const persistedData = window.localStorage.getItem(
+      "REACT_QUERY_OFFLINE_CACHE"
+    );
+    console.log("Persisted data:", persistedData);
+  }, []);
+
   if (!persister) {
     return null;
   }
