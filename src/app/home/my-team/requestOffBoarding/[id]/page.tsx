@@ -3,12 +3,14 @@
 import { Button, LoaderSpinner, PageLayout } from "@/common";
 import { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { Memberservices } from "@/services";
+import { Memberservices, TeamServices } from "@/services";
 import { Product, TeamMember } from "@/types";
 import { RequestOffBoardingForm } from "../../../../../components/RequestOffBoarding/Request-off-boarding-form";
 import { useStore } from "../../../../../models/root.store";
 import { observer } from "mobx-react-lite";
 import { useRouter } from "next/navigation";
+import { transformData } from "@/utils/dataTransformUtil";
+import useFetch from "@/hooks/useFetch";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
@@ -32,6 +34,8 @@ const Page = ({ params }: { params: { id: string } }) => {
     members: { setMemberOffBoarding },
     aside: { isClosed },
   } = useStore();
+
+  const { fetchMembers, fetchStock } = useFetch();
 
   const methods = useForm({
     defaultValues: {
@@ -84,6 +88,9 @@ const Page = ({ params }: { params: { id: string } }) => {
     setIsLoading(true);
     await Memberservices.offboardingMember(params.id, sendData);
     setIsLoading(false);
+
+    await fetchMembers();
+    await fetchStock();
 
     router.push("/home/my-team");
   };
