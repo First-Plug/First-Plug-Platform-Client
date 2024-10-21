@@ -95,7 +95,7 @@ export default function SettingsForm() {
   };
 
   const noChanges = Object.keys(form.formState.dirtyFields).length === 0;
-  const isAble = noChanges && !form.formState.isValid;
+  const isAble = noChanges || !form.formState.isValid;
 
   return (
     <Form {...form}>
