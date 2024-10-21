@@ -62,12 +62,12 @@ export default function PrdouctModelDetail({
             )}
         </div>
       )}
-      <div className="flex gap-4 text-sm">
+      <div className="grid gap-4 text-sm lg:grid-cols-2 xl:grid-cols-4">
         {categoryKeys
           .filter((c) => c !== "brand" && c !== "model")
           .map((cat) => (
             <div className="flex flex-col gap-1 font-normal" key={cat}>
-              <span>{cat} </span>
+              <span>{cat}</span>
               <span className="-mt-1">{getValue(cat)}</span>
             </div>
           ))}

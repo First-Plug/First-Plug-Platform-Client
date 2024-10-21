@@ -19,6 +19,18 @@ export class Memberservices {
     return response.data;
   }
 
+  static async offboardingMember(id, data) {
+    try {
+      const response = await HTTPRequests.post(
+        `${BASE_URL}/api/members/offboarding/${id}`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async updateMember(id, data) {
     try {
       const response = await HTTPRequests.patch(

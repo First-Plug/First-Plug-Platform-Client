@@ -112,7 +112,16 @@ const authOptions: NextAuthOptions = {
 
       return session;
     },
-    async jwt({ token, user }) {
+
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === "update") {
+        return {
+          ...token,
+          user: session?.user || token.user,
+          backendTokens: session?.backendTokens || token.backendTokens,
+        };
+      }
+
       if (user) return { ...token, ...user };
 
       if (token.backendTokens && token.backendTokens.expiresIn) {

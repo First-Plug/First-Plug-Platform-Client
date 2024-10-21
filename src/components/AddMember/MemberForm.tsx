@@ -27,6 +27,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
     members: { addMember, setMembers, updateMember },
     alerts: { setAlert },
     teams: { getOrCreateTeam, setTeams },
+    aside: { closeAside },
   } = useStore();
 
   const methods = useForm({
@@ -142,6 +143,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       setMembers(transformedMembers);
       setTeams(updatedTeams);
+      closeAside();
     } catch (error: any) {
       const alertType = handleApiError(error);
       setAlert(alertType);
