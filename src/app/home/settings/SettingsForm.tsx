@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { UserServices } from "@/services/user.services";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AuthServices } from "@/services";
 import { useSession } from "next-auth/react";
 import { setAuthInterceptor } from "@/config/axios.config";
@@ -95,7 +95,7 @@ export default function SettingsForm() {
   };
 
   const noChanges = Object.keys(form.formState.dirtyFields).length === 0;
-  const isAble = noChanges || !form.formState.isValid;
+  const isAble = noChanges && !form.formState.isValid;
 
   return (
     <Form {...form}>
