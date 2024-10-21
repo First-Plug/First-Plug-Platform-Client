@@ -11,8 +11,11 @@ import Logo from "../../public/logo1.png";
 import { ShopIcon } from "@/common/Icons";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useStore } from "@/models";
+import { observer } from "mobx-react-lite";
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { UserServices } from "@/services/user.services";
+ 
 
 type NavbarProps = {
   title?: string;
@@ -26,13 +29,17 @@ const Titles = {
   shipments: "Shipments",
 } as const;
 
-export const Navbar = function ({
+export const Navbar = observer(function ({
   title,
   searchInput,
   placeholder,
 }: NavbarProps) {
   const pathName = usePathname();
   const { status, data } = useSession();
+
+  const {
+    members: { offBoardingFullName },
+  } = useStore();
 
   return (
     <nav className="flex justify-between items-center min-h-[10vh] max-h-[10vh] h-[10vh] px-4   ">
@@ -41,7 +48,11 @@ export const Navbar = function ({
           <Image src={Logo} alt="Logo" width={140} height={300} priority />
         ) : (
           <h2 className="font-bold text-2xl text-black">
-            {Titles[pathName.split("/")[2]] ?? ""}
+            {pathName.split("/")[3] === "requestOffBoarding"
+              ? offBoardingFullName
+                ? offBoardingFullName
+                : ""
+              : Titles[pathName.split("/")[2]] ?? ""}
           </h2>
         )}
 
@@ -75,4 +86,4 @@ export const Navbar = function ({
       )}
     </nav>
   );
-};
+});
