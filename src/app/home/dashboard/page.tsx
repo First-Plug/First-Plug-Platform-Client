@@ -34,8 +34,15 @@ export default observer(function Dashboard() {
         fetchStock();
       }
     }
+
+    if (!user || !user.computerExpiration) {
+      console.error("El valor de computerExpiration no está definido.");
+    }
+
     setLoading(false);
-  }, [fetchStock, fetchMembers, fetchMembersAndTeams, members, tableProducts]);
+  }, [fetchStock, fetchMembers, fetchMembersAndTeams, members, tableProducts, user]);
+  console.log("user", JSON.stringify(user, null, 2));
+  console.log("user", user);
 
   const handleAvgAgeCalculated = (calculatedAvgAge: number) => {
     setAvgAge(calculatedAvgAge);
@@ -86,6 +93,7 @@ export default observer(function Dashboard() {
                 <ComputerAgeChart
                   products={tableProducts}
                   onAvgAgeCalculated={handleAvgAgeCalculated}
+                  computerExpiration={user.computerExpiration}
                 />
               }
               FooterContent={
@@ -94,8 +102,9 @@ export default observer(function Dashboard() {
                   <span
                     style={{
                       backgroundColor: getBarColor(
-                        avgAge,
-                        Math.ceil(avgAge * 2) / 2
+                        avgAge, // Valor calculado de antigüedad promedio
+                        user.computerExpiration, // Expiración configurada por el usuario
+                        avgAge // Redondeo basado en el mismo valor de avgAge
                       ),
                       color: "black",
                       padding: "0 4px",

@@ -16,11 +16,13 @@ Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 interface ComputerAgeChartProps {
   products: any[];
   onAvgAgeCalculated: (avgAge: number) => void;
+  computerExpiration: number;
 }
 
 const ComputerAgeChart = ({
   products,
   onAvgAgeCalculated,
+  computerExpiration,
 }: ComputerAgeChartProps) => {
   const [avgAge, setAvgAge] = useState<number>(0);
 
@@ -66,8 +68,11 @@ const ComputerAgeChart = ({
       {
         label: "Computer Age",
         data: [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5],
-        backgroundColor: [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map((age) =>
-          age <= roundedAvgAge ? getBarColor(age, roundedAvgAge) : "#d3d3d3"
+        backgroundColor: [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map(
+          (age) =>
+            age <= roundedAvgAge
+              ? getBarColor(age, computerExpiration, roundedAvgAge) // Pasamos el computerExpiration
+              : "#d3d3d3" // Color gris por defecto si excede el promedio
         ),
         borderWidth: 0.2,
         borderRadius: 4,
