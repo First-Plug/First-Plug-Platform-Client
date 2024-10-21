@@ -16,6 +16,7 @@ export const LoggedInUserModel = types.model({
   tenantName: types.maybeNull(types.string),
   accountProvider: types.enumeration(["credentials", "google", "azure-ad"]),
   isRecoverableConfig: types.map(types.boolean),
+  computerExpiration: types.maybe(types.number),
 });
 export const UserModel = types.compose(
   LoggedInUserModel,
@@ -79,6 +80,7 @@ export const UserZodSchema = z.object({
   address: z.string().trim().optional(),
   apartment: z.string().trim().optional(),
   isRecoverableConfig: z.record(z.string(), z.boolean()).optional(),
+  computerExpiration: z.number().min(0.5).max(10).optional(),
 });
 
 export type UserZod = z.infer<typeof UserZodSchema>;
@@ -94,6 +96,7 @@ export const SETTINGS_ARRAY_KEYS: SettingsFormKeys[] = [
   "tenantName",
   "email",
   "isRecoverableConfig",
+  "computerExpiration",
 ];
 
 type SettingsFormInput = {
@@ -179,5 +182,12 @@ export const SettingsFormConfig: Record<SettingsFormKeys, SettingsFormInput> = {
     placeholder: "",
     readonly: false,
     tpye: "switch",
+  },
+  computerExpiration: {
+    subMessage: "Set the expiration time for computers in years",
+    label: "Computer Expiration",
+    name: "computerExpiration",
+    placeholder: "",
+    readonly: false,
   },
 };
