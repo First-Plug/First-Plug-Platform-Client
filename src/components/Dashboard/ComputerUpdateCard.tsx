@@ -45,7 +45,7 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
       const yearsSinceAcquisition =
         (Date.now() - acquisitionDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
 
-      const threshold = user.computerExpiration - 0.5;
+      const threshold = user?.computerExpiration - 0.5;
       return yearsSinceAcquisition >= threshold;
     });
 
