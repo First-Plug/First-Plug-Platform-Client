@@ -22,7 +22,7 @@ export default observer(function Dashboard() {
     alerts: { setAlert },
     user: { user, setUser },
   } = useStore();
-  const session = useSession();
+  const { data: sessionData } = useSession();
   const [loading, setLoading] = useState(true);
   const [avgAge, setAvgAge] = useState<number>(0);
 
@@ -30,16 +30,12 @@ export default observer(function Dashboard() {
   const { data: teamsData, isLoading: isLoadingMembers } = useFetchTeams();
   const { data: assets, isLoading: isLoadingAssets } = useGetTableAssets();
 
-  if (isLoadingTeams || isLoadingMembers || isLoadingAssets) {
-    return <Loader />;
-  }
-
   useEffect(() => {
     if (sessionStorage.getItem("accessToken")) {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
 
-      if (session.data?.user?._id) {
-        AuthServices.getUserInfro(session.data.user._id)
+      if (sessionData?.user?._id) {
+        AuthServices.getUserInfro(sessionData.user._id)
           .then((userInfo) => {
             setUser(userInfo);
           })
@@ -53,7 +49,11 @@ export default observer(function Dashboard() {
       }
     }
     setLoading(false);
-  }, [user]);
+  }, [sessionData?.user?._id, setUser, user]);
+
+  if (isLoadingTeams || isLoadingMembers || isLoadingAssets) {
+    return <Loader />;
+  }
 
   const handleAvgAgeCalculated = (calculatedAvgAge: number) => {
     setAvgAge(calculatedAvgAge);
@@ -71,8 +71,6 @@ export default observer(function Dashboard() {
     }
   };
 
-  const { data } = useSession();
-
   return (
     <PageLayout>
       <div className="flex flex-col gap-4 w-full h-full  ">
@@ -83,12 +81,11 @@ export default observer(function Dashboard() {
               titleButton="Shop Now"
               icon={<ShopIcon />}
               onClick={() => {
-                const {
-                  user: { email, tenantName },
-                } = data;
-
                 window.open(CATALOGO_FIRST_PLUG, "_blank");
-                UserServices.notifyShop(email, tenantName);
+                UserServices.notifyShop(
+                  sessionData?.user.email,
+                  sessionData?.user.tenantName
+                );
               }}
             >
               <StockCard products={assets} />
