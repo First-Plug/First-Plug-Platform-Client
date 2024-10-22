@@ -45,7 +45,8 @@ export default function ComputerExpirationForm({ form }: { form: any }) {
     <section className="w-full flex flex-col gap-4 md p-4">
       <div>
         <h2 className="text-xl font-montserrat font-bold text-black">
-          Computer Expiration Settings
+          Computer Expiration Settings{" "}
+          <span className="font-normal text-base">(years)</span>
         </h2>
       </div>
 
@@ -67,7 +68,7 @@ export default function ComputerExpirationForm({ form }: { form: any }) {
                 type="number"
                 value={field.value}
                 readOnly
-                className="w-12 text-center mx-2 tracking-wide font-montserrat font-semibold text-md"
+                className="w-10 text-center items-center justify-center tracking-wide font-montserrat font-semibold text-md appearance-none ml-4"
               />
               <button
                 type="button"
@@ -77,9 +78,6 @@ export default function ComputerExpirationForm({ form }: { form: any }) {
                 <AddIcon />
               </button>
             </div>
-            <p className="block font-montserrat text-sm font-semibold text-dark-grey mb-2">
-              Set Expiration Period (Years)
-            </p>
           </div>
         )}
       />

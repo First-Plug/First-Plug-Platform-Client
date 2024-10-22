@@ -41,8 +41,6 @@ export default observer(function Dashboard() {
 
     setLoading(false);
   }, [fetchStock, fetchMembers, fetchMembersAndTeams, members, tableProducts, user]);
-  console.log("user", JSON.stringify(user, null, 2));
-  console.log("user", user);
 
   const handleAvgAgeCalculated = (calculatedAvgAge: number) => {
     setAvgAge(calculatedAvgAge);
@@ -102,9 +100,9 @@ export default observer(function Dashboard() {
                   <span
                     style={{
                       backgroundColor: getBarColor(
-                        avgAge, // Valor calculado de antigüedad promedio
-                        user.computerExpiration, // Expiración configurada por el usuario
-                        avgAge // Redondeo basado en el mismo valor de avgAge
+                        avgAge,
+                        user.computerExpiration,
+                        avgAge
                       ),
                       color: "black",
                       padding: "0 4px",

@@ -338,7 +338,7 @@ export default observer(function AlertProvider() {
       title: "Upgrade Request Received",
       type: "succes",
       description:
-        "Thank you for your request. We will process the upgrade and contact you shortly.",
+        "Thank you for your request. We will be in touch with you shortly to proceed with the next steps.",
       closeAction: () => {
         setAlert(undefined);
       },

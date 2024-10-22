@@ -45,7 +45,7 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
       const yearsSinceAcquisition =
         (Date.now() - acquisitionDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
 
-      return yearsSinceAcquisition >= 2.5; // 2.5 años o más
+      return yearsSinceAcquisition >= 2.5;
     });
 
     setComputersToUpgrade(computersNeedingUpgrade);

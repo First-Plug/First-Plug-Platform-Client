@@ -120,7 +120,7 @@ export default function SettingsForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="h-full flex flex-col gap-2"
       >
-        <div className="flex flex-col gap-4  h-[90%] max-h-[90%] overflow-y-auto scrollbar-custom">
+        <div className="flex flex-col gap-4  h-[90%] max-h-[90%] overflow-y-auto scrollbar-custom pr-2">
           <div className="flex w-full gap-4 ">
             <CompanyForm form={form} />
             <AccessForm form={form} />
