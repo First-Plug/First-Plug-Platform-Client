@@ -73,10 +73,7 @@ export default function Providers({ children }: ProvidersProps) {
           maxAge: 1000 * 60 * 60 * 24, // 24 horas
         });
 
-        const cachedData = window.localStorage.getItem(
-          "REACT_QUERY_OFFLINE_CACHE"
-        );
-        console.log("Datos restaurados:", cachedData);
+        window.localStorage.getItem("REACT_QUERY_OFFLINE_CACHE");
       } catch (error) {
         console.error("Error restaurando los datos persistidos:", error);
       }
