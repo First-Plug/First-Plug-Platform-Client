@@ -10,7 +10,9 @@ import {
 } from "./Icons";
 import { CustomLink } from "./CustomLink";
 import { useStore } from "@/models";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
+import { UserServices } from "@/services/user.services";
 type EmptyCardType =
   | "stock"
   | "members"
@@ -55,7 +57,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     ButtonIcon: UploadIcon,
     buttonText: "Load Assets",
     LinkIcon: ShopIcon,
-    link: "/shop",
+    link: CATALOGO_FIRST_PLUG,
     linkText: "Shop Now",
     additionalButtonText: "Add Product",
     additionalButtonIcon: AddIcon,
@@ -153,6 +155,8 @@ export function EmptyCard({ type }: EmptyCardProps) {
     }
   };
 
+  const { data } = useSession();
+
   return (
     <div className="flex flex-col items-center gap-3 ">
       <div className="flex flex-col items-center mt-[-50px]">
@@ -199,6 +203,18 @@ export function EmptyCard({ type }: EmptyCardProps) {
             size="big"
             className="rounded-md flex gap-2"
             href={link}
+            onClick={
+              CATALOGO_FIRST_PLUG === link
+                ? () => {
+                    const {
+                      user: { email, tenantName },
+                    } = data;
+
+                    window.open(CATALOGO_FIRST_PLUG, "_blank");
+                    UserServices.notifyShop(email, tenantName);
+                  }
+                : null
+            }
           >
             <LinkIcon /> {linkText}
           </CustomLink>

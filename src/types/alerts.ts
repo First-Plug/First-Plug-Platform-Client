@@ -35,5 +35,6 @@ export const ALERTS_TYPES = [
   "noProductsToRecover",
   "memberMissingFields",
   "birthdayGiftAlert",
+  "computerUpgradeAlert",
 ] as const;
 export type AlertType = (typeof ALERTS_TYPES)[number];
