@@ -22,7 +22,12 @@ export const MemberAsideDetails = observer(function ({
   className,
 }: MemberAsideDetailsProps) {
   const {
-    members: { memberToEdit, setMemberToEdit },
+    members: {
+      memberToEdit,
+      selectedMember,
+      setMemberToEdit,
+      setSelectedMember,
+    },
     aside: { setAside },
     alerts: { setAlert },
     products,
@@ -123,7 +128,12 @@ export const MemberAsideDetails = observer(function ({
 
     if (!getMissingFields(member).length) {
       // TODO: next history v2
-      alert("the member has all his data");
+
+      setSelectedMember(selectedMember._id);
+
+      router.push(`/home/my-team/requestOffBoarding/${selectedMember._id}`);
+
+      setAside(undefined);
     } else {
       const missingFields = getMissingFields(member);
 
@@ -205,12 +215,12 @@ export const MemberAsideDetails = observer(function ({
           </div>
           <aside className=" absolute  bg-white  py-2    bottom-0   left-0 w-full border-t ">
             <div className="flex    w-5/6 mx-auto gap-2 justify-end">
-              {/* <Button
+              <Button
                 body={"Request Offboarding"}
                 variant={"secondary"}
                 onClick={() => handleRequestOffBoarding()}
                 className="px-6 w-1/4"
-              /> */}
+              />
               <Button
                 body={"Return"}
                 variant={"secondary"}

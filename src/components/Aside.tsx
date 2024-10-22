@@ -7,11 +7,12 @@ import { AsideTitle } from "@/common";
 
 export var Aside = observer(function Aside() {
   const {
-    aside: { type, setAside },
+    aside: { type, setAside, closeAside },
   } = useStore();
 
   const handleCloseAside = () => {
     setAside(undefined);
+    closeAside();
   };
   return (
     <>
