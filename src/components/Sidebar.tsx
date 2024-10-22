@@ -23,8 +23,6 @@ export const Sidebar = function () {
     setShowLogo(!showLogo);
   };
 
-  console.log("Current Path: ", path);
-
   return (
     <aside
       className={` min-h-screen  flex flex-col shadow-sm shadow-grey transition-all ${
