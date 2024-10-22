@@ -30,26 +30,30 @@ export default observer(function Dashboard() {
   const { data: teamsData, isLoading: isLoadingMembers } = useFetchTeams();
   const { data: assets, isLoading: isLoadingAssets } = useGetTableAssets();
 
-  if (isLoadingTeams || isLoadingMembers || isLoadingAssets || loading) {
+  if (isLoadingTeams || isLoadingMembers || isLoadingAssets) {
     return <Loader />;
   }
 
   useEffect(() => {
-    if (session.data?.user?._id) {
-      AuthServices.getUserInfro(session.data.user._id)
-        .then((userInfo) => {
-          setUser(userInfo);
-        })
-        .catch((error) => {
-          console.error("Error fetching user info:", error);
-        });
-    }
+    if (sessionStorage.getItem("accessToken")) {
+      setAuthInterceptor(sessionStorage.getItem("accessToken"));
 
-    if (!user || !user.computerExpiration) {
-      console.error("usuario", user);
+      if (session.data?.user?._id) {
+        AuthServices.getUserInfro(session.data.user._id)
+          .then((userInfo) => {
+            setUser(userInfo);
+          })
+          .catch((error) => {
+            console.error("Error fetching user info:", error);
+          });
+      }
+
+      if (!user || !user.computerExpiration) {
+        console.error("usuario", user);
+      }
     }
     setLoading(false);
-  }, [session, user, setUser]);
+  }, [user]);
 
   const handleAvgAgeCalculated = (calculatedAvgAge: number) => {
     setAvgAge(calculatedAvgAge);
