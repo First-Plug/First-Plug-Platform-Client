@@ -16,6 +16,7 @@ interface ComputerUpgradeTableProps {
   products: Product[];
   email: string;
   tenantName: string;
+  computerExpiration: number;
   handleSlackNotification: (
     product: ComputerStatus,
     email: string,
@@ -23,15 +24,22 @@ interface ComputerUpgradeTableProps {
   ) => Promise<void>;
 }
 
-const getStatus = (years: number) => {
-  if (years >= 3) return "Upgrade recommended";
-  if (years >= 2.5) return "Time for upgrade";
-  return "Ok";
+const getStatus = (years: number, computerExpiration: number) => {
+  const sixMonthsBeforeExpiration = computerExpiration - 0.5;
+
+  if (years >= computerExpiration) {
+    return "Upgrade recommended";
+  } else if (years >= sixMonthsBeforeExpiration) {
+    return "Time for upgrade";
+  } else {
+    return "Ok";
+  }
 };
 
 const computerColumns = (
   email: string,
   tenantName: string,
+  computerExpiration: number,
   handleSlackNotification: (
     product: ComputerStatus,
     email: string,
@@ -118,6 +126,7 @@ export const ComputerUpgradeTable = ({
   products,
   email,
   tenantName,
+  computerExpiration,
   handleSlackNotification,
 }: ComputerUpgradeTableProps) => {
   const computersWithStatus = useMemo(() => {
@@ -141,19 +150,27 @@ export const ComputerUpgradeTable = ({
           }`,
           serial: product.serialNumber || "N/A",
           yearsSinceAcquisition,
-          status: getStatus(yearsSinceAcquisition),
+          status: getStatus(yearsSinceAcquisition, computerExpiration),
           location:
             product.location === "Employee"
               ? product.assignedMember || "Unknown"
               : product.location,
           assignedMember: product.assignedMember,
         };
-      });
+      })
+      .filter(
+        (computer) => computer.yearsSinceAcquisition >= computerExpiration - 0.5
+      );
   }, [products]);
 
   return (
     <BirthdayRoot
-      columns={computerColumns(email, tenantName, handleSlackNotification)}
+      columns={computerColumns(
+        email,
+        tenantName,
+        computerExpiration,
+        handleSlackNotification
+      )}
       data={computersWithStatus}
     />
   );

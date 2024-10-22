@@ -45,7 +45,8 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
       const yearsSinceAcquisition =
         (Date.now() - acquisitionDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
 
-      return yearsSinceAcquisition >= 2.5;
+      const threshold = user.computerExpiration - 0.5;
+      return yearsSinceAcquisition >= threshold;
     });
 
     setComputersToUpgrade(computersNeedingUpgrade);
@@ -93,6 +94,7 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
             products={computersToUpgrade}
             email={user?.email}
             tenantName={user?.tenantName}
+            computerExpiration={user?.computerExpiration}
             handleSlackNotification={handleSlackNotification}
           />
         ) : (

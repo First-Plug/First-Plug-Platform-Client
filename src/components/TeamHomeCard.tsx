@@ -74,12 +74,12 @@ export const TeamHomeCard = observer(function ({
   };
 
   return (
-    <div className="flex gap-2 p-2 w-full h-full ">
+    <div className="flex gap-2 p-2 w-full h-full">
       <section className="flex w-full h-full relative">
         <div className="flex flex-col gap-2 h-full w-full absolute">
           <div className="flex flex-col overflow-y-auto  w-full gap-1">
             {membersWithBirthdate.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full mt-10">
+              <div className="flex flex-col items-center justify-center h-full mt-10 overflow-hidden">
                 <Cake />
                 <p className="text-dark-grey text-md text-center mt-6">
                   No birthdates have been completed for any team members

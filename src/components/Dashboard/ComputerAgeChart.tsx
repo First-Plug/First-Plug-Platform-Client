@@ -27,9 +27,11 @@ const ComputerAgeChart = ({
   const [avgAge, setAvgAge] = useState<number>(0);
 
   useEffect(() => {
-    const allProducts = products.flatMap((category) => category.products);
+    const allComputers = products
+      .flatMap((category) => category.products)
+      .filter((product) => product.category === "Computer");
 
-    const productsWithAcquisitionDate = allProducts.filter(
+    const productsWithAcquisitionDate = allComputers.filter(
       (product) => product.acquisitionDate && product.acquisitionDate !== ""
     );
 
@@ -42,7 +44,9 @@ const ComputerAgeChart = ({
     });
 
     if (totalYears.length) {
-      const avg = totalYears.reduce((a, b) => a + b, 0) / totalYears.length;
+      const sumYears = totalYears.reduce((a, b) => a + b, 0);
+      const avg = sumYears / totalYears.length;
+
       setAvgAge(avg);
       onAvgAgeCalculated(avg);
     }
@@ -96,6 +100,19 @@ const ComputerAgeChart = ({
     plugins: {
       legend: {
         display: false,
+      },
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          title: function (context: any) {
+            const label = context[0].label;
+            return `${label}`;
+          },
+          label: function (context: any) {
+            const value = context.raw;
+            return `Computer age: ${value} years`;
+          },
+        },
       },
     },
     layout: {
