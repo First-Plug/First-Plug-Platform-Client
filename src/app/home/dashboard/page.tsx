@@ -12,14 +12,16 @@ import { useSession } from "next-auth/react";
 import { ComputerUpdateCard } from "@/components/Dashboard/ComputerUpdateCard";
 import ComputerAgeChart from "@/components/Dashboard/ComputerAgeChart";
 import { getBarColor } from "@/components/Dashboard/GetBarColor";
+import { AuthServices } from "@/services";
 
 export default observer(function Dashboard() {
   const {
     members: { members },
     products: { tableProducts },
     alerts: { setAlert },
-    user: { user },
+    user: { user, setUser },
   } = useStore();
+  const session = useSession();
   const { fetchStock, fetchMembers, fetchMembersAndTeams } = useFetch();
   const [loading, setLoading] = useState(true);
   const [avgAge, setAvgAge] = useState<number>(0);
@@ -34,9 +36,18 @@ export default observer(function Dashboard() {
         fetchStock();
       }
     }
+    if (session.data?.user?._id) {
+      AuthServices.getUserInfro(session.data.user._id)
+        .then((userInfo) => {
+          setUser(userInfo);
+        })
+        .catch((error) => {
+          console.error("Error fetching user info:", error);
+        });
+    }
 
     if (!user || !user.computerExpiration) {
-      console.error("El valor de computerExpiration no está definido.");
+      console.error("usuario", user);
     }
 
     setLoading(false);

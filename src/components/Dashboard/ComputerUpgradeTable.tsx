@@ -133,9 +133,11 @@ export const ComputerUpgradeTable = ({
 
         return {
           brandModel: `${
-            product.attributes.find((attr) => attr.key === "brand")?.value || ""
+            product.attributes?.find((attr) => attr.key === "brand")?.value ||
+            ""
           } ${
-            product.attributes.find((attr) => attr.key === "model")?.value || ""
+            product.attributes?.find((attr) => attr.key === "model")?.value ||
+            ""
           }`,
           serial: product.serialNumber || "N/A",
           yearsSinceAcquisition,
