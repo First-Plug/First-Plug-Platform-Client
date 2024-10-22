@@ -22,38 +22,34 @@ export default observer(function Dashboard() {
     alerts: { setAlert },
     user: { user, setUser },
   } = useStore();
+  const session = useSession();
+  const [loading, setLoading] = useState(true);
+  const [avgAge, setAvgAge] = useState<number>(0);
 
   const { data: membersData, isLoading: isLoadingTeams } = useFetchMembers();
   const { data: teamsData, isLoading: isLoadingMembers } = useFetchTeams();
   const { data: assets, isLoading: isLoadingAssets } = useGetTableAssets();
 
-  if (isLoadingTeams || isLoadingMembers || isLoadingAssets) {
+  if (isLoadingTeams || isLoadingMembers || isLoadingAssets || loading) {
     return <Loader />;
   }
-  const session = useSession();
-  const [loading, setLoading] = useState(true);
-  const [avgAge, setAvgAge] = useState<number>(0);
 
   useEffect(() => {
-    if (sessionStorage.getItem("accessToken")) {
-      setAuthInterceptor(sessionStorage.getItem("accessToken"));
+    if (session.data?.user?._id) {
+      AuthServices.getUserInfro(session.data.user._id)
+        .then((userInfo) => {
+          setUser(userInfo);
+        })
+        .catch((error) => {
+          console.error("Error fetching user info:", error);
+        });
+    }
 
-      if (session.data?.user?._id) {
-        AuthServices.getUserInfro(session.data.user._id)
-          .then((userInfo) => {
-            setUser(userInfo);
-          })
-          .catch((error) => {
-            console.error("Error fetching user info:", error);
-          });
-      }
-
-      if (!user || !user.computerExpiration) {
-        console.error("usuario", user);
-      }
+    if (!user || !user.computerExpiration) {
+      console.error("usuario", user);
     }
     setLoading(false);
-  }, [user]);
+  }, [session, user, setUser]);
 
   const handleAvgAgeCalculated = (calculatedAvgAge: number) => {
     setAvgAge(calculatedAvgAge);
