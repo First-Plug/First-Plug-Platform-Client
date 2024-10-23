@@ -1,42 +1,63 @@
 "use client";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
-import {
-  EmptyDashboardCard,
-  NotificationIcon,
-  PageLayout,
-  ShopIcon,
-} from "@/common";
+import { EmptyDashboardCard, PageLayout, ShopIcon } from "@/common";
 import { Card, StockCard, TeamHomeCard } from "@/components";
-import { useEffect, useState } from "react";
-import useFetch from "@/hooks/useFetch";
 import { UserServices } from "@/services/user.services";
+import { useFetchTeams } from "@/teams/hooks";
+import { useFetchMembers } from "@/members/hooks";
+import { useGetTableAssets } from "@/assets/hooks";
+import { Loader } from "@/components/Loader";
 import { setAuthInterceptor } from "@/config/axios.config";
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { useSession } from "next-auth/react";
+import { ComputerUpdateCard } from "@/components/Dashboard/ComputerUpdateCard";
+import ComputerAgeChart from "@/components/Dashboard/ComputerAgeChart";
+import { getBarColor } from "@/components/Dashboard/GetBarColor";
+import { AuthServices } from "@/services";
+import { useEffect, useState } from "react";
 
 export default observer(function Dashboard() {
   const {
-    members: { members },
-    products: { tableProducts },
     alerts: { setAlert },
-    user: { user },
+    user: { user, setUser },
   } = useStore();
-  const { fetchStock, fetchMembers, fetchMembersAndTeams } = useFetch();
+  const { data: sessionData } = useSession();
   const [loading, setLoading] = useState(true);
+  const [avgAge, setAvgAge] = useState<number>(0);
+
+  const { data: membersData, isLoading: isLoadingTeams } = useFetchMembers();
+  const { data: teamsData, isLoading: isLoadingMembers } = useFetchTeams();
+  const { data: assets, isLoading: isLoadingAssets } = useGetTableAssets();
 
   useEffect(() => {
     if (sessionStorage.getItem("accessToken")) {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
-      if (!members.length) {
-        fetchMembersAndTeams();
+
+      if (sessionData?.user?._id) {
+        AuthServices.getUserInfro(sessionData.user._id)
+          .then((userInfo) => {
+            setUser(userInfo);
+          })
+          .catch((error) => {
+            console.error("Error fetching user info:", error);
+          });
       }
-      if (!tableProducts.length) {
-        fetchStock();
-      }
+
+      // if (!user || !user.computerExpiration) {
+      //   console.error("usuario", user);
+      // }
     }
     setLoading(false);
-  }, [fetchStock, fetchMembers, fetchMembersAndTeams, members.length, tableProducts.length]);
+  }, [sessionData?.user?._id, setUser, user]);
+
+  if (isLoadingTeams || isLoadingMembers || isLoadingAssets) {
+    return <Loader />;
+  }
+
+  const handleAvgAgeCalculated = (calculatedAvgAge: number) => {
+    setAvgAge(calculatedAvgAge);
+  };
 
   const handleBirthdayGiftClick = async () => {
     try {
@@ -50,75 +71,82 @@ export default observer(function Dashboard() {
     }
   };
 
-  const { data } = useSession();
-
   return (
     <PageLayout>
       <div className="flex flex-col gap-4 w-full h-full  ">
         <section className="grid grid-cols-2 gap-4 h-1/2 ">
-          {tableProducts.length ? (
+          {Array.isArray(assets) && assets.length > 0 ? (
             <Card
               Title="My Assets"
               titleButton="Shop Now"
               icon={<ShopIcon />}
               onClick={() => {
-                const {
-                  user: { email, tenantName },
-                } = data;
-
                 window.open(CATALOGO_FIRST_PLUG, "_blank");
-                UserServices.notifyShop(email, tenantName);
+                UserServices.notifyShop(
+                  sessionData?.user.email,
+                  sessionData?.user.tenantName
+                );
               }}
             >
-              <StockCard products={tableProducts} />
+              <StockCard products={assets} />
             </Card>
           ) : (
             <EmptyDashboardCard type="stock" />
           )}
-          <EmptyDashboardCard type="computer" />
-          {/* <Card Title="Computer computer" className="h-full">
-            <section className="  h-full flex flex-col justify-center items-center">
-              <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
-                Coming Soon!
-                <NotificationIcon />
-              </h1>
-              <p className="font-inter text-md text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We&apos;re excited to reveal that the Firstplug notifications
-                are coming soon!
-              </p>
-            </section>
-          </Card> */}
+
+          {assets.length ? (
+            <Card
+              Title="Computer Updates"
+              RightContent={
+                <ComputerAgeChart
+                  products={assets}
+                  onAvgAgeCalculated={handleAvgAgeCalculated}
+                  computerExpiration={user?.computerExpiration}
+                />
+              }
+              FooterContent={
+                <p className="text-dark-grey font-medium text-sm">
+                  Avg computer age:{" "}
+                  <span
+                    style={{
+                      backgroundColor: getBarColor(
+                        avgAge,
+                        user?.computerExpiration,
+                        avgAge
+                      ),
+                      color: "black",
+                      padding: "0 4px",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {avgAge.toFixed(2)} years
+                  </span>
+                </p>
+              }
+            >
+              <ComputerUpdateCard products={assets} />
+            </Card>
+          ) : (
+            <EmptyDashboardCard type="computer" />
+          )}
         </section>
+
         <section className="grid grid-cols-2 gap-4 h-1/2  ">
-          {members.length ? (
-            <>
-              <Card
-                Title="Upcoming Birthdays"
-                titleButton="Birthday Gifts"
-                icon={<ShopIcon />}
-                onClick={() => {
-                  handleBirthdayGiftClick();
-                }}
-              >
-                <TeamHomeCard />
-              </Card>
-            </>
+          {Array.isArray(membersData) && membersData.length > 0 ? (
+            <Card
+              Title="Upcoming Birthdays"
+              titleButton="Birthday Gifts"
+              icon={<ShopIcon />}
+              onClick={() => {
+                handleBirthdayGiftClick();
+              }}
+            >
+              <TeamHomeCard members={membersData} />
+            </Card>
           ) : (
             <EmptyDashboardCard type="members" />
           )}
           <EmptyDashboardCard type="recentActivity" />
-          {/* <Card Title="Recent Activity" className="h-full">
-            <section className="  h-full flex flex-col justify-center items-center">
-              <h1 className="flex  items-center font-montserrat text-2xl font-bold text-black  gap-2">
-                Coming Soon!
-                <NotificationIcon />
-              </h1>
-              <p className="font-inter text-md text-dark-grey mb-[1.5rem] mt-[1rem]">
-                We&apos;re excited to reveal that the Firstplug notifications
-                are coming soon!
-              </p>
-            </section>
-          </Card> */}
         </section>
       </div>
     </PageLayout>

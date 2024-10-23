@@ -11,9 +11,9 @@ import { observer } from "mobx-react-lite";
 import { LoaderSpinner } from "./LoaderSpinner";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import useActions from "@/hooks/useActions";
-import useFetch from "@/hooks/useFetch";
 import { XIcon } from "lucide-react";
 import CategoryIcons from "@/components/AsideContents/EditTeamAside/CategoryIcons";
+import { useQueryClient } from "@tanstack/react-query";
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
   product,
@@ -37,7 +37,7 @@ const MembersList = observer(function MembersList({
     useState<RelocateStatus>(undefined);
   const [selectedMember, setSelectedMember] = useState<TeamMember>();
   const { handleReassignProduct } = useActions();
-  const { fetchMembers } = useFetch();
+  const queryClient = useQueryClient();
 
   const handleSelectMember = (member: TeamMember) => {
     setSelectedMember(member);
@@ -67,7 +67,8 @@ const MembersList = observer(function MembersList({
           selectedMember,
           product: product,
         });
-        await fetchMembers();
+        queryClient.invalidateQueries({ queryKey: ["members"] });
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
         setRelocateResult("success");
         setRelocateStauts("success");
         handleSuccess();

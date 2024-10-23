@@ -11,7 +11,7 @@ import {
   TooltipContent,
   TooltipArrow,
 } from "@radix-ui/react-tooltip";
-import { InfoCircle } from "../../../common/Icons";
+import { InfoCircle } from "../../common/Icons";
 
 export default function AssetsForm({ form }: { form: any }) {
   const { control, reset } = form;
@@ -31,7 +31,7 @@ export default function AssetsForm({ form }: { form: any }) {
 
           reset((formValues) => ({
             ...formValues,
-            isRecoverableConfig: recoverableConfig,
+            isRecoverableConfig: recoverableConfig.isRecoverableConfig,
           }));
 
           setInitialDataLoaded(true);
@@ -46,13 +46,12 @@ export default function AssetsForm({ form }: { form: any }) {
 
   return (
     <TooltipProvider>
-      <section className="w-full flex flex-col gap-4 border rounded-md p-4">
+      <section className="w-full flex flex-col gap-4 p-4">
         <div className="flex items-center">
           <h2 className="text-xl font-montserrat font-bold text-black">
             Recoverable Configuration
           </h2>
 
-          {/* Tooltip for info */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button className="ml-2 p-1 text-blue/80">
@@ -64,7 +63,8 @@ export default function AssetsForm({ form }: { form: any }) {
               align="center"
               className="bg-blue/80 text-white p-2 rounded-md text-sm"
             >
-              The products created in each category will be automatically configured based on the option you choose
+              The products created in each category will be automatically
+              configured based on the option you choose
               <TooltipArrow className="fill-blue/80" />
             </TooltipContent>
           </Tooltip>

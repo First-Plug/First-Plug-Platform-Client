@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Button, LoaderSpinner } from "@/common";
-import { Memberservices, TeamServices } from "../../services";
+import { TeamServices } from "../../services";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
 import { Team } from "@/types/teams";
@@ -9,7 +9,9 @@ import { TeamDetails } from "..";
 import { TeamMember } from "@/types";
 import { transformData } from "@/utils/dataTransformUtil";
 import { DeleteAction } from "../Alerts";
-import useFetch from "@/hooks/useFetch";
+import { useQueryClient } from "@tanstack/react-query";
+import { useFetchMembers } from "@/members/hooks";
+import { useFetchTeams, useDeleteTeam } from "@/teams/hooks";
 
 interface EditTeamsAsideProps {
   className?: string | "";
@@ -26,11 +28,23 @@ export const EditTeamsAside = observer(function ({
     members: { setMembers },
   } = useStore();
 
-  const { fetchMembers } = useFetch();
+  const queryClient = useQueryClient();
+  const { data: membersData, isLoading: isLoadingMembers } = useFetchMembers();
+  const { data: teamsData, isLoading: isLoadingTeams } = useFetchTeams();
+
+  if (membersData) {
+    setMembers(membersData);
+  }
+
+  if (teamsData) {
+    setTeams(teamsData);
+  }
 
   const [selectedTeams, setSelectedTeams] = useState<Team[]>([]);
   const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
+
   const [isUpdating, setIsUpdating] = useState(false);
+
   const handleCheckbox = (team: Team) => {
     setSelectedTeams((prevSelectedTeams) => {
       const isSelected = prevSelectedTeams.some(
@@ -60,12 +74,12 @@ export const EditTeamsAside = observer(function ({
     try {
       await TeamServices.bulkDeleteTeams(selectedTeams.map((team) => team._id));
 
-      const updatedMembers = await Memberservices.getAllMembers();
-      const updatedTeams = await TeamServices.getAllTeams();
-      const transformedMembers = transformData(updatedMembers, updatedTeams);
-      await fetchMembers();
-      setTeams(updatedTeams);
-      setMembers(transformedMembers);
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      // const transformedMembers = transformData(updatedMembers, updatedTeams);
+      // queryClient.invalidateQueries({ queryKey: ["members"] });
+      // setTeams(updatedTeams);
+      // setMembers(transformedMembers);
       setAlert("deleteTeam");
       setSelectedTeams([]);
     } catch (error) {

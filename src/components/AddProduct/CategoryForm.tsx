@@ -7,10 +7,10 @@ import { observer } from "mobx-react-lite";
 import { Location, CATEGORIES, Category } from "@/types";
 import { FieldValues, useFormContext } from "react-hook-form";
 import { setAuthInterceptor } from "@/config/axios.config";
-import { Memberservices } from "@/services";
 import { Skeleton } from "../ui/skeleton";
 import QuantityCounter from "./QuantityCounter";
 import RecoverableSwitch from "./RecoverableSwitch";
+import { useFetchMembers } from "@/members/hooks";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -52,91 +52,50 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const [selectedAssignedMember, setSelectedAssignedMember] =
     useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [isLocationEnabled, setIsLocationEnabled] = useState(false);
 
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );
 
+  const { data: fetchedMembers = [], isLoading } = useFetchMembers();
   const selectedModel = watch("model");
+
   const [showNameInput, setShowNameInput] = useState(false);
   const [isRecoverable, setIsRecoverable] = useState(false);
 
   useEffect(() => {
-    const fetchAllData = async () => {
-      if (sessionStorage.getItem("accessToken")) {
-        try {
-          setAuthInterceptor(sessionStorage.getItem("accessToken"));
-          const fetchedMembers = await Memberservices.getAllMembers();
+    if (fetchedMembers) {
+      members.setMembers(fetchedMembers);
+      const memberFullNames = [
+        "None",
+        ...fetchedMembers.map(
+          (member) => `${member.firstName} ${member.lastName}`
+        ),
+      ];
+      setAssignedEmailOptions(memberFullNames);
+    }
+  }, [fetchedMembers, members]);
 
-          if (fetchedMembers && fetchedMembers.length > 0) {
-            members.setMembers(fetchedMembers);
-          }
+  useEffect(() => {
+    if (isUpdate && !manualChange) {
+      const assignedMember = formState.assignedMember as string;
+      const assignedEmail = formState.assignedEmail as string;
 
-          if (isUpdate && !manualChange) {
-            const assignedMember = formState.assignedMember as string;
-            const assignedEmail = formState.assignedEmail as string;
+      const selectedMember = fetchedMembers.find(
+        (member) => `${member.firstName} ${member.lastName}` === assignedMember
+      );
 
-            const selectedMember = fetchedMembers.find(
-              (member) =>
-                `${member.firstName} ${member.lastName}` === assignedMember
-            );
-
-            setSelectedAssignedMember(
-              selectedMember
-                ? assignedMember
-                : assignedEmail
-                ? assignedEmail
-                : "None"
-            );
-            setValue("assignedMember", assignedMember ? assignedMember : "");
-
-            setAssignedEmail(selectedMember?.email || assignedEmail || "");
-
-            const location = formState.location as string;
-            setSelectedLocation(location);
-            setValue("location", location);
-
-            const memberFullNames = [
-              "None",
-              ...fetchedMembers.map(
-                (member) => `${member.firstName} ${member.lastName}`
-              ),
-            ];
-
-            if (
-              assignedEmail &&
-              !selectedMember &&
-              !memberFullNames.includes(assignedEmail)
-            ) {
-              memberFullNames.push(assignedEmail);
-            }
-
-            const filteredEmailOptions = memberFullNames.filter(
-              (email) => email !== assignedEmail
-            );
-
-            setAssignedEmailOptions(filteredEmailOptions);
-          } else {
-            const memberFullNames = [
-              "None",
-              ...fetchedMembers.map(
-                (member) => `${member.firstName} ${member.lastName}`
-              ),
-            ];
-
-            setAssignedEmailOptions(memberFullNames);
-          }
-        } catch (error) {
-          console.log(error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchAllData();
-  }, [isUpdate, formState, members, setValue, setAssignedEmail]);
+      setSelectedAssignedMember(
+        selectedMember ? assignedMember : assignedEmail || "None"
+      );
+      setValue("assignedMember", assignedMember || "");
+      setAssignedEmail(selectedMember?.email || assignedEmail || "");
+      setSelectedLocation(formState.location as string);
+      setValue("location", formState.location);
+    }
+  }, [isUpdate, fetchedMembers, formState, setValue, setAssignedEmail]);
 
   const handleInputChange = (name: keyof FieldValues, value: string) => {
     setValue(name, value);
@@ -206,7 +165,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     setValue("recoverable", value);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="h-full w-full flex flex-col gap-2">
         <Skeleton className="h-12 w-full" />

@@ -37,7 +37,7 @@ export default function Login() {
       if (!res.ok) {
         throw new Error(res.error);
       }
-      router.push("/home/my-team");
+      router.push("/home/dashboard");
     } catch (error) {
       toast({
         variant: "destructive",

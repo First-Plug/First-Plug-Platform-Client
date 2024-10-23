@@ -5,6 +5,7 @@ import { observer } from "mobx-react-lite";
 export const AsideTitle = observer(function AsideTitle() {
   const { aside, orders, members } = useStore();
   const selectedMember = members.selectedMember;
+
   switch (aside.type) {
     case "MemberDetails":
       return selectedMember

@@ -3,7 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { BirthdayRoot } from "./BirthdayRoot";
 import { TeamMember } from "@/types";
 import { TeamCard } from "@/common";
-import { MiniCake } from "@/common";
+import { MiniCake } from "@/common/Icons";
 
 const formatBirthDate = (dateString) => {
   const cleanDate = dateString.includes("T")
@@ -72,10 +72,7 @@ const birthdayColumns: ColumnDef<TeamMember>[] = [
     size: 100,
     header: "Team",
     cell: ({ cell }) => {
-      const team = cell.row.original.team;
-      if (!team) {
-        return null;
-      }
+      const team = cell.row.original.team || null;
       return (
         <section className="flex justify-start">
           <TeamCard team={team} />

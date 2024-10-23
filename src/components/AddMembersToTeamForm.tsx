@@ -3,12 +3,13 @@ import { useState, useEffect } from "react";
 import { Button, LoaderSpinner, SearchInput } from "@/common";
 import { Team, TeamMember } from "@/types";
 import { observer } from "mobx-react-lite";
-import { TeamServices } from "@/services";
 import { MemberItem } from "./AsideContents/EditTeamAside";
 import { useStore } from "@/models";
 import { transformData } from "@/utils/dataTransformUtil";
-import useFetch from "@/hooks/useFetch";
 import { Skeleton } from "./ui/skeleton";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAddToTeam, useRemoveFromTeam } from "@/teams/hooks";
+import { TeamServices } from "@/services";
 
 interface AddMembersToTeamFormProps {
   selectedMembers?: TeamMember[];
@@ -28,13 +29,15 @@ export const AddMembersToTeamForm = observer(function ({
 }: AddMembersToTeamFormProps) {
   const {
     members: { members },
-    teams: { teams },
   } = useStore();
-  const { fetchMembers } = useFetch();
+  const queryClient = useQueryClient();
+  const addToTeamMutation = useAddToTeam();
+  const removeFromTeamMutation = useRemoveFromTeam();
+
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [currentMembers, setCurrentMembers] = useState<TeamMember[]>(members);
   const [membersToAdd, setMembersToAdd] = useState<TeamMember[]>([]);
-  const [memberToDelete, setMembersToDelete] = useState<TeamMember[]>([]);
+  const [membersToDelete, setMembersToDelete] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(false);
 
   const setInitialData = () => {
@@ -44,8 +47,8 @@ export const AddMembersToTeamForm = observer(function ({
         typeof member.team === "object" &&
         member.team._id === team?._id
     );
-    const transformedMembers = transformData(initialSelectedMembers, teams);
-    setCurrentMembers(transformedMembers);
+    // const transformedMembers = transformData(initialSelectedMembers, teams);
+    setCurrentMembers(initialSelectedMembers);
     setSearchedMembers(members);
     setMembersToAdd([]);
     setMembersToDelete([]);
@@ -73,10 +76,10 @@ export const AddMembersToTeamForm = observer(function ({
       (selected) => selected._id === member._id
     );
     if (isCurrent) {
-      if (memberToDelete.some((selected) => selected._id === member._id)) {
-        setMembersToDelete(memberToDelete.filter((m) => m._id !== member._id));
+      if (membersToDelete.some((selected) => selected._id === member._id)) {
+        setMembersToDelete(membersToDelete.filter((m) => m._id !== member._id));
       } else {
-        setMembersToDelete([...memberToDelete, member]);
+        setMembersToDelete([...membersToDelete, member]);
       }
     } else {
       if (membersToAdd.some((selected) => selected._id === member._id)) {
@@ -95,14 +98,15 @@ export const AddMembersToTeamForm = observer(function ({
         );
         await Promise.all(allMembersToAdd);
       }
-      if (memberToDelete.length > 0) {
-        const allMembersToDelete = memberToDelete.map((member) =>
+      if (membersToDelete.length > 0) {
+        const allMembersToDelete = membersToDelete.map((member) =>
           TeamServices.removeFromTeam(team._id, member._id)
         );
         await Promise.all(allMembersToDelete);
       }
 
-      await fetchMembers();
+      await queryClient.invalidateQueries({ queryKey: ["members"] });
+      await queryClient.invalidateQueries({ queryKey: ["teams"] });
       setInitialData();
     } catch (error) {
       return error;
@@ -112,7 +116,6 @@ export const AddMembersToTeamForm = observer(function ({
     setLoading(true);
     try {
       await editTeam();
-      await fetchMembers();
     } catch (error) {
       setLoading(false);
       return error;
@@ -121,9 +124,17 @@ export const AddMembersToTeamForm = observer(function ({
       setLoading(false);
     }
   };
+  useEffect(() => {
+    return () => {
+      if (membersToAdd.length > 0 || membersToDelete.length > 0) {
+        queryClient.invalidateQueries({ queryKey: ["members"] });
+        queryClient.invalidateQueries({ queryKey: ["teams"] });
+      }
+    };
+  }, [membersToAdd, membersToDelete, queryClient]);
 
   const confirmBtnStatus =
-    membersToAdd.length === 0 && memberToDelete.length === 0; // USAR ESTE VALOR PARA DEFINIR SI HAY CAMBIOS EN LOS USER SELECCIONADOS.
+    membersToAdd.length === 0 && membersToDelete.length === 0;
 
   return (
     <section className="flex flex-col gap-4 h-full">
@@ -153,7 +164,7 @@ export const AddMembersToTeamForm = observer(function ({
             adding={membersToAdd.some(
               (selected) => selected._id === member._id
             )}
-            deleting={memberToDelete.some(
+            deleting={membersToDelete.some(
               (selected) => selected._id === member._id
             )}
             isCurrent={currentMembers.some(

@@ -20,6 +20,8 @@ interface CardProps {
   altImage?: string;
   className?: string;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+  RightContent?: ReactNode;
+  FooterContent?: ReactNode;
 }
 
 export const Card = function ({
@@ -32,6 +34,8 @@ export const Card = function ({
   altImage,
   className = "",
   onClick,
+  RightContent,
+  FooterContent,
 }: CardProps) {
   return (
     <article
@@ -64,7 +68,16 @@ export const Card = function ({
                 </TooltipProvider>
               )}
             </h2>
-            {titleButton && (
+            <div className="flex flex-col justify-center items-center ">
+              {RightContent && <div>{RightContent}</div>}
+              {FooterContent && (
+                <div className="text-dark-grey font-medium text-sm">
+                  {FooterContent}
+                </div>
+              )}
+            </div>
+
+            {titleButton && <div>{RightContent}</div> && (
               <Button
                 icon={icon}
                 className=" p-2 whitespace-nowrap rounded-md"
@@ -77,7 +90,7 @@ export const Card = function ({
           </header>
         )}
       </div>
-      <div className=" max-h-[85%] h-[85%] flex-grow  overflow-y-auto relative ">
+      <div className=" max-h-[85%] h-[85%] flex-grow  relative">
         {children ? (
           <div className={`absolute    w-full   h-full     `}>{children}</div>
         ) : (

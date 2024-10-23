@@ -17,7 +17,7 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
   } = useFormContext();
 
   useEffect(() => {
-    if (isUpdate) {
+    if (isUpdate && initialData) {
       Object.keys(initialData).forEach((key) => {
         if (key === "birthDate" && initialData[key]) {
           const date = new Date(initialData[key]);
