@@ -24,7 +24,6 @@ export function MemberItem({
     deleting: "bg-transparent",
     adding: "bg-hoverBlue",
   };
-
   return (
     <div
       key={member._id}

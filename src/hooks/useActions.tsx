@@ -1,13 +1,13 @@
 import { useStore } from "@/models";
 import { ProductServices } from "@/services";
 import { Location, Product, TeamMember } from "@/types";
-import { useQueryClient } from "@tanstack/react-query";
+import useFetch from "./useFetch";
 
 export default function useActions() {
   const {
     products: { reassignProduct },
   } = useStore();
-  const queryClient = useQueryClient();
+  const { fetchMembers } = useFetch();
 
   const handleReassignProduct = async ({
     currentMember,
@@ -34,7 +34,7 @@ export default function useActions() {
 
     try {
       await ProductServices.updateProduct(product._id, updatedProduct);
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+      await fetchMembers();
     } catch (error) {
       console.error(`Error relocating product ${product._id}:`, error);
     }
@@ -65,7 +65,7 @@ export default function useActions() {
 
     try {
       await reassignProduct(product._id, updatedProduct);
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+      await fetchMembers();
     } catch (error) {
       console.error("Error unassigning product:", error);
     }

@@ -6,9 +6,7 @@ import { InputProductForm } from "../AddProduct/InputProductForm";
 import { CustomLink } from "@/common";
 import { useFormContext, Controller } from "react-hook-form";
 import { DropdownInputProductForm } from "../AddProduct/DropDownProductForm";
-import { useQueryClient } from "@tanstack/react-query";
-import { useCreateTeam, useFetchTeams } from "@/teams/hooks";
-import { BarLoader } from "../Loader/BarLoader";
+import { TeamServices } from "@/services/team.services";
 
 const EmployeeData = function ({ isUpdate, initialData }) {
   const {
@@ -22,22 +20,29 @@ const EmployeeData = function ({ isUpdate, initialData }) {
   const [teamValue, setTeamValue] = useState(initialData?.team || "");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
-
-  // const [teams, setTeams] = useState<string[]>([]);
-  const { data: teams = [], isLoading, isError } = useFetchTeams();
-  const createTeamMutation = useCreateTeam();
-  const queryClient = useQueryClient();
+  const [teams, setTeams] = useState<string[]>([]);
 
   useEffect(() => {
-    if (initialData?.team) {
-      const teamName =
-        typeof initialData.team === "object"
-          ? initialData.team.name
-          : initialData.team;
-      setTeamValue(teamName);
-      setValue("team", teamName);
-    }
-  }, [initialData, setValue]);
+    const fetchTeams = async () => {
+      try {
+        const allTeams = await TeamServices.getAllTeams();
+        setTeams(allTeams.map((team) => team.name));
+
+        if (initialData?.team) {
+          const teamName =
+            typeof initialData.team === "object"
+              ? initialData.team.name
+              : initialData.team;
+          setTeamValue(teamName);
+          setValue("team", teamName);
+        }
+      } catch (error) {
+        throw error;
+      }
+    };
+
+    fetchTeams();
+  }, [setTeams, setValue, initialData]);
 
   const handleTeamChange = (value: string) => {
     setTeamValue(value);
@@ -50,26 +55,12 @@ const EmployeeData = function ({ isUpdate, initialData }) {
   };
 
   const handleSaveNewTeam = () => {
-    createTeamMutation.mutate(
-      { name: newTeamName },
-      {
-        onSuccess: (newTeam) => {
-          queryClient.invalidateQueries({ queryKey: ["teams"] });
-
-          setTeamValue(newTeam.name);
-          setValue("team", newTeam.name);
-          setNewTeamName("");
-          setIsModalOpen(false);
-        },
-        onError: (error) => {
-          console.error("Error al crear el equipo:", error);
-        },
-      }
-    );
+    setTeams([...teams, newTeamName]);
+    setTeamValue(newTeamName);
+    setValue("team", newTeamName);
+    setNewTeamName("");
+    setIsModalOpen(false);
   };
-
-  if (isLoading) return <BarLoader />;
-  if (isError) return <div>Error cargando los equipos</div>;
 
   return (
     <div>
@@ -88,7 +79,7 @@ const EmployeeData = function ({ isUpdate, initialData }) {
             <>
               <DropdownInputProductForm
                 name="team"
-                options={teams.map((team) => team.name)}
+                options={teams}
                 placeholder="Team Name"
                 title="Select a Team"
                 selectedOption={teamValue}

@@ -7,8 +7,8 @@ import { AddMembersToTeamForm } from "./AddMembersToTeamForm";
 import { transformData } from "@/utils/dataTransformUtil";
 import { Button, LoaderSpinner } from "@/common";
 import { TeamServices } from "@/services";
+import useFetch from "@/hooks/useFetch";
 import { Input } from "./ui/input";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface TeamInfoProps {
   team: Team;
@@ -21,7 +21,7 @@ export const TeamInfo = observer(function ({
 }: TeamInfoProps) {
   const [newTeamName, setNewTeamName] = useState(team.name);
   const [updating, setUpdating] = useState(false);
-  const queryClient = useQueryClient();
+  const { fetchMembers } = useFetch();
 
   const handleNewNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewTeamName(e.target.value);
@@ -31,7 +31,7 @@ export const TeamInfo = observer(function ({
     setUpdating(true);
     try {
       await TeamServices.updateTeam(team._id, { ...team, name: newTeamName });
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+      await fetchMembers();
     } catch (error) {
       console.log(error);
     } finally {

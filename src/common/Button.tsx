@@ -14,7 +14,6 @@ interface ButtonProps {
   size?: Size;
   children?: ReactNode;
   type?: "button" | "submit" | "reset";
-  onMouseEnter?: () => void;
 }
 
 const btnStyle = {
@@ -52,7 +51,6 @@ export function Button({
   size = "default",
   children,
   type = "button",
-  onMouseEnter,
   ...buttonProps
 }: ButtonProps) {
   return (

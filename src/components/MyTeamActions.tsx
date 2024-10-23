@@ -5,9 +5,6 @@ import { AsideType } from "@/types";
 import { observer } from "mobx-react-lite";
 import { Table } from "@tanstack/react-table";
 import { MyTeamViewHeader } from "./MyTeamViewHeader";
-import { useFetchTeams, usePrefetchTeams } from "@/teams/hooks";
-import { BarLoader } from "./Loader/BarLoader";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface MyTeamActionsProps<TData> {
   table: Table<TData>;
@@ -16,33 +13,17 @@ export const MyTeamActions = observer(function <TData>({
   table,
 }: MyTeamActionsProps<TData>) {
   const {
+    teams: { teams },
     aside: { setAside },
   } = useStore();
-
-  const queryClient = useQueryClient();
-  const prefetchTeams = usePrefetchTeams();
-
-  const handleAside = async (type: AsideType) => {
-    const cachedData = queryClient.getQueryData(["teams"]);
-    if (!cachedData) {
-      await queryClient.fetchQuery({
-        queryKey: ["teams"],
-        queryFn: prefetchTeams,
-      });
-    }
+  const handleAside = (type: AsideType) => {
     setAside(type);
-  };
-
-  const handleEditTeamHover = () => {
-    prefetchTeams();
   };
 
   return (
     <section className="flex flex-col gap-1 w-full h-full">
       <MyTeamViewHeader />
-      {/* {isLoading ? (
-        <BarLoader />
-      ) : ( */}
+
       <div className="w-full flex justify-between  items-center    gap-2  ">
         <div className="flex gap-2 items-center ">
           {/* <SearchInput
@@ -62,15 +43,13 @@ export const MyTeamActions = observer(function <TData>({
           <Button
             body="Edit Team"
             variant={"text"}
-            // disabled={teamData.length === 0}
+            disabled={teams.length === 0}
             icon={<PenIcon />}
             className={"p-2 text-sm rounded-md"}
-            onMouseEnter={handleEditTeamHover}
             onClick={() => handleAside("EditTeam")}
           />
         </div>
       </div>
-      {/* )} */}
     </section>
   );
 });

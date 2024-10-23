@@ -54,7 +54,7 @@ import {
   SelectTrigger,
 } from "../ui/select";
 import FilterComponent from "./Filters/FilterComponent";
-import { getSnapshot, isStateTreeNode } from "mobx-state-tree";
+import { getSnapshot } from "mobx-state-tree";
 
 const MONTHS = [
   "January",
@@ -281,12 +281,10 @@ export function RootTable<TData, TValue>({
     const filteredOptions = table
       .getCoreRowModel()
       .rows.map((row) => {
-        const productTable = isStateTreeNode(row.original)
-          ? getSnapshot(row.original)
-          : row.original;
+        const product = getSnapshot(row.original) as ProductTable;
 
         if (headerId === "Name") {
-          const firstProduct = productTable.products[0];
+          const firstProduct = product.products[0];
           if (!firstProduct) return "No Data";
 
           const brand =
@@ -317,7 +315,7 @@ export function RootTable<TData, TValue>({
 
         const value = row.getValue(headerId);
         if (headerId === "Category") {
-          return productTable.category;
+          return product.category;
         }
 
         if (headerId === "serialNumber") {
@@ -335,15 +333,15 @@ export function RootTable<TData, TValue>({
         }
 
         if (headerId === "currentlyWith") {
-          return productTable.products[0]?.assignedMember || "No Data";
+          return product.products[0]?.assignedMember || "No Data";
         }
 
         if (headerId === "status") {
-          return productTable.products[0]?.status || "No Data";
+          return product.products[0]?.status || "No Data";
         }
 
         if (headerId === "location") {
-          return productTable.products[0]?.location || "No Data";
+          return product.products[0]?.location || "No Data";
         }
 
         return value ? String(value) : "No Data";

@@ -1,5 +1,8 @@
 import { useStore } from "@/models";
+import { ProductServices } from "@/services";
+import { Product } from "@/types";
 import { observer } from "mobx-react-lite";
+import { useEffect, useState } from "react";
 import { Loader } from "../Loader";
 import ProductForm from "../AddProduct/ProductForm";
 
@@ -7,24 +10,25 @@ export var EditProductAside = observer(() => {
   const {
     products: { productToEdit },
   } = useStore();
+  const [product, setProduct] = useState<Product | null>(null);
 
-  if (!productToEdit) return <Loader />;
+  useEffect(() => {
+    if (productToEdit) {
+      ProductServices.getProductById(productToEdit)
+        .then((res) => {
+          setProduct(res);
+        })
+        .catch((error) => {
+          console.error("Error fetching product:", error);
+        });
+    }
+  }, [productToEdit]);
 
-  // useEffect(() => {
-  //   if (productToEdit) {
-  //     ProductServices.getProductById(productToEdit)
-  //       .then((res) => {
-  //         setProduct(res);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching product:", error);
-  //       });
-  //   }
-  // }, [productToEdit]);
-
-  return (
+  return product ? (
     <div>
-      <ProductForm initialData={productToEdit} isUpdate={true} />
+      <ProductForm initialData={product} isUpdate={true} />
     </div>
+  ) : (
+    <Loader />
   );
 });

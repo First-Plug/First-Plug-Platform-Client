@@ -6,13 +6,12 @@ import { observer } from "mobx-react-lite";
 import { RootTable } from "./RootTable";
 import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
+import { useFilterReset } from "./Filters/FilterResetContext";
 import "./table.css";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface ProductsTableProps {
-  assets: ProductTable[];
   onClearFilters: () => void;
-  onlyAvailable: boolean;
 }
 
 export const productColumns = (
@@ -169,11 +168,11 @@ export const productColumns = (
 
 export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   onClearFilters,
-  assets,
 }) {
   const {
-    products: { setTable, availableProducts, onlyAvaliable },
+    products: { tableProducts, availableProducts, onlyAvaliable },
   } = useStore();
+  const { resetFilters } = useFilterReset();
   const [clearAll, setClearAll] = useState(false);
   const [resetSubTableFilters, setResetSubTableFilters] = useState<
     (() => void) | null
@@ -192,19 +191,15 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     }
   };
 
-  useEffect(() => {
-    if (assets.length) {
-      setTable(assets);
-    }
-  }, [assets, setTable]);
-
-  const columns = productColumns(onlyAvaliable ? availableProducts : assets);
+  const columns = productColumns(
+    onlyAvaliable ? availableProducts : tableProducts
+  );
 
   return (
     <RootTable
       tableType="stock"
       tableNameRef="productsTable"
-      data={onlyAvaliable ? availableProducts : assets}
+      data={onlyAvaliable ? availableProducts : tableProducts}
       columns={columns}
       getRowCanExpand={() => true}
       onClearFilters={handleClearAllFilters}

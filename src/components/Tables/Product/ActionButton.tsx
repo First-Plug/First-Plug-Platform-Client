@@ -2,8 +2,6 @@
 import { Button } from "@/common";
 import { useStore } from "@/models";
 import { Product } from "@/types";
-import { usePrefetchAssignData } from "@/assets/hooks";
-import { useQueryClient } from "@tanstack/react-query";
 
 type ActionType = {
   text: string;
@@ -23,30 +21,17 @@ export function ActionButton({ product }: ActionButtonProps) {
       setProductToAssing,
     },
   } = useStore();
-  const queryClient = useQueryClient();
-  const { prefetchAssignData } = usePrefetchAssignData(product._id);
 
   const handleAssignAction = () => {
-    const cachedProduct = queryClient.getQueryData<Product>([
-      "assets",
-      product._id,
-    ]);
-
     setAside("AssignProduct");
     setSelectedMemberEmail("");
-
-    setProductToAssing(cachedProduct || product);
+    setProductToAssing(product);
   };
 
   const handleReassignAction = () => {
-    const cachedProduct = queryClient.getQueryData<Product>([
-      "assets",
-      product._id,
-    ]);
-
     setAside("ReassignProduct");
     setSelectedMemberEmail(product.assignedEmail);
-    setProductToAssing(cachedProduct || product);
+    setProductToAssing(product);
   };
 
   const ActionConfig: Record<Product["status"], ActionType> = {
@@ -66,14 +51,8 @@ export function ActionButton({ product }: ActionButtonProps) {
   const { action, text } = ActionConfig[product.status];
 
   return (
-    <div
-      onMouseEnter={() => {
-        prefetchAssignData();
-      }}
-    >
-      <Button onClick={action} className="rounded-md" variant="text">
-        {text}
-      </Button>
-    </div>
+    <Button onClick={action} className="rounded-md" variant="text">
+      {text}
+    </Button>
   );
 }

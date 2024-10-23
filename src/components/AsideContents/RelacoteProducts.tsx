@@ -28,11 +28,13 @@ export function RelacoteProducts({ products, handleBack }: IRelacoteProducts) {
       </div>
       <div className=" max-h-[100%] h-[100%] overflow-y-auto scrollbar-custom">
         {products.map((product, index) => {
+          const clonedProduct = clone(product);
+
           return (
             <ProductDetail
-              product={product}
+              product={clonedProduct}
               isRelocating
-              key={product._id}
+              key={clonedProduct._id}
               onRelocateSuccess={handleSuccess}
               disabled={enabledProductIndex !== index}
             />

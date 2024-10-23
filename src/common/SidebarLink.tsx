@@ -1,14 +1,13 @@
 import Link from "next/link";
-import { MouseEventHandler, ReactNode } from "react";
+import { ReactNode } from "react";
 
 interface SidebarLinkProps {
   isSmall?: boolean;
   isActive?: boolean;
   icon: ReactNode;
   title: string;
-  className?: string;
-  href: string;
-  onMouseEnter?: MouseEventHandler<HTMLAnchorElement>;
+  className?: string
+  href: string
 }
 
 export function SidebarLink({
@@ -18,15 +17,13 @@ export function SidebarLink({
   title,
   className,
   href,
-  onMouseEnter,
-}: SidebarLinkProps) {
+} : SidebarLinkProps) {
   return (
     <Link
       href={`${href}`}
       className={`flex items-center h-12 ${
         isActive ? "text-blue" : undefined
       } ${className}`}
-      onMouseEnter={onMouseEnter}
     >
       {isActive && <div className="h-full w-1 bg-blue rounded-lg"></div>}
 

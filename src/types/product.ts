@@ -193,11 +193,6 @@ export const zodCreateProductModel = z
       data.recoverable = true;
     }
   })
-  .superRefine((data, ctx) => {
-    if (data.serialNumber === null) {
-      data.serialNumber = "";
-    }
-  })
   .refine(
     (data) => {
       if (data.category === "Merchandising" && data.recoverable) {

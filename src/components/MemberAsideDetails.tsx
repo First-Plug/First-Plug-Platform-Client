@@ -11,8 +11,6 @@ import { useRouter } from "next/navigation";
 import { RelacoteProducts, ReturnPage } from "./AsideContents";
 import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { DeleteMemberModal } from "./Alerts/DeleteMemberModal";
-import { useFetchMember } from "@/members/hooks";
-import { Loader } from "./Loader";
 
 interface MemberAsideDetailsProps {
   className?: string;
@@ -22,18 +20,11 @@ export const MemberAsideDetails = observer(function ({
   className,
 }: MemberAsideDetailsProps) {
   const {
-    members: {
-      memberToEdit,
-      selectedMember,
-      setMemberToEdit,
-      setSelectedMember,
-    },
+    members: { members, selectedMember, setMemberToEdit, setSelectedMember },
     aside: { setAside },
     alerts: { setAlert },
     products,
   } = useStore();
-
-  const { data: member, isLoading, isError } = useFetchMember(memberToEdit);
 
   const router = useRouter();
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
@@ -52,11 +43,9 @@ export const MemberAsideDetails = observer(function ({
     if (selectedProducts.includes(product)) {
       return setSelectedProducts((s) => s.filter((id) => id !== product));
     }
+
     setSelectedProducts((s) => [...s, product]);
   };
-
-  if (isLoading) return <Loader />;
-  if (isError || !member) return <div>Error loading member data</div>;
 
   const handleNavtoStock = () => {
     setAside(undefined);
@@ -76,7 +65,7 @@ export const MemberAsideDetails = observer(function ({
   }
 
   const handleRequestOffBoarding = () => {
-    const allProductsNotRecoverable = member.products.every(
+    const allProductsNotRecoverable = selectedMember.products.every(
       (product) => !product.recoverable
     );
 
@@ -114,9 +103,9 @@ export const MemberAsideDetails = observer(function ({
       return missingFields;
     };
 
-    setId(member._id);
+    setId(selectedMember._id);
 
-    if (!member.products.length) {
+    if (!selectedMember.products.length) {
       setType("NoProduct");
       return setIsOpen(true);
     }
@@ -126,7 +115,7 @@ export const MemberAsideDetails = observer(function ({
       return setIsOpen(true);
     }
 
-    if (!getMissingFields(member).length) {
+    if (!getMissingFields(selectedMember).length) {
       // TODO: next history v2
 
       setSelectedMember(selectedMember._id);
@@ -135,7 +124,7 @@ export const MemberAsideDetails = observer(function ({
 
       setAside(undefined);
     } else {
-      const missingFields = getMissingFields(member);
+      const missingFields = getMissingFields(selectedMember);
 
       setMissingMemberData(
         missingFields.reduce((acc, field, index) => {
@@ -164,20 +153,20 @@ export const MemberAsideDetails = observer(function ({
       ) : (
         <Fragment>
           <div className="flex flex-col gap-6   h-full   ">
-            <MemberDetail memberId={memberToEdit} />
+            <MemberDetail />
             <div className=" flex-grow h-[70%]  ">
-              {member?.products?.length ? (
+              {selectedMember?.products?.length ? (
                 <div className="flex flex-col gap-2 h-full">
                   <div className="flex justify-between">
                     <h1 className="font-semibold text-lg">Products</h1>
                     <p className="border border-black text-black font-bold  rounded-full h-6 w-6  grid place-items-center  text-sm">
-                      {member.products.length || 0}
+                      {selectedMember.products.length || 0}
                     </p>
                   </div>
 
                   <div className="flex flex-col gap-2 overflow-y-auto  scrollbar-custom flex-grow max-h-full h-full  mb-6 ">
-                    {member.products.length
-                      ? member.products.map((product) => (
+                    {selectedMember.products.length
+                      ? selectedMember.products.map((product) => (
                           <ProductDetail
                             product={product}
                             key={product._id}
@@ -244,7 +233,7 @@ export const MemberAsideDetails = observer(function ({
             description={missingMemberData}
             buttonText="Update Member"
             onButtonClick={() => {
-              setMemberToEdit(member._id);
+              setMemberToEdit(selectedMember._id);
               setAside("EditMember");
               setShowErrorDialog(false);
             }}

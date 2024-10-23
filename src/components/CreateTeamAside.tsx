@@ -2,13 +2,13 @@
 /*global.css*/
 import React, { useState } from "react";
 import { Button, LoaderSpinner } from "@/common";
+import { Memberservices, TeamServices } from "../services";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
 import { TeamMember } from "@/types";
 import { AddMembersToTeamForm } from "./AddMembersToTeamForm";
 import { transformData } from "@/utils/dataTransformUtil";
-import { useQueryClient } from "@tanstack/react-query";
-import { useAddToTeam, useCreateTeam } from "@/teams/hooks";
+import useFetch from "@/hooks/useFetch";
 
 interface CreateTeamAsideProps {
   className?: string;
@@ -19,18 +19,14 @@ export const CreateTeamAside = observer(function ({
 }: CreateTeamAsideProps) {
   const {
     aside: { setAside },
-    members: { memberCount },
-    teams: { createTeam, addToTeam },
+    members: { memberCount, setMembers, members },
+    teams: { setTeams, createTeam, addToTeam },
     alerts: { setAlert },
   } = useStore();
 
   const [name, setName] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<TeamMember[]>([]);
   const [isCreating, setIsCreating] = useState(false);
-
-  const queryClient = useQueryClient();
-  const createTeamMutation = useCreateTeam();
-  const addToTeamMutation = useAddToTeam();
 
   const handleSelectedMembers = (member: TeamMember) => {
     if (selectedMembers.some((m) => m._id === member._id)) {
@@ -41,25 +37,19 @@ export const CreateTeamAside = observer(function ({
     setSelectedMembers([...selectedMembers, member]);
   };
 
+  const { fetchMembers } = useFetch();
   const handleCreateTeam = async () => {
-    console.log("Creating team");
     setIsCreating(true);
     try {
-      const newTeam = await createTeamMutation.mutateAsync({ name });
-
+      const newTeam = await createTeam({ name });
       if (selectedMembers.length) {
-        await Promise.all(
-          selectedMembers.map((member) =>
-            addToTeamMutation.mutateAsync({
-              teamId: newTeam._id,
-              memberId: member._id,
-            })
-          )
-        );
+        const memberUpdates = selectedMembers.map(async (member) => {
+          return await addToTeam(newTeam._id, member._id);
+        });
+        await Promise.all(memberUpdates);
       }
-      queryClient.invalidateQueries({ queryKey: ["teams"] });
-      queryClient.invalidateQueries({ queryKey: ["members"] });
-      // setAlert("createTeam");
+      await fetchMembers();
+      setAlert("createTeam");
       setAside(undefined);
     } catch (error) {
       console.error("Error creating team:", error);

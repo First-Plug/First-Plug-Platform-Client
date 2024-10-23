@@ -1,15 +1,11 @@
 import { useStore } from "@/models";
+import { Memberservices } from "@/services";
 import { Team, TeamMember } from "@/types";
 import { Button, ElipsisVertical, PenIcon, TeamCard } from "@/common";
 import { ColumnDef } from "@tanstack/react-table";
 import { DeleteAction } from "../Alerts";
 import { RootTable } from "./RootTable";
 import FormatedDate from "./helpers/FormatedDate";
-import {
-  useDeleteMember,
-  useFetchMembers,
-  usePrefetchMember,
-} from "@/members/hooks";
 
 const MONTHS = [
   "January",
@@ -30,14 +26,12 @@ const membersColumns: (
   handleEdit: (memberId: TeamMember["_id"]) => void,
   handleDelete: (memberId: TeamMember["_id"]) => void,
   handleViewDetail: (memberId: TeamMember["_id"]) => void,
-  prefetchMember: (id: string) => void,
   members: TeamMember[],
   filteredMembers?: TeamMember[]
 ) => ColumnDef<TeamMember>[] = (
   handleEdit,
   handleDelete,
   handleViewDetail,
-  prefetchMember,
   members,
   filteredMembers = members
 ) => [
@@ -149,8 +143,10 @@ const membersColumns: (
     header: "Team",
     size: 150,
     cell: ({ cell }) => {
-      const team = cell.row.original.team || null;
-
+      const team = cell.row.original.team;
+      if (!team) {
+        return null;
+      }
       return (
         <section className="flex justify-center">
           <TeamCard team={team} />
@@ -240,43 +236,27 @@ const membersColumns: (
     header: () => null,
     cell: ({ row }) => (
       <div className="flex gap-1">
-        <div
-          onMouseEnter={() => {
-            prefetchMember(row.original._id);
-          }}
-        >
-          <Button
-            variant="text"
-            onMouseEnter={() => {
-              prefetchMember(row.original._id);
-            }}
-            onClick={() => handleEdit(row.original._id)}
-            icon={
-              <PenIcon
-                strokeWidth={2}
-                className="text-dark-grey w-[1.2rem] h-[1.2rem]"
-              />
-            }
-          />
-        </div>
-
+        <Button
+          variant="text"
+          onClick={() => handleEdit(row.original._id)}
+          icon={
+            <PenIcon
+              strokeWidth={2}
+              className="text-dark-grey w-[1.2rem] h-[1.2rem]"
+            />
+          }
+        />
         <DeleteAction type="member" id={row.original._id} />
-        <div
-          onMouseEnter={() => {
-            prefetchMember(row.original._id);
-          }}
-        >
-          <Button
-            variant="text"
-            onClick={() => handleViewDetail(row.original._id)}
-            icon={
-              <ElipsisVertical
-                strokeWidth={2}
-                className="text-dark-grey w-[1.2rem] h-[1.2rem]"
-              />
-            }
-          />
-        </div>
+        <Button
+          variant="text"
+          onClick={() => handleViewDetail(row.original._id)}
+          icon={
+            <ElipsisVertical
+              strokeWidth={2}
+              className="text-dark-grey w-[1.2rem] h-[1.2rem]"
+            />
+          }
+        />
       </div>
     ),
   },
@@ -284,13 +264,9 @@ const membersColumns: (
 interface TableMembersProps {
   members: TeamMember[];
 }
-export function MembersTable({ members: propMembers }: TableMembersProps) {
-  const prefetchMember = usePrefetchMember();
-  const { data: fetchedMembers = [], isLoading, isError } = useFetchMembers();
-  const deleteMemberMutation = useDeleteMember();
-
+export function MembersTable({ members }: { members: TeamMember[] }) {
   const {
-    members: { setMemberToEdit, setSelectedMember },
+    members: { setSelectedMember, setMembers, setMemberToEdit },
     aside: { setAside },
   } = useStore();
 
@@ -298,25 +274,20 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
     setMemberToEdit(memberId);
     setAside("EditMember");
   };
-
-  const handleDelete = (memberId: TeamMember["_id"]) => {
-    deleteMemberMutation.mutate(memberId, {
-      onSuccess: () => {
-        alert("Member has been deleted!");
-      },
-      onError: (error) => {
-        console.error("Failed to delete member:", error);
-      },
-    });
+  const handleDelete = async (memberId: TeamMember["_id"]) => {
+    try {
+      await Memberservices.deleteMember(memberId);
+      const res = await Memberservices.getAllMembers();
+      setMembers(res);
+      alert("Member has been deleted!");
+    } catch (error) {
+      console.error("Failed to delete member:", error);
+    }
   };
-
   const handleViewDetail = (memberId: TeamMember["_id"]) => {
-    setMemberToEdit(memberId);
     setSelectedMember(memberId);
     setAside("MemberDetails");
   };
-
-  const membersToRender = propMembers.length > 0 ? propMembers : fetchedMembers;
 
   return (
     <RootTable
@@ -325,10 +296,9 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
         handleEdit,
         handleDelete,
         handleViewDetail,
-        prefetchMember,
-        membersToRender
+        members
       )}
-      data={membersToRender}
+      data={members}
       pageSize={12}
       tableNameRef="membersTable"
     />

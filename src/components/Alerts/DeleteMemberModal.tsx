@@ -12,7 +12,7 @@ import { Memberservices } from "@/services";
 import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
 import { Loader } from "../Loader";
-import { useQueryClient } from "@tanstack/react-query";
+import useFetch from "@/hooks/useFetch";
 
 interface DeleteAlertProps {
   id: string;
@@ -26,8 +26,7 @@ export const DeleteMemberModal: React.FC<DeleteAlertProps> = observer(
     const {
       alerts: { setAlert },
     } = useStore();
-
-    const queryClient = useQueryClient();
+    const { fetchMembers } = useFetch();
 
     const checkMemberProducts = async () => {
       try {
@@ -59,7 +58,7 @@ export const DeleteMemberModal: React.FC<DeleteAlertProps> = observer(
         }
         setLoading(true);
         await Memberservices.deleteMember(id.toString());
-        queryClient.invalidateQueries({ queryKey: ["members"] });
+        await fetchMembers();
         setOpen(false);
         setAlert("deleteMember");
         setLoading(false);
@@ -71,13 +70,11 @@ export const DeleteMemberModal: React.FC<DeleteAlertProps> = observer(
 
     const informationView = {
       NoRecoverable: {
-        title:
-          "There are no products to retrieve, and the member will be removed from your team.",
+        title: "There are no products to retrieve, and the member will be removed from your team.",
         description: "This member has no recoverable products.",
       },
       NoProduct: {
-        title:
-          "There are no products to retrieve, and the member will be removed from your team.",
+        title: "There are no products to retrieve, and the member will be removed from your team.",
         description: "This member has no products assigned.",
       },
       None: {

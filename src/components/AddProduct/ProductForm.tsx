@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { Button, PageLayout, SectionTitle } from "@/common";
 import { useStore } from "@/models/root.store";
@@ -11,6 +11,7 @@ import {
   zodCreateProductModel,
 } from "@/types";
 import CategoryForm from "@/components/AddProduct/CategoryForm";
+import { ProductServices } from "@/services/product.services";
 import { cast } from "mobx-state-tree";
 import computerData from "@/components/AddProduct/JSON/computerform.json";
 import audioData from "@/components/AddProduct/JSON/audioform.json";
@@ -24,13 +25,6 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
 import BulkCreateForm from "./BulkCreateForm";
-import {
-  useBulkCreateAssets,
-  useCreateAsset,
-  useUpdateAsset,
-} from "@/assets/hooks";
-import { useFetchMembers } from "@/members/hooks";
-import { Skeleton } from "../ui/skeleton";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -55,20 +49,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
     aside: { setAside },
     alerts: { setAlert },
   } = useStore();
-
-  const createAsset = useCreateAsset();
-  const updateAsset = useUpdateAsset();
-  const bulkCreateAssets = useBulkCreateAssets();
-
   const router = useRouter();
   const methods = useForm({
     resolver: zodResolver(zodCreateProductModel),
-    defaultValues: {
-      ...emptyProduct,
-      ...initialData,
-      category: initialData?.category || undefined,
-      serialNumber: initialData?.serialNumber || undefined,
-    },
+    defaultValues: initialData || emptyProduct,
   });
   const {
     handleSubmit,
@@ -103,20 +87,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
       if (!isUpdate) {
-        methods.reset({
-          ...emptyProduct,
-          category: category,
-        });
+        methods.reset(emptyProduct);
         setSelectedCategory(category);
         setValue("category", category || undefined);
         setManualChange(false);
 
-        const isRecoverable =
-          user?.isRecoverableConfig?.get(category || "") ??
-          category !== "Merchandising";
-
-        setValue("recoverable", isRecoverable);
-        setFormValues((prev) => ({ ...prev, recoverable: isRecoverable }));
+        if (user?.isRecoverableConfig && category) {
+          const isRecoverable = user.isRecoverableConfig.get(category) || false;
+          setValue("recoverable", isRecoverable);
+          setFormValues((prev) => ({ ...prev, recoverable: isRecoverable }));
+        } else {
+          setValue("recoverable", category !== "Merchandising");
+        }
       }
     },
     [isUpdate, setValue, methods, user?.isRecoverableConfig, setFormValues]
@@ -210,9 +192,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           };
         })
       ),
-      ...(data.serialNumber?.trim()
-        ? { serialNumber: data.serialNumber.trim() }
-        : {}),
+      serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
 
     const model = formatData.attributes.find(
@@ -294,56 +274,38 @@ const ProductForm: React.FC<ProductFormProps> = ({
         });
 
         if (Object.keys(changes).length === 0) {
-          console.log("No changes detected");
           setShowSuccessDialog(true);
           return;
         }
-        updateAsset.mutate(
-          { id: initialData._id, data: changes },
-          {
-            onSuccess: () => {
-              setAlert("updateStock");
-              setAside(undefined);
-              setShowSuccessDialog(true);
-            },
-            onError: (error) => handleMutationError(error, true),
-          }
-        );
+        await ProductServices.updateProduct(initialData._id, changes);
+        setAlert("updateStock");
+        setAside(undefined);
       } else {
         if (quantity > 1) {
           setBulkInitialData(formatData);
           setShowBulkCreate(true);
         } else {
-          createAsset.mutate(formatData, {
-            onSuccess: () => {
-              setAlert("createProduct");
-              methods.reset();
-              setSelectedCategory(undefined);
-              setAssignedEmail(undefined);
-              setShowSuccessDialog(true);
-            },
-            onError: (error) => handleMutationError(error, true),
-          });
+          await ProductServices.createProduct(formatData);
+          setAlert("createProduct");
         }
       }
+      methods.reset();
+      setSelectedCategory(undefined);
+      setAssignedEmail(undefined);
+      setShowSuccessDialog(true);
     } catch (error) {
-      handleMutationError(error, isUpdate);
-    } finally {
+      if (error.response?.data?.message === "Serial Number already exists") {
+        setErrorMessage("Serial Number already exists");
+      } else {
+        setErrorMessage(
+          `Error ${
+            isUpdate ? "updating" : "creating"
+          } your product, please check the data and try again.`
+        );
+      }
+      setShowErrorDialog(true);
       setIsProcessing(false);
     }
-  };
-
-  const handleMutationError = (error: any, isUpdate: boolean) => {
-    if (error.response?.data?.message === "Serial Number already exists") {
-      setErrorMessage("Serial Number already exists");
-    } else {
-      setErrorMessage(
-        `Error ${
-          isUpdate ? "updating" : "creating"
-        } your product, please check the data and try again.`
-      );
-    }
-    setShowErrorDialog(true);
   };
 
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
@@ -445,12 +407,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setShowBulkCreate(true);
   };
 
-  // const clearErrorsRef = useRef(clearErrors);
-
-  // useEffect(() => {
-  //   clearErrorsRef.current = clearErrors;
-  // }, [clearErrors]);
-
   useEffect(() => {
     if (quantity > 1) {
       clearErrors(["assignedEmail", "assignedMember", "location"]);
@@ -460,10 +416,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const modelValue = watch("attributes").find(
     (attr) => attr.key === "model"
   )?.value;
-
-  // useEffect(() => {
-  //   console.log("Errores actuales del formulario:", errors);
-  // }, [errors]);
 
   return (
     <FormProvider {...methods}>

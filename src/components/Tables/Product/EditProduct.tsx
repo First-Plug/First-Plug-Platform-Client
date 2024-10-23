@@ -1,10 +1,8 @@
 "use client";
-
 import { Button, PenIcon } from "@/common";
 import { useStore } from "@/models";
 import { Product } from "@/types";
 import { observer } from "mobx-react-lite";
-import { useFetchAssetById, usePrefetchAsset } from "@/assets/hooks";
 
 export default observer(function EditProduct({
   product,
@@ -13,27 +11,15 @@ export default observer(function EditProduct({
 }) {
   const {
     aside: { setAside },
-    products: { setProductToEdit },
+    products: { setProductIdToEdit },
   } = useStore();
 
-  const { prefetchAsset } = usePrefetchAsset();
-  const { data: prefetchedProduct } = useFetchAssetById(product._id);
-
   const handleEditProduct = () => {
-    if (prefetchedProduct) {
-      setProductToEdit(prefetchedProduct);
-      setAside("EditProduct");
-    } else {
-      console.log("producto aun no cargado completamente");
-    }
+    setProductIdToEdit(product._id);
+    setAside("EditProduct");
   };
-
   return (
-    <Button
-      variant="text"
-      onClick={handleEditProduct}
-      onMouseEnter={() => prefetchAsset(product._id)}
-    >
+    <Button variant="text" onClick={handleEditProduct}>
       <PenIcon className="text-dark-grey w-4" strokeWidth={2} />
     </Button>
   );

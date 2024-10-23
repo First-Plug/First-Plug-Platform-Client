@@ -8,38 +8,28 @@ import { BarLoader } from "@/components/Loader/BarLoader";
 import useFetch from "@/hooks/useFetch";
 import { useEffect, useState } from "react";
 import { setAuthInterceptor } from "@/config/axios.config";
-import { useGetTableAssets } from "@/assets/hooks";
 
 export default observer(function MyStock() {
-  const { data: assets = [], isLoading, isFetching } = useGetTableAssets();
   const [loading, setLoading] = useState(true);
-
   const {
-    products: { setTable },
+    products: { tableProducts, fetchingStock },
   } = useStore();
-
-  useEffect(() => {
-    if (assets.length) {
-      setTable(assets);
-    }
-  }, [assets, setTable]);
-
+  const { fetchStock } = useFetch();
   useEffect(() => {
     if (sessionStorage.getItem("accessToken")) {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
+      if (!tableProducts.length) {
+        fetchStock();
+      }
     }
     setLoading(false);
   }, []);
 
   return (
     <PageLayout>
-      {isLoading || isFetching ? (
-        <BarLoader />
-      ) : assets.length ? (
-        <DataStock assets={assets} />
-      ) : (
-        <EmptyStock />
-      )}
+      {!fetchingStock && tableProducts?.length ? <DataStock /> : null}
+      {!fetchingStock && !tableProducts.length && !loading && <EmptyStock />}
+      {fetchingStock && <BarLoader />}
     </PageLayout>
   );
 });

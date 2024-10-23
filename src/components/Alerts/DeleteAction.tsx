@@ -9,18 +9,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
+import { Memberservices, ProductServices, TeamServices } from "@/services";
 import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
 import { Loader } from "../Loader";
 import useFetch from "@/hooks/useFetch";
-import {
-  useDeleteMember,
-  useFetchMember,
-  useFetchMembers,
-} from "@/members/hooks";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRemoveFromTeam } from "@/teams/hooks";
-import { useDeleteAsset, usePrefetchAsset } from "@/assets/hooks";
 
 type DeleteTypes = "product" | "member" | "team" | "memberUnassign";
 
@@ -41,61 +34,45 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
   ({ type, id, onConfirm, trigger, teamId }) => {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-
-    const deleteMemberMutation = useDeleteMember();
-    const removeFromTeamMutation = useRemoveFromTeam();
-    const deleAssetMutation = useDeleteAsset();
-
     const {
       products: { deleteProduct },
       alerts: { setAlert },
     } = useStore();
-
-    const queryClient = useQueryClient();
-    const { prefetchAsset } = usePrefetchAsset();
-    const { data: membersData } = useFetchMembers();
-    let memberData;
-    if (type === "member") {
-      const { data, isLoading: isLoadingMember } = useFetchMember(id);
-      memberData = data;
-    }
-
-    const checkMemberProducts = () => {
-      if (!memberData) return false;
-
-      const hasRecoverableProducts = memberData.products.some(
-        (product) => product.recoverable
-      );
-
-      return !hasRecoverableProducts;
-    };
-
-    const handleDeleteProduct = async (id: string) => {
+    const { fetchStock, fetchMembers, fetchTeams } = useFetch();
+    const checkMemberProducts = async () => {
       try {
-        if (!id) throw new Error("Product ID is undefined");
+        const member = await Memberservices.getOneMember(id);
+        const hasRecoverableProducts = member.products.some(
+          (product) => product.recoverable
+        );
 
-        setLoading(true);
+        if (hasRecoverableProducts) {
+          return false;
+        }
 
-        deleAssetMutation.mutate(id, {
-          onSuccess: () => {
-            setOpen(false);
-            setAlert("deleteStock");
-            setLoading(false);
-          },
-          onError: (error) => {
-            setLoading(false);
-          },
-        });
-        deleteProductFromStore(id);
+        return true;
       } catch (error) {
-        console.error("Error deleting product:", error);
-        setOpen(false);
-        setLoading(false);
+        return false;
       }
     };
+    const handleDeleteProduct = async () => {
+      try {
+        if (!id) {
+          throw new Error("Product ID is undefined");
+        }
 
-    const deleteProductFromStore = (id: string) => {
-      deleteProduct(id);
+        setLoading(true);
+        await ProductServices.deleteProduct(id);
+        deleteProduct(id);
+        await fetchStock();
+        await fetchMembers();
+        deleteProduct(id);
+        setOpen(false);
+        setLoading(false);
+        setAlert("deleteStock");
+      } catch (error) {
+        setOpen(false);
+      }
     };
 
     const handleDeleteMember = async () => {
@@ -110,17 +87,11 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
           return;
         }
         setLoading(true);
-
-        deleteMemberMutation.mutate(id, {
-          onSuccess: () => {
-            setOpen(false);
-            setAlert("deleteMember");
-            setLoading(false);
-          },
-          onError: (error) => {
-            setLoading(false);
-          },
-        });
+        await Memberservices.deleteMember(id);
+        await fetchMembers();
+        setOpen(false);
+        setAlert("deleteMember");
+        setLoading(false);
       } catch (error) {
         setOpen(false);
         setLoading(false);
@@ -128,8 +99,8 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
     };
 
     const checkIfTeamHasMembers = async (teamId: string) => {
-      if (!membersData) return false;
-      const teamMembers = membersData?.filter(
+      const members = await Memberservices.getAllMembers();
+      const teamMembers = members?.filter(
         (member) =>
           member.team &&
           typeof member.team === "object" &&
@@ -153,50 +124,33 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
           return;
         }
       }
-      if (type === "product") {
-        try {
-          await prefetchAsset(id);
-        } catch (error) {
-          console.error(`Error al prefetch del producto ${id}:`, error);
-        }
-      }
       setOpen(true);
     };
 
-    const handleUnassignMember = () => {
-      if (!id || !teamId) {
-        throw new Error("Member ID or Team ID is undefined");
-      }
-
-      setLoading(true);
-
-      removeFromTeamMutation.mutate(
-        { memberId: id, teamId },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["members"] });
-            queryClient.invalidateQueries({ queryKey: ["teams"] });
-            setOpen(false);
-            setAlert("memberUnassigned");
-            setLoading(false);
-            if (onConfirm) {
-              onConfirm();
-            }
-          },
-          onError: (error) => {
-            console.error("Error removing member from team:", error);
-            setLoading(false);
-            setOpen(false);
-          },
+    const handleUnassignMember = async () => {
+      try {
+        if (!id || !teamId) {
+          throw new Error("Member ID or Team ID is undefined");
         }
-      );
+        setLoading(true);
+        await TeamServices.removeFromTeam(teamId, id);
+        await fetchMembers();
+        await fetchTeams();
+        setOpen(false);
+        setAlert("memberUnassigned");
+        setLoading(false);
+        onConfirm();
+      } catch (error) {
+        setOpen(false);
+        setLoading(false);
+      }
     };
 
     const DeleteConfig: Record<DeleteTypes, ConfigType> = {
       product: {
         title: " Are you sure you want to delete this product? 🗑️",
         description: "This product will be permanently deleted",
-        deleteAction: () => handleDeleteProduct(id),
+        deleteAction: handleDeleteProduct,
       },
       member: {
         title:

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { DoughnutChart } from "@/common";
+import { Button, DoughnutChart } from "@/common";
 import {
   HeadSet,
   LapTop,

@@ -1,40 +1,60 @@
 "use client";
 import { PageLayout } from "@/common";
+import { useStore } from "@/models/root.store";
 import DataTeam from "./DataTeam";
 import EmptyTeam from "./EmptyTeam";
+import { observer } from "mobx-react-lite";
 import { BarLoader } from "@/components/Loader/BarLoader";
-import { useEffect } from "react";
+import useFetch from "@/hooks/useFetch";
+import { useEffect, useRef, useState } from "react";
 import { setAuthInterceptor } from "@/config/axios.config";
-import { useFetchMembers } from "@/members/hooks";
-import { useStore } from "@/models";
 
-export default function MyTeam() {
-  const { data: members = [], isLoading, isFetching } = useFetchMembers();
+export default observer(function MyTeam() {
+  const [loading, setLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
   const {
-    members: { setMembers },
+    members: { members, fetchingMembers },
   } = useStore();
+  const { fetchMembers, fetchMembersAndTeams } = useFetch();
+  const timerRef = useRef<boolean>(false);
 
   useEffect(() => {
-    if (members.length) {
-      setMembers(members);
-    }
-  }, [members, setMembers]);
+    const fetchData = async () => {
+      if (!timerRef.current) {
+        timerRef.current = true;
+      }
 
-  useEffect(() => {
-    if (sessionStorage.getItem("accessToken")) {
+      try {
+        await fetchMembersAndTeams();
+      } catch (error) {
+        console.error("Failed to fetch members and teams:", error);
+      } finally {
+        if (timerRef.current) {
+          timerRef.current = false;
+        }
+        setLoading(false);
+        setHasFetched(true);
+      }
+    };
+
+    if (
+      sessionStorage.getItem("accessToken") &&
+      !fetchingMembers &&
+      members.length === 0 &&
+      !hasFetched
+    ) {
       setAuthInterceptor(sessionStorage.getItem("accessToken"));
+      fetchData();
+    } else {
+      setLoading(false);
     }
-  }, []);
+  }, [fetchMembersAndTeams, members.length, fetchingMembers, hasFetched]);
+
+  if (loading || fetchingMembers) return <BarLoader />;
 
   return (
     <PageLayout>
-      {isLoading || isFetching ? (
-        <BarLoader />
-      ) : members.length ? (
-        <DataTeam members={members} />
-      ) : (
-        <EmptyTeam />
-      )}
+      {members.length > 0 ? <DataTeam /> : <EmptyTeam />}{" "}
     </PageLayout>
   );
-}
+});
