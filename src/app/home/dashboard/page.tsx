@@ -44,9 +44,9 @@ export default observer(function Dashboard() {
           });
       }
 
-      if (!user || !user.computerExpiration) {
-        console.error("usuario", user);
-      }
+      // if (!user || !user.computerExpiration) {
+      //   console.error("usuario", user);
+      // }
     }
     setLoading(false);
   }, [sessionData?.user?._id, setUser, user]);

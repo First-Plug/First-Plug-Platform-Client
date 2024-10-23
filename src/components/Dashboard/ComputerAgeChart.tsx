@@ -67,7 +67,6 @@ const ComputerAgeChart = ({
       "48-54 months",
       "54-60 months",
     ],
-
     datasets: [
       {
         label: "Computer Age",
@@ -79,7 +78,7 @@ const ComputerAgeChart = ({
         ),
         borderWidth: 0.2,
         borderRadius: 4,
-        barThickness: 14,
+        barThickness: 20,
       },
     ],
   };
@@ -102,17 +101,20 @@ const ComputerAgeChart = ({
         display: false,
       },
       tooltip: {
-        enabled: true,
-        callbacks: {
-          title: function (context: any) {
-            const label = context[0].label;
-            return `${label}`;
-          },
-          label: function (context: any) {
-            const value = context.raw;
-            return `Computer age: ${value} years`;
-          },
-        },
+        enabled: false,
+        // callbacks: {
+        //   label: function (context) {
+        //     const value = context.raw;
+        //     const label = context.dataset.label || "Computer age";
+        //     console.log(`Valor en tooltip para barra: ${value}`);
+
+        //     if (value !== null) {
+        //       return `${label}: ${value.toFixed(1)} years`;
+        //     }
+
+        //     return label;
+        //   },
+        // },
       },
     },
     layout: {

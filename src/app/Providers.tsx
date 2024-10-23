@@ -61,19 +61,20 @@ export default function Providers({ children }: ProvidersProps) {
     const persistedData = window.localStorage.getItem(
       "REACT_QUERY_OFFLINE_CACHE"
     );
-    console.log("Persisted data:", persistedData);
+    // console.log("Persisted data:", persistedData);
   }, []);
 
   useEffect(() => {
     const restoreData = async () => {
+      if (!persister) return;
       try {
         await persistQueryClientRestore({
           queryClient,
           persister,
-          maxAge: 1000 * 60 * 60 * 24, // 24 horas
+          maxAge: 1000 * 60 * 60 * 24,
         });
 
-        window.localStorage.getItem("REACT_QUERY_OFFLINE_CACHE");
+        // window.localStorage.getItem("REACT_QUERY_OFFLINE_CACHE");
       } catch (error) {
         console.error("Error restaurando los datos persistidos:", error);
       }
