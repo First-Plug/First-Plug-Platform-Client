@@ -31,7 +31,7 @@ export default function AssetsForm({ form }: { form: any }) {
 
           reset((formValues) => ({
             ...formValues,
-            isRecoverableConfig: recoverableConfig,
+            // isRecoverableConfig: recoverableConfig,
           }));
 
           setInitialDataLoaded(true);
@@ -64,7 +64,8 @@ export default function AssetsForm({ form }: { form: any }) {
               align="center"
               className="bg-blue/80 text-white p-2 rounded-md text-sm"
             >
-              The products created in each category will be automatically configured based on the option you choose
+              The products created in each category will be automatically
+              configured based on the option you choose
               <TooltipArrow className="fill-blue/80" />
             </TooltipContent>
           </Tooltip>
