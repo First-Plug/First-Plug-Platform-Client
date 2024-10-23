@@ -195,6 +195,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
 
+    if (currentRecoverable !== initialData?.recoverable) {
+      formatData.recoverable = currentRecoverable;
+    }
+
     const model = formatData.attributes.find(
       (attr) => attr.key === "model"
     )?.value;
@@ -266,6 +270,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
         requiredFields.forEach((field) => {
           changes[field] = formatData[field];
         });
+
+        if (formatData.recoverable !== initialData.recoverable) {
+          changes.recoverable = formatData.recoverable;
+        }
 
         Object.keys(formatData).forEach((key) => {
           if (formatData[key] !== initialData[key]) {
