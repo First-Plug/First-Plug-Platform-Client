@@ -37,7 +37,12 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
       return;
     }
 
-    if (selectedCategory && user?.isRecoverableConfig && !manualChange) {
+    if (
+      !isUpdate &&
+      selectedCategory &&
+      user?.isRecoverableConfig &&
+      !manualChange
+    ) {
       const configValue = user.isRecoverableConfig.get(selectedCategory);
 
       if (configValue !== undefined && configValue !== isRecoverable) {
