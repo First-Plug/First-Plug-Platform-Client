@@ -1,4 +1,4 @@
-import { types, flow, applySnapshot } from "mobx-state-tree";
+import { types, flow, applySnapshot, getSnapshot } from "mobx-state-tree";
 import {
   Product,
   ProductModel,
@@ -22,8 +22,9 @@ export const ProductsStore = types
   })
   .views((store) => ({
     get availableProducts() {
-      // @ts-ignore
-      const result: ProductTable[] = store.tableProducts
+      const snapshot = getSnapshot(store.tableProducts);
+  
+      const filteredSnapshot = snapshot
         .map((table) => ({
           category: table.category,
           products: table.products.filter(
@@ -31,7 +32,11 @@ export const ProductsStore = types
           ),
         }))
         .filter((table) => table.products.length);
-
+  
+      const result = filteredSnapshot.map((table) =>
+        ProductTableModel.create(table)
+      );
+    
       return result;
     },
     get uniqueProducts() {

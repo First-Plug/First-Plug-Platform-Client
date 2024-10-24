@@ -345,7 +345,7 @@ export const RequestOffBoardingForm = observer(({
         <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
         <div className="flex space-x-2">
           <div className="p-4 lg:min-w-[35vw]">
-            <ProductDetail product={product} />
+            <ProductDetail product={product} isOffboardingStyles={true}/>
           </div>
           <div className="flex-3 p-4"> 
             <Controller
