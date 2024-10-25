@@ -2,9 +2,11 @@ import { Category, Key, Product } from "@/types";
 import React from "react";
 interface PrdouctModelDetailProps {
   product: Product;
+  isOffboardingStyles?: boolean
 }
 export default function PrdouctModelDetail({
   product,
+  isOffboardingStyles
 }: PrdouctModelDetailProps) {
   if (!product) return null;
   const { attributes } = product;
@@ -62,7 +64,7 @@ export default function PrdouctModelDetail({
             )}
         </div>
       )}
-      <div className="grid gap-4 text-sm lg:grid-cols-2 xl:grid-cols-4">
+      <div className={`flex gap-6 ${isOffboardingStyles ? "grid gap-4 text-sm lg:grid-cols-2 xl:grid-cols-4" : ""}`}>
         {categoryKeys
           .filter((c) => c !== "brand" && c !== "model")
           .map((cat) => (

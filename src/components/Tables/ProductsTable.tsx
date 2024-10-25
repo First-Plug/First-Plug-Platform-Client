@@ -149,19 +149,18 @@ export const productColumns = (
     size: 20,
     cell: ({ row }) =>
       row.getCanExpand() && (
-        <div
-          className="flex justify-end"
+        <Button
+          variant="text"
+          className="flex justify-end px-4 py-2 rounded-lg cursor-pointer"
           onClick={row.getToggleExpandedHandler()}
         >
-          <Button variant="text" className="p-2 rounded-lg cursor-pointer">
-            <span>Details</span>
-            <ArrowRight
-              className={`transition-all duration-200 ${
-                row.getIsExpanded() ? "rotate-[90deg]" : "rotate-[0]"
-              }`}
-            />
-          </Button>
-        </div>
+          <span>Details</span>
+          <ArrowRight
+            className={`transition-all duration-200 ${
+              row.getIsExpanded() ? "rotate-[90deg]" : "rotate-[0]"
+            }`}
+          />
+        </Button>
       ),
   },
 ];
