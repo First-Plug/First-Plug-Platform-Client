@@ -6,6 +6,7 @@ import { UserServices } from "@/services/user.services";
 
 interface ComputerUpdateCardProps {
   products: any[];
+  computerExpiration: number | undefined;
 }
 
 interface ComputerStatus {
@@ -16,7 +17,10 @@ interface ComputerStatus {
   location: string;
 }
 
-export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
+export const ComputerUpdateCard = ({
+  products,
+  computerExpiration,
+}: ComputerUpdateCardProps) => {
   const {
     user: { user },
     alerts: { setAlert },
@@ -45,12 +49,12 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
       const yearsSinceAcquisition =
         (Date.now() - acquisitionDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
 
-      const threshold = user?.computerExpiration - 0.5;
+      const threshold = computerExpiration ? computerExpiration - 0.5 : 0;
       return yearsSinceAcquisition >= threshold;
     });
 
     setComputersToUpgrade(computersNeedingUpgrade);
-  }, [products]);
+  }, [products, computerExpiration]);
 
   const handleSlackNotification = async (
     product: ComputerStatus,
@@ -94,7 +98,7 @@ export const ComputerUpdateCard = ({ products }: ComputerUpdateCardProps) => {
             products={computersToUpgrade}
             email={user?.email}
             tenantName={user?.tenantName}
-            computerExpiration={user?.computerExpiration}
+            computerExpiration={computerExpiration}
             handleSlackNotification={handleSlackNotification}
           />
         ) : (

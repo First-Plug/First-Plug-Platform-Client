@@ -25,6 +25,9 @@ export default observer(function Dashboard() {
   const { data: sessionData } = useSession();
   const [loading, setLoading] = useState(true);
   const [avgAge, setAvgAge] = useState<number>(0);
+  const [computerExpiration, setComputerExpiration] = useState<number | null>(
+    null
+  );
 
   const { data: membersData, isLoading: isLoadingTeams } = useFetchMembers();
   const { data: teamsData, isLoading: isLoadingMembers } = useFetchTeams();
@@ -124,7 +127,10 @@ export default observer(function Dashboard() {
                 </p>
               }
             >
-              <ComputerUpdateCard products={assets} />
+              <ComputerUpdateCard
+                products={assets}
+                computerExpiration={user?.computerExpiration}
+              />
             </Card>
           ) : (
             <EmptyDashboardCard type="computer" />
