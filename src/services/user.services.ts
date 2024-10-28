@@ -36,6 +36,31 @@ export class UserServices {
     }
   }
 
+  static async updateComputerExpiration(
+    tenantName: string,
+    computerExpiration: number,
+    access_token: string
+  ) {
+    try {
+      const response = await axios.patch(
+        `${BASE_URL}/api/user/update-computer-expiration/${tenantName}`,
+        { computerExpiration },
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error al actualizar la configuración de computerExpiration",
+        error
+      );
+      throw error;
+    }
+  }
+
   static async getRecoverableConfig(tenantName: string) {
     try {
       const response = await HTTPRequests.get(
@@ -76,6 +101,29 @@ export class UserServices {
       return response.data;
     } catch (error) {
       console.error("Error notifying Slack for birthday gift interest", error);
+      throw error;
+    }
+  }
+
+  static async notifyComputerUpgrade(data: {
+    email: string;
+    tenantName: string;
+    category: string;
+    brand: string;
+    model: string;
+    serialNumber: string;
+    acquisitionDate: string;
+    status: string;
+    location: string;
+  }) {
+    try {
+      const response = await HTTPRequests.post(
+        `${BASE_URL}/api/user/notify-computer-upgrade`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error notifying Slack for computer upgrade", error);
       throw error;
     }
   }

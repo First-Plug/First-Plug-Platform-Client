@@ -49,9 +49,12 @@ const sortBirthdaysByUpcoming = (members: TeamMember[]) => {
   });
 };
 
-export const TeamHomeCard = observer(function () {
+export const TeamHomeCard = observer(function ({
+  members,
+}: {
+  members: TeamMember[];
+}) {
   const {
-    members: { members },
     aside: { setAside },
   } = useStore();
 
@@ -71,12 +74,12 @@ export const TeamHomeCard = observer(function () {
   };
 
   return (
-    <div className="flex gap-2 p-2 w-full h-full ">
+    <div className="flex gap-2 p-2 w-full h-full">
       <section className="flex w-full h-full relative">
         <div className="flex flex-col gap-2 h-full w-full absolute">
-          <div className="flex flex-col overflow-y-auto max-h-[85%] w-full gap-1">
+          <div className="flex flex-col overflow-y-auto  w-full gap-1">
             {membersWithBirthdate.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full">
+              <div className="flex flex-col items-center justify-center h-full mt-10 overflow-hidden">
                 <Cake />
                 <p className="text-dark-grey text-md text-center mt-6">
                   No birthdates have been completed for any team members
@@ -101,9 +104,9 @@ export const TeamHomeCard = observer(function () {
                 </div>
               </div>
             ) : upcomingBirthdays.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full w-full mb-2 overflow-hidden">
+              <div className="flex flex-col items-center justify-center h-full w-full mb-2 overflow-hidden mt-10">
                 <Cake />
-                <p className="text-dark-grey text-md text-center mt-6 mb-6">
+                <p className="text-dark-grey text-md text-center mt-14 ">
                   There are no upcoming birthdays for members with a completed
                   birthdate.
                 </p>

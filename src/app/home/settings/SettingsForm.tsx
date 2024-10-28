@@ -25,7 +25,7 @@ import { useQueryClient } from "@tanstack/react-query";
 export default function SettingsForm() {
   const queryClient = useQueryClient();
   const {
-    user: { user },
+    user: { user, setUser },
     alerts: { setAlert },
   } = useStore();
 
@@ -50,14 +50,18 @@ export default function SettingsForm() {
   const onSubmit = async (values: UserZod) => {
     const isRecoverableConfigChanged =
       "isRecoverableConfig" in form.formState.dirtyFields;
+    const computerExpirationChanged =
+      "computerExpiration" in form.formState.dirtyFields;
     const otherFieldsChanged = Object.keys(form.formState.dirtyFields).some(
-      (key) => key !== "isRecoverableConfig"
+      (key) => key !== "isRecoverableConfig" && key !== "computerExpiration"
     );
 
     if (session.data.backendTokens.refreshToken) {
       setIsLoading(true);
       let recoverableUpdated = false;
+      let expirationUpdated = false;
       let otherFieldsUpdated = false;
+      let refreshData;
 
       try {
         const accessToken = session.data.backendTokens.accessToken;
@@ -71,9 +75,18 @@ export default function SettingsForm() {
           recoverableUpdated = true;
         }
 
+        if (computerExpirationChanged) {
+          await UserServices.updateComputerExpiration(
+            values.tenantName!,
+            values.computerExpiration,
+            accessToken
+          );
+          expirationUpdated = true;
+        }
+
         if (otherFieldsChanged) {
           await UserServices.updateUser(values);
-          const refreshData = await AuthServices.refreshToken(
+          refreshData = await AuthServices.refreshToken(
             session.data.backendTokens.refreshToken
           );
           setAuthInterceptor(refreshData.backendTokens.accessToken);
@@ -112,13 +125,29 @@ export default function SettingsForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="h-full flex flex-col gap-2"
       >
-        <div className="flex flex-col gap-4  h-[90%] max-h-[90%] overflow-y-auto scrollbar-custom">
+        <div className="flex flex-col gap-4  h-[90%] max-h-[90%] overflow-y-auto scrollbar-custom pr-2">
           <div className="flex w-full gap-4 ">
             <CompanyForm form={form} />
             <AccessForm form={form} />
           </div>
           <BillingForm form={form} />
-          <AssetsForm form={form} />
+          <div className="w-full grid grid-cols-5 gap-4 h-full">
+            {" "}
+            <div className="col-span-3 h-full">
+              {" "}
+              <div className="h-full flex flex-col justify-between border rounded-lg">
+                {" "}
+                <AssetsForm form={form} />
+              </div>
+            </div>
+            <div className="col-span-2 h-full">
+              {" "}
+              <div className="h-full flex flex-col justify-between border rounded-lg">
+                {" "}
+                <ComputerExpirationForm form={form} />
+              </div>
+            </div>
+          </div>
         </div>
 
         <section className="flex h-[10%] py-6 items-center justify-end border-t relative">
@@ -146,6 +175,7 @@ export default function SettingsForm() {
                     isRecoverableConfig: user.isRecoverableConfig
                       ? Object.fromEntries(user.isRecoverableConfig.entries())
                       : {},
+                    computerExpiration: user.computerExpiration,
                   });
                 }}
               >

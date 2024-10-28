@@ -1,60 +1,40 @@
 "use client";
 import { PageLayout } from "@/common";
-import { useStore } from "@/models/root.store";
 import DataTeam from "./DataTeam";
 import EmptyTeam from "./EmptyTeam";
-import { observer } from "mobx-react-lite";
 import { BarLoader } from "@/components/Loader/BarLoader";
-import useFetch from "@/hooks/useFetch";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { setAuthInterceptor } from "@/config/axios.config";
+import { useFetchMembers } from "@/members/hooks";
+import { useStore } from "@/models";
 
-export default observer(function MyTeam() {
-  const [loading, setLoading] = useState(true);
-  const [hasFetched, setHasFetched] = useState(false);
+export default function MyTeam() {
+  const { data: members = [], isLoading, isFetching } = useFetchMembers();
   const {
-    members: { members, fetchingMembers },
+    members: { setMembers },
   } = useStore();
-  const { fetchMembers, fetchMembersAndTeams } = useFetch();
-  const timerRef = useRef<boolean>(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!timerRef.current) {
-        timerRef.current = true;
-      }
-
-      try {
-        await fetchMembersAndTeams();
-      } catch (error) {
-        console.error("Failed to fetch members and teams:", error);
-      } finally {
-        if (timerRef.current) {
-          timerRef.current = false;
-        }
-        setLoading(false);
-        setHasFetched(true);
-      }
-    };
-
-    if (
-      sessionStorage.getItem("accessToken") &&
-      !fetchingMembers &&
-      members.length === 0 &&
-      !hasFetched
-    ) {
-      setAuthInterceptor(sessionStorage.getItem("accessToken"));
-      fetchData();
-    } else {
-      setLoading(false);
+    if (members.length) {
+      setMembers(members);
     }
-  }, [fetchMembersAndTeams, members.length, fetchingMembers, hasFetched]);
+  }, [members, setMembers]);
 
-  if (loading || fetchingMembers) return <BarLoader />;
+  useEffect(() => {
+    if (sessionStorage.getItem("accessToken")) {
+      setAuthInterceptor(sessionStorage.getItem("accessToken"));
+    }
+  }, []);
 
   return (
     <PageLayout>
-      {members.length > 0 ? <DataTeam /> : <EmptyTeam />}{" "}
+      {isLoading || isFetching ? (
+        <BarLoader />
+      ) : members.length ? (
+        <DataTeam members={members} />
+      ) : (
+        <EmptyTeam />
+      )}
     </PageLayout>
   );
-});
+}

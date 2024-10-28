@@ -5,12 +5,17 @@ import { observer } from "mobx-react-lite";
 import { ProductsTable } from "@/components/Tables";
 import { BarLoader } from "@/components/Loader/BarLoader";
 import { FilterResetProvider } from "@/components/Tables/Filters/FilterResetContext";
+import { ProductTable } from "@/types";
 
-export default observer(function DataStock() {
+interface DataStockProps {
+  assets: ProductTable[];
+}
+
+export default observer(function DataStock({ assets }: DataStockProps) {
   return (
     <div className="h-full max-h-full">
       <FilterResetProvider>
-        <ProductsTable onClearFilters={() => {}} />
+        <ProductsTable assets={assets} onClearFilters={() => {}} />
       </FilterResetProvider>
     </div>
   );

@@ -15,12 +15,13 @@ import {
   csvPrdocutSchema,
   csvSquema,
 } from "@/types";
-import { CsvServices, Memberservices, ProductServices } from "@/services";
+import { CsvServices } from "@/services";
 import { isCsvCompleted, parseProduct } from "@/utils";
 import { useToast } from "./ui/use-toast";
 import { DownloadStock } from "./Download";
 import { parseMembers } from "@/utils/parseMembers";
 import useFetch from "@/hooks/useFetch";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const LoadAside = function () {
   const [csvInfo, setCsvInfo] = useState(EMPTY_FILE_INFO);
@@ -32,7 +33,8 @@ export const LoadAside = function () {
     alerts: { setAlert },
   } = useStore();
 
-  const { fetchMembers, fetchStock } = useFetch();
+  const queryClient = useQueryClient();
+  const { fetchStock } = useFetch();
 
   const clearCsvData = () => {
     setCsvInfo(EMPTY_FILE_INFO);
@@ -64,8 +66,8 @@ export const LoadAside = function () {
         if (success) {
           try {
             await CsvServices.bulkCreateProducts(data.prdoucts);
-            await fetchStock();
-            await fetchMembers();
+            queryClient.invalidateQueries({ queryKey: ["assets"] });
+            queryClient.invalidateQueries({ queryKey: ["members"] });
             setAside(undefined);
             setAlert("csvSuccess");
             clearCsvData();
@@ -109,8 +111,8 @@ export const LoadAside = function () {
         if (success) {
           try {
             await CsvServices.bulkCreateTeams(data.members);
-            await fetchStock();
-            await fetchMembers();
+            queryClient.invalidateQueries({ queryKey: ["members"] });
+
             clearCsvData();
             setAside(undefined);
             setAlert("csvSuccess");
