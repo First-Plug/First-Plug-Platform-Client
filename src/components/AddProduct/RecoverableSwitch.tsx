@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { useStore } from "@/models";
+import { useFetchUserSettings } from "../settings/hooks/useFetchUserSettings";
 
 interface RecoverableSwitchProps {
   selectedCategory: string;
@@ -24,6 +25,7 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
   const {
     user: { user },
   } = useStore();
+  const { data: userSettings, isFetching } = useFetchUserSettings("tenantName");
   const [isRecoverable, setIsRecoverable] = useState(false);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   // const [manualChange, setManualChange] = useState(false);
@@ -37,8 +39,12 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
       return;
     }
 
-    if (selectedCategory && user?.isRecoverableConfig && !manualChange) {
-      const configValue = user.isRecoverableConfig.get(selectedCategory);
+    if (
+      selectedCategory &&
+      userSettings?.isRecoverableConfig &&
+      !manualChange
+    ) {
+      const configValue = userSettings.isRecoverableConfig[selectedCategory];
 
       if (configValue !== undefined && configValue !== isRecoverable) {
         setIsRecoverable(configValue);
@@ -50,7 +56,7 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
     }
   }, [
     selectedCategory,
-    user?.isRecoverableConfig,
+    userSettings?.isRecoverableConfig,
     onRecoverableChange,
     manualChange,
     isUpdate,
