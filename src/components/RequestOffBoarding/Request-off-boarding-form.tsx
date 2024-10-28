@@ -149,8 +149,9 @@ export const RequestOffBoardingForm = observer(({
         }
       }
     });
-  
-    if (allAvailable) {
+
+
+    if (!allAvailable) {      
       setIsButtonDisabled(false); 
     } else {
       setIsButtonDisabled(true);

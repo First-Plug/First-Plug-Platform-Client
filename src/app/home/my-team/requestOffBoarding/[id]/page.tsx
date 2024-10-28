@@ -11,6 +11,8 @@ import { observer } from "mobx-react-lite";
 import { useRouter } from "next/navigation";
 import { transformData } from "@/utils/dataTransformUtil";
 import useFetch from "@/hooks/useFetch";
+import { useFetchMembers } from "@/members/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
@@ -25,17 +27,18 @@ export interface ProductOffBoarding {
 
 const Page = ({ params }: { params: { id: string } }) => {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
-  const [members, setMembers] = useState<TeamMember[]>([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const { data: members = [] } = useFetchMembers();
 
   const {
     members: { setMemberOffBoarding },
     aside: { isClosed },
   } = useStore();
 
-  const { fetchMembers, fetchStock } = useFetch();
 
   const methods = useForm({
     defaultValues: {
@@ -46,28 +49,18 @@ const Page = ({ params }: { params: { id: string } }) => {
   const { handleSubmit, watch } = methods;
 
   useEffect(() => {
-    Memberservices.getAllMembers().then(setMembers);
     Memberservices.getOneMember(params.id).then((res) => {
       setMemberOffBoarding(`${res.firstName} ${res.lastName}`);
       setSelectedMember(res);
     });
   }, [params.id, isClosed]);
 
-  useEffect(() => {
-    const subscription = watch((values) => {
-      localStorage.setItem(
-        `products_${params.id}`,
-        JSON.stringify(values.products)
-      );
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, params.id]);
 
   useEffect(() => {
     const subscription = watch((values) => {
       const areProductsValid = values.products.every(
         (product: ProductOffBoarding) => product.relocation && product.available
-      );      
+      );            
       setIsButtonDisabled(!areProductsValid);
     });
 
@@ -89,8 +82,9 @@ const Page = ({ params }: { params: { id: string } }) => {
     await Memberservices.offboardingMember(params.id, sendData);
     setIsLoading(false);
 
-    await fetchMembers();
-    await fetchStock();
+    queryClient.invalidateQueries({ queryKey: ["assets"] });
+    queryClient.invalidateQueries({ queryKey: ["members"] });
+
 
     router.push("/home/my-team");
   };
