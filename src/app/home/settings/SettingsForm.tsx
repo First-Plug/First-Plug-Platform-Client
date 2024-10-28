@@ -20,8 +20,10 @@ import { setAuthInterceptor } from "@/config/axios.config";
 import { z } from "zod";
 import AssetsForm from "../../../components/settings/AssetsForm";
 import ComputerExpirationForm from "@/components/settings/ComputerExpirationForm";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function SettingsForm() {
+  const queryClient = useQueryClient();
   const {
     user: { user, setUser },
     alerts: { setAlert },
@@ -34,13 +36,15 @@ export default function SettingsForm() {
     resolver: zodResolver(UserZodSchema),
     mode: "onChange",
     reValidateMode: "onChange",
-    defaultValues: {
-      ...user,
-      computerExpiration: user.computerExpiration,
-      isRecoverableConfig: user.isRecoverableConfig
-        ? Object.fromEntries(user.isRecoverableConfig.entries())
-        : {},
-    },
+    defaultValues: user
+      ? {
+          ...user,
+          computerExpiration: user.computerExpiration,
+          isRecoverableConfig: user.isRecoverableConfig
+            ? Object.fromEntries(user.isRecoverableConfig.entries())
+            : {},
+        }
+      : {},
   });
 
   const onSubmit = async (values: UserZod) => {
@@ -97,17 +101,10 @@ export default function SettingsForm() {
           });
         }
 
-        if (refreshData) {
-          await session.update({
-            backendTokens: refreshData.backendTokens,
-            user: {
-              ...session.data.user,
-              ...refreshData.user,
-            },
-          });
-        }
-
         if (recoverableUpdated || expirationUpdated || otherFieldsUpdated) {
+          queryClient.invalidateQueries({
+            queryKey: ["userSettings", values.tenantName],
+          });
           setAlert("dataUpdatedSuccessfully");
         }
       } catch (error) {
@@ -120,7 +117,7 @@ export default function SettingsForm() {
   };
 
   const noChanges = Object.keys(form.formState.dirtyFields).length === 0;
-  const isAble = noChanges && !form.formState.isValid;
+  const isAble = !form.formState.isDirty || isLoading;
 
   return (
     <Form {...form}>
@@ -191,7 +188,7 @@ export default function SettingsForm() {
             variant="primary"
             className="mr-[39px] w-[200px] h-[40px] rounded-lg"
             type="submit"
-            disabled={isAble || isLoading}
+            disabled={isAble}
           >
             {isLoading ? <LoaderSpinner /> : "save"}
           </Button>
