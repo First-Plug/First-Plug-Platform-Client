@@ -29,8 +29,6 @@ export const MemberAsideDetails = observer(function ({
       setSelectedMember,
     },
     aside: { setAside },
-    alerts: { setAlert },
-    products,
   } = useStore();
 
   const { data: member, isLoading, isError } = useFetchMember(memberToEdit);
@@ -75,20 +73,20 @@ export const MemberAsideDetails = observer(function ({
     return separated.replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
-  const handleRequestOffBoarding = () => {
+  const handleRequestOffBoarding = () => {   
     const allProductsNotRecoverable = member.products.every(
       (product) => !product.recoverable
     );
 
     const getMissingFields = (selectedMember: any): string[] => {
+      
       const missingFields: string[] = [];
 
       const isEmptyString = (value: any) =>
-        typeof value === "string" && value.trim() === "";
+        typeof value === "string" && value.trim() === "" || value === undefined;
 
       const isInvalidNumber = (value: any) =>
         typeof value === "number" ? value === 0 : !value;
-
       if (isEmptyString(selectedMember.personalEmail)) {
         missingFields.push("personalEmail");
       }
@@ -127,8 +125,6 @@ export const MemberAsideDetails = observer(function ({
     }
 
     if (!getMissingFields(member).length) {
-      // TODO: next history v2
-
       setSelectedMember(selectedMember._id);
 
       router.push(`/home/my-team/requestOffBoarding/${selectedMember._id}`);

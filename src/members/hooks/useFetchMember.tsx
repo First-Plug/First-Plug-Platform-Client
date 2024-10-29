@@ -3,7 +3,7 @@ import { getMember } from "../actions";
 
 export const useFetchMember = (id?: string) => {
   return useQuery({
-    queryKey: ["members", id],
+    queryKey: ["member", id],
     queryFn: () => {
       if (!id) throw new Error("No valid member ID provided");
       return getMember(id);

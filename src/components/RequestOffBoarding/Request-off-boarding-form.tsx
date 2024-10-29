@@ -30,7 +30,7 @@ const validateBillingInfo = (user: User): boolean => {
     "address",
   ] as const;
 
-  return requiredFields.every((field) => user[field]?.trim() !== "");
+  return requiredFields.every((field) => user[field]?.trim() !== "" || user[field] !== undefined);
 };
 
 const validateMemberBillingInfo = (user: User): boolean => {
