@@ -160,8 +160,9 @@ export const ComputerUpgradeTable = ({
       })
       .filter(
         (computer) => computer.yearsSinceAcquisition >= computerExpiration - 0.5
-      );
-  }, [products]);
+      )
+      .sort((a, b) => b.yearsSinceAcquisition - a.yearsSinceAcquisition);
+  }, [products, computerExpiration]);
 
   return (
     <BirthdayRoot
