@@ -19,6 +19,7 @@ export const Sidebar = function () {
   const pathArray = path.split("/");
   const [showLogo, setShowLogo] = useState<boolean>(true);
   const [isSidebarSmall, setIsSidebarSmall] = useState<boolean>(false);
+
   const { prefetchAssets } = usePrefetchAssets();
   const prefetchMembers = usePrefetchMembers();
 

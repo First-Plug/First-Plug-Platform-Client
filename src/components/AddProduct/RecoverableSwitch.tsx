@@ -25,10 +25,8 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
   const {
     user: { user },
   } = useStore();
-  const { data: userSettings, isFetching } = useFetchUserSettings("tenantName");
+  const { data: userSettings, isFetching } = useFetchUserSettings(user?.tenantName);
   const [isRecoverable, setIsRecoverable] = useState(false);
-  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
-  // const [manualChange, setManualChange] = useState(false);
 
   useEffect(() => {
     if (isUpdate && formValues?.recoverable !== undefined) {
