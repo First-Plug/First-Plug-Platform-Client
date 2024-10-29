@@ -58,6 +58,7 @@ const Page = ({ params }: { params: { id: string } }) => {
 
   useEffect(() => {
     const subscription = watch((values) => {
+      
       const areProductsValid = values.products.every(
         (product: ProductOffBoarding) => product.relocation && product.available
       );            

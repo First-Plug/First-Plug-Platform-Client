@@ -80,6 +80,31 @@ export const RequestOffBoardingForm = observer(({
   const selectedMember = watch(`products.${index}.newMember`);
   const relocation = watch(`products.${index}.relocation`);
 
+  const getStatus = () => {
+    if (relocation === "New employee") {
+      const foundMember = members.find(
+        (m) => `${m.firstName} ${m.lastName}` === selectedMember
+      );
+      if (!foundMember) return "selectMembers";
+      if (!validateMemberBillingInfo(foundMember)) {
+        return "not-member-available";
+      }
+      return "is-member-available";
+    }
+
+    if (relocation === "My office") {
+      if (!validateBillingInfo(session.user)) {
+        return "not-billing-information";
+      }
+    }
+
+    setDropdownOptions(["My office", "FP warehouse"]);
+    if (!applyToAll) {
+      setIsDisabledDropdown(false);
+    }
+    return "none";
+  };
+
   const propagateFirstProductValues = () => {
     const firstProduct = watch("products.0");
     const { newMember, relocation, available } = firstProduct || {};
@@ -123,10 +148,19 @@ export const RequestOffBoardingForm = observer(({
 
   useEffect(() => {
     let allAvailable = true;
+
+    
   
     products.forEach((product, index) => {
       const newStatus = getStatus();
-  
+
+      if (newStatus === "none") {
+        allAvailable = false; 
+        return setValue(`products.${index}.available`, false, {
+          shouldValidate: true,
+        });
+      }
+    
       if (
         newStatus === "not-member-available" ||
         newStatus === "not-billing-information"
@@ -146,12 +180,11 @@ export const RequestOffBoardingForm = observer(({
           setValue(`products.${index}.available`, true, {
             shouldValidate: true,
           });
-        }
+        }        
       }
     });
 
-
-    if (!allAvailable) {      
+    if (allAvailable) {      
       setIsButtonDisabled(false); 
     } else {
       setIsButtonDisabled(true);
@@ -160,6 +193,7 @@ export const RequestOffBoardingForm = observer(({
 
   useEffect(() => {
     const subscription = watch((value, { name }) => {
+      
       if (applyToAll && !isPropagating) {
         if (
           name === "products.0.newMember" ||
@@ -173,30 +207,6 @@ export const RequestOffBoardingForm = observer(({
     return () => subscription.unsubscribe();
   }, [applyToAll, watch, totalProducts, isPropagating]);
 
-  const getStatus = () => {
-    if (relocation === "New employee") {
-      const foundMember = members.find(
-        (m) => `${m.firstName} ${m.lastName}` === selectedMember
-      );
-      if (!foundMember) return "selectMembers";
-      if (!validateMemberBillingInfo(foundMember)) {
-        return "not-member-available";
-      }
-      return "is-member-available";
-    }
-
-    if (relocation === "My office") {
-      if (!validateBillingInfo(session.user)) {
-        return "not-billing-information";
-      }
-    }
-
-    setDropdownOptions(["My office", "FP warehouse"]);
-    if (!applyToAll) {
-      setIsDisabledDropdown(false);
-    }
-    return "none";
-  };
 
   useEffect(() => {
     const newStatus = getStatus();
