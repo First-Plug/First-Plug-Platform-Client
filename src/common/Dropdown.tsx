@@ -3,6 +3,7 @@ import { signOut, useSession } from "next-auth/react";
 import { NavButtonIcon } from "./Icons";
 import { useRouter } from "next/navigation";
 import { LogOut, Mail, Users } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   DropdownMenu,
@@ -15,16 +16,24 @@ import { Button } from "@/components/ui/button";
 export function SessionDropdownButton() {
   const router = useRouter();
   const session = useSession();
+  const queryClient = useQueryClient();
 
   const handleLogOut = () => {
-    if (!!localStorage.getItem("token")) {
+    if (localStorage.getItem("token")) {
       localStorage.removeItem("token");
-      router.push("/login");
     }
+
+    queryClient.clear();
+
+    localStorage.removeItem("reactQueryCache");
+    sessionStorage.removeItem("reactQueryCache");
+
+    router.push("/login");
     if (session.status === "authenticated") {
       signOut({ callbackUrl: "http://localhost:3000/login" });
     }
   };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
