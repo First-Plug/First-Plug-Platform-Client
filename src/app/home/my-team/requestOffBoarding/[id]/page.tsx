@@ -9,8 +9,6 @@ import { RequestOffBoardingForm } from "../../../../../components/RequestOffBoar
 import { useStore } from "../../../../../models/root.store";
 import { observer } from "mobx-react-lite";
 import { useRouter } from "next/navigation";
-import { transformData } from "@/utils/dataTransformUtil";
-import useFetch from "@/hooks/useFetch";
 import { useFetchMembers } from "@/members/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -39,7 +37,6 @@ const Page = ({ params }: { params: { id: string } }) => {
     aside: { isClosed },
   } = useStore();
 
-
   const methods = useForm({
     defaultValues: {
       products: [],
@@ -55,13 +52,11 @@ const Page = ({ params }: { params: { id: string } }) => {
     });
   }, [params.id, isClosed]);
 
-
   useEffect(() => {
     const subscription = watch((values) => {
-      
       const areProductsValid = values.products.every(
         (product: ProductOffBoarding) => product.relocation && product.available
-      );            
+      );
       setIsButtonDisabled(!areProductsValid);
     });
 
@@ -85,7 +80,6 @@ const Page = ({ params }: { params: { id: string } }) => {
 
     queryClient.invalidateQueries({ queryKey: ["assets"] });
     queryClient.invalidateQueries({ queryKey: ["members"] });
-
 
     router.push("/home/my-team");
   };
@@ -121,9 +115,11 @@ const Page = ({ params }: { params: { id: string } }) => {
                           (product) => product.recoverable === true
                         )}
                         index={index}
-                        totalProducts={selectedMember.products.filter(
-                          (product) => product.recoverable === true
-                        ).length}
+                        totalProducts={
+                          selectedMember.products.filter(
+                            (product) => product.recoverable === true
+                          ).length
+                        }
                         members={members.filter(
                           (member) => member.email !== selectedMember.email
                         )}
