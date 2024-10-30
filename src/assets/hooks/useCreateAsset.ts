@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createAsset } from "../actions";
 import { useStore } from "@/models";
-import { Product } from "@/types";
 
 export const useCreateAsset = () => {
   const queryClient = useQueryClient();
@@ -13,6 +12,7 @@ export const useCreateAsset = () => {
     mutationFn: createAsset,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
       setAlert("createProduct");
     },
     onError: () => {

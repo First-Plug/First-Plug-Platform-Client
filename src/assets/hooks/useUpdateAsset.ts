@@ -72,6 +72,7 @@ export const useUpdateAsset = () => {
       }
 
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
       if (showSuccessAlert) {
         setAlert("updateStock");
       }
