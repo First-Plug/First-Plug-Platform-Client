@@ -8,7 +8,7 @@ export const useFetchMember = (id?: string) => {
       if (!id) throw new Error("No valid member ID provided");
       return getMember(id);
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
     enabled: !!id,
   });
 };
