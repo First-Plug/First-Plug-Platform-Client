@@ -28,9 +28,10 @@ export function SessionDropdownButton() {
     localStorage.removeItem("reactQueryCache");
     sessionStorage.removeItem("reactQueryCache");
 
-    router.push("/login");
     if (session.status === "authenticated") {
       signOut({ callbackUrl: "http://localhost:3000/login" });
+    } else {
+      router.push("/login");
     }
   };
 
