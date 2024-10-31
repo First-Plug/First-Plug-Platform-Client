@@ -14,6 +14,7 @@ import { ProductLocation, ShipmentStatusCard } from "@/common";
 import { ActionButton } from "./ActionButton";
 import EditProduct from "./EditProduct";
 import { DeleteAction } from "@/components/Alerts";
+import { usePrefetchAsset } from "@/assets/hooks";
 
 interface IProdcutsDetailsTable {
   products: Product[];
@@ -164,6 +165,11 @@ export default function ProdcutsDetailsTable({
   clearAll,
   onResetInternalFilters,
 }: IProdcutsDetailsTable) {
+  const { prefetchAsset } = usePrefetchAsset();
+
+  useEffect(() => {
+    products.forEach((product) => prefetchAsset(product._id));
+  }, [products, prefetchAsset]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [selectedFilterOptions, setSelectedFilterOptions] = useState({});
   const [key, setKey] = useState(0);
