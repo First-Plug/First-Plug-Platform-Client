@@ -9,7 +9,7 @@ import {
   PersistQueryClientProvider,
   persistQueryClientRestore,
 } from "@tanstack/react-query-persist-client";
-import { SessionProvider, getSession } from "next-auth/react";
+import { SessionProvider, getSession, useSession } from "next-auth/react";
 import React, { ReactNode, useEffect, useMemo, useState } from "react";
 
 type ProvidersProps = {
@@ -38,6 +38,7 @@ export default function Providers({ children }: ProvidersProps) {
   }, []);
 
   const [persister, setPersister] = useState<any>(null);
+  const [buster, setBuster] = useState<string>("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -72,6 +73,7 @@ export default function Providers({ children }: ProvidersProps) {
           queryClient,
           persister,
           maxAge: 1000 * 60 * 60 * 24,
+          buster,
         });
 
         // window.localStorage.getItem("REACT_QUERY_OFFLINE_CACHE");
@@ -91,7 +93,13 @@ export default function Providers({ children }: ProvidersProps) {
       <SessionProvider>
         <PersistQueryClientProvider
           client={queryClient}
-          persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 }}
+          persistOptions={{
+            persister,
+            buster,
+            dehydrateOptions: {
+              shouldDehydrateQuery: () => true,
+            },
+          }}
         >
           {children}
           <ReactQueryDevtools initialIsOpen />

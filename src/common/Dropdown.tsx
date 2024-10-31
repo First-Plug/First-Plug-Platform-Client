@@ -25,16 +25,17 @@ export function SessionDropdownButton() {
 
     queryClient.clear();
     queryClient.removeQueries();
+    localStorage.removeItem("REACT_QUERY_OFFLINE_CACHE");
 
-    localStorage.removeItem("reactQueryCache");
-    sessionStorage.removeItem("reactQueryCache");
+    // localStorage.removeItem("reactQueryCache");
+    // sessionStorage.removeItem("reactQueryCache");
 
     const checkCacheClear = setInterval(() => {
       const isCacheCleared = queryClient.getQueryCache().getAll().length === 0;
       if (isCacheCleared) {
         clearInterval(checkCacheClear);
 
-        queryClient.getQueryCache().clear();
+        // queryClient.getQueryCache().clear();
         if (session.status === "authenticated") {
           signOut({ callbackUrl: "http://localhost:3000/login" });
         } else {
