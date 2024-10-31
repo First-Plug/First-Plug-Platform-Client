@@ -22,14 +22,15 @@ export interface Props {
 }
 
 const validateBillingInfo = (user: User): boolean => {
-  const requiredFields = ["country", "city", "state", "zipCode", "address"];
+  const requiredFields = [
+    "country",
+    "city",
+    "state",
+    "zipCode",
+    "address",
+  ] as const;
 
-  return requiredFields.every((field) => {
-    const value = user[field];
-    return (
-      value !== undefined && value !== null && value.toString().trim() !== ""
-    );
-  });
+  return requiredFields.every((field) => user[field]?.trim() !== "");
 };
 
 const validateMemberBillingInfo = (user: User): boolean => {
@@ -66,7 +67,7 @@ export const RequestOffBoardingForm = observer(
   }: Props) => {
     const { data: session } = useSession();
     const router = useRouter();
-    const { setValue, watch, control, clearErrors } = useFormContext();
+    const { setValue, watch, control } = useFormContext();
     const {
       aside: { setAside, isClosed },
       members: { setMemberToEdit },
@@ -79,33 +80,6 @@ export const RequestOffBoardingForm = observer(
 
     const selectedMember = watch(`products.${index}.newMember`);
     const relocation = watch(`products.${index}.relocation`);
-
-    const getStatus = () => {
-      if (relocation === "New employee") {
-        const foundMember = members.find(
-          (m) => `${m.firstName} ${m.lastName}` === selectedMember
-        );
-        if (!foundMember) return "selectMembers";
-        if (!validateMemberBillingInfo(foundMember)) {
-          return "not-member-available";
-        }
-        return "is-member-available";
-      }
-
-      if (relocation === "My office") {
-        const billingInfoIsValid = validateBillingInfo(session.user);
-
-        if (!billingInfoIsValid) {
-          return "not-billing-information";
-        }
-      }
-
-      setDropdownOptions(["My office", "FP warehouse"]);
-      if (!applyToAll) {
-        setIsDisabledDropdown(false);
-      }
-      return "none";
-    };
 
     const propagateFirstProductValues = () => {
       const firstProduct = watch("products.0");
@@ -162,13 +136,6 @@ export const RequestOffBoardingForm = observer(
       products.forEach((product, index) => {
         const newStatus = getStatus();
 
-        if (newStatus === "none") {
-          allAvailable = false;
-          return setValue(`products.${index}.available`, false, {
-            shouldValidate: true,
-          });
-        }
-
         if (
           newStatus === "not-member-available" ||
           newStatus === "not-billing-information"
@@ -192,7 +159,7 @@ export const RequestOffBoardingForm = observer(
         }
       });
 
-      if (allAvailable) {
+      if (!allAvailable) {
         setIsButtonDisabled(false);
       } else {
         setIsButtonDisabled(true);
@@ -214,8 +181,34 @@ export const RequestOffBoardingForm = observer(
       return () => subscription.unsubscribe();
     }, [applyToAll, watch, totalProducts, isPropagating]);
 
+    const getStatus = () => {
+      if (relocation === "New employee") {
+        const foundMember = members.find(
+          (m) => `${m.firstName} ${m.lastName}` === selectedMember
+        );
+        if (!foundMember) return "selectMembers";
+        if (!validateMemberBillingInfo(foundMember)) {
+          return "not-member-available";
+        }
+        return "is-member-available";
+      }
+
+      if (relocation === "My office") {
+        if (!validateBillingInfo(session.user)) {
+          return "not-billing-information";
+        }
+      }
+
+      setDropdownOptions(["My office", "FP warehouse"]);
+      if (!applyToAll) {
+        setIsDisabledDropdown(false);
+      }
+      return "none";
+    };
+
     useEffect(() => {
       const newStatus = getStatus();
+
       setFormStatus(newStatus);
     }, [selectedMember, relocation, members, session.user]);
 
@@ -249,9 +242,6 @@ export const RequestOffBoardingForm = observer(
     const handleDropdown = (relocation: string) => {
       if (relocation === "My office") {
         if (!validateBillingInfo(session.user)) {
-          console.log(
-            "Billing info incomplete, setting My office to unavailable."
-          );
           setValue(`products.${index}.relocation`, "My office");
           setValue(`products.${index}.available`, false);
           setValue(`products.${index}.newMember`, "None", {
@@ -305,6 +295,7 @@ export const RequestOffBoardingForm = observer(
         );
         setMemberToEdit(foundMember?._id);
         setAside("EditMember");
+        router.push("/home/my-team");
       }
     };
 
@@ -346,15 +337,6 @@ export const RequestOffBoardingForm = observer(
 
       return () => subscription.unsubscribe();
     }, [watch, applyToAll]);
-
-    useEffect(() => {
-      const areAllProductsValid = products.every((_, idx) => {
-        const status = getStatus();
-        console.log(`Product ${idx + 1} validation status:`, status);
-        return status === "none" || status === "is-member-available";
-      });
-      setIsButtonDisabled(!areAllProductsValid);
-    }, [formStatus, watch, products]);
 
     return (
       <PageLayout>

@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Memberservices, TeamServices } from "@/services";
 import { Product, TeamMember } from "@/types";
-import { RequestOffBoardingForm } from "../../../../../components/RequestOffBoarding/Request-off-boarding-form";
-import { useStore } from "../../../../../models/root.store";
+import { RequestOffBoardingForm } from "@/components/RequestOffBoarding/Request-off-boarding-form";
+import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
 import { useRouter } from "next/navigation";
 import { useFetchMembers } from "@/members/hooks";
@@ -61,7 +61,7 @@ const Page = ({ params }: { params: { id: string } }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [watch, isClosed]);
+  }, [isClosed]);
 
   const onSubmit = async (data: any) => {
     const sendData = data.products.map((productToSend) => {
