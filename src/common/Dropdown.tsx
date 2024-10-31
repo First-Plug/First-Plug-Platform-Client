@@ -34,6 +34,7 @@ export function SessionDropdownButton() {
       if (isCacheCleared) {
         clearInterval(checkCacheClear);
 
+        queryClient.getQueryCache().clear();
         if (session.status === "authenticated") {
           signOut({ callbackUrl: "http://localhost:3000/login" });
         } else {
