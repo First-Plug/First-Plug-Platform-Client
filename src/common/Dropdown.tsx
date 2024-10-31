@@ -26,10 +26,6 @@ export function SessionDropdownButton() {
     queryClient.clear();
     queryClient.removeQueries();
 
-    console.log(
-      "Eliminando caché de react-query de localStorage y sessionStorage"
-    );
-
     localStorage.removeItem("reactQueryCache");
     sessionStorage.removeItem("reactQueryCache");
 
@@ -38,9 +34,6 @@ export function SessionDropdownButton() {
     } else {
       router.push("/login");
     }
-    console.log("Estado final de localStorage:", localStorage);
-    console.log("Estado final de sessionStorage:", sessionStorage);
-    console.log("Estado final de query cache:", queryClient.getQueryCache());
   };
 
   return (
