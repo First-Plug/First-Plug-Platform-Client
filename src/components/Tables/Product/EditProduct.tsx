@@ -5,6 +5,7 @@ import { useStore } from "@/models";
 import { Product } from "@/types";
 import { observer } from "mobx-react-lite";
 import { useFetchAssetById, usePrefetchAsset } from "@/assets/hooks";
+import { useEffect } from "react";
 
 export default observer(function EditProduct({
   product,
@@ -18,6 +19,10 @@ export default observer(function EditProduct({
 
   const { prefetchAsset } = usePrefetchAsset();
   const { data: prefetchedProduct } = useFetchAssetById(product._id);
+
+  useEffect(() => {
+    prefetchAsset(product._id);
+  }, [product._id, prefetchAsset]);
 
   const handleEditProduct = () => {
     if (prefetchedProduct) {
