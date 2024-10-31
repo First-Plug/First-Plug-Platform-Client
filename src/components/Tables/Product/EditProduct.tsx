@@ -6,6 +6,7 @@ import { Product } from "@/types";
 import { observer } from "mobx-react-lite";
 import { useFetchAssetById, usePrefetchAsset } from "@/assets/hooks";
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default observer(function EditProduct({
   product,
@@ -19,17 +20,34 @@ export default observer(function EditProduct({
 
   const { prefetchAsset } = usePrefetchAsset();
   const { data: prefetchedProduct } = useFetchAssetById(product._id);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     prefetchAsset(product._id);
   }, [product._id, prefetchAsset]);
 
-  const handleEditProduct = () => {
-    if (prefetchedProduct) {
-      setProductToEdit(prefetchedProduct);
+  const handleEditProduct = async () => {
+    let cachedProduct = queryClient.getQueryData<Product>([
+      "assets",
+      product._id,
+    ]);
+
+    if (cachedProduct) {
+      queryClient.setQueryData(["selectedProduct"], cachedProduct);
       setAside("EditProduct");
     } else {
-      console.log("producto aun no cargado completamente");
+      await prefetchAsset(product._id);
+
+      cachedProduct = queryClient.getQueryData<Product>([
+        "assets",
+        product._id,
+      ]);
+      if (cachedProduct) {
+        queryClient.setQueryData(["selectedProduct"], cachedProduct);
+        setAside("EditProduct");
+      } else {
+        console.log("Producto aún no cargado completamente tras prefetch");
+      }
     }
   };
 
