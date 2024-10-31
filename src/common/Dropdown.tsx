@@ -29,11 +29,18 @@ export function SessionDropdownButton() {
     localStorage.removeItem("reactQueryCache");
     sessionStorage.removeItem("reactQueryCache");
 
-    if (session.status === "authenticated") {
-      signOut({ callbackUrl: "http://localhost:3000/login" });
-    } else {
-      router.push("/login");
-    }
+    const checkCacheClear = setInterval(() => {
+      const isCacheCleared = queryClient.getQueryCache().getAll().length === 0;
+      if (isCacheCleared) {
+        clearInterval(checkCacheClear);
+
+        if (session.status === "authenticated") {
+          signOut({ callbackUrl: "http://localhost:3000/login" });
+        } else {
+          router.push("/login");
+        }
+      }
+    }, 100);
   };
 
   return (
