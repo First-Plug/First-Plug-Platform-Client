@@ -6,7 +6,7 @@ export const PRODUCT_STATUSES = [
   "Deprecated",
 ] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
-const CURRENCY_CODES = [
+export const CURRENCY_CODES = [
   "USD",
   "ARS",
   "BRL",
@@ -112,7 +112,7 @@ export const emptyProduct: Omit<Product, "category"> & { category: string } = {
   lastAssigned: "",
   price: {
     amount: 0,
-    currencyCode: "USD",
+    currencyCode: "USD" as (typeof CURRENCY_CODES)[number],
   },
 };
 

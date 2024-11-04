@@ -68,6 +68,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       ...initialData,
       category: initialData?.category || undefined,
       serialNumber: initialData?.serialNumber || undefined,
+      price: initialData?.price || undefined,
     },
   });
   const {
@@ -78,6 +79,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
     formState: { isSubmitting, errors },
     watch,
   } = methods;
+  useEffect(() => {
+    if (isUpdate && initialData) {
+      console.log("initialData en ProductForm:", initialData);
+    }
+  }, [initialData, isUpdate]);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");

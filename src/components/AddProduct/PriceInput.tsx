@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { DropdownInputProductForm } from "./DropDownProductForm";
 import { InputProductForm } from "./InputProductForm";
+import { useFormContext } from "react-hook-form";
 
 const CURRENCY_CODES = ["USD", "ARS", "BRL", "CLP", "COP", "MXN", "PEN", "UYU"];
 
@@ -10,6 +11,9 @@ interface PriceInputProps {
   onCurrencyChange: (currency: string) => void;
   onAmountChange: (amount: number) => void;
   disabled?: boolean;
+  isUpdate?: boolean;
+  formValues?: any;
+  initialData?: any;
 }
 
 const PriceInput: React.FC<PriceInputProps> = ({
@@ -18,9 +22,22 @@ const PriceInput: React.FC<PriceInputProps> = ({
   onCurrencyChange,
   onAmountChange,
   disabled = false,
+  isUpdate = false,
+  formValues = {},
+  initialData,
 }) => {
+  const { setValue } = useFormContext();
+
+  // useEffect(() => {
+  //   if (isUpdate && formValues.price) {
+  //     setValue("price.currencyCode", formValues.price.currencyCode || "USD");
+  //     setValue("price.amount", formValues.price.amount || 0);
+  //   }
+  //   console.log("formValues?.price?.amount", formValues?.price?.amount);
+  // }, [isUpdate, formValues, setValue]);
+
   return (
-    <div className="flex items-center space-x-4 h-14 pr-0 mb-6">
+    <div className="flex items-center space-x-4 h-14 pr-0">
       <DropdownInputProductForm
         title="Currency"
         placeholder="Select currency"
@@ -28,7 +45,7 @@ const PriceInput: React.FC<PriceInputProps> = ({
         selectedOption={currencyCode}
         onChange={(option) => onCurrencyChange(option)}
         name="currencyCode"
-        className="w-1/3"
+        className="w-18"
         optionClassName="text-sm"
         disabled={disabled}
       />
@@ -42,7 +59,7 @@ const PriceInput: React.FC<PriceInputProps> = ({
           onAmountChange(Math.max(0, parseFloat(e.target.value) || 0))
         }
         name="amount"
-        className="w-2/3"
+        className="w-18"
         disabled={disabled}
         min={0}
       />

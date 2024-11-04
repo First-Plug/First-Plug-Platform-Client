@@ -307,6 +307,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               }
               onAmountChange={(value) => setValue("price.amount", value)}
               disabled={false}
+              isUpdate={isUpdate}
+              formValues={formValues}
             />
           </div>
           <div className="w-full col-span-2 mt-4">
@@ -342,8 +344,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         </div>
       ) : (
         <>
-          <div className="flex items-start space-x-4 ">
-            <div className="flex flex-col w-1/4">
+          <div className="grid grid-cols-4 gap-4 items-start ">
+            <div>
               <DropdownInputProductForm
                 options={CATEGORIES}
                 placeholder="Category"
@@ -364,58 +366,54 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 )}
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="pb-6 pr-4 pl-2">
-                <QuantityCounter
-                  quantity={quantity}
-                  setQuantity={setQuantity}
-                />
-              </div>
-              <div>
-                <RecoverableSwitch
-                  selectedCategory={selectedCategory}
-                  onRecoverableChange={handleRecoverableChange}
-                  formValues={formValues}
-                  setFormValues={setFormValues}
-                  setManualChange={setManualChange}
-                  manualChange={manualChange}
-                />
-              </div>
-              <div className="flex-1 ml-4 ">
-                <PriceInput
-                  currencyCode={currencyCode}
-                  amount={amount}
-                  onCurrencyChange={(currency) =>
-                    setValue("price.currencyCode", currency)
-                  }
-                  onAmountChange={(value) => setValue("price.amount", value)}
-                  disabled={false}
-                />
-              </div>
 
-              {selectedModel === "Other" ? (
-                <div className="flex-1 ml-4">
-                  <InputProductForm
-                    placeholder="Product Name"
-                    title="Product Name*"
-                    type="text"
-                    value={watch("name") as string}
-                    name="name"
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                  />
-                  <div className="min-h-[24px]">
-                    {errors.name && (
-                      <p className="text-red-500">
-                        {(errors.name as any).message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex-1 ml-4" />
-              )}
+            <div className="flex items-center space-x-4">
+              <QuantityCounter quantity={quantity} setQuantity={setQuantity} />
+              <RecoverableSwitch
+                selectedCategory={selectedCategory}
+                onRecoverableChange={handleRecoverableChange}
+                formValues={formValues}
+                setFormValues={setFormValues}
+                setManualChange={setManualChange}
+                manualChange={manualChange}
+              />
             </div>
+
+            <div className="mt-2">
+              <PriceInput
+                currencyCode={currencyCode}
+                amount={amount}
+                onCurrencyChange={(currency) =>
+                  setValue("price.currencyCode", currency)
+                }
+                onAmountChange={(value) => setValue("price.amount", value)}
+                disabled={false}
+              />
+            </div>
+
+            {selectedModel === "Other" ? (
+              <div>
+                <InputProductForm
+                  placeholder="Product Name"
+                  title="Product Name*"
+                  type="text"
+                  value={watch("name") as string}
+                  name="name"
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                />
+                <div className="min-h-[24px]">
+                  {errors.name && (
+                    <p className="text-red-500">
+                      {(errors.name as any).message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div />
+            )}
           </div>
+
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-4 mt-4">
             <div className="w-full">
               <DropdownInputProductForm

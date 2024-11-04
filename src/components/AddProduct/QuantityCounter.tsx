@@ -12,7 +12,7 @@ const QuantityCounter: React.FC<QuantityCounterProps> = ({
   setQuantity,
 }) => {
   return (
-    <div className="flex flex-col items-start ml-2">
+    <div className="flex flex-col items-start ml-2 mb-6">
       <p className="block text-dark-grey font-sans ml-2">Product Quantity</p>
       <div className="flex items-center h-14 border rounded-xl p-4 text-black w-full">
         <button
