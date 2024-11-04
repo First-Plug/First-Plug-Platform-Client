@@ -24,6 +24,7 @@ const isBirthdayInNext30Days = (birthDateString: string) => {
 
 const sortBirthdaysByUpcoming = (members: TeamMember[]) => {
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return members.sort((a, b) => {
     const birthDateA = new Date(a.birthDate);
@@ -32,20 +33,17 @@ const sortBirthdaysByUpcoming = (members: TeamMember[]) => {
     birthDateA.setFullYear(today.getFullYear());
     birthDateB.setFullYear(today.getFullYear());
 
-    const monthDayA = `${birthDateA.getMonth() + 1}-${birthDateA.getDate()}`;
-    const monthDayB = `${birthDateB.getMonth() + 1}-${birthDateB.getDate()}`;
+    const diffDaysA = Math.ceil(
+      (birthDateA.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const diffDaysB = Math.ceil(
+      (birthDateB.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
-    const isTodayA =
-      birthDateA.getDate() === today.getDate() &&
-      birthDateA.getMonth() === today.getMonth();
-    const isTodayB =
-      birthDateB.getDate() === today.getDate() &&
-      birthDateB.getMonth() === today.getMonth();
+    if (diffDaysA === 0) return -1;
+    if (diffDaysB === 0) return 1;
 
-    if (isTodayA) return -1;
-    if (isTodayB) return 1;
-
-    return monthDayA.localeCompare(monthDayB);
+    return diffDaysA - diffDaysB;
   });
 };
 
