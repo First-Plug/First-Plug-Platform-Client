@@ -16,6 +16,7 @@ import ComputerAgeChart from "@/components/Dashboard/ComputerAgeChart";
 import { getBarColor } from "@/components/Dashboard/GetBarColor";
 import { AuthServices } from "@/services";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default observer(function Dashboard() {
   const {
@@ -26,9 +27,19 @@ export default observer(function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [avgAge, setAvgAge] = useState<number>(0);
 
+  const queryClient = useQueryClient();
+
   const { data: membersData, isLoading: isLoadingTeams } = useFetchMembers();
   const { data: teamsData, isLoading: isLoadingMembers } = useFetchTeams();
   const { data: assets, isLoading: isLoadingAssets } = useGetTableAssets();
+
+  useEffect(() => {
+    queryClient.setQueryData(["assets"], assets);
+  }, [assets, queryClient]);
+
+  useEffect(() => {
+    queryClient.getQueryData(["assets"]);
+  }, [queryClient]);
 
   useEffect(() => {
     if (sessionStorage.getItem("accessToken")) {

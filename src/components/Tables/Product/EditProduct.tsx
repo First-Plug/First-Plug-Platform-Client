@@ -2,10 +2,8 @@
 
 import { Button, PenIcon } from "@/common";
 import { useStore } from "@/models";
-import { Product } from "@/types";
+import { Product, ProductTable } from "@/types";
 import { observer } from "mobx-react-lite";
-import { useFetchAssetById, usePrefetchAsset } from "@/assets/hooks";
-import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default observer(function EditProduct({
@@ -17,37 +15,26 @@ export default observer(function EditProduct({
     aside: { setAside },
     products: { setProductToEdit },
   } = useStore();
-
-  const { prefetchAsset } = usePrefetchAsset();
-  const { data: prefetchedProduct } = useFetchAssetById(product._id);
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    prefetchAsset(product._id);
-  }, [product._id, prefetchAsset]);
+  const handleEditProduct = () => {
+    const cachedAssets = queryClient.getQueryData<ProductTable[]>(["assets"]);
 
-  const handleEditProduct = async () => {
-    let cachedProduct = queryClient.getQueryData<Product>([
-      "assets",
-      product._id,
-    ]);
+    let cachedProduct: Product | undefined;
+    if (cachedAssets) {
+      cachedAssets.some((group) => {
+        cachedProduct = group.products.find((p) => p._id === product._id);
+        return Boolean(cachedProduct);
+      });
+    }
 
     if (cachedProduct) {
       queryClient.setQueryData(["selectedProduct"], cachedProduct);
       setAside("EditProduct");
     } else {
-      await prefetchAsset(product._id);
-
-      cachedProduct = queryClient.getQueryData<Product>([
-        "assets",
-        product._id,
-      ]);
-      if (cachedProduct) {
-        queryClient.setQueryData(["selectedProduct"], cachedProduct);
-        setAside("EditProduct");
-      } else {
-        console.log("Producto aún no cargado completamente tras prefetch");
-      }
+      console.log(
+        "Producto no encontrado en caché; el aside mostrará un loader."
+      );
     }
   };
 
@@ -55,7 +42,7 @@ export default observer(function EditProduct({
     <Button
       variant="text"
       onClick={handleEditProduct}
-      onMouseEnter={() => prefetchAsset(product._id)}
+      // onMouseEnter={() => prefetchAsset(product._id)}
     >
       <PenIcon className="text-dark-grey w-4" strokeWidth={2} />
     </Button>
