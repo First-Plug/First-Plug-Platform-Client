@@ -7,10 +7,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Product } from "@/types";
 
 export var EditProductAside = observer(() => {
-  // const {
-  //   products: { productToEdit },
-  // } = useStore();
-
   const queryClient = useQueryClient();
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
 
@@ -37,18 +33,6 @@ export var EditProductAside = observer(() => {
   }, [queryClient]);
 
   if (!productToEdit) return <Loader />;
-
-  // useEffect(() => {
-  //   if (productToEdit) {
-  //     ProductServices.getProductById(productToEdit)
-  //       .then((res) => {
-  //         setProduct(res);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching product:", error);
-  //       });
-  //   }
-  // }, [productToEdit]);
 
   return (
     <div>
