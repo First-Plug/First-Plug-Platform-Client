@@ -20,7 +20,7 @@ const PriceInput: React.FC<PriceInputProps> = ({
   disabled = false,
 }) => {
   return (
-    <div className="flex items-center space-x-4 h-14 pr-0">
+    <div className="flex items-center space-x-4 h-14 pr-0 mb-6">
       <DropdownInputProductForm
         title="Currency"
         placeholder="Select currency"
@@ -28,7 +28,8 @@ const PriceInput: React.FC<PriceInputProps> = ({
         selectedOption={currencyCode}
         onChange={(option) => onCurrencyChange(option)}
         name="currencyCode"
-        className="w-1/3 text-sm"
+        className="w-1/3"
+        optionClassName="text-sm"
         disabled={disabled}
       />
       {/* Input for amount */}

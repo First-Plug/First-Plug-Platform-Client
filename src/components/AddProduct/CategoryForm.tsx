@@ -342,7 +342,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         </div>
       ) : (
         <>
-          <div className="flex items-start space-x-4 bg-blue">
+          <div className="flex items-start space-x-4 ">
             <div className="flex flex-col w-1/4">
               <DropdownInputProductForm
                 options={CATEGORIES}
@@ -364,7 +364,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 )}
               </div>
             </div>
-            <div className="flex items-center space-x-4 bg-red-300">
+            <div className="flex items-center space-x-4">
               <div className="pb-6 pr-4 pl-2">
                 <QuantityCounter
                   quantity={quantity}
@@ -381,7 +381,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   manualChange={manualChange}
                 />
               </div>
-              <div className="flex-1 ml-4 bg-green">
+              <div className="flex-1 ml-4 ">
                 <PriceInput
                   currencyCode={currencyCode}
                   amount={amount}
