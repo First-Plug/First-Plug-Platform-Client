@@ -12,7 +12,7 @@ export const ProductsStore = types
     products: types.array(ProductModel),
     tableProducts: types.array(ProductTableModel),
     selectedTableId: types.maybe(types.string),
-    productToEdit: types.maybe(types.string),
+    productToEdit: types.maybeNull(ProductModel),
     fetchingStock: types.optional(types.boolean, false),
     onlyAvaliable: types.optional(types.boolean, false),
     members: types.array(types.frozen()),
@@ -77,13 +77,22 @@ export const ProductsStore = types
       store.products.replace(products);
     },
     setTable(products: ProductTable[]) {
-      store.tableProducts.replace(products);
+      const validProducts = products.filter(
+        (product) => product.category && typeof product.category === "string"
+      );
+
+      store.tableProducts.replace(validProducts);
     },
     setSelectedTableId(id: string) {
       store.selectedTableId = id;
     },
-    setProductIdToEdit(id: string) {
-      store.productToEdit = id;
+    setProductToEdit(product: Product) {
+      store.productToEdit = product;
+      store.currentProductId = product._id;
+    },
+    clearProductToEdit() {
+      store.productToEdit = null;
+      store.currentProductId = null;
     },
     addProduct(product: Product) {
       store.products.push(product);

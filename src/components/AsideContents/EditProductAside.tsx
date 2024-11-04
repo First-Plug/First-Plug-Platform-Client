@@ -1,34 +1,42 @@
 import { useStore } from "@/models";
-import { ProductServices } from "@/services";
-import { Product } from "@/types";
 import { observer } from "mobx-react-lite";
-import { useEffect, useState } from "react";
 import { Loader } from "../Loader";
 import ProductForm from "../AddProduct/ProductForm";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Product } from "@/types";
 
 export var EditProductAside = observer(() => {
-  const {
-    products: { productToEdit },
-  } = useStore();
-  const [product, setProduct] = useState<Product | null>(null);
+  const queryClient = useQueryClient();
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
 
   useEffect(() => {
-    if (productToEdit) {
-      ProductServices.getProductById(productToEdit)
-        .then((res) => {
-          setProduct(res);
-        })
-        .catch((error) => {
-          console.error("Error fetching product:", error);
-        });
+    const cachedProduct = queryClient.getQueryData<Product>([
+      "selectedProduct",
+    ]);
+    if (cachedProduct) {
+      setProductToEdit(cachedProduct);
+    } else {
+      console.log("Producto no encontrado en caché, mostrando loader.");
     }
-  }, [productToEdit]);
 
-  return product ? (
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (
+        event.query.queryKey[0] === "selectedProduct" &&
+        event.query.state.data
+      ) {
+        setProductToEdit(event.query.state.data as Product);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [queryClient]);
+
+  if (!productToEdit) return <Loader />;
+
+  return (
     <div>
-      <ProductForm initialData={product} isUpdate={true} />
+      <ProductForm initialData={productToEdit} isUpdate={true} />
     </div>
-  ) : (
-    <Loader />
   );
 });

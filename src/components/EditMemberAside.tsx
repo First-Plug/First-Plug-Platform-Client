@@ -3,17 +3,23 @@ import React from "react";
 import { observer } from "mobx-react-lite";
 import { Loader } from "../components/Loader/Loader";
 import MemberForm from "../components/AddMember/MemberForm";
-import useLoadMemberData from "./AddMember/useLoadMemberData";
+import { useStore } from "@/models";
+import { useFetchMember } from "@/members/hooks";
 
 const EditMemberAside = observer(() => {
-  const initialData = useLoadMemberData();
+  const {
+    members: { memberToEdit },
+  } = useStore();
+  const { data: member, isLoading } = useFetchMember(memberToEdit);
 
-  return initialData ? (
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
     <div>
-      <MemberForm initialData={initialData} isUpdate={true} />
+      <MemberForm initialData={member} isUpdate={true} />
     </div>
-  ) : (
-    <Loader />
   );
 });
 

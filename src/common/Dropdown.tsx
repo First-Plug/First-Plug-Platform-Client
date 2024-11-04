@@ -3,6 +3,7 @@ import { signOut, useSession } from "next-auth/react";
 import { NavButtonIcon } from "./Icons";
 import { useRouter } from "next/navigation";
 import { LogOut, Mail, Users } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   DropdownMenu,
@@ -15,16 +16,35 @@ import { Button } from "@/components/ui/button";
 export function SessionDropdownButton() {
   const router = useRouter();
   const session = useSession();
+  const queryClient = useQueryClient();
 
   const handleLogOut = () => {
-    if (!!localStorage.getItem("token")) {
+    if (localStorage.getItem("token")) {
       localStorage.removeItem("token");
-      router.push("/login");
     }
-    if (session.status === "authenticated") {
-      signOut({ callbackUrl: "http://localhost:3000/login" });
-    }
+
+    queryClient.clear();
+    queryClient.removeQueries();
+    localStorage.removeItem("REACT_QUERY_OFFLINE_CACHE");
+
+    // localStorage.removeItem("reactQueryCache");
+    // sessionStorage.removeItem("reactQueryCache");
+
+    const checkCacheClear = setInterval(() => {
+      const isCacheCleared = queryClient.getQueryCache().getAll().length === 0;
+      if (isCacheCleared) {
+        clearInterval(checkCacheClear);
+
+        // queryClient.getQueryCache().clear();
+        if (session.status === "authenticated") {
+          signOut({ callbackUrl: "http://localhost:3000/login" });
+        } else {
+          router.push("/login");
+        }
+      }
+    }, 100);
   };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

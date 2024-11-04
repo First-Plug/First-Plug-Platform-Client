@@ -3,18 +3,25 @@ import { useStore } from "@/models/root.store";
 import FormatedDate from "@/components/Tables/helpers/FormatedDate";
 import Avvvatars from "avvvatars-react";
 import { Team } from "@/types/teams";
+import { useFetchMember } from "@/members/hooks";
+import { Loader } from "lucide-react";
 
 interface MemberDetailProps {
+  memberId: string;
   className?: string;
 }
 
-export function MemberDetail({ className }: MemberDetailProps) {
-  const {
-    members: { selectedMember },
-  } = useStore();
+export function MemberDetail({ memberId, className }: MemberDetailProps) {
+  // const {
+  //   members: { selectedMember },
+  // } = useStore();
 
-  if (!selectedMember) return null;
-  const team = selectedMember.team as Team;
+  const { data: member, isLoading, isError } = useFetchMember(memberId);
+
+  if (isLoading) return <Loader />;
+  if (isError || !member) return <div>Error loading member details...</div>;
+
+  const team = member.team as Team;
   const teamData = team && typeof team === "object" ? team : "Not Assigned";
 
   return (
@@ -22,7 +29,7 @@ export function MemberDetail({ className }: MemberDetailProps) {
       <div className="flex gap-4 ">
         <div className=" flex justify-center items-center  ">
           <Avvvatars
-            value={`${selectedMember.firstName[0]}${selectedMember.lastName[0]}`}
+            value={`${member.firstName[0]}${member.lastName[0]}`}
             style={"character"}
             size={150}
           />
@@ -30,24 +37,24 @@ export function MemberDetail({ className }: MemberDetailProps) {
         <div className="flex flex-col w-full justify-start text-md ">
           <div className="flex w-full justify-between items-center">
             <div className="flex items-center gap-1">
-              {selectedMember.team && <TeamCard team={teamData} />}
+              {member.team && <TeamCard team={teamData} />}
             </div>
           </div>
           <div className="flex items-center gap-2 ">
             <span className="font-semibold">Job Position: </span>
-            <span className="font-normal">{selectedMember.position || ""}</span>
+            <span className="font-normal">{member.position || ""}</span>
           </div>
           <div className="flex items-center gap-2 ">
             <span className="font-semibold">Joining Date: </span>
-            <FormatedDate date={selectedMember.startDate} />
+            <FormatedDate date={member.startDate} />
           </div>
           <div className="flex items-center gap-2 ">
             <span className="font-semibold">Birth Date: </span>
-            <FormatedDate date={selectedMember.birthDate} />
+            <FormatedDate date={member.birthDate} />
           </div>
           <div className="flex items-center gap-2 ">
             <span className="font-semibold">Email: </span>
-            <span className="font-normal">{selectedMember.email || ""}</span>
+            <span className="font-normal">{member.email || ""}</span>
           </div>
         </div>
       </div>

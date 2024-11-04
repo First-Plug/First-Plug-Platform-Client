@@ -3,7 +3,7 @@ import React from "react";
 import { Button, TeamCard } from "@/common";
 import { DropDownArrow } from "@/common/Icons";
 import { TeamInfo } from ".";
-import { Team, TeamMember } from "@/types";
+import { Team } from "@/types";
 
 interface TeamDetailsProps {
   team: Team;

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { XCircleIcon } from "lucide-react";
 import { CheckIcon } from "@/common";
 import useFetch from "@/hooks/useFetch";
+import { useQueryClient } from "@tanstack/react-query";
 
 function XIcon() {
   return <XCircleIcon className="text-white " size={40} />;
@@ -26,6 +27,7 @@ export default observer(function AlertProvider() {
   } = useStore();
   const router = useRouter();
   const { fetchMembers, fetchStock } = useFetch();
+  const queryClient = useQueryClient();
 
   const Config: Record<AlertType, IConfig> = {
     memberMissingFields: {
@@ -114,6 +116,7 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " Product successfully assigned.",
       closeAction: () => {
+        queryClient.invalidateQueries({ queryKey: ["members"] });
         setAlert(undefined);
       },
     },
@@ -138,8 +141,9 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " This member has been successfully updated.",
       closeAction: async () => {
-        await fetchMembers();
-        await fetchStock();
+        queryClient.invalidateQueries({ queryKey: ["members"] });
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
+        // await fetchStock();
         setAside(undefined);
         setAlert(undefined);
       },
@@ -149,7 +153,9 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " Your product has been successfully updated.",
       closeAction: async () => {
-        await fetchStock();
+        queryClient.invalidateQueries({ queryKey: ["members"] });
+        // queryClient.invalidateQueries({ queryKey: ["assets"] });
+        // await fetchStock();
         setAlert(undefined);
       },
     },
@@ -166,7 +172,7 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " This Member has been successfully added to your team.",
       closeAction: async () => {
-        await fetchMembers();
+        queryClient.invalidateQueries({ queryKey: ["members"] });
         setAlert(undefined);
         router.push("/home/my-team");
       },
@@ -176,7 +182,8 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " Your product has been successfully created.",
       closeAction: async () => {
-        await fetchStock();
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
+        // await fetchStock();
         setAlert(undefined);
         router.push("/home/my-stock");
       },
@@ -211,6 +218,7 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " The product has been successfully deleted.",
       closeAction: () => {
+        // queryClient.invalidateQueries({ queryKey: ["assets"] });
         setAlert(undefined);
       },
     },
@@ -278,7 +286,7 @@ export default observer(function AlertProvider() {
         " There was an error deleting the product. Please try again.",
       closeAction: () => {
         setAlert(undefined);
-        router.push("/home/my-team");
+        router.push("/home/my-stock");
       },
     },
     errorDeleteMember: {
@@ -303,7 +311,8 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: "Products have been successfully created.",
       closeAction: async () => {
-        await fetchStock();
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
+        // await fetchStock();
         setAlert(undefined);
         router.push("/home/my-stock");
       },
@@ -330,6 +339,15 @@ export default observer(function AlertProvider() {
       type: "succes",
       description:
         "We will contact you shortly to share our gifts for your team.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    computerUpgradeAlert: {
+      title: "Upgrade Request Received",
+      type: "succes",
+      description:
+        "Thank you for your request. We will be in touch with you shortly to proceed with the next steps.",
       closeAction: () => {
         setAlert(undefined);
       },

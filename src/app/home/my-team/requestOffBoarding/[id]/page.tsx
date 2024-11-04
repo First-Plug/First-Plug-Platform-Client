@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Memberservices, TeamServices } from "@/services";
 import { Product, TeamMember } from "@/types";
-import { RequestOffBoardingForm } from "../../../../../components/RequestOffBoarding/Request-off-boarding-form";
-import { useStore } from "../../../../../models/root.store";
+import { RequestOffBoardingForm } from "@/components/RequestOffBoarding/Request-off-boarding-form";
+import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
 import { useRouter } from "next/navigation";
-import { transformData } from "@/utils/dataTransformUtil";
-import useFetch from "@/hooks/useFetch";
+import { useFetchMembers } from "@/members/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
@@ -25,17 +25,17 @@ export interface ProductOffBoarding {
 
 const Page = ({ params }: { params: { id: string } }) => {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
-  const [members, setMembers] = useState<TeamMember[]>([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const { data: members = [] } = useFetchMembers();
 
   const {
     members: { setMemberOffBoarding },
     aside: { isClosed },
   } = useStore();
-
-  const { fetchMembers, fetchStock } = useFetch();
 
   const methods = useForm({
     defaultValues: {
@@ -46,7 +46,6 @@ const Page = ({ params }: { params: { id: string } }) => {
   const { handleSubmit, watch } = methods;
 
   useEffect(() => {
-    Memberservices.getAllMembers().then(setMembers);
     Memberservices.getOneMember(params.id).then((res) => {
       setMemberOffBoarding(`${res.firstName} ${res.lastName}`);
       setSelectedMember(res);
@@ -55,24 +54,14 @@ const Page = ({ params }: { params: { id: string } }) => {
 
   useEffect(() => {
     const subscription = watch((values) => {
-      localStorage.setItem(
-        `products_${params.id}`,
-        JSON.stringify(values.products)
-      );
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, params.id]);
-
-  useEffect(() => {
-    const subscription = watch((values) => {
       const areProductsValid = values.products.every(
         (product: ProductOffBoarding) => product.relocation && product.available
-      );      
+      );
       setIsButtonDisabled(!areProductsValid);
     });
 
     return () => subscription.unsubscribe();
-  }, [watch, isClosed]);
+  }, [isClosed]);
 
   const onSubmit = async (data: any) => {
     const sendData = data.products.map((productToSend) => {
@@ -89,8 +78,8 @@ const Page = ({ params }: { params: { id: string } }) => {
     await Memberservices.offboardingMember(params.id, sendData);
     setIsLoading(false);
 
-    await fetchMembers();
-    await fetchStock();
+    queryClient.invalidateQueries({ queryKey: ["assets"] });
+    queryClient.invalidateQueries({ queryKey: ["members"] });
 
     router.push("/home/my-team");
   };
@@ -126,9 +115,11 @@ const Page = ({ params }: { params: { id: string } }) => {
                           (product) => product.recoverable === true
                         )}
                         index={index}
-                        totalProducts={selectedMember.products.filter(
-                          (product) => product.recoverable === true
-                        ).length}
+                        totalProducts={
+                          selectedMember.products.filter(
+                            (product) => product.recoverable === true
+                          ).length
+                        }
                         members={members.filter(
                           (member) => member.email !== selectedMember.email
                         )}
