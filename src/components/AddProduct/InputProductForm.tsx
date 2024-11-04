@@ -13,6 +13,7 @@ interface InputProps {
   allowFutureDates?: boolean;
   disabled?: boolean;
   readOnly?: boolean;
+  min?: number;
 }
 
 export function InputProductForm({

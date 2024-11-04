@@ -11,6 +11,7 @@ import { Skeleton } from "../ui/skeleton";
 import QuantityCounter from "./QuantityCounter";
 import RecoverableSwitch from "./RecoverableSwitch";
 import { useFetchMembers } from "@/members/hooks";
+import PriceInput from "./PriceInput";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -49,6 +50,9 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     watch,
     formState: { errors },
   } = useFormContext();
+  const amount = watch("price.amount") || 0;
+  const currencyCode = watch("price.currencyCode") || "USD";
+
   const [selectedAssignedMember, setSelectedAssignedMember] =
     useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
@@ -280,7 +284,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               }
             />
           </div>
-          <div className="w-full">
+          <div className="w-full ">
             <InputProductForm
               placeholder="Serial Number"
               title="Serial Number"
@@ -293,18 +297,30 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               className="w-full"
               disabled={quantity > 1 && !isUpdate}
             />
-            <div className="mt-4 ml-2">
-              <RecoverableSwitch
-                selectedCategory={selectedCategory}
-                onRecoverableChange={handleRecoverableChange}
-                isUpdate={isUpdate}
-                formValues={formValues}
-                setFormValues={setFormValues}
-                setManualChange={setManualChange}
-                manualChange={manualChange}
-              />
-            </div>
           </div>
+          <div className="w-full mt-3">
+            <PriceInput
+              currencyCode={currencyCode}
+              amount={amount}
+              onCurrencyChange={(currency) =>
+                setValue("price.currencyCode", currency)
+              }
+              onAmountChange={(value) => setValue("price.amount", value)}
+              disabled={false}
+            />
+          </div>
+          <div className="w-full col-span-2 mt-4">
+            <RecoverableSwitch
+              selectedCategory={selectedCategory}
+              onRecoverableChange={handleRecoverableChange}
+              isUpdate={isUpdate}
+              formValues={formValues}
+              setFormValues={setFormValues}
+              setManualChange={setManualChange}
+              manualChange={manualChange}
+            />
+          </div>
+
           {selectedModel === "Other" ||
           (isUpdate && watch("name") && selectedModel === "Other") ? (
             <div className="w-full">
@@ -326,7 +342,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         </div>
       ) : (
         <>
-          <div className="flex items-start space-x-4">
+          <div className="flex items-start space-x-4 bg-blue">
             <div className="flex flex-col w-1/4">
               <DropdownInputProductForm
                 options={CATEGORIES}
@@ -348,7 +364,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 )}
               </div>
             </div>
-            <div className="flex items-center space-x-4 flex-1">
+            <div className="flex items-center space-x-4 bg-red-300">
               <div className="pb-6 pr-4 pl-2">
                 <QuantityCounter
                   quantity={quantity}
@@ -363,6 +379,17 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   setFormValues={setFormValues}
                   setManualChange={setManualChange}
                   manualChange={manualChange}
+                />
+              </div>
+              <div className="flex-1 ml-4 bg-green">
+                <PriceInput
+                  currencyCode={currencyCode}
+                  amount={amount}
+                  onCurrencyChange={(currency) =>
+                    setValue("price.currencyCode", currency)
+                  }
+                  onAmountChange={(value) => setValue("price.amount", value)}
+                  disabled={false}
                 />
               </div>
 

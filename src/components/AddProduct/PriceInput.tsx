@@ -20,8 +20,7 @@ const PriceInput: React.FC<PriceInputProps> = ({
   disabled = false,
 }) => {
   return (
-    <div className="flex items-center space-x-4">
-      {/* Dropdown for currency code */}
+    <div className="flex items-center space-x-4 h-14 pr-0">
       <DropdownInputProductForm
         title="Currency"
         placeholder="Select currency"
@@ -29,7 +28,7 @@ const PriceInput: React.FC<PriceInputProps> = ({
         selectedOption={currencyCode}
         onChange={(option) => onCurrencyChange(option)}
         name="currencyCode"
-        className="w-1/3"
+        className="w-1/3 text-sm"
         disabled={disabled}
       />
       {/* Input for amount */}
@@ -38,10 +37,13 @@ const PriceInput: React.FC<PriceInputProps> = ({
         placeholder="Enter amount"
         type="number"
         value={amount.toString()}
-        onChange={(e) => onAmountChange(parseFloat(e.target.value))}
+        onChange={(e) =>
+          onAmountChange(Math.max(0, parseFloat(e.target.value) || 0))
+        }
         name="amount"
         className="w-2/3"
         disabled={disabled}
+        min={0}
       />
     </div>
   );
