@@ -26,16 +26,6 @@ const PriceInput: React.FC<PriceInputProps> = ({
   formValues = {},
   initialData,
 }) => {
-  const { setValue } = useFormContext();
-
-  // useEffect(() => {
-  //   if (isUpdate && formValues.price) {
-  //     setValue("price.currencyCode", formValues.price.currencyCode || "USD");
-  //     setValue("price.amount", formValues.price.amount || 0);
-  //   }
-  //   console.log("formValues?.price?.amount", formValues?.price?.amount);
-  // }, [isUpdate, formValues, setValue]);
-
   return (
     <div className="flex items-center space-x-4 h-14 pr-0">
       <DropdownInputProductForm
@@ -45,13 +35,13 @@ const PriceInput: React.FC<PriceInputProps> = ({
         selectedOption={currencyCode}
         onChange={(option) => onCurrencyChange(option)}
         name="currencyCode"
-        className="w-18"
+        className="w-2/5"
         optionClassName="text-sm"
         disabled={disabled}
       />
-      {/* Input for amount */}
+
       <InputProductForm
-        title="Amount"
+        title="Price"
         placeholder="Enter amount"
         type="number"
         value={amount.toString()}
@@ -59,7 +49,7 @@ const PriceInput: React.FC<PriceInputProps> = ({
           onAmountChange(Math.max(0, parseFloat(e.target.value) || 0))
         }
         name="amount"
-        className="w-18"
+        className="w-3/5"
         disabled={disabled}
         min={0}
       />

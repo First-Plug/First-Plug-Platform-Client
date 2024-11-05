@@ -379,7 +379,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               />
             </div>
 
-            <div className="mt-2">
+            <div className="mt-3">
               <PriceInput
                 currencyCode={currencyCode}
                 amount={amount}
