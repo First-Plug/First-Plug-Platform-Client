@@ -9,12 +9,22 @@ export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
 export const CURRENCY_CODES = [
   "USD",
   "ARS",
+  "BOB",
   "BRL",
   "CLP",
   "COP",
+  "CRC",
+  "GTQ",
+  "HNL",
+  "ILS",
   "MXN",
+  "NIO",
+  "PAB",
   "PEN",
+  "PYG",
+  "EUR",
   "UYU",
+  "VES",
 ] as const;
 
 export const LOCATION = ["Our office", "FP warehouse", "Employee"] as const;
