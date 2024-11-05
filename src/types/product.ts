@@ -6,6 +6,16 @@ export const PRODUCT_STATUSES = [
   "Deprecated",
 ] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
+export const CURRENCY_CODES = [
+  "USD",
+  "ARS",
+  "BRL",
+  "CLP",
+  "COP",
+  "MXN",
+  "PEN",
+  "UYU",
+] as const;
 
 export const LOCATION = ["Our office", "FP warehouse", "Employee"] as const;
 export type Location = (typeof LOCATION)[number];
@@ -74,6 +84,12 @@ export const ProductModel = types.model({
   assignedMember: types.optional(types.string, ""),
   serialNumber: types.maybeNull(types.string),
   lastAssigned: types.maybeNull(types.string),
+  price: types.maybe(
+    types.model({
+      amount: types.optional(types.number, 0),
+      currencyCode: types.optional(types.enumeration(CURRENCY_CODES), "USD"),
+    })
+  ),
 });
 export type Product = Instance<typeof ProductModel>;
 
@@ -94,6 +110,10 @@ export const emptyProduct: Omit<Product, "category"> & { category: string } = {
   assignedEmail: undefined,
   assignedMember: undefined,
   lastAssigned: "",
+  price: {
+    amount: 0,
+    currencyCode: "USD" as (typeof CURRENCY_CODES)[number],
+  },
 };
 
 export const ProductTableModel = types.model({
@@ -126,6 +146,12 @@ export const zodProductModel = z.object({
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
   deletedAt: z.string().optional(),
+  price: z
+    .object({
+      amount: z.number().nonnegative().optional(),
+      currencyCode: z.enum(CURRENCY_CODES).optional(),
+    })
+    .optional(),
 });
 
 export type PrdouctModelZod = z.infer<typeof zodProductModel>;
@@ -178,6 +204,12 @@ export const zodCreateProductModel = z
       invalid_type_error: "Invalid location",
     }),
     status: z.string().optional(),
+    price: z
+      .object({
+        amount: z.number().nonnegative().optional(),
+        currencyCode: z.enum(CURRENCY_CODES).optional(),
+      })
+      .optional(),
   })
   .superRefine((data, ctx) => {
     if (data.category === "Merchandising" && !data.name) {
