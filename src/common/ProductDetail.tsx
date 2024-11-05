@@ -178,6 +178,7 @@ interface ProductDetailProps {
   selectedProducts?: Product[];
   onRelocateSuccess?: () => void;
   disabled?: boolean;
+  isOffboardingStyles?: boolean
 }
 export default function ProductDetail({
   product,
@@ -188,6 +189,7 @@ export default function ProductDetail({
   isRelocating = false,
   onRelocateSuccess,
   disabled,
+  isOffboardingStyles
 }: ProductDetailProps) {
   const [showList, setShowList] = useState(false);
   const [relocateStatus, setRelocateStauts] =
@@ -214,7 +216,7 @@ export default function ProductDetail({
 
             <hr />
 
-            <PrdouctModelDetail product={product} />
+            <PrdouctModelDetail product={product} isOffboardingStyles={isOffboardingStyles} />
           </section>
           {isRelocating && (
             <Button

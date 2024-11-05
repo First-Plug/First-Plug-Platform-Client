@@ -451,6 +451,7 @@ export const RequestOffBoardingForm = observer(
                 name={`products.${index}.relocation`}
                 control={control}
                 render={({ field: { onChange, value, name } }) => (
+
                   <DropdownInputProductForm
                     name={name}
                     options={dropdownOptions}
