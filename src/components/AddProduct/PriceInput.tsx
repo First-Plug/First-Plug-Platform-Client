@@ -3,7 +3,26 @@ import { DropdownInputProductForm } from "./DropDownProductForm";
 import { InputProductForm } from "./InputProductForm";
 import { useFormContext } from "react-hook-form";
 
-const CURRENCY_CODES = ["USD", "ARS", "BRL", "CLP", "COP", "MXN", "PEN", "UYU"];
+const CURRENCY_CODES = [
+  "USD",
+  "ARS",
+  "BOB",
+  "BRL",
+  "CLP",
+  "COP",
+  "CRC",
+  "GTQ",
+  "HNL",
+  "ILS",
+  "MXN",
+  "NIO",
+  "PAB",
+  "PEN",
+  "PYG",
+  "EUR",
+  "UYU",
+  "VES",
+];
 
 interface PriceInputProps {
   currencyCode: string;
