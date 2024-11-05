@@ -56,6 +56,10 @@ const BulkCreateForm: React.FC<{
     assignedMember: initialData.assignedMember || "",
     serialNumber: initialData.serialNumber || "",
     lastAssigned: initialData.lastAssigned || "",
+    price: initialData.price || {
+      amount: 0,
+      currencyCode: "USD",
+    },
   };
 
   const productInstance = ProductModel.create(initialProductData);
@@ -258,6 +262,7 @@ const BulkCreateForm: React.FC<{
         recoverable: productData.recoverable,
         status,
         attributes: productData.attributes,
+        price: productData.price || initialProductData.price,
       };
     });
 
