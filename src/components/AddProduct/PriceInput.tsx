@@ -26,9 +26,9 @@ const CURRENCY_CODES = [
 
 interface PriceInputProps {
   currencyCode: string;
-  amount: number;
+  amount?: number;
   onCurrencyChange: (currency: string) => void;
-  onAmountChange: (amount: number) => void;
+  onAmountChange: (amount: number | undefined) => void;
   disabled?: boolean;
   isUpdate?: boolean;
   formValues?: any;
@@ -61,16 +61,23 @@ const PriceInput: React.FC<PriceInputProps> = ({
 
       <InputProductForm
         title="Price"
-        placeholder="Enter amount"
+        placeholder="Enter price"
         type="number"
-        value={amount.toString()}
-        onChange={(e) =>
-          onAmountChange(Math.max(0, parseFloat(e.target.value) || 0))
-        }
+        value={amount !== undefined ? amount.toString() : ""}
+        onChange={(e) => {
+          const value = e.target.value;
+          onAmountChange(value ? parseFloat(value) : undefined);
+        }}
         name="amount"
         className="w-3/5"
         disabled={disabled}
         min={0}
+        onWheel={(e) => e.currentTarget.blur()}
+        onKeyDown={(e) => {
+          if (e.key === "-" || e.key === "e") {
+            e.preventDefault();
+          }
+        }}
       />
     </div>
   );

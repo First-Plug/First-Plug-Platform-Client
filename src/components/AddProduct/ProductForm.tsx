@@ -79,6 +79,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     formState: { isSubmitting, errors },
     watch,
   } = methods;
+
   useEffect(() => {
     if (isUpdate && initialData) {
       console.log("initialData en ProductForm:", initialData);
@@ -181,6 +182,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
     return true;
   };
 
+  const amount = watch("price.amount");
+
   const handleSaveProduct = async (data: Product) => {
     setShowSuccessDialog(false);
     setShowErrorDialog(false);
@@ -195,6 +198,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const formatData: Product = {
       ...emptyProduct,
       ...data,
+      ...(amount !== undefined
+        ? { price: { amount, currencyCode: data.price?.currencyCode || "USD" } }
+        : {}),
       recoverable: currentRecoverable,
       status:
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",

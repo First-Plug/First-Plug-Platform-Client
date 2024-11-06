@@ -96,7 +96,7 @@ export const ProductModel = types.model({
   lastAssigned: types.maybeNull(types.string),
   price: types.maybe(
     types.model({
-      amount: types.optional(types.number, 0),
+      amount: types.maybe(types.number),
       currencyCode: types.optional(types.enumeration(CURRENCY_CODES), "USD"),
     })
   ),
@@ -120,10 +120,7 @@ export const emptyProduct: Omit<Product, "category"> & { category: string } = {
   assignedEmail: undefined,
   assignedMember: undefined,
   lastAssigned: "",
-  price: {
-    amount: 0,
-    currencyCode: "USD" as (typeof CURRENCY_CODES)[number],
-  },
+  price: undefined,
 };
 
 export const ProductTableModel = types.model({

@@ -14,6 +14,8 @@ interface InputProps {
   disabled?: boolean;
   readOnly?: boolean;
   min?: number;
+  onWheel?: (event: React.WheelEvent<HTMLInputElement>) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export function InputProductForm({
@@ -27,6 +29,9 @@ export function InputProductForm({
   allowFutureDates = true,
   disabled = false,
   readOnly = false,
+  min,
+  onWheel,
+  onKeyDown,
 }: InputProps) {
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value === "" ? null : e.target.value;
@@ -56,6 +61,9 @@ export function InputProductForm({
         max={type === "date" && !allowFutureDates ? today : undefined}
         disabled={disabled}
         readOnly={readOnly}
+        onWheel={onWheel}
+        min={min}
+        onKeyDown={onKeyDown}
       />
     </div>
   );

@@ -50,7 +50,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     watch,
     formState: { errors },
   } = useFormContext();
-  const amount = watch("price.amount") || 0;
+  const amount = watch("price.amount");
   const currencyCode = watch("price.currencyCode") || "USD";
 
   const [selectedAssignedMember, setSelectedAssignedMember] =
@@ -381,13 +381,14 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 
             <div className="mt-3">
               <PriceInput
-                currencyCode={currencyCode}
-                amount={amount}
+                currencyCode={watch("price.currencyCode") || "USD"}
+                amount={amount !== undefined ? amount : undefined}
                 onCurrencyChange={(currency) =>
                   setValue("price.currencyCode", currency)
                 }
                 onAmountChange={(value) => setValue("price.amount", value)}
                 disabled={false}
+                isUpdate={isUpdate}
               />
             </div>
 
