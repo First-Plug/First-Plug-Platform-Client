@@ -1,7 +1,5 @@
-import React, { useEffect } from "react";
 import { DropdownInputProductForm } from "./DropDownProductForm";
 import { InputProductForm } from "./InputProductForm";
-import { useFormContext } from "react-hook-form";
 
 const CURRENCY_CODES = [
   "USD",
