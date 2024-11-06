@@ -11,6 +11,9 @@ import { Skeleton } from "../ui/skeleton";
 import QuantityCounter from "./QuantityCounter";
 import RecoverableSwitch from "./RecoverableSwitch";
 import { useFetchMembers } from "@/members/hooks";
+import GenericAlertDialog from "./ui/GenericAlertDialog";
+import { capitalizeAndSeparateCamelCase, getMissingFields } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -43,7 +46,10 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   manualChange,
   setManualChange,
 }) {
-  const { members } = useStore();
+  const {
+    members,
+    aside: { setAside },
+  } = useStore();
   const {
     setValue,
     watch,
@@ -62,8 +68,13 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const { data: fetchedMembers = [], isLoading } = useFetchMembers();
   const selectedModel = watch("model");
 
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [missingMemberData, setMissingMemberData] = useState("");
+  const router = useRouter();
+
   const [showNameInput, setShowNameInput] = useState(false);
   const [isRecoverable, setIsRecoverable] = useState(false);
+  const [member, setMember] = useState("");
 
   useEffect(() => {
     if (fetchedMembers) {
@@ -120,6 +131,49 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         (member) =>
           `${member.firstName} ${member.lastName}` === selectedFullName
       );
+
+      if (selectedAssignedMember !== "None" && selectedAssignedMember !== "") {
+        const preSelectedMember = members.members.find(
+          (member) =>
+            `${member.firstName} ${member.lastName}` === selectedAssignedMember
+        );
+
+        const missingFields = getMissingFields(preSelectedMember);
+        if (getMissingFields(preSelectedMember).length) {
+          setMember(preSelectedMember._id);
+          setMissingMemberData(
+            missingFields.reduce((acc, field, index) => {
+              if (index === 0) {
+                return capitalizeAndSeparateCamelCase(field);
+              }
+              return acc + " - " + capitalizeAndSeparateCamelCase(field);
+            }, "")
+          );
+
+          setShowErrorDialog(true);
+          return;
+        }
+      }
+
+      // TODO: ACA esta la persona anterior al cambio osea que si es diferente de None tengo que validar que los datos esten para el canal de slack
+      console.log(selectedAssignedMember);
+
+      const missingFields = getMissingFields(selectedMember);
+      if (getMissingFields(selectedMember).length) {
+        setMember(selectedMember._id);
+        setMissingMemberData(
+          missingFields.reduce((acc, field, index) => {
+            if (index === 0) {
+              return capitalizeAndSeparateCamelCase(field);
+            }
+            return acc + " - " + capitalizeAndSeparateCamelCase(field);
+          }, "")
+        );
+
+        setShowErrorDialog(true);
+        return;
+      }
+
       const email = selectedMember?.email || "";
       setAssignedEmail(email);
       setValue("assignedEmail", email);
@@ -176,6 +230,19 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 
   return (
     <div className="w-full">
+      <GenericAlertDialog
+        open={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
+        title="Please complete the missing data: "
+        description={missingMemberData}
+        buttonText="Update Member"
+        onButtonClick={() => {
+          router.push(`/home/my-team`);
+          members.setMemberToEdit(member);
+          setAside("EditMember");
+          setShowErrorDialog(false);
+        }}
+      />
       {isUpdate ? (
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <div className="w-full lg:w-full">
