@@ -1,7 +1,5 @@
-import React, { useEffect } from "react";
 import { DropdownInputProductForm } from "./DropDownProductForm";
 import { InputProductForm } from "./InputProductForm";
-import { useFormContext } from "react-hook-form";
 
 const CURRENCY_CODES = [
   "USD",
@@ -26,9 +24,9 @@ const CURRENCY_CODES = [
 
 interface PriceInputProps {
   currencyCode: string;
-  amount: number;
+  amount?: number;
   onCurrencyChange: (currency: string) => void;
-  onAmountChange: (amount: number) => void;
+  onAmountChange: (amount: number | undefined) => void;
   disabled?: boolean;
   isUpdate?: boolean;
   formValues?: any;
@@ -45,6 +43,13 @@ const PriceInput: React.FC<PriceInputProps> = ({
   formValues = {},
   initialData,
 }) => {
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    if (/^\d*$/.test(value)) {
+      onAmountChange(value ? parseInt(value, 10) : undefined);
+    }
+  };
   return (
     <div className="flex items-center space-x-4 h-14 pr-0">
       <DropdownInputProductForm
@@ -61,12 +66,10 @@ const PriceInput: React.FC<PriceInputProps> = ({
 
       <InputProductForm
         title="Price"
-        placeholder="Enter amount"
-        type="number"
-        value={amount.toString()}
-        onChange={(e) =>
-          onAmountChange(Math.max(0, parseFloat(e.target.value) || 0))
-        }
+        placeholder="Enter price"
+        type="text"
+        value={amount?.toString() || ""}
+        onChange={handleAmountChange}
         name="amount"
         className="w-3/5"
         disabled={disabled}

@@ -56,10 +56,7 @@ const BulkCreateForm: React.FC<{
     assignedMember: initialData.assignedMember || "",
     serialNumber: initialData.serialNumber || "",
     lastAssigned: initialData.lastAssigned || "",
-    price: initialData.price || {
-      amount: 0,
-      currencyCode: "USD",
-    },
+    price: initialData.price,
   };
 
   const productInstance = ProductModel.create(initialProductData);
@@ -249,10 +246,18 @@ const BulkCreateForm: React.FC<{
   };
 
   const handleBulkCreate = async (data: any) => {
+    const firstProductPrice = data.products[0].price;
     const productsData = data.products.map((productData: any) => {
       const assignedMember = productData.assignedMember;
       const location = productData.location;
       const status = assignedMember === "None" ? "Available" : "Delivered";
+      const price =
+        firstProductPrice?.amount !== undefined
+          ? {
+              amount: firstProductPrice.amount,
+              currencyCode: firstProductPrice.currencyCode || "USD",
+            }
+          : undefined;
 
       return {
         ...initialProductData,
@@ -262,7 +267,7 @@ const BulkCreateForm: React.FC<{
         recoverable: productData.recoverable,
         status,
         attributes: productData.attributes,
-        price: productData.price || initialProductData.price,
+        ...(price ? { price } : {}),
       };
     });
 
