@@ -29,8 +29,6 @@ import {
   useCreateAsset,
   useUpdateAsset,
 } from "@/assets/hooks";
-import { useFetchMembers } from "@/members/hooks";
-import { Skeleton } from "../ui/skeleton";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -68,6 +66,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       ...initialData,
       category: initialData?.category || undefined,
       serialNumber: initialData?.serialNumber || undefined,
+      price: initialData?.price || undefined,
     },
   });
   const {
@@ -78,6 +77,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     formState: { isSubmitting, errors },
     watch,
   } = methods;
+
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -175,6 +175,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
     return true;
   };
 
+  const amount = watch("price.amount");
+
   const handleSaveProduct = async (data: Product) => {
     setShowSuccessDialog(false);
     setShowErrorDialog(false);
@@ -189,6 +191,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const formatData: Product = {
       ...emptyProduct,
       ...data,
+      ...(amount !== undefined
+        ? { price: { amount, currencyCode: data.price?.currencyCode || "USD" } }
+        : {}),
       recoverable: currentRecoverable,
       status:
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",

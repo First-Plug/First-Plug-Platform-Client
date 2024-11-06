@@ -14,6 +14,7 @@ interface DropdownInputProductFormProps {
   value?: string;
   disabled?: boolean;
   searchable?: boolean;
+  optionClassName?: string;
 }
 
 export function DropdownInputProductForm({
@@ -26,6 +27,7 @@ export function DropdownInputProductForm({
   name,
   disabled,
   searchable = false,
+  optionClassName = "",
 }: DropdownInputProductFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   // const [selectedValue, setSelectedValue] = useState<string>(selectedOption);
@@ -147,7 +149,7 @@ export function DropdownInputProductForm({
               key={option}
               ref={(el) => (optionRefs.current[index] = el)}
               onClick={() => handleOptionClick(option)}
-              className="py-2 px-4 cursor-pointer hover:bg-gray-100"
+              className={`py-2 px-4 cursor-pointer hover:bg-gray-100 ${optionClassName}`}
             >
               {option}
             </li>
