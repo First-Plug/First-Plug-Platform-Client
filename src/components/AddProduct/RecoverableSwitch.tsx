@@ -25,9 +25,7 @@ const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
   const {
     user: { user },
   } = useStore();
-  const { data: userSettings, isFetching } = useFetchUserSettings(
-    user?.tenantName
-  );
+  const { data: userSettings } = useFetchUserSettings(user?.tenantName);
   const [isRecoverable, setIsRecoverable] = useState(false);
 
   useEffect(() => {
