@@ -45,6 +45,13 @@ const PriceInput: React.FC<PriceInputProps> = ({
   formValues = {},
   initialData,
 }) => {
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    if (/^\d*$/.test(value)) {
+      onAmountChange(value ? parseInt(value, 10) : undefined);
+    }
+  };
   return (
     <div className="flex items-center space-x-4 h-14 pr-0">
       <DropdownInputProductForm
@@ -62,22 +69,13 @@ const PriceInput: React.FC<PriceInputProps> = ({
       <InputProductForm
         title="Price"
         placeholder="Enter price"
-        type="number"
-        value={amount !== undefined ? amount.toString() : ""}
-        onChange={(e) => {
-          const value = e.target.value;
-          onAmountChange(value ? parseFloat(value) : undefined);
-        }}
+        type="text"
+        value={amount?.toString() || ""}
+        onChange={handleAmountChange}
         name="amount"
         className="w-3/5"
         disabled={disabled}
         min={0}
-        onWheel={(e) => e.currentTarget.blur()}
-        onKeyDown={(e) => {
-          if (e.key === "-" || e.key === "e") {
-            e.preventDefault();
-          }
-        }}
       />
     </div>
   );
