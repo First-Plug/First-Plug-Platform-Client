@@ -14,7 +14,7 @@ export const middleware: NextMiddleware = async (req) => {
   } else {
     if (session) {
       const url = req.nextUrl.clone();
-      url.pathname = `/home/my-team`;
+      url.pathname = `/home/dashboard`;
 
       return NextResponse.redirect(url);
     }
