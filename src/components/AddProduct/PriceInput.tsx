@@ -65,8 +65,8 @@ const PriceInput: React.FC<PriceInputProps> = ({
       />
 
       <InputProductForm
-        title="Price"
-        placeholder="Enter price"
+        title="Price per unit"
+        placeholder="Enter unit price"
         type="text"
         value={amount?.toString() || ""}
         onChange={handleAmountChange}
