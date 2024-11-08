@@ -487,7 +487,7 @@ export const RequestOffBoardingForm = observer(
                 render={({ field: { onChange, value, name } }) => (
                   <DropdownInputProductForm
                     name={name}
-                    options={DROPDOWN_OPTIONS}
+                    options={dropdownOptions}
                     placeholder="New Location"
                     title="New Location*"
                     onChange={(selectedValue: string) => {
