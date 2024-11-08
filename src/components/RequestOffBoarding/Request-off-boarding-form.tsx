@@ -11,6 +11,13 @@ import { observer } from "mobx-react-lite";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
 
+interface ExtendedUser extends Partial<User> {
+  personalEmail?: string;
+  dni?: string | number;
+  firstName?: string;
+  lastName?: string;
+}
+
 export interface Props {
   product: Product;
   index: number;
@@ -19,6 +26,7 @@ export interface Props {
   products: Product[];
   className: string;
   setIsButtonDisabled: (param: boolean) => void;
+  onFormStatusChange: (status: string) => void;
 }
 
 const validateBillingInfo = (user: User): boolean => {
@@ -33,7 +41,7 @@ const validateBillingInfo = (user: User): boolean => {
   return requiredFields.every((field) => user[field]?.trim() !== "");
 };
 
-const validateMemberBillingInfo = (user: User): boolean => {
+export const validateMemberBillingInfo = (user: ExtendedUser): boolean => {
   const requiredFields = [
     "country",
     "city",
@@ -44,15 +52,23 @@ const validateMemberBillingInfo = (user: User): boolean => {
     "dni",
   ] as const;
 
-  return requiredFields.every((field) => {
-    const value = user[field as keyof User];
-    return (
+  const isValid = requiredFields.every((field) => {
+    const value = user[field as keyof ExtendedUser];
+    const fieldValid =
       value !== undefined &&
       value !== null &&
-      (typeof value === "number" || value.trim() !== "") &&
-      value.toString().trim() !== ""
-    );
+      (typeof value === "number" || value.toString().trim() !== "");
+
+    const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+    console.log(`Validating field ${field} for ${fullName}: ${fieldValid}`);
+
+    return fieldValid;
   });
+
+  const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+  console.log(`Member ${fullName} validation result: ${isValid}`);
+
+  return isValid;
 };
 
 export const RequestOffBoardingForm = observer(
@@ -64,6 +80,7 @@ export const RequestOffBoardingForm = observer(
     totalProducts,
     className,
     setIsButtonDisabled,
+    onFormStatusChange,
   }: Props) => {
     const { data: session } = useSession();
     const router = useRouter();
@@ -72,6 +89,7 @@ export const RequestOffBoardingForm = observer(
       aside: { setAside, isClosed },
       members: { setMemberToEdit },
     } = useStore();
+
     const [formStatus, setFormStatus] = useState<string>("none");
     const [applyToAll, setApplyToAll] = useState(false);
     const [isPropagating, setIsPropagating] = useState(false);
@@ -80,6 +98,52 @@ export const RequestOffBoardingForm = observer(
 
     const selectedMember = watch(`products.${index}.newMember`);
     const relocation = watch(`products.${index}.relocation`);
+
+    const handleDropdown = (relocation: string) => {
+      if (relocation === "My office") {
+        if (!validateBillingInfo(session.user)) {
+          setValue(`products.${index}.relocation`, "My office");
+          setValue(`products.${index}.available`, false);
+          setValue(`products.${index}.newMember`, "None", {
+            shouldValidate: true,
+          });
+          setValue(`products.${index}.product`, products[index], {
+            shouldValidate: true,
+          });
+        } else {
+          setValue(`products.${index}.relocation`, "My office");
+          setValue(`products.${index}.available`, true);
+          setValue(`products.${index}.newMember`, "None", {
+            shouldValidate: true,
+          });
+          setValue(`products.${index}.product`, products[index], {
+            shouldValidate: true,
+          });
+        }
+      }
+
+      if (relocation === "FP warehouse") {
+        setValue(`products.${index}.relocation`, "FP warehouse");
+        setValue(`products.${index}.available`, true);
+        setValue(`products.${index}.newMember`, "None", {
+          shouldValidate: true,
+        });
+        setValue(`products.${index}.product`, products[index], {
+          shouldValidate: true,
+        });
+      }
+
+      if (relocation === "New employee") {
+        setValue(`products.${index}.relocation`, "New employee");
+        setValue(`products.${index}.available`, true);
+        setValue(`products.${index}.product`, products[index], {
+          shouldValidate: true,
+        });
+        setIsDisabledDropdown(true);
+      } else {
+        setIsDisabledDropdown(false);
+      }
+    };
 
     const propagateFirstProductValues = () => {
       const firstProduct = watch("products.0");
@@ -131,42 +195,6 @@ export const RequestOffBoardingForm = observer(
     };
 
     useEffect(() => {
-      let allAvailable = true;
-
-      products.forEach((product, index) => {
-        const newStatus = getStatus();
-
-        if (
-          newStatus === "not-member-available" ||
-          newStatus === "not-billing-information"
-        ) {
-          const currentAvailableValue = watch(`products.${index}.available`);
-
-          if (currentAvailableValue !== false) {
-            setValue(`products.${index}.available`, false, {
-              shouldValidate: true,
-            });
-          }
-          allAvailable = false;
-        } else {
-          const currentAvailableValue = watch(`products.${index}.available`);
-
-          if (currentAvailableValue !== true) {
-            setValue(`products.${index}.available`, true, {
-              shouldValidate: true,
-            });
-          }
-        }
-      });
-
-      if (!allAvailable) {
-        setIsButtonDisabled(false);
-      } else {
-        setIsButtonDisabled(true);
-      }
-    }, [isClosed]);
-
-    useEffect(() => {
       const subscription = watch((value, { name }) => {
         if (applyToAll && !isPropagating) {
           if (
@@ -209,12 +237,6 @@ export const RequestOffBoardingForm = observer(
     useEffect(() => {
       const newStatus = getStatus();
 
-      setFormStatus(newStatus);
-    }, [selectedMember, relocation, members, session.user]);
-
-    useEffect(() => {
-      const newStatus = getStatus();
-
       if (
         newStatus === "not-member-available" ||
         newStatus === "not-billing-information"
@@ -229,6 +251,7 @@ export const RequestOffBoardingForm = observer(
       }
 
       setFormStatus(newStatus);
+      onFormStatusChange(newStatus);
     }, [
       selectedMember,
       relocation,
@@ -239,66 +262,43 @@ export const RequestOffBoardingForm = observer(
       setValue,
     ]);
 
-    const handleDropdown = (relocation: string) => {
-      if (relocation === "My office") {
-        if (!validateBillingInfo(session.user)) {
-          setValue(`products.${index}.relocation`, "My office");
-          setValue(`products.${index}.available`, false);
-          setValue(`products.${index}.newMember`, "None", {
-            shouldValidate: true,
-          });
-          setValue(`products.${index}.product`, products[index], {
-            shouldValidate: true,
-          });
+    useEffect(() => {
+      let allAvailable = true;
+
+      products.forEach((product, index) => {
+        const newStatus = getStatus();
+
+        if (
+          newStatus === "not-member-available" ||
+          newStatus === "not-billing-information"
+        ) {
+          const currentAvailableValue = watch(`products.${index}.available`);
+
+          if (currentAvailableValue !== false) {
+            setValue(`products.${index}.available`, false, {
+              shouldValidate: true,
+            });
+          }
+          allAvailable = false;
         } else {
-          setValue(`products.${index}.relocation`, "My office");
-          setValue(`products.${index}.available`, true);
-          setValue(`products.${index}.newMember`, "None", {
-            shouldValidate: true,
-          });
-          setValue(`products.${index}.product`, products[index], {
-            shouldValidate: true,
-          });
+          const currentAvailableValue = watch(`products.${index}.available`);
+
+          if (currentAvailableValue !== true) {
+            setValue(`products.${index}.available`, true, {
+              shouldValidate: true,
+            });
+          }
         }
-      }
+      });
 
-      if (relocation === "FP warehouse") {
-        setValue(`products.${index}.relocation`, "FP warehouse");
-        setValue(`products.${index}.available`, true);
-        setValue(`products.${index}.newMember`, "None", {
-          shouldValidate: true,
-        });
-        setValue(`products.${index}.product`, products[index], {
-          shouldValidate: true,
-        });
-      }
-
-      if (relocation === "New employee") {
-        setValue(`products.${index}.relocation`, "New employee");
-        setValue(`products.${index}.available`, true);
-        setValue(`products.${index}.product`, products[index], {
-          shouldValidate: true,
-        });
-        setIsDisabledDropdown(true);
+      if (!allAvailable) {
+        setIsButtonDisabled(false);
       } else {
-        setIsDisabledDropdown(false);
+        setIsButtonDisabled(true);
       }
-    };
+    }, [isClosed]);
 
-    const handleClick = (status: string) => {
-      if (status === "not-billing-information") {
-        router.push("/home/settings");
-      } else if (status === "not-member-available") {
-        const foundMember = members.find(
-          (member) =>
-            `${member.firstName} ${member.lastName}` === selectedMember
-        );
-        setMemberToEdit(foundMember?._id);
-        setAside("EditMember");
-        router.push("/home/my-team");
-      }
-    };
-
+    // Control de sincronización `Apply to All`
     useLayoutEffect(() => {
       const subscription = watch((value, { name }) => {
         if (
@@ -337,6 +337,38 @@ export const RequestOffBoardingForm = observer(
 
       return () => subscription.unsubscribe();
     }, [watch, applyToAll]);
+
+    const handleClick = (status: string) => {
+      if (status === "not-billing-information") {
+        router.push("/home/settings");
+      } else if (status === "not-member-available") {
+        const foundMember = members.find(
+          (member) =>
+            `${member.firstName} ${member.lastName}` === selectedMember
+        );
+        setMemberToEdit(foundMember?._id);
+        setAside("EditMember");
+        // router.push("/home/my-team");
+      }
+    };
+
+    const handleFormStatusChange = (status: string) => {
+      setFormStatus(status);
+      onFormStatusChange(status);
+    };
+
+    useEffect(() => {
+      const newStatus = getStatus();
+      handleFormStatusChange(newStatus);
+    }, [
+      selectedMember,
+      relocation,
+      members,
+      session.user,
+      index,
+      watch,
+      setValue,
+    ]);
 
     return (
       <PageLayout>
@@ -451,10 +483,9 @@ export const RequestOffBoardingForm = observer(
                 name={`products.${index}.relocation`}
                 control={control}
                 render={({ field: { onChange, value, name } }) => (
-
                   <DropdownInputProductForm
                     name={name}
-                    options={dropdownOptions}
+                    options={DROPDOWN_OPTIONS}
                     placeholder="New Location"
                     title="New Location*"
                     onChange={(selectedValue: string) => {
