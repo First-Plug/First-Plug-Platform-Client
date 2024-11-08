@@ -28,7 +28,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
     members: { setMembers },
     alerts: { setAlert },
     teams: { setTeams },
-    aside: {closeAside}
+    aside: { closeAside },
   } = useStore();
   const queryClient = new QueryClient();
 
@@ -129,7 +129,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       setMembers(transformedMembers);
       setTeams(updatedTeams);
-      closeAside()
+      closeAside();
     } catch (error: any) {}
   };
 
