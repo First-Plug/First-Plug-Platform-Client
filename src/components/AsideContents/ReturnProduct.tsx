@@ -20,6 +20,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import GenericAlertDialog from "../AddProduct/ui/GenericAlertDialog";
 import { validateBillingInfo } from "@/lib/utils";
+import { SlackServices } from "@/services/slack.services";
+import { createSlackMessage } from "@/lib/createSlackMessage";
 
 interface IRemoveItems {
   product: Product;
@@ -88,6 +90,16 @@ export function ReturnProduct({
       });
       setReturnStatus("success");
       onRemoveSuccess();
+      const message = createSlackMessage(
+        { type: "member", data: selectedMember },
+        {
+          type: location === "Our office" ? "office" : "fp-warehouse",
+          data: session.user,
+        },
+        [product]
+      );
+
+      SlackServices.postMessage(message);
     } catch (error) {
       console.error("Error returning product:", error);
       setReturnStatus("error");

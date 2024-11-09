@@ -17,6 +17,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { capitalizeAndSeparateCamelCase, getMissingFields } from "@/lib/utils";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
 import { useRouter } from "next/navigation";
+import { createSlackMessage } from "@/lib/createSlackMessage";
+import { SlackServices } from "@/services/slack.services";
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
   product,
@@ -45,7 +47,7 @@ const MembersList = observer(function MembersList({
   const [relocateResult, setRelocateResult] =
     useState<RelocateStatus>(undefined);
   const [selectedMember, setSelectedMember] = useState<TeamMember>();
-  const { handleReassignProduct } = useActions();
+  const { handleRe } = useActions();
   const queryClient = useQueryClient();
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
@@ -89,11 +91,22 @@ const MembersList = observer(function MembersList({
 
       setRelocating(true);
       try {
-        await handleReassignProduct({
+        await handleRe({
           currentMember,
           selectedMember,
           product: product,
         });
+
+        const message = createSlackMessage(
+          { type: "member", data: currentMember },
+          {
+            type: "member",
+            data: selectedMember,
+          },
+          [product]
+        );
+
+        SlackServices.postMessage(message);
         queryClient.invalidateQueries({ queryKey: ["members"] });
         queryClient.invalidateQueries({ queryKey: ["assets"] });
         setRelocateResult("success");

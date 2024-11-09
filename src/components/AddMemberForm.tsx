@@ -16,10 +16,16 @@ import {
 import CategoryIcons from "./AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateAsset } from "@/assets/hooks";
-import { capitalizeAndSeparateCamelCase, getMissingFields, validateBillingInfo } from "@/lib/utils";
+import {
+  capitalizeAndSeparateCamelCase,
+  getMissingFields,
+  validateBillingInfo,
+} from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { useSession } from "next-auth/react";
+import { createSlackMessage } from "@/lib/createSlackMessage";
+import { SlackServices } from "@/services/slack.services";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -55,7 +61,6 @@ export const AddMemberForm = observer(function ({
 
   const router = useRouter();
   const { data: session } = useSession();
-
 
   useEffect(() => {
     setSearchedMembers(members);
@@ -151,10 +156,10 @@ export const AddMemberForm = observer(function ({
         });
         queryClient.invalidateQueries({ queryKey: ["members"] });
         // queryClient.invalidateQueries({ queryKey: ["assets"] });
+
         setAside(undefined);
         setAlert("assignedProductSuccess");
       }
-      // TODO: Send selectedMember and productUpdated slack channel "envios"
     } catch (error) {
       setAlert("errorAssignedProduct");
       console.error("Failed to reassign product", error);
