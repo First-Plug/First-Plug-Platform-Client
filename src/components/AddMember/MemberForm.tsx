@@ -106,7 +106,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
       }
 
       if (isUpdate && initialData) {
-        updateMemberMutation.mutate({
+        await updateMemberMutation.mutateAsync({
           id: initialData._id,
           data: { ...changes, ...(teamId && { team: teamId }) },
         });
@@ -115,7 +115,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
           initialData.dni = initialData.dni;
         }
       } else {
-        createMemberMutation.mutate({
+        await createMemberMutation.mutateAsync({
           ...data,
           ...(teamId && { team: teamId }),
         });

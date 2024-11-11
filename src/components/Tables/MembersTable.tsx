@@ -297,8 +297,8 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
     setAside("EditMember");
   };
 
-  const handleDelete = (memberId: TeamMember["_id"]) => {
-    deleteMemberMutation.mutate(memberId, {
+  const handleDelete = async (memberId: TeamMember["_id"]) => {
+    await deleteMemberMutation.mutateAsync(memberId, {
       onSuccess: () => {
         alert("Member has been deleted!");
       },

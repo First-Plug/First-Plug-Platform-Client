@@ -49,8 +49,8 @@ const EmployeeData = function ({ isUpdate, initialData }) {
     setIsModalOpen(true);
   };
 
-  const handleSaveNewTeam = () => {
-    createTeamMutation.mutate(
+  const handleSaveNewTeam = async () => {
+    await createTeamMutation.mutateAsync(
       { name: newTeamName },
       {
         onSuccess: (newTeam) => {
