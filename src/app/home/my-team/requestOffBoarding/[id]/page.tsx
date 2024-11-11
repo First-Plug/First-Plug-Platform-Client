@@ -36,6 +36,7 @@ const Page = ({ params }: { params: { id: string } }) => {
   const {
     members: { setMemberOffBoarding },
     aside: { isClosed },
+    alerts: { setAlert },
   } = useStore();
 
   const methods = useForm({
@@ -124,18 +125,26 @@ const Page = ({ params }: { params: { id: string } }) => {
           (member) => member.fullName === productToSend.newMember
         );
       }
-
       return productToSend;
     });
 
     setIsLoading(true);
-    await Memberservices.offboardingMember(params.id, sendData);
-    setIsLoading(false);
 
-    queryClient.invalidateQueries({ queryKey: ["assets"] });
-    queryClient.invalidateQueries({ queryKey: ["members"] });
+    try {
+      await Memberservices.offboardingMember(params.id, sendData);
 
-    router.push("/home/my-team");
+      setAlert("successOffboarding");
+
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+
+      router.push("/home/my-team");
+    } catch (error) {
+      console.error("Error al realizar offboarding:", error);
+      setAlert("errorOffboarding");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
