@@ -42,7 +42,7 @@ export const Form = function ({
           onClick={(e) => {
             e.preventDefault();
             return signIn("google", {
-              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/home/my-team`,
+              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/home/dashboard`,
             });
           }}
           variant="secondary"
@@ -54,7 +54,7 @@ export const Form = function ({
           onClick={(e) => {
             e.preventDefault();
             return signIn("azure-ad", {
-              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/home/my-team`,
+              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/home/dashboard`,
             });
           }}
           variant="secondary"

@@ -17,6 +17,7 @@ import { getBarColor } from "@/components/Dashboard/GetBarColor";
 import { AuthServices } from "@/services";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useFetchUserSettings } from "@/components/settings/hooks/useFetchUserSettings";
 
 export default observer(function Dashboard() {
   const {
@@ -29,6 +30,8 @@ export default observer(function Dashboard() {
 
   const queryClient = useQueryClient();
 
+  const { data: userSettings, isFetching: isFetchingSettings } =
+    useFetchUserSettings(user?.tenantName);
   const { data: membersData, isLoading: isLoadingTeams } = useFetchMembers();
   const { data: teamsData, isLoading: isLoadingMembers } = useFetchTeams();
   const { data: assets, isLoading: isLoadingAssets } = useGetTableAssets();
@@ -54,15 +57,17 @@ export default observer(function Dashboard() {
             console.error("Error fetching user info:", error);
           });
       }
-
-      // if (!user || !user.computerExpiration) {
-      //   console.error("usuario", user);
-      // }
     }
     setLoading(false);
   }, [sessionData?.user?._id, setUser, user]);
 
-  if (isLoadingTeams || isLoadingMembers || isLoadingAssets) {
+  if (
+    loading ||
+    isFetchingSettings ||
+    isLoadingTeams ||
+    isLoadingMembers ||
+    isLoadingAssets
+  ) {
     return <Loader />;
   }
 

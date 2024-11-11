@@ -11,6 +11,7 @@ import { observer } from "mobx-react-lite";
 import { useRouter } from "next/navigation";
 import { useFetchMembers } from "@/members/hooks";
 import { useQueryClient } from "@tanstack/react-query";
+import { validateMemberBillingInfo } from "../../../../../components/RequestOffBoarding/Request-off-boarding-form";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
@@ -51,6 +52,59 @@ const Page = ({ params }: { params: { id: string } }) => {
       setSelectedMember(res);
     });
   }, [params.id, isClosed]);
+
+  useEffect(() => {
+    if (isClosed) {
+      const products = methods.getValues("products");
+      const updatedProducts = products.map((product) => {
+        if (product.relocation === "New employee" && product.newMember) {
+          const foundMember = members.find(
+            (member) =>
+              `${member.firstName} ${member.lastName}` === product.newMember
+          );
+          if (foundMember && validateMemberBillingInfo(foundMember)) {
+            return { ...product, available: true };
+          }
+        }
+        return product;
+      });
+
+      methods.setValue("products", updatedProducts, { shouldValidate: true });
+
+      const areProductsValid = updatedProducts.every(
+        (product) => product.relocation && product.available
+      );
+
+      setTimeout(() => setIsButtonDisabled(!areProductsValid), 0);
+    }
+  }, [isClosed, members, methods]);
+
+  const handleFormStatusChange = (status: string) => {
+    if (status === "is-member-available" || status === "none") {
+      const products = methods.getValues("products");
+
+      const updatedProducts = products.map((product) => {
+        if (product.relocation === "New employee" && product.newMember) {
+          const foundMember = members.find(
+            (member) =>
+              `${member.firstName} ${member.lastName}` === product.newMember
+          );
+          if (foundMember && validateMemberBillingInfo(foundMember)) {
+            return { ...product, available: true };
+          }
+        }
+        return product;
+      });
+
+      methods.setValue("products", updatedProducts, { shouldValidate: true });
+
+      const areProductsValid = updatedProducts.every(
+        (product: ProductOffBoarding) => product.relocation && product.available
+      );
+
+      setIsButtonDisabled(!areProductsValid);
+    }
+  };
 
   useEffect(() => {
     const subscription = watch((values) => {
@@ -125,6 +179,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                         )}
                         className={isLastItem ? "mb-[300px]" : ""}
                         setIsButtonDisabled={setIsButtonDisabled}
+                        onFormStatusChange={handleFormStatusChange}
                       />
                     );
                   })}
