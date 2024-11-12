@@ -19,10 +19,8 @@ export const useUpdateMember = () => {
     mutationFn: ({ id, data }: UpdateMemberProps) => updateMember(id, data),
 
     onMutate: async ({ id, data }: UpdateMemberProps) => {
-      // Cancelar queries pendientes
       await queryClient.cancelQueries({ queryKey: ["members", id] });
 
-      // Obtener el miembro previo antes de actualizar
       const previousMember = queryClient.getQueryData<TeamMember>([
         "members",
         id,
@@ -59,6 +57,7 @@ export const useUpdateMember = () => {
       setAlert("updateMember");
       // Invalidar solo si es necesario
       queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
     },
 
     onSettled: (data, error, variables) => {
