@@ -36,7 +36,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
   const updateMemberMutation = useUpdateMember();
   const createMemberMutation = useCreateMember();
 
-
   const [isButtonDisabled, setButtonDisabled] = useState(false);
 
   const methods = useForm({
@@ -58,7 +57,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
   };
   const { getOrCreateTeam } = useGetOrCreateTeam();
   const handleSaveMember = async (data: TeamMember) => {
-    setButtonDisabled(true)
+    setButtonDisabled(true);
     try {
       let teamId: string | "";
 
@@ -97,6 +96,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
+      if (changes.personalEmail === "") {
+        delete changes.personalEmail;
+      }
+
       if (!("dni" in changes) && initialData?.dni) {
         changes.dni = initialData.dni;
       }
@@ -115,6 +118,9 @@ const MemberForm: React.FC<MemberFormProps> = ({
           initialData.dni = initialData.dni;
         }
       } else {
+        if (data.personalEmail === "") {
+          delete data.personalEmail;
+        }
         await createMemberMutation.mutateAsync({
           ...data,
           ...(teamId && { team: teamId }),
@@ -124,7 +130,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
       await queryClient.invalidateQueries({ queryKey: ["members"] });
       await queryClient.invalidateQueries({ queryKey: ["teams"] });
 
-      closeAside()
+      closeAside();
 
       // Actualiza el estado global de MobX si es necesario
       const updatedMembers = queryClient.getQueryData<TeamMember[]>([
@@ -137,10 +143,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
       setMembers(transformedMembers);
       setTeams(updatedTeams);
       closeAside();
-
-    } catch (error: any) {}
-    finally{
-      setButtonDisabled(false)
+    } catch (error: any) {
+      console.error("Error al guardar miembro:", error);
+    } finally {
+      setButtonDisabled(false);
     }
   };
 
