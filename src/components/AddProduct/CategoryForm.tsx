@@ -16,7 +16,6 @@ import { capitalizeAndSeparateCamelCase, getMissingFields } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import PriceInput from "./PriceInput";
 
-
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
   selectedCategory: Category | "";
@@ -242,7 +241,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         description={missingMemberData}
         buttonText="Update Member"
         onButtonClick={() => {
-          router.push(`/home/my-team`);
           members.setMemberToEdit(member);
           setAside("EditMember");
           setShowErrorDialog(false);
