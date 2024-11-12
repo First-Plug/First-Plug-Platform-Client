@@ -352,6 +352,24 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    successOffboarding: {
+      title: "Offboarding Successful",
+      type: "succes",
+      description:
+        "The member has been removed from My Team, and their products have been reassigned successfully.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorOffboarding: {
+      title: "Offboarding Error",
+      type: "error",
+      description:
+        "An error occurred while trying to remove the member or reassign their products. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;
