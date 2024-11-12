@@ -76,7 +76,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
 
         setLoading(true);
 
-        deleAssetMutation.mutate(id, {
+        await deleAssetMutation.mutateAsync(id, {
           onSuccess: () => {
             setOpen(false);
             setAlert("deleteStock");
@@ -111,7 +111,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         }
         setLoading(true);
 
-        deleteMemberMutation.mutate(id, {
+        await deleteMemberMutation.mutateAsync(id, {
           onSuccess: () => {
             setOpen(false);
             setAlert("deleteMember");
@@ -163,14 +163,14 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
       setOpen(true);
     };
 
-    const handleUnassignMember = () => {
+    const handleUnassignMember = async () => {
       if (!id || !teamId) {
         throw new Error("Member ID or Team ID is undefined");
       }
 
       setLoading(true);
 
-      removeFromTeamMutation.mutate(
+      await removeFromTeamMutation.mutateAsync(
         { memberId: id, teamId },
         {
           onSuccess: () => {

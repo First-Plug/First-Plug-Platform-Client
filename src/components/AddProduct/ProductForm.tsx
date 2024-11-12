@@ -303,7 +303,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowSuccessDialog(true);
           return;
         }
-        updateAsset.mutate(
+        await updateAsset.mutateAsync(
           { id: initialData._id, data: changes },
           {
             onSuccess: () => {
@@ -319,7 +319,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setBulkInitialData(formatData);
           setShowBulkCreate(true);
         } else {
-          createAsset.mutate(formatData, {
+          await createAsset.mutateAsync(formatData, {
             onSuccess: () => {
               setAlert("createProduct");
               methods.reset();

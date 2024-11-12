@@ -14,6 +14,7 @@ import { transformData } from "@/utils/dataTransformUtil";
 import { useCreateMember, useUpdateMember } from "@/members/hooks";
 import { useGetOrCreateTeam } from "@/teams/hooks";
 import { QueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface MemberFormProps {
   initialData?: TeamMember;
@@ -35,6 +36,9 @@ const MemberForm: React.FC<MemberFormProps> = ({
   const updateMemberMutation = useUpdateMember();
   const createMemberMutation = useCreateMember();
 
+
+  const [isButtonDisabled, setButtonDisabled] = useState(false);
+
   const methods = useForm({
     resolver: zodResolver(zodCreateMembertModel),
     defaultValues: initialData || {},
@@ -54,6 +58,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
   };
   const { getOrCreateTeam } = useGetOrCreateTeam();
   const handleSaveMember = async (data: TeamMember) => {
+    setButtonDisabled(true)
     try {
       let teamId: string | "";
 
@@ -101,7 +106,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
       }
 
       if (isUpdate && initialData) {
-        updateMemberMutation.mutate({
+        await updateMemberMutation.mutateAsync({
           id: initialData._id,
           data: { ...changes, ...(teamId && { team: teamId }) },
         });
@@ -110,7 +115,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
           initialData.dni = initialData.dni;
         }
       } else {
-        createMemberMutation.mutate({
+        await createMemberMutation.mutateAsync({
           ...data,
           ...(teamId && { team: teamId }),
         });
@@ -118,6 +123,8 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       await queryClient.invalidateQueries({ queryKey: ["members"] });
       await queryClient.invalidateQueries({ queryKey: ["teams"] });
+
+      closeAside()
 
       // Actualiza el estado global de MobX si es necesario
       const updatedMembers = queryClient.getQueryData<TeamMember[]>([
@@ -130,7 +137,11 @@ const MemberForm: React.FC<MemberFormProps> = ({
       setMembers(transformedMembers);
       setTeams(updatedTeams);
       closeAside();
+
     } catch (error: any) {}
+    finally{
+      setButtonDisabled(false)
+    }
   };
 
   return (
@@ -163,12 +174,12 @@ const MemberForm: React.FC<MemberFormProps> = ({
             <Button
               body={isUpdate ? "Update" : "Save"}
               variant="primary"
-              className="  rounded-lg"
+              className="rounded-lg disabled:bg-hoverRed"
               size={"big"}
               onClick={() => {
                 handleSubmit(handleSaveMember)();
               }}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isButtonDisabled}
             />
           </aside>
         </div>
