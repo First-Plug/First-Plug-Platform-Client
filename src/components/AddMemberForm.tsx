@@ -34,6 +34,7 @@ interface AddMemberFormProps {
   currentProduct?: Product | null;
   currentMember?: TeamMember | null;
   showNoneOption?: boolean;
+  naturalMembers: TeamMember[];
 }
 
 export const AddMemberForm = observer(function ({
@@ -43,6 +44,7 @@ export const AddMemberForm = observer(function ({
   currentProduct,
   currentMember,
   showNoneOption,
+  naturalMembers,
 }: AddMemberFormProps) {
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
@@ -116,7 +118,22 @@ export const AddMemberForm = observer(function ({
           showSuccessAlert: false,
         });
         queryClient.invalidateQueries({ queryKey: ["members"] });
-        // queryClient.invalidateQueries({ queryKey: ["assets"] });
+
+        const oldMember = naturalMembers.find(
+          (member) => member.email === currentProduct.assignedEmail
+        );
+
+        const message = createSlackMessage(
+          { data: oldMember, type: "member" },
+          {
+            data: noneOption === "Our office" ? session.user : "fp-warehouse",
+            type: noneOption === "Our office" ? "office" : "fp-warehouse",
+          },
+          [updatedProduct]
+        );
+
+        SlackServices.postMessage(message);
+
         setAside(undefined);
         setAlert("assignedProductSuccess");
       } else if (selectedMember) {
@@ -134,6 +151,8 @@ export const AddMemberForm = observer(function ({
           setShowErrorDialog(true);
           return;
         }
+
+        console.log(currentProduct);
 
         updatedProduct = {
           ...updatedProduct,
@@ -156,6 +175,38 @@ export const AddMemberForm = observer(function ({
         });
         queryClient.invalidateQueries({ queryKey: ["members"] });
         // queryClient.invalidateQueries({ queryKey: ["assets"] });
+
+        const oldMember = naturalMembers.find(
+          (member) => member.email === currentProduct.assignedEmail
+        );
+
+        let message;
+
+        if (currentProduct.location === "Our office") {
+          message = createSlackMessage(
+            { data: session.user, type: "office" },
+            { data: selectedMember, type: "member" },
+            [updatedProduct]
+          );
+        }
+
+        if (currentProduct.location === "FP warehouse") {
+          message = createSlackMessage(
+            { data: "fp-warehouse", type: "fp-warehouse" },
+            { data: selectedMember, type: "member" },
+            [updatedProduct]
+          );
+        }
+
+        if (currentProduct.location === "Employee") {
+          message = createSlackMessage(
+            { data: oldMember, type: "member" },
+            { data: selectedMember, type: "member" },
+            [updatedProduct]
+          );
+        }
+
+        SlackServices.postMessage(message);
 
         setAside(undefined);
         setAlert("assignedProductSuccess");
