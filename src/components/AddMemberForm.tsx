@@ -2,9 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Button, LoaderSpinner, SearchInput } from "@/common";
 import { observer } from "mobx-react-lite";
-import { TeamMember, Product, LOCATION, Location } from "@/types";
+import { TeamMember, Product, LOCATION, Location, User } from "@/types";
 import { useStore } from "@/models";
-import useFetch from "@/hooks/useFetch";
 import {
   Select,
   SelectContent,
@@ -17,6 +16,16 @@ import {
 import CategoryIcons from "./AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateAsset } from "@/assets/hooks";
+import {
+  capitalizeAndSeparateCamelCase,
+  getMissingFields,
+  validateBillingInfo,
+} from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
+import { useSession } from "next-auth/react";
+import { createSlackMessage } from "@/lib/createSlackMessage";
+import { SlackServices } from "@/services/slack.services";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -25,6 +34,7 @@ interface AddMemberFormProps {
   currentProduct?: Product | null;
   currentMember?: TeamMember | null;
   showNoneOption?: boolean;
+  naturalMembers: TeamMember[];
 }
 
 export const AddMemberForm = observer(function ({
@@ -34,6 +44,7 @@ export const AddMemberForm = observer(function ({
   currentProduct,
   currentMember,
   showNoneOption,
+  naturalMembers,
 }: AddMemberFormProps) {
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
@@ -41,6 +52,7 @@ export const AddMemberForm = observer(function ({
 
   const [isAssigning, setIsAssigning] = useState(false);
   const {
+    members: { setMemberToEdit },
     products: { reassignProduct },
     alerts: { setAlert },
     aside: { setAside },
@@ -48,6 +60,9 @@ export const AddMemberForm = observer(function ({
 
   const queryClient = useQueryClient();
   const { mutate: updateAssetMutation } = useUpdateAsset();
+
+  const router = useRouter();
+  const { data: session } = useSession();
 
   useEffect(() => {
     setSearchedMembers(members);
@@ -88,16 +103,57 @@ export const AddMemberForm = observer(function ({
     setIsAssigning(true);
     try {
       if (selectedMember === null && noneOption) {
+        if (noneOption === "Our office") {
+          if (!validateBillingInfo(session.user).isValid) {
+            setMissingOfficeData(
+              validateBillingInfo(session.user).missingFields
+            );
+            return setShowErrorDialogOurOffice(true);
+          }
+        }
+
         updateAssetMutation({
           id: currentProduct._id,
           data: updatedProduct,
           showSuccessAlert: false,
         });
         queryClient.invalidateQueries({ queryKey: ["members"] });
-        // queryClient.invalidateQueries({ queryKey: ["assets"] });
+
+        const oldMember = naturalMembers.find(
+          (member) => member.email === currentProduct.assignedEmail
+        );
+
+        const message = createSlackMessage(
+          { data: oldMember, type: "member" },
+          {
+            data: noneOption === "Our office" ? session.user : "fp-warehouse",
+            type: noneOption === "Our office" ? "office" : "fp-warehouse",
+          },
+          [updatedProduct]
+        );
+
+        SlackServices.postMessage(message);
+
         setAside(undefined);
         setAlert("assignedProductSuccess");
       } else if (selectedMember) {
+        const missingFields = getMissingFields(selectedMember);
+        if (getMissingFields(selectedMember).length) {
+          setMissingMemberData(
+            missingFields.reduce((acc, field, index) => {
+              if (index === 0) {
+                return capitalizeAndSeparateCamelCase(field);
+              }
+              return acc + " - " + capitalizeAndSeparateCamelCase(field);
+            }, "")
+          );
+
+          setShowErrorDialog(true);
+          return;
+        }
+
+        console.log(currentProduct);
+
         updatedProduct = {
           ...updatedProduct,
           assignedEmail: selectedMember.email,
@@ -119,6 +175,39 @@ export const AddMemberForm = observer(function ({
         });
         queryClient.invalidateQueries({ queryKey: ["members"] });
         // queryClient.invalidateQueries({ queryKey: ["assets"] });
+
+        const oldMember = naturalMembers.find(
+          (member) => member.email === currentProduct.assignedEmail
+        );
+
+        let message;
+
+        if (currentProduct.location === "Our office") {
+          message = createSlackMessage(
+            { data: session.user, type: "office" },
+            { data: selectedMember, type: "member" },
+            [updatedProduct]
+          );
+        }
+
+        if (currentProduct.location === "FP warehouse") {
+          message = createSlackMessage(
+            { data: "fp-warehouse", type: "fp-warehouse" },
+            { data: selectedMember, type: "member" },
+            [updatedProduct]
+          );
+        }
+
+        if (currentProduct.location === "Employee") {
+          message = createSlackMessage(
+            { data: oldMember, type: "member" },
+            { data: selectedMember, type: "member" },
+            [updatedProduct]
+          );
+        }
+
+        SlackServices.postMessage(message);
+
         setAside(undefined);
         setAlert("assignedProductSuccess");
       }
@@ -142,8 +231,38 @@ export const AddMemberForm = observer(function ({
     setValidationError(null);
   };
 
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [showErrorDialogOurOffice, setShowErrorDialogOurOffice] =
+    useState(false);
+  const [missingMemberData, setMissingMemberData] = useState("");
+  const [missingOfficeData, setMissingOfficeData] = useState("");
+
   return (
     <section className="flex flex-col gap-6 h-full ">
+      <GenericAlertDialog
+        open={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
+        title="Please complete the missing data: "
+        description={missingMemberData}
+        buttonText="Update Member"
+        onButtonClick={() => {
+          router.push(`/home/my-team`);
+          setMemberToEdit(selectedMember._id);
+          setAside("EditMember");
+          setShowErrorDialog(false);
+        }}
+      />
+      <GenericAlertDialog
+        open={showErrorDialogOurOffice}
+        onClose={() => setShowErrorDialogOurOffice(false)}
+        title="Please complete the missing data"
+        description={missingOfficeData}
+        buttonText="Update"
+        onButtonClick={() => {
+          router.push(`/home/settings`);
+          setShowErrorDialogOurOffice(false);
+        }}
+      />
       <div className="h-[90%] w-full ">
         {showNoneOption && (
           <section className="flex flex-col gap-2">

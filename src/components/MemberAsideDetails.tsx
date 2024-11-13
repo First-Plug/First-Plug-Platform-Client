@@ -13,6 +13,7 @@ import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { DeleteMemberModal } from "./Alerts/DeleteMemberModal";
 import { useFetchMember } from "@/members/hooks";
 import { Loader } from "./Loader";
+import { getMissingFields } from "@/lib/utils";
 
 interface MemberAsideDetailsProps {
   className?: string;
@@ -62,9 +63,37 @@ export const MemberAsideDetails = observer(function ({
   };
 
   const handleRealocate = (action: "open" | "close") => {
+    const missingFields = getMissingFields(selectedMember);
+    if (getMissingFields(selectedMember).length) {
+      setMissingMemberData(
+        missingFields.reduce((acc, field, index) => {
+          if (index === 0) {
+            return capitalizeAndSeparateCamelCase(field);
+          }
+          return acc + " - " + capitalizeAndSeparateCamelCase(field);
+        }, "")
+      );
+
+      setShowErrorDialog(true);
+      return;
+    }
     setRelocatePage(!(action === "close"));
   };
   const handleReturn = (action: "open" | "close") => {
+    const missingFields = getMissingFields(selectedMember);
+    if (getMissingFields(selectedMember).length) {
+      setMissingMemberData(
+        missingFields.reduce((acc, field, index) => {
+          if (index === 0) {
+            return capitalizeAndSeparateCamelCase(field);
+          }
+          return acc + " - " + capitalizeAndSeparateCamelCase(field);
+        }, "")
+      );
+
+      setShowErrorDialog(true);
+      return;
+    }
     setReturnPage(!(action === "close"));
   };
 
@@ -73,17 +102,17 @@ export const MemberAsideDetails = observer(function ({
     return separated.replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
-  const handleRequestOffBoarding = () => {   
+  const handleRequestOffBoarding = () => {
     const allProductsNotRecoverable = member.products.every(
       (product) => !product.recoverable
     );
 
     const getMissingFields = (selectedMember: any): string[] => {
-      
       const missingFields: string[] = [];
 
       const isEmptyString = (value: any) =>
-        typeof value === "string" && value.trim() === "" || value === undefined;
+        (typeof value === "string" && value.trim() === "") ||
+        value === undefined;
 
       const isInvalidNumber = (value: any) =>
         typeof value === "number" ? value === 0 : !value;

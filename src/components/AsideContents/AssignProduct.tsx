@@ -65,6 +65,7 @@ export const AssignProduct = observer(() => {
         handleSelectedMembers={handleSelectedMembers}
         members={filteredMembers}
         currentProduct={product}
+        naturalMembers={members}
         showNoneOption={type === "ReassignProduct"}
       />
     </div>
