@@ -85,7 +85,12 @@ export const AddMemberForm = observer(function ({
   };
 
   const handleSaveClick = async () => {
-    if (!currentProduct) return;
+    console.log("Starting handleSaveClick");
+
+    if (!currentProduct) {
+      console.log("No currentProduct found, returning");
+      return;
+    }
 
     if (selectedMember === null && !noneOption) {
       setValidationError("Please select a location");
@@ -112,12 +117,13 @@ export const AddMemberForm = observer(function ({
             return setShowErrorDialogOurOffice(true);
           }
         }
-
+        console.log("Before updateAssetMutation");
         updateAssetMutation({
           id: currentProduct._id,
           data: updatedProduct,
           showSuccessAlert: false,
         });
+        console.log("After updateAssetMutation");
         queryClient.invalidateQueries({ queryKey: ["members"] });
         // queryClient.invalidateQueries({ queryKey: ["assets"] });
         handleCloseAside();

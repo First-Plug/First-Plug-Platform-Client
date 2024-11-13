@@ -32,6 +32,7 @@ import {
 } from "./utils/ProductFormValidations";
 import { handleCategoryChange } from "./utils/CategoryHelpers";
 import { prepareProductData } from "./utils/PrepareProductData";
+import { formatMissingFieldsMessage, getMissingFields } from "@/lib/utils";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -55,6 +56,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     user: { user },
     aside: { setAside },
     alerts: { setAlert },
+    members,
   } = useStore();
 
   const createAsset = useCreateAsset();
@@ -101,6 +103,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     recoverable: initialData?.recoverable || false,
   });
   const [manualChange, setManualChange] = useState(false);
+  const [missingMemberData, setMissingMemberData] = useState("");
+  const [showMissingDataDialog, setShowMissingDataDialog] = useState(false);
+  const [memberToEdit, setMemberToEdit] = useState(null);
 
   const userRecoverableConfig = user?.isRecoverableConfig
     ? (new Map(user.isRecoverableConfig.entries()) as Map<Category, boolean>)
@@ -262,7 +267,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
         });
 
         if (Object.keys(changes).length === 0) {
-          console.log("No changes detected");
           setShowSuccessDialog(true);
           return;
         }
@@ -286,8 +290,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleSaveProduct = async (data: ProductFormData) => {
-    const isValid = await validateForm();
+    const assignedEmail = watch("assignedEmail");
 
+    const selectedMember = members.members.find(
+      (member) => member.email === assignedEmail
+    );
+
+    if (selectedMember) {
+      const missingFields = getMissingFields(selectedMember);
+      if (missingFields.length > 0) {
+        setMissingMemberData(formatMissingFieldsMessage(missingFields));
+        setMemberToEdit(selectedMember);
+        setShowMissingDataDialog(true);
+        return;
+      }
+    }
+
+    const isValid = await validateForm();
     if (!isValid) {
       console.log("Validation failed");
       return;
@@ -449,6 +468,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
             buttonText="OK"
             onButtonClick={() => {
               setShowErrorDialog(false);
+            }}
+          />
+        </div>
+        <div className="z-50">
+          <GenericAlertDialog
+            open={showMissingDataDialog}
+            onClose={() => setShowMissingDataDialog(false)}
+            title="Please complete the missing data: "
+            description={missingMemberData}
+            buttonText="Update Member"
+            onButtonClick={() => {
+              if (memberToEdit) {
+                members.setMemberToEdit(memberToEdit._id);
+                setAside("EditMember");
+                setShowMissingDataDialog(false);
+              }
             }}
           />
         </div>

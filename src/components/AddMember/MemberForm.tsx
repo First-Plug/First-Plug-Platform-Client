@@ -26,9 +26,8 @@ const MemberForm: React.FC<MemberFormProps> = ({
 }) => {
   const {
     members: { setMembers },
-    alerts: { setAlert },
     teams: { setTeams },
-    aside: {closeAside}
+    aside: { closeAside },
   } = useStore();
   const queryClient = new QueryClient();
 
@@ -45,14 +44,13 @@ const MemberForm: React.FC<MemberFormProps> = ({
     formState: { isSubmitting },
   } = methods;
 
-  // const [isProcessing, setIsProcessing] = useState(false);
-
   const formatAcquisitionDate = (date: string) => {
     if (!date) return "";
     const d = new Date(date);
     return isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
   };
   const { getOrCreateTeam } = useGetOrCreateTeam();
+
   const handleSaveMember = async (data: TeamMember) => {
     try {
       let teamId: string | "";
@@ -127,9 +125,9 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       const transformedMembers = transformData(updatedMembers, updatedTeams);
 
+      closeAside();
       setMembers(transformedMembers);
       setTeams(updatedTeams);
-      closeAside()
     } catch (error: any) {}
   };
 
