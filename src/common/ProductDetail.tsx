@@ -47,7 +47,7 @@ const MembersList = observer(function MembersList({
   const [relocateResult, setRelocateResult] =
     useState<RelocateStatus>(undefined);
   const [selectedMember, setSelectedMember] = useState<TeamMember>();
-  const { handleRe } = useActions();
+  const { handleReassignProduct } = useActions();
   const queryClient = useQueryClient();
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
@@ -91,7 +91,7 @@ const MembersList = observer(function MembersList({
 
       setRelocating(true);
       try {
-        await handleRe({
+        await handleReassignProduct({
           currentMember,
           selectedMember,
           product: product,
