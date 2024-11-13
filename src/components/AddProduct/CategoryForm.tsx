@@ -1,20 +1,19 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DropdownInputProductForm } from "./DropDownProductForm";
 import { InputProductForm } from "./InputProductForm";
 import { useStore } from "@/models";
 import { observer } from "mobx-react-lite";
 import { Location, CATEGORIES, Category } from "@/types";
 import { FieldValues, useFormContext } from "react-hook-form";
-import { setAuthInterceptor } from "@/config/axios.config";
 import { Skeleton } from "../ui/skeleton";
 import QuantityCounter from "./QuantityCounter";
 import RecoverableSwitch from "./RecoverableSwitch";
 import { useFetchMembers } from "@/members/hooks";
 import GenericAlertDialog from "./ui/GenericAlertDialog";
 import { capitalizeAndSeparateCamelCase, getMissingFields } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 import PriceInput from "./PriceInput";
+import LocationField from "./LocationField";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -49,7 +48,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 }) {
   const {
     members,
-    aside: { setAside },
+    aside: { setAside, isClosed, closeAside },
   } = useStore();
   const {
     setValue,
@@ -62,9 +61,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const [selectedAssignedMember, setSelectedAssignedMember] =
     useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
-  // const [loading, setLoading] = useState(true);
   const [isLocationEnabled, setIsLocationEnabled] = useState(false);
-
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );
@@ -74,11 +71,13 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
-  const router = useRouter();
 
   const [showNameInput, setShowNameInput] = useState(false);
   const [isRecoverable, setIsRecoverable] = useState(false);
   const [member, setMember] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const isAsideClosed = useRef(false);
 
   useEffect(() => {
     if (fetchedMembers) {
@@ -98,6 +97,9 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       const assignedMember = formState.assignedMember as string;
       const assignedEmail = formState.assignedEmail as string;
 
+      // console.log("Initial assignedMember:", assignedMember);
+      // console.log("Initial assignedEmail:", assignedEmail);
+
       const selectedMember = fetchedMembers.find(
         (member) => `${member.firstName} ${member.lastName}` === assignedMember
       );
@@ -109,6 +111,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       setAssignedEmail(selectedMember?.email || assignedEmail || "");
       setSelectedLocation(formState.location as string);
       setValue("location", formState.location);
+
+      // console.log("Selected assignedMember after set:", selectedAssignedMember);
     }
   }, [isUpdate, fetchedMembers, formState, setValue, setAssignedEmail]);
 
@@ -117,7 +121,66 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     clearErrors(name);
   };
 
+  const revalidateSelectedMember = () => {
+    if (!selectedAssignedMember) return;
+
+    const updatedMember = members.members.find(
+      (member) =>
+        `${member.firstName} ${member.lastName}` === selectedAssignedMember
+    );
+
+    if (updatedMember) {
+      const missingFields = getMissingFields(updatedMember);
+      if (missingFields.length > 0) {
+        setMissingMemberData(
+          missingFields.reduce((acc, field, index) => {
+            if (index === 0) {
+              return capitalizeAndSeparateCamelCase(field);
+            }
+            return acc + " - " + capitalizeAndSeparateCamelCase(field);
+          }, "")
+        );
+        setShowErrorDialog(true);
+      } else {
+        const email = updatedMember.email || "";
+        setAssignedEmail(email);
+        setValue("assignedEmail", email, { shouldValidate: true });
+        setValue("assignedMember", selectedAssignedMember, {
+          shouldValidate: true,
+        });
+      }
+    }
+  };
+
+  // Detecta el cierre del aside y revalida el miembro seleccionado
+  useEffect(() => {
+    if (isAsideClosed.current) {
+      // console.log("Revalidando miembro seleccionado al cerrar el aside...");
+      revalidateSelectedMember();
+      isAsideClosed.current = false; // Resetea la referencia
+    }
+  }, [isClosed]);
+
+  // Manejo del cierre del aside (usado en el botón de 'Save' y en la 'X' de cierre)
+  const handleCloseAside = () => {
+    setAside(undefined);
+    closeAside();
+    isAsideClosed.current = true;
+  };
+
+  const handleSaveClick = async () => {
+    if (!selectedAssignedMember) {
+      console.error("No se ha seleccionado un miembro asignado.");
+      setValidationError("Assigned Member es requerido");
+      setAside("EditMember");
+      return;
+    }
+    handleCloseAside();
+  };
+
   const handleAssignedMemberChange = (selectedFullName: string) => {
+    // console.log("Selected FullName:", selectedFullName);
+
     setSelectedAssignedMember(selectedFullName);
 
     if (selectedFullName === "None" || selectedFullName === "") {
@@ -135,6 +198,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         (member) =>
           `${member.firstName} ${member.lastName}` === selectedFullName
       );
+      // console.log("Selected Member:", selectedMember);
 
       if (selectedAssignedMember !== "None" && selectedAssignedMember !== "") {
         const preSelectedMember = members.members.find(
@@ -160,7 +224,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       }
 
       // TODO: ACA esta la persona anterior al cambio osea que si es diferente de None tengo que validar que los datos esten para el canal de slack
-      console.log(selectedAssignedMember);
+      // console.log(selectedAssignedMember);
 
       const missingFields = getMissingFields(selectedMember);
       if (getMissingFields(selectedMember).length) {
@@ -291,44 +355,17 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
           </div>
 
           <div className="w-full">
-            {selectedAssignedMember === "None" ||
-            selectedAssignedMember === "" ? (
-              <>
-                <DropdownInputProductForm
-                  options={["Our office", "FP warehouse"]}
-                  placeholder="Location"
-                  title="Location*"
-                  name="location"
-                  selectedOption={selectedLocation}
-                  onChange={(value: Location) => {
-                    setSelectedLocation(value);
-                    setValue("location", value);
-                    clearErrors("location");
-                  }}
-                  required="required"
-                  className="w-full"
-                  disabled={!isLocationEnabled && !isUpdate}
-                />
-                <div className="min-h-[24px]">
-                  {errors.location && (
-                    <p className="text-red-500">
-                      {(errors.location as any).message}
-                    </p>
-                  )}
-                </div>
-              </>
-            ) : (
-              <InputProductForm
-                placeholder="Location"
-                title="Location"
-                type="text"
-                name="location"
-                value="Employee"
-                onChange={(e) => handleInputChange("location", e.target.value)}
-                className="w-full"
-                readOnly={selectedLocation === "Employee"}
-              />
-            )}
+            <LocationField
+              selectedAssignedMember={selectedAssignedMember}
+              selectedLocation={selectedLocation as Location}
+              onLocationChange={(location) => {
+                setSelectedLocation(location);
+                setValue("location", location);
+              }}
+              isLocationEnabled={isLocationEnabled || isUpdate || quantity > 1}
+              error={(errors.location as any)?.message}
+              clearErrors={clearErrors}
+            />
           </div>
           <div className="w-full">
             <InputProductForm
@@ -417,7 +454,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 placeholder="Category"
                 title="Category*"
                 name="category"
-                selectedOption={selectedCategory}
+                selectedOption={watch("category")}
                 onChange={(category: Category) => {
                   handleCategoryChange(category);
                   clearErrors("category");
@@ -503,46 +540,17 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               </div>
             </div>
             <div className="w-full">
-              {selectedAssignedMember === "None" ||
-              selectedAssignedMember === "" ? (
-                <>
-                  <DropdownInputProductForm
-                    options={["Our office", "FP warehouse"]}
-                    placeholder="Location"
-                    title="Location*"
-                    name="location"
-                    selectedOption={selectedLocation}
-                    onChange={(value: Location) => {
-                      setSelectedLocation(value);
-                      setValue("location", value);
-                      clearErrors("location");
-                    }}
-                    required="required"
-                    className="w-full"
-                    disabled={!isLocationEnabled || quantity > 1}
-                  />
-                  <div className="min-h-[24px]">
-                    {errors.location && (
-                      <p className="text-red-500">
-                        {(errors.location as any).message}
-                      </p>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <InputProductForm
-                  placeholder="Location"
-                  title="Location"
-                  type="text"
-                  name="location"
-                  value="Employee"
-                  onChange={(e) =>
-                    handleInputChange("location", e.target.value)
-                  }
-                  className="w-full"
-                  readOnly={selectedLocation === "Employee"}
-                />
-              )}
+              <LocationField
+                selectedAssignedMember={selectedAssignedMember}
+                selectedLocation={selectedLocation as Location}
+                onLocationChange={(location) => {
+                  setSelectedLocation(location);
+                  setValue("location", location);
+                }}
+                isLocationEnabled={isUpdate || quantity <= 1}
+                error={(errors.location as any)?.message}
+                clearErrors={clearErrors}
+              />
             </div>
             <div className="w-full">
               <InputProductForm

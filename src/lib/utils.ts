@@ -64,3 +64,10 @@ export const validateBillingInfo = (
     missingFields: missingFieldsArray.join(", "),
   };
 };
+
+export const formatMissingFieldsMessage = (missingFields: string[]) => {
+  return missingFields.reduce((acc, field, index) => {
+    const fieldMessage = capitalizeAndSeparateCamelCase(field);
+    return index === 0 ? fieldMessage : `${acc} - ${fieldMessage}`;
+  }, "");
+};

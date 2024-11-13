@@ -16,7 +16,11 @@ import {
 import CategoryIcons from "./AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateAsset } from "@/assets/hooks";
-import { capitalizeAndSeparateCamelCase, getMissingFields, validateBillingInfo } from "@/lib/utils";
+import {
+  capitalizeAndSeparateCamelCase,
+  getMissingFields,
+  validateBillingInfo,
+} from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { useSession } from "next-auth/react";
@@ -47,7 +51,7 @@ export const AddMemberForm = observer(function ({
     members: { setMemberToEdit },
     products: { reassignProduct },
     alerts: { setAlert },
-    aside: { setAside },
+    aside: { setAside, closeAside },
   } = useStore();
 
   const queryClient = useQueryClient();
@@ -55,7 +59,6 @@ export const AddMemberForm = observer(function ({
 
   const router = useRouter();
   const { data: session } = useSession();
-
 
   useEffect(() => {
     setSearchedMembers(members);
@@ -75,6 +78,11 @@ export const AddMemberForm = observer(function ({
   const displayedMembers = searchedMembers.filter(
     (member) => member.email !== currentMember?.email
   );
+
+  const handleCloseAside = () => {
+    setAside(undefined);
+    closeAside();
+  };
 
   const handleSaveClick = async () => {
     if (!currentProduct) return;
@@ -112,7 +120,9 @@ export const AddMemberForm = observer(function ({
         });
         queryClient.invalidateQueries({ queryKey: ["members"] });
         // queryClient.invalidateQueries({ queryKey: ["assets"] });
+        handleCloseAside();
         setAside(undefined);
+
         setAlert("assignedProductSuccess");
       } else if (selectedMember) {
         const missingFields = getMissingFields(selectedMember);
@@ -151,7 +161,9 @@ export const AddMemberForm = observer(function ({
         });
         queryClient.invalidateQueries({ queryKey: ["members"] });
         // queryClient.invalidateQueries({ queryKey: ["assets"] });
+        handleCloseAside();
         setAside(undefined);
+
         setAlert("assignedProductSuccess");
       }
       // TODO: Send selectedMember and productUpdated slack channel "envios"
