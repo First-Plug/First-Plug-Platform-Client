@@ -1,5 +1,5 @@
 import { Product, ProductTable, CATEGORIES } from "@/types";
-import { ArrowRight, Button, ProductImage } from "@/common";
+import { ArrowRight, Button, LoaderSpinner, ProductImage } from "@/common";
 import { ColumnDef } from "@tanstack/react-table";
 import PrdouctModelDetail from "@/common/PrdouctModelDetail";
 import { observer } from "mobx-react-lite";
@@ -8,6 +8,7 @@ import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
 import "./table.css";
 import { useEffect, useState } from "react";
+import { autorun } from "mobx";
 
 interface ProductsTableProps {
   assets: ProductTable[];
@@ -153,7 +154,11 @@ export const productColumns = (
         <Button
           variant="text"
           className="flex justify-end px-4 py-2 rounded-lg cursor-pointer"
-          onClick={row.getToggleExpandedHandler()}
+          onClick={() => {
+            setTimeout(() => {
+              row.getToggleExpandedHandler()();
+            }, 100);
+          }}
         >
           <span>Details</span>
           <ArrowRight
@@ -192,28 +197,38 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   };
 
   useEffect(() => {
-    if (assets.length) {
-      setTable(assets);
-    }
+    autorun(() => {
+      if (assets.length) {
+        setTable(assets);
+      }
+    });
   }, [assets, setTable]);
 
   const columns = productColumns(onlyAvaliable ? availableProducts : assets);
 
   return (
-    <RootTable
-      tableType="stock"
-      tableNameRef="productsTable"
-      data={onlyAvaliable ? availableProducts : assets}
-      columns={columns}
-      getRowCanExpand={() => true}
-      onClearFilters={handleClearAllFilters}
-      renderSubComponent={(row) => (
-        <ProdcutsDetailsTable
-          products={row.products}
-          clearAll={clearAll}
-          onResetInternalFilters={setResetSubTableFilters}
+    <>
+      {assets && assets.length > 0 ? (
+        <RootTable
+          tableType="stock"
+          tableNameRef="productsTable"
+          data={onlyAvaliable ? availableProducts : assets}
+          columns={columns}
+          getRowCanExpand={() =>
+            availableProducts.length > 0 || assets.length > 0
+          }
+          onClearFilters={handleClearAllFilters}
+          renderSubComponent={(row) => (
+            <ProdcutsDetailsTable
+              products={row.products}
+              clearAll={clearAll}
+              onResetInternalFilters={setResetSubTableFilters}
+            />
+          )}
         />
+      ) : (
+        <LoaderSpinner />
       )}
-    />
+    </>
   );
 });
