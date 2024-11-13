@@ -161,13 +161,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleCreateProduct = async (data: ProductFormData) => {
+    const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
     const preparedData = prepareProductData(
       data,
       isUpdate,
       selectedCategory,
       initialData,
       attributes,
-      formValues.recoverable,
+      currentRecoverable,
       watch("price.amount"),
       watch("assignedEmail")
     );
@@ -188,6 +189,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       } else {
         createAsset.mutate(preparedData, {
           onSuccess: () => {
+            console.log("Final preparedData sent to backend:", preparedData);
             setAlert("createProduct");
             methods.reset();
             setSelectedCategory(undefined);
@@ -305,6 +307,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         return;
       }
     }
+    const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
 
     const isValid = await validateForm();
     if (!isValid) {
@@ -318,7 +321,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       selectedCategory,
       initialData,
       attributes,
-      formValues.recoverable,
+      currentRecoverable,
       watch("price.amount"),
       watch("assignedEmail")
     );
@@ -346,6 +349,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
 
   const handleNext = async () => {
+    const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
     const isFormValid = await validateForm();
     if (!isFormValid) return;
 
@@ -356,7 +360,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       selectedCategory,
       initialData,
       attributes,
-      formValues.recoverable,
+      currentRecoverable,
       watch("price.amount"),
       watch("assignedEmail")
     );

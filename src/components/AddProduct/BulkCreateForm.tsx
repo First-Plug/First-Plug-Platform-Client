@@ -15,6 +15,8 @@ import { useBulkCreateAssets } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchMembers } from "@/members/hooks";
 import { getMemberFullName } from "@/members/helpers/getMemberFullName";
+import ProductStatusValidator from "./utils/ProductStatusValidator";
+import { useRouter } from "next/navigation";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -27,6 +29,7 @@ const BulkCreateForm: React.FC<{
   const isLoading = status === "pending";
 
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const numProducts = quantity;
 
@@ -64,6 +67,8 @@ const BulkCreateForm: React.FC<{
   const {
     products: { setProducts },
     alerts: { setAlert },
+    members: { setMemberToEdit },
+    aside: { setAside },
   } = useStore();
 
   const methods = useForm({
@@ -88,6 +93,9 @@ const BulkCreateForm: React.FC<{
   );
   const [members, setMembers] = useState<Instance<typeof TeamMemberModel>[]>(
     []
+  );
+  const [statusList, setStatusList] = useState<string[]>(
+    Array(numProducts).fill("")
   );
   const [loading, setLoading] = useState(true);
   const [isLocationEnabled, setIsLocationEnabled] = useState<boolean[]>(
@@ -151,6 +159,15 @@ const BulkCreateForm: React.FC<{
     }
   }, []);
 
+  const handleStatusChange = (status: string, index: number) => {
+    setStatusList((prevStatusList) => {
+      if (prevStatusList[index] === status) return prevStatusList;
+      const updatedStatusList = [...prevStatusList];
+      updatedStatusList[index] = status;
+      return updatedStatusList;
+    });
+  };
+
   const handleAssignedMemberChange = (
     selectedFullName: string,
     index: number
@@ -161,6 +178,7 @@ const BulkCreateForm: React.FC<{
     const email = selectedMember?.email || "";
     setValue(`products.${index}.assignedEmail`, email);
     setValue(`products.${index}.assignedMember`, selectedFullName);
+    handleStatusChange("pending", index);
 
     const newSelectedLocations = [...selectedLocations];
     newSelectedLocations[index] = selectedFullName === "None" ? "" : "Employee";
@@ -381,7 +399,7 @@ const BulkCreateForm: React.FC<{
             {Array.from({ length: numProducts }, (_, index) => (
               <div key={index} className="mb-4">
                 <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 ">
                   <div className="w-full">
                     <DropdownInputProductForm
                       options={assignedEmailOptions}
@@ -464,6 +482,42 @@ const BulkCreateForm: React.FC<{
                       }
                       className="w-full"
                     />
+                  </div>
+                  <div className="w-full">
+                    <ProductStatusValidator
+                      productIndex={index}
+                      selectedMember={watch(`products.${index}.assignedMember`)}
+                      relocation={watch(`products.${index}.location`)}
+                      members={members}
+                      onStatusChange={(status) =>
+                        handleStatusChange(status, index)
+                      }
+                      setMemberToEdit={setMemberToEdit}
+                      setAside={setAside}
+                    />
+
+                    {/* <div className="flex-1 p-2 flex items-center">
+                      {statusList[index] === "not-billing-information" && (
+                        <Button
+                          size="default"
+                          onClick={() =>
+                            handleClick("not-billing-information", index)
+                          }
+                        >
+                          Complete Company Details
+                        </Button>
+                      )}
+                      {statusList[index] === "not-member-available" && (
+                        <Button
+                          size="default"
+                          onClick={() =>
+                            handleClick("not-member-available", index)
+                          }
+                        >
+                          Complete Shipment Details
+                        </Button>
+                      )}
+                    </div> */}
                   </div>
                 </div>
               </div>
