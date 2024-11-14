@@ -1,6 +1,8 @@
 import { Button } from "@/common";
+import { useStore } from "@/models";
 import { User } from "@/types";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface ExtendedUser extends Partial<User> {
@@ -56,13 +58,13 @@ const ProductStatusValidator: React.FC<ProductStatusValidatorProps> = ({
 }) => {
   const { data: session } = useSession();
   const user = session?.user;
+  const {
+    aside: { isClosed },
+  } = useStore();
+  const router = useRouter();
   const [status, setStatus] = useState<string>("none");
 
-  useEffect(() => {
-    console.log("Estado inicial de status:", status);
-  }, []);
-
-  useEffect(() => {
+  const validateStatus = () => {
     if (!selectedMember && !relocation) {
       setStatus("none");
       onStatusChange("none", productIndex);
@@ -86,19 +88,17 @@ const ProductStatusValidator: React.FC<ProductStatusValidatorProps> = ({
       setStatus(newStatus);
       onStatusChange(newStatus, productIndex);
     }
-  }, [
-    selectedMember,
-    relocation,
-    members,
-    user,
-    productIndex,
-    onStatusChange,
-    status,
-  ]);
+  };
+
+  useEffect(() => {
+    if (isClosed) {
+      validateStatus();
+    }
+  }, [isClosed, selectedMember, relocation, members, user]);
 
   const handleClick = () => {
     if (status === "not-billing-information") {
-      setAside("EditCompanyDetails");
+      router.push("/home/settings");
     } else if (status === "not-member-available") {
       const foundMember = members.find(
         (m) => `${m.firstName} ${m.lastName}` === selectedMember

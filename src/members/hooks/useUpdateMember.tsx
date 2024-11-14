@@ -55,6 +55,8 @@ export const useUpdateMember = () => {
       );
       updateMemberInStore(data);
       setAlert("updateMember");
+      console.log("Miembro actualizado en el store:", data);
+
       // Invalidar solo si es necesario
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });

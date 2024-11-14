@@ -83,7 +83,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setValue,
     clearErrors,
     trigger,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting },
     watch,
   } = methods;
 

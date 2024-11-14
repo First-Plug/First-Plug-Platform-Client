@@ -105,6 +105,11 @@ export const MemberStore = types
     },
     updateMember(member) {
       const index = store.members.findIndex((m) => m._id === member._id);
+      console.log("Intentando actualizar el miembro con ID:", member._id);
+      console.log(
+        "Estado actual de miembros:",
+        store.members.map((m) => m._id)
+      );
       if (index !== -1) {
         store.members[index] = member;
       } else {
