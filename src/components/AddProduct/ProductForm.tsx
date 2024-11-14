@@ -308,14 +308,30 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (selectedAssignedMember === "None") {
+      if (selectedLocation) {
+        setValue("location", selectedLocation);
+      } else {
+        setValue("location", "Our office");
+      }
+    } else {
+      setValue("location", "Employee");
+    }
+    clearErrors("location");
+  }, [selectedAssignedMember, selectedLocation, setValue, clearErrors]);
+
   const handleSaveProduct = async (data: ProductFormData) => {
-    if (!selectedAssignedMember || !selectedLocation) {
-      console.log("Valores no definidos en el momento de la validación");
+    const location = watch("location");
+
+    if (!location) {
+      setErrorMessage("Location is required but missing.");
+      setShowErrorDialog(true);
       return;
     }
-    console.log("selectedAssignedMember:", selectedAssignedMember);
-    console.log("selectedLocation:", selectedLocation);
-    const assignedEmail = watch("assignedEmail");
+
+    const assignedEmail =
+      selectedAssignedMember === "None" ? "" : watch("assignedEmail");
 
     const selectedMember = members.members.find(
       (member) => member.email === assignedEmail
@@ -335,12 +351,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
       selectedLocation === "Our office"
     ) {
       const { isValid, missingFields } = validateBillingInfo(user);
+
       if (!isValid) {
         setMissingMemberData(
           formatMissingFieldsMessage(missingFields.split(", "))
         );
         setMissingDataType("billing");
-        setShowErrorDialog(true);
+        setErrorMessage(
+          "Billing information is incomplete. Please check settings."
+        );
+        setShowMissingDataDialog(true);
         return;
       }
     }

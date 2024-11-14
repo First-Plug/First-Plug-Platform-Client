@@ -14,6 +14,10 @@ export const prepareProductData = (
 ): Product => {
   const preparedData: Partial<Product> = {
     ...data,
+    assignedEmail:
+      assignedEmail === "None" || assignedEmail === ""
+        ? undefined
+        : assignedEmail,
     price:
       amount !== undefined
         ? { amount, currencyCode: data.price?.currencyCode || "USD" }
@@ -21,11 +25,8 @@ export const prepareProductData = (
     recoverable,
     status: assignedEmail || data.assignedMember ? "Delivered" : "Available",
     category: selectedCategory || initialData?.category || "Other",
-    location: data.assignedMember
-      ? "Employee"
-      : data.location || initialData?.location || "Our office",
+    location: data.location || initialData?.location,
     name: data.name || initialData?.name || "",
-    assignedEmail,
     attributes: cast(
       attributes.map((attr) => {
         const initialAttr = initialData?.attributes.find(
