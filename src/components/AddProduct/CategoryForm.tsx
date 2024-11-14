@@ -80,14 +80,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const amount = watch("price.amount");
   const currencyCode = watch("price.currencyCode") || "USD";
   const selectedModel = watch("model");
-
-  // const [selectedAssignedMember, setSelectedAssignedMember] =
-  //   useState<string>("");
-  // const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [isLocationEnabled, setIsLocationEnabled] = useState(false);
-  // const [missingDataType, setMissingDataType] = useState<
-  //   "member" | "billing"
-  // >();
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
   const [member, setMember] = useState("");
