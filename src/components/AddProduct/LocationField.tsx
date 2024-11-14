@@ -34,8 +34,6 @@ const LocationField: React.FC<LocationFieldProps> = ({
   setMissingMemberData,
   setMissingDataType,
 }) => {
-  const router = useRouter();
-
   const handleLocationChange = (
     location: "Our office" | "FP warehouse" | "Employee"
   ) => {
@@ -61,10 +59,7 @@ const LocationField: React.FC<LocationFieldProps> = ({
       title="Location*"
       name="location"
       selectedOption={selectedLocation}
-      onChange={(value) => {
-        onLocationChange(value as "Our office" | "FP warehouse");
-        clearErrors("location");
-      }}
+      onChange={handleLocationChange}
       required="required"
       className="w-full"
       disabled={!isLocationEnabled}

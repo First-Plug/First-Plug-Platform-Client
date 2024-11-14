@@ -130,30 +130,11 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     setValue("recoverable", value);
   };
 
-  // const handleLocationChange = (
-  //   location: "Our office" | "FP warehouse" | "Employee"
-  // ) => {
-  //   setSelectedLocation(location);
-  //   setValue("location", location);
-
-  //   if (selectedAssignedMember === "None" && location === "Our office") {
-  //     const { isValid, missingFields } = validateBillingInfo(user);
-  //     if (!isValid) {
-  //       setMissingMemberData(
-  //         formatMissingFieldsMessage(missingFields.split(", "))
-  //       );
-  //       setMissingDataType("billing");
-  //       setShowErrorDialog(true);
-  //     }
-  //   }
-
-  //   clearErrors("location");
-  // };
-
   const handleShowErrorDialog = (
     missingData: string,
     type: "member" | "billing"
   ) => {
+    console.log("Tipo de datos faltantes:", type);
     setShowErrorDialog(true);
     setMissingMemberData(missingData);
     setMissingDataType(type);
@@ -224,6 +205,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               setIsLocationEnabled={setIsLocationEnabled}
               setMissingMemberData={setMissingMemberData}
               setShowErrorDialog={setShowErrorDialog}
+              setMissingDataType={setMissingDataType}
               setMember={setMember}
               isUpdate={isUpdate}
               clearErrors={clearErrors}
@@ -423,6 +405,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 initialSelectedMember=""
                 selectedAssignedMember={selectedAssignedMember}
                 setSelectedAssignedMember={setSelectedAssignedMember}
+                setMissingDataType={setMissingDataType}
               />
             </div>
             <div className="w-full">

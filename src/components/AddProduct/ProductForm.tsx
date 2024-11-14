@@ -38,6 +38,7 @@ import {
   validateBillingInfo,
 } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -88,6 +89,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const session = useSession();
   const user = session.data?.user;
+  const router = useRouter();
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -523,13 +525,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
             onClose={() => setShowMissingDataDialog(false)}
             title="Please complete the missing data: "
             description={missingMemberData}
-            buttonText="Update Member"
+            buttonText={
+              missingDataType === "member" ? "Update Member" : "Go to Settings"
+            }
             onButtonClick={() => {
-              if (memberToEdit) {
+              if (missingDataType === "member") {
                 members.setMemberToEdit(memberToEdit._id);
                 setAside("EditMember");
-                setShowMissingDataDialog(false);
+              } else {
+                router.push("/home/settings");
               }
+              setShowErrorDialog(false);
             }}
           />
         </div>

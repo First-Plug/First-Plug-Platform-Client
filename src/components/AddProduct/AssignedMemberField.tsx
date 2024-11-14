@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DropdownInputProductForm } from "./DropDownProductForm";
 import { TeamMember } from "@/types";
 import { capitalizeAndSeparateCamelCase, getMissingFields } from "@/lib/utils";
@@ -22,6 +22,9 @@ interface AssignedMemberFieldProps {
   manualChange: boolean;
   selectedAssignedMember: string;
   setSelectedAssignedMember: React.Dispatch<React.SetStateAction<string>>;
+  setMissingDataType: React.Dispatch<
+    React.SetStateAction<"member" | "billing">
+  >;
 }
 
 const AssignedMemberField: React.FC<AssignedMemberFieldProps> = ({
@@ -40,13 +43,13 @@ const AssignedMemberField: React.FC<AssignedMemberFieldProps> = ({
   manualChange,
   selectedAssignedMember,
   setSelectedAssignedMember,
+  setMissingDataType,
 }) => {
   const { members } = useStore();
   const { setValue } = useFormContext();
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );
-  const isAsideClosed = useRef(false);
 
   // aca cargo las opciones de los members en el dropdown
   useEffect(() => {
@@ -135,6 +138,7 @@ const AssignedMemberField: React.FC<AssignedMemberFieldProps> = ({
             return acc + " - " + capitalizeAndSeparateCamelCase(field);
           }, "")
         );
+        setMissingDataType("member");
         setShowErrorDialog(true);
       }
     }
