@@ -20,6 +20,8 @@ interface AssignedMemberFieldProps {
   setMember: React.Dispatch<React.SetStateAction<string>>;
   formState: Record<string, unknown>;
   manualChange: boolean;
+  selectedAssignedMember: string;
+  setSelectedAssignedMember: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const AssignedMemberField: React.FC<AssignedMemberFieldProps> = ({
@@ -36,12 +38,11 @@ const AssignedMemberField: React.FC<AssignedMemberFieldProps> = ({
   setMember,
   formState,
   manualChange,
+  selectedAssignedMember,
+  setSelectedAssignedMember,
 }) => {
   const { members } = useStore();
   const { setValue } = useFormContext();
-  const [selectedAssignedMember, setSelectedAssignedMember] = useState<string>(
-    initialSelectedMember || "None"
-  );
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );

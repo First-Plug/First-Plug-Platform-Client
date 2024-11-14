@@ -231,6 +231,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               showErrorDialog={showMemberErrorDialog}
               formState={formState}
               manualChange={manualChange}
+              selectedAssignedMember={selectedAssignedMember}
+              setSelectedAssignedMember={setSelectedAssignedMember}
               initialSelectedMember={
                 isUpdate ? (formState.assignedMember as string) : "None"
               }
@@ -419,6 +421,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 manualChange={manualChange}
                 showErrorDialog={showMemberErrorDialog}
                 initialSelectedMember=""
+                selectedAssignedMember={selectedAssignedMember}
+                setSelectedAssignedMember={setSelectedAssignedMember}
               />
             </div>
             <div className="w-full">

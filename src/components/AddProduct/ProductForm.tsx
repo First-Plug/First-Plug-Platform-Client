@@ -114,7 +114,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [showMissingDataDialog, setShowMissingDataDialog] = useState(false);
   const [memberToEdit, setMemberToEdit] = useState(null);
   const [selectedAssignedMember, setSelectedAssignedMember] =
-    useState<string>("None");
+    useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<
     string | undefined
   >();
