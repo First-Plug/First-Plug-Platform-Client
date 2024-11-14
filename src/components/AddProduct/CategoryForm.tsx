@@ -14,6 +14,9 @@ import GenericAlertDialog from "./ui/GenericAlertDialog";
 import PriceInput from "./PriceInput";
 import LocationField from "./LocationField";
 import AssignedMemberField from "./AssignedMemberField";
+import { useRouter } from "next/navigation";
+import { formatMissingFieldsMessage, validateBillingInfo } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -29,6 +32,14 @@ interface CategoryFormProps {
   setFormValues: React.Dispatch<React.SetStateAction<any>>;
   manualChange: boolean;
   setManualChange?: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedAssignedMember: string;
+  setSelectedAssignedMember: React.Dispatch<React.SetStateAction<string>>;
+  selectedLocation: string;
+  setSelectedLocation: React.Dispatch<React.SetStateAction<string>>;
+  missingDataType: "member" | "billing";
+  setMissingDataType: React.Dispatch<
+    React.SetStateAction<"member" | "billing">
+  >;
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = function ({
@@ -45,6 +56,12 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   setFormValues,
   manualChange,
   setManualChange,
+  selectedAssignedMember,
+  setSelectedAssignedMember,
+  selectedLocation,
+  setSelectedLocation,
+  missingDataType,
+  setMissingDataType,
 }) {
   const {
     members,
@@ -56,15 +73,21 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     formState: { errors },
   } = useFormContext();
   const { data: fetchedMembers = [], isLoading } = useFetchMembers();
+  const router = useRouter();
+  const session = useSession();
+  const user = session.data?.user;
 
   const amount = watch("price.amount");
   const currencyCode = watch("price.currencyCode") || "USD";
   const selectedModel = watch("model");
 
-  const [selectedAssignedMember, setSelectedAssignedMember] =
-    useState<string>("");
-  const [selectedLocation, setSelectedLocation] = useState<string>("");
+  // const [selectedAssignedMember, setSelectedAssignedMember] =
+  //   useState<string>("");
+  // const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [isLocationEnabled, setIsLocationEnabled] = useState(false);
+  // const [missingDataType, setMissingDataType] = useState<
+  //   "member" | "billing"
+  // >();
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
   const [member, setMember] = useState("");
@@ -107,9 +130,37 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     setValue("recoverable", value);
   };
 
-  const handleShowErrorDialog = (missingData: string) => {
+  // const handleLocationChange = (
+  //   location: "Our office" | "FP warehouse" | "Employee"
+  // ) => {
+  //   setSelectedLocation(location);
+  //   setValue("location", location);
+
+  //   if (selectedAssignedMember === "None" && location === "Our office") {
+  //     const { isValid, missingFields } = validateBillingInfo(user);
+  //     if (!isValid) {
+  //       setMissingMemberData(
+  //         formatMissingFieldsMessage(missingFields.split(", "))
+  //       );
+  //       setMissingDataType("billing");
+  //       setShowErrorDialog(true);
+  //     }
+  //   }
+
+  //   clearErrors("location");
+  // };
+
+  const handleShowErrorDialog = (
+    missingData: string,
+    type: "member" | "billing"
+  ) => {
     setShowErrorDialog(true);
     setMissingMemberData(missingData);
+    setMissingDataType(type);
+  };
+
+  const showMemberErrorDialog = (missingData: string) => {
+    handleShowErrorDialog(missingData, "member");
   };
 
   if (isLoading) {
@@ -128,10 +179,16 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         onClose={() => setShowErrorDialog(false)}
         title="Please complete the missing data: "
         description={missingMemberData}
-        buttonText="Update Member"
+        buttonText={
+          missingDataType === "member" ? "Update Member" : "Go to Settings"
+        }
         onButtonClick={() => {
-          members.setMemberToEdit(member);
-          setAside("EditMember");
+          if (missingDataType === "member") {
+            members.setMemberToEdit(member);
+            setAside("EditMember");
+          } else {
+            router.push("/home/settings");
+          }
           setShowErrorDialog(false);
         }}
       />
@@ -171,7 +228,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               isUpdate={isUpdate}
               clearErrors={clearErrors}
               isDisabled={quantity > 1}
-              showErrorDialog={handleShowErrorDialog}
+              showErrorDialog={showMemberErrorDialog}
               formState={formState}
               manualChange={manualChange}
               initialSelectedMember={
@@ -184,13 +241,14 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             <LocationField
               selectedAssignedMember={selectedAssignedMember}
               selectedLocation={selectedLocation as Location}
-              onLocationChange={(location) => {
-                setSelectedLocation(location);
-                setValue("location", location);
-              }}
+              onLocationChange={setSelectedLocation}
               isLocationEnabled={isLocationEnabled || isUpdate || quantity > 1}
               error={(errors.location as any)?.message}
               clearErrors={clearErrors}
+              user={user}
+              setShowErrorDialog={setShowErrorDialog}
+              setMissingMemberData={setMissingMemberData}
+              setMissingDataType={setMissingDataType}
             />
           </div>
           <div className="w-full">
@@ -359,7 +417,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 isDisabled={quantity > 1}
                 formState={formState}
                 manualChange={manualChange}
-                showErrorDialog={handleShowErrorDialog}
+                showErrorDialog={showMemberErrorDialog}
                 initialSelectedMember=""
               />
             </div>
@@ -367,13 +425,14 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               <LocationField
                 selectedAssignedMember={selectedAssignedMember}
                 selectedLocation={selectedLocation as Location}
-                onLocationChange={(location) => {
-                  setSelectedLocation(location);
-                  setValue("location", location);
-                }}
+                onLocationChange={setSelectedLocation}
                 isLocationEnabled={isUpdate || quantity <= 1}
                 error={(errors.location as any)?.message}
                 clearErrors={clearErrors}
+                user={user}
+                setShowErrorDialog={setShowErrorDialog}
+                setMissingMemberData={setMissingMemberData}
+                setMissingDataType={setMissingDataType}
               />
             </div>
             <div className="w-full">

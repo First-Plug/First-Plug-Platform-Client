@@ -32,7 +32,12 @@ import {
 } from "./utils/ProductFormValidations";
 import { handleCategoryChange } from "./utils/CategoryHelpers";
 import { prepareProductData } from "./utils/PrepareProductData";
-import { formatMissingFieldsMessage, getMissingFields } from "@/lib/utils";
+import {
+  formatMissingFieldsMessage,
+  getMissingFields,
+  validateBillingInfo,
+} from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -53,7 +58,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   isUpdate = false,
 }) => {
   const {
-    user: { user },
     aside: { setAside },
     alerts: { setAlert },
     members,
@@ -82,6 +86,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     watch,
   } = methods;
 
+  const session = useSession();
+  const user = session.data?.user;
+
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -106,6 +113,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [missingMemberData, setMissingMemberData] = useState("");
   const [showMissingDataDialog, setShowMissingDataDialog] = useState(false);
   const [memberToEdit, setMemberToEdit] = useState(null);
+  const [selectedAssignedMember, setSelectedAssignedMember] =
+    useState<string>("None");
+  const [selectedLocation, setSelectedLocation] = useState<
+    string | undefined
+  >();
+  const [missingDataType, setMissingDataType] = useState<
+    "member" | "billing"
+  >();
 
   const userRecoverableConfig = user?.isRecoverableConfig
     ? (new Map(user.isRecoverableConfig.entries()) as Map<Category, boolean>)
@@ -292,6 +307,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleSaveProduct = async (data: ProductFormData) => {
+    if (!selectedAssignedMember || !selectedLocation) {
+      console.log("Valores no definidos en el momento de la validación");
+      return;
+    }
+    console.log("selectedAssignedMember:", selectedAssignedMember);
+    console.log("selectedLocation:", selectedLocation);
     const assignedEmail = watch("assignedEmail");
 
     const selectedMember = members.members.find(
@@ -307,6 +328,21 @@ const ProductForm: React.FC<ProductFormProps> = ({
         return;
       }
     }
+    if (
+      selectedAssignedMember === "None" &&
+      selectedLocation === "Our office"
+    ) {
+      const { isValid, missingFields } = validateBillingInfo(user);
+      if (!isValid) {
+        setMissingMemberData(
+          formatMissingFieldsMessage(missingFields.split(", "))
+        );
+        setMissingDataType("billing");
+        setShowErrorDialog(true);
+        return;
+      }
+    }
+
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
 
     const isValid = await validateForm();
@@ -410,6 +446,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         setFormValues={setFormValues}
                         setManualChange={setManualChange}
                         manualChange={manualChange}
+                        selectedAssignedMember={selectedAssignedMember}
+                        setSelectedAssignedMember={setSelectedAssignedMember}
+                        selectedLocation={selectedLocation}
+                        setSelectedLocation={setSelectedLocation}
+                        setMissingDataType={setMissingDataType}
+                        missingDataType={missingDataType}
                       />
                     </div>
                   </section>
