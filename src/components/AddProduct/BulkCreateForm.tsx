@@ -495,29 +495,6 @@ const BulkCreateForm: React.FC<{
                       setMemberToEdit={setMemberToEdit}
                       setAside={setAside}
                     />
-
-                    {/* <div className="flex-1 p-2 flex items-center">
-                      {statusList[index] === "not-billing-information" && (
-                        <Button
-                          size="default"
-                          onClick={() =>
-                            handleClick("not-billing-information", index)
-                          }
-                        >
-                          Complete Company Details
-                        </Button>
-                      )}
-                      {statusList[index] === "not-member-available" && (
-                        <Button
-                          size="default"
-                          onClick={() =>
-                            handleClick("not-member-available", index)
-                          }
-                        >
-                          Complete Shipment Details
-                        </Button>
-                      )}
-                    </div> */}
                   </div>
                 </div>
               </div>

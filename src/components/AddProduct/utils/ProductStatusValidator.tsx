@@ -109,17 +109,27 @@ const ProductStatusValidator: React.FC<ProductStatusValidatorProps> = ({
   };
 
   return (
-    <div className="flex items-center space-x-2">
-      {status === "not-billing-information" && (
-        <Button size="default" onClick={handleClick}>
-          Complete Company Details
-        </Button>
-      )}
-      {status === "not-member-available" && (
-        <Button size="default" onClick={handleClick}>
-          Complete Member Details
-        </Button>
-      )}
+    <div className="mt-6 p-2">
+      <div className="flex items-center space-x-2">
+        {status === "not-billing-information" && (
+          <Button
+            size="default"
+            onClick={handleClick}
+            className="w-auto max-w-xs whitespace-normal text-center"
+          >
+            Complete Company Details
+          </Button>
+        )}
+        {status === "not-member-available" && (
+          <Button
+            size="default"
+            onClick={handleClick}
+            className="w-auto max-w-xs whitespace-normal text-center"
+          >
+            Complete Member Details
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
