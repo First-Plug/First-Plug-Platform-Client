@@ -1,14 +1,19 @@
 import axios from "axios";
 import { NextResponse } from "next/server";
 
+const webhookUrl = process.env.SLACK_WEBHOOK_URL_ENVIOS;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    await axios.post(
-      "https://hooks.slack.com/services/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",
-      body
-    );
 
+    if (!webhookUrl) {
+      throw new Error(
+        "SLACK_WEBHOOK_URL no está definido en las variables de entorno"
+      );
+    }
+
+    await axios.post(webhookUrl, body);
     return NextResponse.json(
       { message: "Mensaje enviado a Slack exitosamente" },
       { status: 200 }
