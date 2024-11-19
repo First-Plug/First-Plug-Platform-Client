@@ -40,6 +40,7 @@ interface CategoryFormProps {
   setMissingDataType: React.Dispatch<
     React.SetStateAction<"member" | "billing">
   >;
+  onLocationChange: (location: string) => void;
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = function ({
@@ -62,6 +63,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   setSelectedLocation,
   missingDataType,
   setMissingDataType,
+  onLocationChange,
 }) {
   const {
     members,
@@ -218,7 +220,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             <LocationField
               selectedAssignedMember={selectedAssignedMember}
               selectedLocation={selectedLocation as Location}
-              onLocationChange={setSelectedLocation}
+              onLocationChange={onLocationChange}
               isLocationEnabled={isLocationEnabled || isUpdate || quantity > 1}
               error={(errors.location as any)?.message}
               clearErrors={clearErrors}

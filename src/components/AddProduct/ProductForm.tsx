@@ -206,7 +206,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       } else {
         createAsset.mutate(preparedData, {
           onSuccess: () => {
-            console.log("Final preparedData sent to backend:", preparedData);
+            // console.log("Final preparedData sent to backend:", preparedData);
             setAlert("createProduct");
             methods.reset();
             setSelectedCategory(undefined);
@@ -309,17 +309,68 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   useEffect(() => {
-    if (selectedAssignedMember === "None") {
-      if (selectedLocation) {
-        setValue("location", selectedLocation);
+    if (!isUpdate) {
+      if (selectedAssignedMember === "None") {
+        if (selectedLocation) {
+          setValue("location", selectedLocation);
+        } else {
+          setValue("location", "Our office");
+        }
       } else {
-        setValue("location", "Our office");
+        setValue("location", "Employee");
       }
-    } else {
-      setValue("location", "Employee");
+      clearErrors("location");
     }
-    clearErrors("location");
-  }, [selectedAssignedMember, selectedLocation, setValue, clearErrors]);
+  }, [
+    isUpdate,
+    selectedAssignedMember,
+    selectedLocation,
+    setValue,
+    clearErrors,
+  ]);
+
+  // useEffect(() => {
+  //   if (isUpdate) {
+  //     const currentLocation = watch("location"); // Valor actual del formulario.
+
+  //     // Si el producto tiene assignedMember "None"
+  //     if (selectedAssignedMember === "None") {
+  //       if (
+  //         selectedLocation &&
+  //         ["Our office", "FP warehouse"].includes(selectedLocation)
+  //       ) {
+  //         // Actualiza solo si la ubicación actual es diferente de la seleccionada
+  //         if (currentLocation !== selectedLocation) {
+  //           console.log(
+  //             `Setting location to selectedLocation: ${selectedLocation}`
+  //           );
+  //           setValue("location", selectedLocation);
+  //         }
+  //       } else if (currentLocation !== "Our office") {
+  //         console.log("Setting location to default: Our office");
+  //         setValue("location", "Our office");
+  //       }
+  //     } else {
+  //       // Si el producto tiene un assignedMember diferente de "None"
+  //       if (currentLocation !== "Employee") {
+  //         console.log("Setting location to Employee");
+  //         setValue("location", "Employee");
+  //       }
+  //     }
+
+  //     // Limpia errores solo si hubo cambios.
+  //     if (watch("location") !== currentLocation) {
+  //       clearErrors("location");
+  //     }
+  //   }
+  // }, [
+  //   isUpdate,
+  //   selectedAssignedMember,
+  //   selectedLocation,
+  //   setValue,
+  //   watch,
+  //   clearErrors,
+  // ]);
 
   const handleSaveProduct = async (data: ProductFormData) => {
     const location = watch("location");
@@ -437,6 +488,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
     (attr) => attr.key === "model"
   )?.value;
 
+  const handleLocationChange = (location: string) => {
+    setSelectedLocation(location);
+    setValue("location", location);
+  };
+
   return (
     <FormProvider {...methods}>
       <PageLayout>
@@ -471,6 +527,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         selectedAssignedMember={selectedAssignedMember}
                         setSelectedAssignedMember={setSelectedAssignedMember}
                         selectedLocation={selectedLocation}
+                        onLocationChange={handleLocationChange}
                         setSelectedLocation={setSelectedLocation}
                         setMissingDataType={setMissingDataType}
                         missingDataType={missingDataType}

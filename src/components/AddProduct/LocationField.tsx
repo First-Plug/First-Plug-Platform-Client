@@ -13,9 +13,7 @@ interface LocationFieldProps {
     React.SetStateAction<"member" | "billing">
   >;
   selectedLocation?: "Our office" | "FP warehouse" | "Employee";
-  onLocationChange: (
-    location: "Our office" | "FP warehouse" | "Employee"
-  ) => void;
+  onLocationChange: (location: string) => void;
   isLocationEnabled: boolean;
   error?: string;
   clearErrors: (name?: string | string[]) => void;
@@ -36,8 +34,11 @@ const LocationField: React.FC<LocationFieldProps> = ({
   const handleLocationChange = (
     location: "Our office" | "FP warehouse" | "Employee"
   ) => {
-    onLocationChange(location);
-    clearErrors("location");
+    if (selectedLocation !== location) {
+      // console.log("New location selected:", location);
+      onLocationChange(location);
+      clearErrors("location");
+    }
 
     if (selectedAssignedMember === "None" && location === "Our office") {
       const { isValid, missingFields } = validateBillingInfo(user);
@@ -51,13 +52,14 @@ const LocationField: React.FC<LocationFieldProps> = ({
       }
     }
   };
+
   return selectedAssignedMember === "None" || selectedAssignedMember === "" ? (
     <DropdownInputProductForm
       options={["Our office", "FP warehouse"]}
       placeholder="Select Location"
       title="Location*"
       name="location"
-      selectedOption={selectedLocation}
+      selectedOption={selectedLocation || ""}
       onChange={handleLocationChange}
       required="required"
       className="w-full"
