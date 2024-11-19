@@ -3,6 +3,8 @@ import { DropdownInputProductForm } from "./DropDownProductForm";
 import { InputProductForm } from "./InputProductForm";
 import { formatMissingFieldsMessage, validateBillingInfo } from "@/lib/utils";
 import { User } from "@/types";
+import { boolean } from "zod";
+import { useStore } from "@/models";
 
 interface LocationFieldProps {
   selectedAssignedMember: string;
@@ -17,6 +19,7 @@ interface LocationFieldProps {
   isLocationEnabled: boolean;
   error?: string;
   clearErrors: (name?: string | string[]) => void;
+  isUpdate?: boolean;
 }
 
 const LocationField: React.FC<LocationFieldProps> = ({
@@ -30,12 +33,16 @@ const LocationField: React.FC<LocationFieldProps> = ({
   setShowErrorDialog,
   setMissingMemberData,
   setMissingDataType,
+  isUpdate,
 }) => {
+  const {
+    aside: { setAside },
+  } = useStore();
+
   const handleLocationChange = (
     location: "Our office" | "FP warehouse" | "Employee"
   ) => {
     if (selectedLocation !== location) {
-      // console.log("New location selected:", location);
       onLocationChange(location);
       clearErrors("location");
     }

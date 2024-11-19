@@ -163,6 +163,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             members.setMemberToEdit(member);
             setAside("EditMember");
           } else {
+            setAside(undefined);
             router.push("/home/settings");
           }
           setShowErrorDialog(false);
@@ -228,6 +229,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               setShowErrorDialog={setShowErrorDialog}
               setMissingMemberData={setMissingMemberData}
               setMissingDataType={setMissingDataType}
+              isUpdate={isUpdate}
             />
           </div>
           <div className="w-full">
