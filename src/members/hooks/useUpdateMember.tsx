@@ -26,10 +26,8 @@ export const useUpdateMember = () => {
         id,
       ]);
 
-      // Crear un miembro optimista
       const optimisticMember = { ...previousMember, ...data };
 
-      // Actualizar el cache con el miembro optimista
       queryClient.setQueryData<TeamMember>(["members", id], optimisticMember);
 
       return { previousMember };
@@ -55,7 +53,7 @@ export const useUpdateMember = () => {
       );
       updateMemberInStore(data);
       setAlert("updateMember");
-      console.log("Miembro actualizado en el store:", data);
+      // console.log("Miembro actualizado en el store:", data);
 
       // Invalidar solo si es necesario
       queryClient.invalidateQueries({ queryKey: ["teams"] });
