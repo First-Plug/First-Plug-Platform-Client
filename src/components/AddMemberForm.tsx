@@ -221,6 +221,7 @@ export const AddMemberForm = observer(function ({
         description={missingOfficeData}
         buttonText="Update"
         onButtonClick={() => {
+          closeAside();
           router.push(`/home/settings`);
           setShowErrorDialogOurOffice(false);
         }}

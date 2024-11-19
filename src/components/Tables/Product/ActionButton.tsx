@@ -15,13 +15,12 @@ type ActionType = {
   action: () => void;
 };
 
-
 interface ActionButtonProps {
   product: Product;
 }
 export function ActionButton({ product }: ActionButtonProps) {
   const {
-    aside: { setAside },
+    aside: { setAside, closeAside },
     members: { setSelectedMemberEmail },
     products: {
       getProductForAssign,
@@ -93,6 +92,7 @@ export function ActionButton({ product }: ActionButtonProps) {
         description={missingOfficeData}
         buttonText="Update"
         onButtonClick={() => {
+          closeAside();
           router.push(`/home/settings`);
           setShowErrorDialogOurOffice(false);
         }}
