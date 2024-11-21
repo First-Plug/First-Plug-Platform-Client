@@ -16,7 +16,6 @@ export const AsideStore = types
       store.isClosed = false;
     },
     closeAside() {
-      console.log("closeAside called, setting isClosed to true");
       store.type = undefined;
       store.isClosed = true;
     },
