@@ -1,5 +1,5 @@
 import { LOCATION, Location, Product } from "@/types";
-import React, { useState } from "react";
+import React, { useState, Dispatch, SetStateAction } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import ProductDetail, { RelocateStatus } from "@/common/ProductDetail";
 import { Button, LoaderSpinner } from "@/common";
@@ -20,12 +20,14 @@ import { Badge, badgeVariants } from "../ui/badge";
 interface IRemoveItems {
   product: Product;
   selectedProducts: Product[];
+  setSelectedProducts: Dispatch<SetStateAction<Product[]>>;
   isEnabled?: boolean;
   onRemoveSuccess?: () => void;
 }
 export function ReturnProduct({
   product,
   selectedProducts,
+  setSelectedProducts,
   isEnabled,
   onRemoveSuccess,
 }: IRemoveItems) {
@@ -43,7 +45,6 @@ export function ReturnProduct({
   const {
     members: { selectedMember },
   } = useStore();
-  
 
   const handleRemoveItems = async (location: Location) => {
     if (!location) {
@@ -69,6 +70,7 @@ export function ReturnProduct({
         currentMember: selectedMember,
       });
       setReturnStatus("success");
+
       onRemoveSuccess();
     } catch (error) {
       console.error("Error returning product:", error);
