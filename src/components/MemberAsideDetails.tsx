@@ -63,9 +63,15 @@ export const MemberAsideDetails = observer(function ({
 
   const handleRealocate = (action: "open" | "close") => {
     setRelocatePage(!(action === "close"));
+    if (action === "close") {
+      setSelectedProducts([]);
+    }
   };
   const handleReturn = (action: "open" | "close") => {
     setReturnPage(!(action === "close"));
+    if (action === "close") {
+      setSelectedProducts([]);
+    }
   };
 
   function capitalizeAndSeparateCamelCase(text: string) {
@@ -73,17 +79,17 @@ export const MemberAsideDetails = observer(function ({
     return separated.replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
-  const handleRequestOffBoarding = () => {   
+  const handleRequestOffBoarding = () => {
     const allProductsNotRecoverable = member.products.every(
       (product) => !product.recoverable
     );
 
     const getMissingFields = (selectedMember: any): string[] => {
-      
       const missingFields: string[] = [];
 
       const isEmptyString = (value: any) =>
-        typeof value === "string" && value.trim() === "" || value === undefined;
+        (typeof value === "string" && value.trim() === "") ||
+        value === undefined;
 
       const isInvalidNumber = (value: any) =>
         typeof value === "number" ? value === 0 : !value;
@@ -154,9 +160,16 @@ export const MemberAsideDetails = observer(function ({
         <RelacoteProducts
           products={selectedProducts}
           handleBack={handleRealocate}
+          setSelectedProducts={setSelectedProducts}
+          selectedProducts={selectedProducts}
         />
       ) : returnPage ? (
-        <ReturnPage products={selectedProducts} handleBack={handleReturn} />
+        <ReturnPage
+          products={selectedProducts}
+          handleBack={handleReturn}
+          setSelectedProducts={setSelectedProducts}
+          selectedProducts={selectedProducts}
+        />
       ) : (
         <Fragment>
           <div className="flex flex-col gap-6   h-full   ">
