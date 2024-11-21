@@ -406,6 +406,10 @@ const BulkCreateForm: React.FC<{
 
     const incompleteMembers = data.products
       .map((product: any) => {
+        if (product.assignedMember === "None") {
+          return null;
+        }
+
         const assignedMember = members.find(
           (m) =>
             `${m.firstName} ${m.lastName}` === product.assignedMember &&
@@ -418,9 +422,9 @@ const BulkCreateForm: React.FC<{
     if (incompleteMembers.length > 0) {
       setMissingDataDialog(true);
       setMissingMemberData(
-        `The following members have incomplete data: ${incompleteMembers.join(
+        `The following members have missing information: ${incompleteMembers.join(
           ", "
-        )}. Please update their information before proceeding.`
+        )}. Please update their details to continue.`
       );
       return;
     }

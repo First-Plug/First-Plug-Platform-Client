@@ -76,6 +76,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
       serialNumber: initialData?.serialNumber || undefined,
       price: initialData?.price || undefined,
       location: (initialData?.location as Location) || undefined,
+      name: initialData?.name || undefined,
+      attributes: initialData?.attributes || [],
     },
   });
   const {
@@ -206,7 +208,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       } else {
         createAsset.mutate(preparedData, {
           onSuccess: () => {
-            // console.log("Final preparedData sent to backend:", preparedData);
+            console.log("Final preparedData sent to backend:", preparedData);
             setAlert("createProduct");
             methods.reset();
             setSelectedCategory(undefined);
@@ -329,50 +331,29 @@ const ProductForm: React.FC<ProductFormProps> = ({
     clearErrors,
   ]);
 
-  // useEffect(() => {
-  //   if (isUpdate) {
-  //     const currentLocation = watch("location"); // Valor actual del formulario.
-
-  //     // Si el producto tiene assignedMember "None"
-  //     if (selectedAssignedMember === "None") {
-  //       if (
-  //         selectedLocation &&
-  //         ["Our office", "FP warehouse"].includes(selectedLocation)
-  //       ) {
-  //         // Actualiza solo si la ubicación actual es diferente de la seleccionada
-  //         if (currentLocation !== selectedLocation) {
-  //           console.log(
-  //             `Setting location to selectedLocation: ${selectedLocation}`
-  //           );
-  //           setValue("location", selectedLocation);
-  //         }
-  //       } else if (currentLocation !== "Our office") {
-  //         console.log("Setting location to default: Our office");
-  //         setValue("location", "Our office");
-  //       }
-  //     } else {
-  //       // Si el producto tiene un assignedMember diferente de "None"
-  //       if (currentLocation !== "Employee") {
-  //         console.log("Setting location to Employee");
-  //         setValue("location", "Employee");
-  //       }
-  //     }
-
-  //     // Limpia errores solo si hubo cambios.
-  //     if (watch("location") !== currentLocation) {
-  //       clearErrors("location");
-  //     }
-  //   }
-  // }, [
-  //   isUpdate,
-  //   selectedAssignedMember,
-  //   selectedLocation,
-  //   setValue,
-  //   watch,
-  //   clearErrors,
-  // ]);
-
   const handleSaveProduct = async (data: ProductFormData) => {
+    const isAttributesValid = validateAttributes(
+      watch("attributes"),
+      selectedCategory,
+      setCustomErrors
+    );
+
+    if (!isAttributesValid) {
+      console.log("Attributes validation failed.");
+      return;
+    }
+
+    const isProductNameValid = await validateProductName(
+      watch,
+      selectedCategory,
+      methods.setError,
+      clearErrors
+    );
+
+    if (!isProductNameValid) {
+      console.log("Product Name validation failed");
+      return;
+    }
     const location = watch("location");
 
     if (!location) {
@@ -434,7 +415,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       watch("price.amount"),
       watch("assignedEmail")
     );
-
+    console.log("Prepared data for submission:", preparedData);
     if (isUpdate) {
       await handleUpdateProduct(preparedData);
     } else {
@@ -459,7 +440,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const handleNext = async () => {
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
-    const isFormValid = await validateForm();
+    const isFormValid = await validateForm(true);
     if (!isFormValid) return;
 
     const data = methods.getValues();

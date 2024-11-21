@@ -15,7 +15,6 @@ import PriceInput from "./PriceInput";
 import LocationField from "./LocationField";
 import AssignedMemberField from "./AssignedMemberField";
 import { useRouter } from "next/navigation";
-import { formatMissingFieldsMessage, validateBillingInfo } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 
 interface CategoryFormProps {
@@ -72,6 +71,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const {
     setValue,
     watch,
+    setError,
     formState: { errors },
   } = useFormContext();
   const { data: fetchedMembers = [], isLoading } = useFetchMembers();
@@ -138,6 +138,12 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const showMemberErrorDialog = (missingData: string) => {
     handleShowErrorDialog(missingData, "member");
   };
+
+  useEffect(() => {
+    if (selectedModel === "Other") {
+      setValue("name", watch("name") || "");
+    }
+  }, [selectedModel, setValue, watch]);
 
   if (isLoading) {
     return (

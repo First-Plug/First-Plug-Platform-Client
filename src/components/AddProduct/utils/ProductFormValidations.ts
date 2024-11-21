@@ -49,6 +49,15 @@ export const validateProductName = async (
   clearErrors: UseFormClearErrors<ProductFormData>
 ): Promise<boolean> => {
   const attributes = watch("attributes");
+
+  if (!attributes || attributes.length === 0) {
+    setError("attributes", {
+      type: "manual",
+      message: "Attributes must include at least model and brand.",
+    });
+    return false;
+  }
+
   const model = attributes.find((attr) => attr.key === "model")?.value;
   const productName = watch("name");
 
@@ -59,7 +68,7 @@ export const validateProductName = async (
     if (!productName || productName.trim() === "") {
       setError("name", {
         type: "manual",
-        message: "Product Name is required for this category and model.",
+        message: "Product Name is required.",
       });
       return false;
     }
@@ -102,11 +111,11 @@ export const validateForNext = (
     }
 
     if (model === "Other" && !watch("name")) {
-      attributeErrors["name"] = "Name is required for this model.";
+      attributeErrors["name"] = "Name is required.";
       hasError = true;
       methods.setError("name", {
         type: "manual",
-        message: "Name is required for this model.",
+        message: "Name is required.",
       });
     }
   }
