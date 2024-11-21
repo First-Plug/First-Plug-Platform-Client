@@ -167,7 +167,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         onButtonClick={() => {
           if (missingDataType === "member") {
             members.setMemberToEdit(member);
-            setAside("EditMember");
+            setAside("EditMember", undefined, { selectedMember: member });
           } else {
             setAside(undefined);
             router.push("/home/settings");
@@ -213,7 +213,10 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               clearErrors={clearErrors}
               isDisabled={quantity > 1}
               showErrorDialog={showMemberErrorDialog}
-              formState={formState}
+              formState={{
+                ...formState,
+                assignedMember: selectedAssignedMember,
+              }}
               manualChange={manualChange}
               selectedAssignedMember={selectedAssignedMember}
               setSelectedAssignedMember={setSelectedAssignedMember}

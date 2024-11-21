@@ -23,7 +23,7 @@ interface IConfig {
 export default observer(function AlertProvider() {
   const {
     alerts: { alertType, setAlert },
-    aside: { setAside },
+    aside: { setAside, popAside, stack },
   } = useStore();
   const router = useRouter();
   const { fetchMembers, fetchStock } = useFetch();
@@ -143,8 +143,18 @@ export default observer(function AlertProvider() {
       closeAction: async () => {
         queryClient.invalidateQueries({ queryKey: ["members"] });
         queryClient.invalidateQueries({ queryKey: ["assets"] });
-        // await fetchStock();
-        setAside(undefined);
+
+        // Restaurar el aside anterior del stack si existe
+        if (stack.length > 0) {
+          console.log(
+            "Restoring previous aside from stack after member update."
+          );
+          popAside(); // Restaurar el aside anterior (producto)
+        } else {
+          console.log("No stack detected. Closing aside completely.");
+          setAside(undefined);
+        }
+
         setAlert(undefined);
       },
     },

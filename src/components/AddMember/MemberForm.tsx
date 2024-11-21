@@ -27,7 +27,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
   const {
     members: { setMembers },
     teams: { setTeams },
-    aside: { closeAside },
+    aside: { closeAside, popAside, stack, type, context },
   } = useStore();
   const queryClient = new QueryClient();
 
@@ -125,7 +125,28 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       const transformedMembers = transformData(updatedMembers, updatedTeams);
 
-      closeAside();
+      if (stack.length > 0) {
+        console.log("Restoring aside from stack after member update.");
+
+        // Obtén el aside restaurado para verificar si es un producto
+        const previousAside = popAside();
+
+        if (previousAside?.type === "EditProduct") {
+          // Encuentra el miembro actualizado
+          const updatedMember = updatedMembers.find(
+            (m) => m._id === initialData?._id
+          );
+
+          if (updatedMember) {
+            // Actualiza el estado del producto con el miembro actualizado
+            const memberName = `${updatedMember.firstName} ${updatedMember.lastName}`;
+            previousAside.context.setSelectedAssignedMember(memberName);
+          }
+        }
+      } else {
+        console.log("No stack detected. Closing aside completely.");
+        closeAside();
+      }
       setMembers(transformedMembers);
       setTeams(updatedTeams);
     } catch (error: any) {}

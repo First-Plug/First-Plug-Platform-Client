@@ -7,13 +7,28 @@ import { AsideTitle } from "@/common";
 
 export var Aside = observer(function Aside() {
   const {
-    aside: { type, setAside, closeAside },
+    aside: { type, popAside, setAside, closeAside, stack },
   } = useStore();
 
   const handleCloseAside = () => {
-    setAside(undefined);
-    closeAside();
+    console.log("Closing aside. Current type:", type);
+    console.log("Stack before close:", stack);
+    const hasStack = stack.length > 0;
+    if (hasStack) {
+      console.log("Restoring previous aside from stack.");
+      popAside();
+    } else {
+      console.log("No stack. Simply closing aside.");
+      closeAside();
+    }
+
+    console.log("Stack after close:", stack);
   };
+
+  const handleBack = () => {
+    popAside();
+  };
+
   return (
     <>
       <div
@@ -28,6 +43,11 @@ export var Aside = observer(function Aside() {
         } `}
       >
         <header className="flex justify-between items-center">
+          {stack.length > 0 && (
+            <button onClick={handleBack} className="text-blue-500">
+              Back
+            </button>
+          )}
           <h2 className="text-2xl font-sans text-black font-semibold">
             <AsideTitle />
           </h2>
