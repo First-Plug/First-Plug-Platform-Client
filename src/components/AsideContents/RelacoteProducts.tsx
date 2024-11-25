@@ -1,17 +1,24 @@
 import { ArrowLeft } from "@/common";
 import ProductDetail from "@/common/ProductDetail";
 import { Product } from "@/types";
-import { useState } from "react";
-import { clone } from "mobx-state-tree";
+import { useState, Dispatch, SetStateAction } from "react";
+
 interface IRelacoteProducts {
   products: Product[];
   handleBack: (action: "open" | "close") => void;
+  setSelectedProducts: Dispatch<SetStateAction<Product[]>>;
+  selectedProducts: Product[];
 }
 
-export function RelacoteProducts({ products, handleBack }: IRelacoteProducts) {
+export function RelacoteProducts({
+  products,
+  handleBack,
+  setSelectedProducts,
+  selectedProducts,
+}: IRelacoteProducts) {
   const [enabledProductIndex, setEnabledProductIndex] = useState(0);
 
-  const handleSuccess = () => {
+  const handleSuccess = (product: Product) => {
     if (enabledProductIndex < products.length - 1) {
       setEnabledProductIndex((prevIndex) => prevIndex + 1);
     }
@@ -33,7 +40,7 @@ export function RelacoteProducts({ products, handleBack }: IRelacoteProducts) {
               product={product}
               isRelocating
               key={product._id}
-              onRelocateSuccess={handleSuccess}
+              onRelocateSuccess={() => handleSuccess(product)}
               disabled={enabledProductIndex !== index}
             />
           );
