@@ -1,15 +1,22 @@
 import { ArrowLeft } from "@/common";
 import { Product } from "@/types";
 import { ReturnProduct } from "./ReturnProduct";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 interface IReturnPage {
   products: Product[];
   handleBack: (action: "open" | "close") => void;
+  setSelectedProducts: Dispatch<SetStateAction<Product[]>>;
+  selectedProducts: Product[];
 }
 
-export function ReturnPage({ handleBack, products }: IReturnPage) {
-  const [selectedProducts] = useState<Product[]>(products);
+export function ReturnPage({
+  handleBack,
+  products,
+  setSelectedProducts,
+  selectedProducts,
+}: IReturnPage) {
+  // const [selectedProducts] = useState<Product[]>(products);
   const [enabledProductIndex, setEnabledProductIndex] = useState<number>(0);
 
   const handleSuccess = () => {
@@ -40,6 +47,7 @@ export function ReturnPage({ handleBack, products }: IReturnPage) {
             product={product}
             key={product._id}
             selectedProducts={selectedProducts}
+            setSelectedProducts={setSelectedProducts}
             isEnabled={enabledProductIndex === index}
             onRemoveSuccess={handleSuccess}
           />

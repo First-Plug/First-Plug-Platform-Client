@@ -9,6 +9,7 @@ import { XCircleIcon } from "lucide-react";
 import { CheckIcon } from "@/common";
 import useFetch from "@/hooks/useFetch";
 import { useQueryClient } from "@tanstack/react-query";
+import { TeamMember } from "@/types";
 
 function XIcon() {
   return <XCircleIcon className="text-white " size={40} />;
@@ -145,12 +146,11 @@ export default observer(function AlertProvider() {
         queryClient.invalidateQueries({ queryKey: ["members"] });
         queryClient.invalidateQueries({ queryKey: ["assets"] });
 
-        // Restaurar el aside anterior del stack si existe
+        const members = queryClient.getQueryData<TeamMember[]>(["members"]);
+
         if (stack.length > 0) {
-          console.log(
-            "Restoring previous aside from stack after member update."
-          );
-          popAside(members.memberToEdit); // Restaurar el aside anterior (producto)
+          console.log("Restaurando el aside anterior...");
+          popAside(members); // Restaura el contexto y `memberToEdit`
         } else {
           setAside(undefined);
         }

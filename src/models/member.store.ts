@@ -113,6 +113,7 @@ export const MemberStore = types
       if (index !== -1) {
         console.log("Actualizando miembro:", member);
         store.members[index] = member;
+        store.members.splice(index, 1, member);
       } else {
         console.error(
           "No se encontró el miembro a actualizar en el estado:",

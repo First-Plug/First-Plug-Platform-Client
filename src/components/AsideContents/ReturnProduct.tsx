@@ -1,5 +1,5 @@
 import { LOCATION, Location, Product, User } from "@/types";
-import React, { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import ProductDetail, { RelocateStatus } from "@/common/ProductDetail";
 import { Button, LoaderSpinner } from "@/common";
@@ -24,29 +24,27 @@ import { validateBillingInfo } from "@/lib/utils";
 interface IRemoveItems {
   product: Product;
   selectedProducts: Product[];
+  setSelectedProducts: Dispatch<SetStateAction<Product[]>>;
   isEnabled?: boolean;
   onRemoveSuccess?: () => void;
 }
 export function ReturnProduct({
   product,
   selectedProducts,
+  setSelectedProducts,
   isEnabled,
   onRemoveSuccess,
 }: IRemoveItems) {
   const {
     alerts: { setAlert },
     aside: { closeAside },
+    members: { selectedMember },
   } = useStore();
   const [isRemoving, setIsRemoving] = useState(false);
   const [newLocation, setNewLocation] = useState<Location>(null);
   const [returnStatus, setReturnStatus] = useState<RelocateStatus>(undefined);
 
   const { unassignProduct } = useActions();
-  const { fetchMembers } = useFetch();
-
-  const {
-    members: { selectedMember },
-  } = useStore();
 
   const router = useRouter();
   const { data: session } = useSession();

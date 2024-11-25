@@ -14,14 +14,14 @@ export var Aside = observer(function Aside() {
   const handleCloseAside = () => {
     const hasStack = stack.length > 0;
     if (hasStack) {
-      popAside(members);
+      popAside(members.members);
     } else {
       closeAside();
     }
   };
 
   const handleBack = () => {
-    popAside(members);
+    popAside(members.members);
   };
 
   return (

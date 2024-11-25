@@ -311,7 +311,7 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
   const handleViewDetail = (memberId: TeamMember["_id"]) => {
     setMemberToEdit(memberId);
     setSelectedMember(memberId);
-    setAside("MemberDetails");
+    setAside("MemberDetails", undefined, { memberToEdit: memberId });
   };
 
   const membersToRender = propMembers.length > 0 ? propMembers : fetchedMembers;
