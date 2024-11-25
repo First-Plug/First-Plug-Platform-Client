@@ -111,6 +111,7 @@ export const MemberStore = types
       //   store.members.map((m) => m._id)
       // );
       if (index !== -1) {
+        console.log("Actualizando miembro:", member);
         store.members[index] = member;
       } else {
         console.error(

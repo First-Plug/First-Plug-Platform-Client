@@ -8,25 +8,20 @@ import { AsideTitle } from "@/common";
 export var Aside = observer(function Aside() {
   const {
     aside: { type, popAside, setAside, closeAside, stack },
+    members,
   } = useStore();
 
   const handleCloseAside = () => {
-    console.log("Closing aside. Current type:", type);
-    console.log("Stack before close:", stack);
     const hasStack = stack.length > 0;
     if (hasStack) {
-      console.log("Restoring previous aside from stack.");
-      popAside();
+      popAside(members);
     } else {
-      console.log("No stack. Simply closing aside.");
       closeAside();
     }
-
-    console.log("Stack after close:", stack);
   };
 
   const handleBack = () => {
-    popAside();
+    popAside(members);
   };
 
   return (

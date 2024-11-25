@@ -22,6 +22,7 @@ interface IConfig {
 
 export default observer(function AlertProvider() {
   const {
+    members,
     alerts: { alertType, setAlert },
     aside: { setAside, popAside, stack },
   } = useStore();
@@ -149,9 +150,8 @@ export default observer(function AlertProvider() {
           console.log(
             "Restoring previous aside from stack after member update."
           );
-          popAside(); // Restaurar el aside anterior (producto)
+          popAside(members.memberToEdit); // Restaurar el aside anterior (producto)
         } else {
-          console.log("No stack detected. Closing aside completely.");
           setAside(undefined);
         }
 

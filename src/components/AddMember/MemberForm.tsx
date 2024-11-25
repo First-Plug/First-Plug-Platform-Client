@@ -25,7 +25,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
   isUpdate = false,
 }) => {
   const {
-    members: { setMembers },
+    members: { setMembers, members },
     teams: { setTeams },
     aside: { closeAside, popAside, stack, type, context },
   } = useStore();
@@ -117,7 +117,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
       await queryClient.invalidateQueries({ queryKey: ["members"] });
       await queryClient.invalidateQueries({ queryKey: ["teams"] });
 
-      // Actualiza el estado global de MobX si es necesario
       const updatedMembers = queryClient.getQueryData<TeamMember[]>([
         "members",
       ]);
@@ -128,23 +127,19 @@ const MemberForm: React.FC<MemberFormProps> = ({
       if (stack.length > 0) {
         console.log("Restoring aside from stack after member update.");
 
-        // Obtén el aside restaurado para verificar si es un producto
-        const previousAside = popAside();
+        const previousAside = popAside(members);
 
         if (previousAside?.type === "EditProduct") {
-          // Encuentra el miembro actualizado
           const updatedMember = updatedMembers.find(
             (m) => m._id === initialData?._id
           );
 
           if (updatedMember) {
-            // Actualiza el estado del producto con el miembro actualizado
             const memberName = `${updatedMember.firstName} ${updatedMember.lastName}`;
             previousAside.context.setSelectedAssignedMember(memberName);
           }
         }
       } else {
-        console.log("No stack detected. Closing aside completely.");
         closeAside();
       }
       setMembers(transformedMembers);

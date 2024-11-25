@@ -20,17 +20,27 @@ export const AsideStore = types
           context: store.context,
         });
       }
+
       store.type = type;
       store.csvContext = csvContext;
       store.context = context;
       store.isClosed = false;
     },
-    popAside() {
+    popAside(members: any) {
       const lastAside = store.stack.pop();
       if (lastAside) {
         store.type = lastAside.type;
         store.csvContext = lastAside.csvContext;
         store.context = lastAside.context;
+
+        if (lastAside.context?.selectedMember) {
+          const updatedMember = members.find(
+            (member) => member._id === lastAside.context.selectedMember
+          );
+          if (updatedMember) {
+            store.context.selectedMember = updatedMember;
+          }
+        }
         return lastAside;
       } else {
         this.closeAside();

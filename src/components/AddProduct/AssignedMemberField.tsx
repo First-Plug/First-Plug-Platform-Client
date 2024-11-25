@@ -20,6 +20,7 @@ interface AssignedMemberFieldProps {
   setMember: React.Dispatch<React.SetStateAction<string>>;
   formState: Record<string, unknown>;
   manualChange: boolean;
+  memberToEdit?: string;
   selectedAssignedMember: string;
   setSelectedAssignedMember: React.Dispatch<React.SetStateAction<string>>;
   setMissingDataType: React.Dispatch<
@@ -39,6 +40,7 @@ const AssignedMemberField: React.FC<AssignedMemberFieldProps> = ({
   setMissingMemberData,
   setShowErrorDialog,
   setMember,
+  memberToEdit,
   formState,
   manualChange,
   selectedAssignedMember,
@@ -72,25 +74,32 @@ const AssignedMemberField: React.FC<AssignedMemberFieldProps> = ({
   //al hacer update traigo el value inicial, al seleccionar none cambia el value y habilita el dropdown
   useEffect(() => {
     if (isUpdate && !manualChange) {
-      const assignedMember = initialSelectedMember;
-      const assignedEmail = formState.assignedEmail as string;
+      const assignedMember =
+        fetchedMembers.find(
+          (m) => `${m.firstName} ${m.lastName}` === initialSelectedMember
+        ) || fetchedMembers.find((m) => m._id === memberToEdit);
 
-      const selectedMember = fetchedMembers.find(
-        (member) => `${member.firstName} ${member.lastName}` === assignedMember
-      );
-
-      setSelectedAssignedMember(
-        selectedMember ? assignedMember : assignedEmail || "None"
-      );
-      setValue("assignedMember", assignedMember || "");
-      setAssignedEmail(selectedMember?.email || assignedEmail || "");
-      setSelectedLocation(formState.location as string);
-      setValue("location", formState.location);
+      if (assignedMember) {
+        setSelectedAssignedMember(
+          `${assignedMember.firstName} ${assignedMember.lastName}`
+        );
+        setValue(
+          "assignedMember",
+          `${assignedMember.firstName} ${assignedMember.lastName}`
+        );
+        setAssignedEmail(assignedMember.email || "");
+        setSelectedLocation("Employee");
+        setValue("location", "Employee");
+      } else {
+        setSelectedAssignedMember("None");
+        setValue("assignedMember", "");
+      }
     }
   }, [
     isUpdate,
     fetchedMembers,
     initialSelectedMember,
+    memberToEdit,
     setValue,
     setAssignedEmail,
     setSelectedLocation,
@@ -146,6 +155,28 @@ const AssignedMemberField: React.FC<AssignedMemberFieldProps> = ({
     clearErrors("assignedMember");
     clearErrors("assignedEmail");
   };
+
+  useEffect(() => {
+    const updatedMember = members.members.find(
+      (member) =>
+        `${member.firstName} ${member.lastName}` === selectedAssignedMember
+    );
+
+    if (updatedMember) {
+      setAssignedEmail(updatedMember.email || "");
+      setValue("assignedEmail", updatedMember.email || "");
+      setValue(
+        "assignedMember",
+        `${updatedMember.firstName} ${updatedMember.lastName}`
+      );
+      setSelectedLocation("Employee");
+      setValue("location", "Employee");
+    }
+  }, [selectedAssignedMember, members.members]);
+
+  useEffect(() => {
+    setSelectedAssignedMember(initialSelectedMember);
+  }, [initialSelectedMember, fetchedMembers]);
 
   return (
     <div className="w-full">

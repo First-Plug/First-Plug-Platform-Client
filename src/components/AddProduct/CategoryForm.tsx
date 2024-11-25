@@ -66,7 +66,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 }) {
   const {
     members,
-    aside: { setAside },
+    aside: { setAside, context },
   } = useStore();
   const {
     setValue,
@@ -209,6 +209,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               setShowErrorDialog={setShowErrorDialog}
               setMissingDataType={setMissingDataType}
               setMember={setMember}
+              memberToEdit={members.memberToEdit}
               isUpdate={isUpdate}
               clearErrors={clearErrors}
               isDisabled={quantity > 1}
@@ -402,6 +403,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 setMissingMemberData={setMissingMemberData}
                 setShowErrorDialog={setShowErrorDialog}
                 setMember={setMember}
+                memberToEdit={members.memberToEdit}
                 isUpdate={isUpdate}
                 clearErrors={clearErrors}
                 isDisabled={quantity > 1}
