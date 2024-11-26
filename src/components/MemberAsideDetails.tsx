@@ -294,7 +294,10 @@ export const MemberAsideDetails = observer(function ({
             buttonText="Update Member"
             onButtonClick={() => {
               setMemberToEdit(member._id);
-              setAside("EditMember");
+              setAside("EditMember", undefined, {
+                stackable: true,
+                memberToEdit: id,
+              });
               setShowErrorDialog(false);
             }}
           />

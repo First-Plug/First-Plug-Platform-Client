@@ -20,16 +20,20 @@ export const AsideStore = types
           context: {
             ...store.context,
             memberToEdit: context?.memberToEdit || store.context?.memberToEdit,
+            stackable: context?.stackable ?? false,
           },
         });
       }
 
       store.type = type;
       store.csvContext = csvContext;
-      store.context = context;
+      store.context = {
+        ...context,
+        stackable: context?.stackable ?? false,
+      };
       store.isClosed = false;
       if (context?.memberToEdit) {
-        const rootStore = getRoot(store) as any; // Ajusta `any` según tu definición de rootStore
+        const rootStore = getRoot(store) as any;
         rootStore.members.setMemberToEdit(context.memberToEdit);
       }
     },
@@ -40,9 +44,8 @@ export const AsideStore = types
         store.csvContext = lastAside.csvContext;
         store.context = lastAside.context;
 
-        const rootStore = getRoot(store) as any; // Accede a la raíz del estado
+        const rootStore = getRoot(store) as any;
 
-        // Restaurar `originalMember` desde el contexto
         if (lastAside.context?.originalMember) {
           const restoredMember = members.find(
             (member) => member._id === lastAside.context.originalMember._id
@@ -52,7 +55,6 @@ export const AsideStore = types
           }
         }
 
-        // Restaurar `memberToEdit`
         if (lastAside.context?.memberToEdit) {
           const updatedMemberToEdit = members.find(
             (member) => member._id === lastAside.context.memberToEdit

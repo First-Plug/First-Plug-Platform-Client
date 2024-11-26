@@ -589,7 +589,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             onButtonClick={() => {
               if (missingDataType === "member") {
                 members.setMemberToEdit(memberToEdit._id);
-                setAside("EditMember");
+                setAside("EditMember", undefined, { stackable: true });
               } else {
                 router.push("/home/settings");
               }

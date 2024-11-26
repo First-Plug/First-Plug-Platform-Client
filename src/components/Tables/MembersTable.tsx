@@ -294,7 +294,10 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
 
   const handleEdit = (memberId: TeamMember["_id"]) => {
     setMemberToEdit(memberId);
-    setAside("EditMember");
+    setAside("EditMember", undefined, {
+      stackable: false,
+      memberToEdit: memberId,
+    });
   };
 
   const handleDelete = (memberId: TeamMember["_id"]) => {

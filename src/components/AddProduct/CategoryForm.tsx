@@ -167,7 +167,10 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         onButtonClick={() => {
           if (missingDataType === "member") {
             members.setMemberToEdit(member);
-            setAside("EditMember", undefined, { selectedMember: member });
+            setAside("EditMember", undefined, {
+              selectedMember: member,
+              stackable: true,
+            });
           } else {
             setAside(undefined);
             router.push("/home/settings");

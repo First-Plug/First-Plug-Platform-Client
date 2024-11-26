@@ -25,7 +25,7 @@ export default observer(function AlertProvider() {
   const {
     members,
     alerts: { alertType, setAlert },
-    aside: { setAside, popAside, stack },
+    aside: { setAside, popAside, stack, context },
   } = useStore();
   const router = useRouter();
   const { fetchMembers, fetchStock } = useFetch();
@@ -143,19 +143,23 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " This member has been successfully updated.",
       closeAction: async () => {
-        queryClient.invalidateQueries({ queryKey: ["members"] });
-        queryClient.invalidateQueries({ queryKey: ["assets"] });
+        try {
+          await queryClient.invalidateQueries({ queryKey: ["members"] });
+          await queryClient.invalidateQueries({ queryKey: ["assets"] });
 
-        const members = queryClient.getQueryData<TeamMember[]>(["members"]);
+          const members = queryClient.getQueryData<TeamMember[]>(["members"]);
 
-        if (stack.length > 0) {
-          console.log("Restaurando el aside anterior...");
-          popAside(members); // Restaura el contexto y `memberToEdit`
-        } else {
-          setAside(undefined);
+          if (stack.length > 0 && context?.stackable) {
+            console.log("Restaurando el aside anterior...");
+            popAside(members);
+          } else {
+            setAside(undefined);
+          }
+        } catch (error) {
+          console.error("Error al manejar el aside o stack:", error);
+        } finally {
+          setAlert(undefined);
         }
-
-        setAlert(undefined);
       },
     },
     updateStock: {

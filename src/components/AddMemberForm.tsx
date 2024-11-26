@@ -210,7 +210,7 @@ export const AddMemberForm = observer(function ({
         onButtonClick={() => {
           router.push(`/home/my-team`);
           setMemberToEdit(selectedMember._id);
-          setAside("EditMember");
+          setAside("EditMember", undefined, { stackable: true });
           setShowErrorDialog(false);
         }}
       />

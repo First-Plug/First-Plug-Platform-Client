@@ -119,7 +119,7 @@ const MembersList = observer(function MembersList({
         onButtonClick={() => {
           router.push(`/home/my-team`);
           setMemberToEdit(selectedMember._id);
-          setAside("EditMember");
+          setAside("EditMember", undefined, { stackable: true });
           setShowErrorDialog(false);
         }}
       />
