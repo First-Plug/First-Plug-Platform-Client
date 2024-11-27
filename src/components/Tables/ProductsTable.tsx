@@ -155,9 +155,10 @@ export const productColumns = (
           variant="text"
           className="flex justify-end px-4 py-2 rounded-lg cursor-pointer"
           onClick={() => {
-            setTimeout(() => {
-              row.getToggleExpandedHandler()();
-            }, 100);
+            console.log("Details button clicked for row:", row.original);
+            const toggleHandler = row.getToggleExpandedHandler();
+            console.log("Toggle handler:", toggleHandler);
+            toggleHandler();
           }}
         >
           <span>Details</span>
@@ -199,10 +200,15 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   useEffect(() => {
     autorun(() => {
       if (assets.length) {
+        console.log("Setting table data in MobX:", assets);
         setTable(assets);
       }
     });
   }, [assets, setTable]);
+
+  useEffect(() => {
+    console.log("Assets loaded in ProductsTable:", assets);
+  }, [assets]);
 
   const columns = productColumns(onlyAvaliable ? availableProducts : assets);
 

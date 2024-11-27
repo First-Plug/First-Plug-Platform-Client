@@ -166,10 +166,11 @@ export default function ProdcutsDetailsTable({
   onResetInternalFilters,
 }: IProdcutsDetailsTable) {
   const { prefetchAsset } = usePrefetchAsset();
+  console.log("Products for internal table:", products);
 
-  useEffect(() => {
-    products.forEach((product) => prefetchAsset(product._id));
-  }, [products, prefetchAsset]);
+  // useEffect(() => {
+  //   products.forEach((product) => prefetchAsset(product._id));
+  // }, [products, prefetchAsset]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [selectedFilterOptions, setSelectedFilterOptions] = useState({});
   const [key, setKey] = useState(0);
