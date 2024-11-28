@@ -57,11 +57,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       if (data.team && typeof data.team === "object" && data.team._id) {
         teamId = data.team._id;
-      } else if (
-        data.team &&
-        typeof data.team === "string" &&
-        data.team.trim() !== ""
-      ) {
+      } else if (typeof data.team === "string" && data.team.trim() !== "") {
         const team = await getOrCreateTeam(data.team);
         teamId = team._id;
       } else {
@@ -81,6 +77,8 @@ const MemberForm: React.FC<MemberFormProps> = ({
           if (newDni !== initialDni) {
             changes[key] = newDni;
           }
+        } else if (typeof data[key] === "string" && data[key].trim() === "") {
+          changes[key] = "";
         } else if (data[key] !== initialData?.[key]) {
           if (key === "acquisitionDate" || key === "birthDate") {
             changes[key] = data[key] ? formatAcquisitionDate(data[key]) : null;
@@ -90,12 +88,26 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
+      if ("personalEmail" in data && !data.personalEmail?.trim()) {
+        changes.personalEmail = null;
+      }
+
       if (!("dni" in changes) && initialData?.dni) {
         changes.dni = initialData.dni;
       }
 
       if (changes.products) {
         delete changes.products;
+      }
+
+      console.log("Data enviada al backend:", {
+        id: initialData._id,
+        data: { ...changes },
+      });
+      console.log("Changes calculados:", changes);
+
+      if (teamId !== undefined) {
+        changes.team = teamId;
       }
 
       if (isUpdate && initialData) {

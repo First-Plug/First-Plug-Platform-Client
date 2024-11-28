@@ -73,6 +73,7 @@ export const MemberStore = types
       }
       const membersG = members.map((member) => ({
         ...member,
+        personalEmail: member.personalEmail ?? null,
         //@ts-ignore
         teamId: member.team ? member.team._id : "Not Assigned",
       }));
