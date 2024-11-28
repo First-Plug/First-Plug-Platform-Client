@@ -36,7 +36,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
   const methods = useForm({
     resolver: zodResolver(zodCreateMembertModel),
-    defaultValues: initialData || {},
+    defaultValues: {
+      ...initialData,
+      personalEmail: initialData?.personalEmail ?? "",
+    },
   });
 
   const {
@@ -88,8 +91,11 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
-      if ("personalEmail" in data && !data.personalEmail?.trim()) {
-        changes.personalEmail = null;
+      if (
+        "personalEmail" in data &&
+        data.personalEmail === initialData?.personalEmail
+      ) {
+        delete changes.personalEmail;
       }
 
       if (!("dni" in changes) && initialData?.dni) {
