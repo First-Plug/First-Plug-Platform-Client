@@ -13,7 +13,7 @@ export const AsideStore = types
   })
   .actions((store) => ({
     setAside(type: Maybe<AsideType>, csvContext?: string, context?: any) {
-      if (store.type) {
+      if (store.type && store.context?.stackable) {
         store.stack.push({
           type: store.type,
           csvContext: store.csvContext,
