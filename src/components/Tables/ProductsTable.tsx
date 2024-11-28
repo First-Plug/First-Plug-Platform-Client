@@ -151,23 +151,42 @@ export const productColumns = (
     size: 20,
     cell: ({ row }) =>
       row.getCanExpand() && (
-        <Button
-          variant="text"
-          className="flex justify-end px-4 py-2 rounded-lg cursor-pointer"
-          onClick={() => {
-            console.log("Details button clicked for row:", row.original);
-            const toggleHandler = row.getToggleExpandedHandler();
-            console.log("Toggle handler:", toggleHandler);
-            toggleHandler();
+        <div
+          style={{ border: "1px solid blue", position: "relative" }}
+          ref={(el) => {
+            if (el) {
+              const children = Array.from(el.children);
+              console.log("Children inside the cell:", children);
+            }
           }}
         >
-          <span>Details</span>
-          <ArrowRight
-            className={`transition-all duration-200 ${
-              row.getIsExpanded() ? "rotate-[90deg]" : "rotate-[0]"
-            }`}
-          />
-        </Button>
+          <Button
+            variant="text"
+            className="relative"
+            onClick={(event) => {
+              const { clientX, clientY } = event;
+              const element = document.elementFromPoint(clientX, clientY);
+
+              console.log("Clicked element:", element); // Elemento que recibió el clic
+              if (element !== event.target) {
+                console.warn("Button is being blocked by:", element);
+              } else {
+                console.log("Button clicked successfully.");
+              }
+
+              // Continúa con la lógica normal
+              const toggleHandler = row.getToggleExpandedHandler();
+              if (toggleHandler) toggleHandler();
+            }}
+          >
+            <span>Details</span>
+            <ArrowRight
+              className={`transition-all duration-200 ${
+                row.getIsExpanded() ? "rotate-[90deg]" : "rotate-[0]"
+              }`}
+            />
+          </Button>
+        </div>
       ),
   },
 ];
@@ -211,6 +230,11 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   }, [assets]);
 
   const columns = productColumns(onlyAvaliable ? availableProducts : assets);
+
+  document.addEventListener("click", (event) => {
+    const element = document.elementFromPoint(event.clientX, event.clientY);
+    console.log("Clicked on:", element);
+  });
 
   return (
     <>

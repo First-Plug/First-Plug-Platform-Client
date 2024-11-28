@@ -115,7 +115,7 @@ export function RootTable<TData, TValue>({
     [key: string]: string[];
   }>({});
 
-  const { x, y, strategy, refs, update } = useFloating({
+  const { x, y, strategy, refs, update, middlewareData } = useFloating({
     strategy: "fixed",
     middleware: [
       offset({
@@ -134,6 +134,9 @@ export function RootTable<TData, TValue>({
       }),
     ],
   });
+  useEffect(() => {
+    console.log("Middleware Data:", middlewareData);
+  }, [middlewareData]);
 
   const [clearAll, setClearAll] = useState(false);
 
@@ -516,7 +519,7 @@ export function RootTable<TData, TValue>({
 
                             {filterMenuOpen === header.id && (
                               <div
-                                className="fixed z-50"
+                                className="fixed z-40"
                                 ref={(el) =>
                                   (filterRefs.current[header.id] = el)
                                 }
@@ -574,19 +577,27 @@ export function RootTable<TData, TValue>({
                       "border-l-2 border-l-black bg-hoverBlue"
                     }`}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="text-xs">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
+                    {row.getVisibleCells().map((cell) => {
+                      console.log(
+                        "Rendering cell:",
+                        cell.column.id,
+                        cell.getContext()
+                      );
+                      return (
+                        <TableCell key={cell.id} className="text-xs">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                   {row.getIsExpanded() && (
                     <tr className="border-l-2 border-l-black">
                       <td colSpan={row.getVisibleCells().length}>
                         {renderSubComponent && renderSubComponent(row.original)}
+                        {/* <div>Subcomponent Placeholder</div> */}
                       </td>
                     </tr>
                   )}
