@@ -93,6 +93,8 @@ const AssignedMemberField: React.FC<AssignedMemberFieldProps> = ({
       } else {
         setSelectedAssignedMember("None");
         setValue("assignedMember", "");
+        setSelectedLocation(formState.location as string);
+        setValue("location", formState.location);
       }
     }
   }, [
@@ -104,6 +106,7 @@ const AssignedMemberField: React.FC<AssignedMemberFieldProps> = ({
     setAssignedEmail,
     setSelectedLocation,
     manualChange,
+    formState.location,
   ]);
 
   const handleAssignedMemberChange = (selectedFullName: string) => {
