@@ -15,9 +15,7 @@ export const prepareProductData = (
   const preparedData: Partial<Product> = {
     ...data,
     assignedEmail:
-      assignedEmail === "None" || assignedEmail === ""
-        ? undefined
-        : assignedEmail,
+      assignedEmail === "None" || assignedEmail === "" ? "" : assignedEmail,
     price:
       amount !== undefined
         ? { amount, currencyCode: data.price?.currencyCode || "USD" }

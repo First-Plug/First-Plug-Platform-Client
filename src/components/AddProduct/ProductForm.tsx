@@ -148,17 +148,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const validateForm = async (forNext = false): Promise<boolean> => {
     const isCategoryValid = await validateCategory(trigger);
+    console.log("Category valid:", isCategoryValid);
     const isAttributesValid = validateAttributes(
       attributes,
       selectedCategory,
       setCustomErrors
     );
+    console.log("Attributes valid:", isAttributesValid);
     const isProductNameValid = await validateProductName(
       watch,
       selectedCategory,
       methods.setError,
       clearErrors
     );
+    console.log("Product Name valid:", isProductNameValid);
 
     let isNextSpecificValid = true;
     if (forNext) {
@@ -169,6 +172,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         methods,
         setCustomErrors
       );
+      console.log("Next specific validation valid:", isNextSpecificValid);
     }
 
     return (
@@ -226,15 +230,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleUpdateProduct = async (data: ProductFormData) => {
+    console.log("Prepared data for update:", data);
+    const assignedEmail =
+      selectedAssignedMember === "None" ? "" : data.assignedEmail || "";
+
     const preparedData = prepareProductData(
-      data,
+      { ...data, assignedEmail },
       isUpdate,
       selectedCategory,
       initialData,
       attributes,
       formValues.recoverable,
       watch("price.amount"),
-      watch("assignedEmail")
+      // watch("assignedEmail")
+      assignedEmail
     );
 
     let hasError = false;
@@ -291,6 +300,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowSuccessDialog(true);
           return;
         }
+        console.log("Final changes for update:", changes);
         await updateAsset.mutate(
           { id: initialData._id, data: changes },
           {
@@ -304,6 +314,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         );
       }
     } catch (error) {
+      console.error("Unexpected error during update:", error);
       handleMutationError(error, true);
     } finally {
       setIsProcessing(false);
@@ -332,12 +343,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
   ]);
 
   const handleSaveProduct = async (data: ProductFormData) => {
+    console.log("Form data:", data);
     const isAttributesValid = validateAttributes(
       watch("attributes"),
       selectedCategory,
       setCustomErrors
     );
-
+    console.log("Attributes valid:", isAttributesValid);
     if (!isAttributesValid) {
       console.log("Attributes validation failed.");
       return;
@@ -349,6 +361,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       methods.setError,
       clearErrors
     );
+    console.log("Product Name valid:", isProductNameValid);
 
     if (!isProductNameValid) {
       console.log("Product Name validation failed");
@@ -400,6 +413,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
 
     const isValid = await validateForm();
+    console.log("Is form valid:", isValid);
     if (!isValid) {
       console.log("Validation failed");
       return;
@@ -580,7 +594,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
         <div className="z-50">
           <GenericAlertDialog
             open={showMissingDataDialog}
-            onClose={() => setShowMissingDataDialog(false)}
+            onClose={() => {
+              setShowMissingDataDialog(false);
+              setMissingMemberData("");
+              setMissingDataType(undefined);
+            }}
             title="Please complete the missing data: "
             description={missingMemberData}
             buttonText={
@@ -594,6 +612,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 router.push("/home/settings");
               }
               setShowErrorDialog(false);
+              setMissingMemberData("");
+              setMissingDataType(undefined);
             }}
           />
         </div>
