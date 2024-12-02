@@ -80,6 +80,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       attributes: initialData?.attributes || [],
     },
   });
+
   const {
     handleSubmit,
     setValue,
@@ -148,20 +149,19 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const validateForm = async (forNext = false): Promise<boolean> => {
     const isCategoryValid = await validateCategory(trigger);
-    console.log("Category valid:", isCategoryValid);
+
     const isAttributesValid = validateAttributes(
       attributes,
       selectedCategory,
       setCustomErrors
     );
-    console.log("Attributes valid:", isAttributesValid);
+
     const isProductNameValid = await validateProductName(
       watch,
       selectedCategory,
       methods.setError,
       clearErrors
     );
-    console.log("Product Name valid:", isProductNameValid);
 
     let isNextSpecificValid = true;
     if (forNext) {
@@ -172,7 +172,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
         methods,
         setCustomErrors
       );
-      console.log("Next specific validation valid:", isNextSpecificValid);
     }
 
     return (
@@ -212,7 +211,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       } else {
         createAsset.mutate(preparedData, {
           onSuccess: () => {
-            console.log("Final preparedData sent to backend:", preparedData);
             setAlert("createProduct");
             methods.reset();
             setSelectedCategory(undefined);
@@ -230,7 +228,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleUpdateProduct = async (data: ProductFormData) => {
-    console.log("Prepared data for update:", data);
     const assignedEmail =
       selectedAssignedMember === "None" ? "" : data.assignedEmail || "";
 
@@ -300,8 +297,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowSuccessDialog(true);
           return;
         }
-        console.log("Final changes for update:", changes);
-        await updateAsset.mutate(
+
+        await updateAsset.mutateAsync(
           { id: initialData._id, data: changes },
           {
             onSuccess: () => {
@@ -343,15 +340,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
   ]);
 
   const handleSaveProduct = async (data: ProductFormData) => {
-    console.log("Form data:", data);
     const isAttributesValid = validateAttributes(
-      watch("attributes"),
+      attributes,
       selectedCategory,
       setCustomErrors
     );
-    console.log("Attributes valid:", isAttributesValid);
+
     if (!isAttributesValid) {
-      console.log("Attributes validation failed.");
+      console.error("Attributes validation failed.");
       return;
     }
 
@@ -361,12 +357,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
       methods.setError,
       clearErrors
     );
-    console.log("Product Name valid:", isProductNameValid);
 
     if (!isProductNameValid) {
-      console.log("Product Name validation failed");
+      console.error("Product Name validation failed");
       return;
     }
+
     const location = watch("location");
 
     if (!location) {
@@ -377,11 +373,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     const assignedEmail =
       selectedAssignedMember === "None" ? "" : watch("assignedEmail");
-
     const selectedMember = members.members.find(
       (member) => member.email === assignedEmail
     );
-
     if (selectedMember) {
       const missingFields = getMissingFields(selectedMember);
       if (missingFields.length > 0) {
@@ -396,7 +390,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       selectedLocation === "Our office"
     ) {
       const { isValid, missingFields } = validateBillingInfo(user);
-
       if (!isValid) {
         setMissingMemberData(
           formatMissingFieldsMessage(missingFields.split(", "))
@@ -409,16 +402,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
         return;
       }
     }
-
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
-
     const isValid = await validateForm();
-    console.log("Is form valid:", isValid);
+
     if (!isValid) {
-      console.log("Validation failed");
+      console.error("Validation failed");
       return;
     }
-
     const preparedData = prepareProductData(
       data,
       isUpdate,
@@ -429,7 +419,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       watch("price.amount"),
       watch("assignedEmail")
     );
-    console.log("Prepared data for submission:", preparedData);
+
     if (isUpdate) {
       await handleUpdateProduct(preparedData);
     } else {

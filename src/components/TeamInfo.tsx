@@ -33,7 +33,7 @@ export const TeamInfo = observer(function ({
       await TeamServices.updateTeam(team._id, { ...team, name: newTeamName });
       queryClient.invalidateQueries({ queryKey: ["members"] });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setUpdating(false);
     }

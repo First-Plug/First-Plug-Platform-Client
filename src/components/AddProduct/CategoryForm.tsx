@@ -129,7 +129,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     missingData: string,
     type: "member" | "billing"
   ) => {
-    console.log("Tipo de datos faltantes:", type);
     setShowErrorDialog(true);
     setMissingMemberData(missingData);
     setMissingDataType(type);

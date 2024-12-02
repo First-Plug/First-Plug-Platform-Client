@@ -41,22 +41,14 @@ export const validateMemberBillingInfo = (user: ExtendedUser): boolean => {
   ];
   const isValid = requiredFields.every((field) => {
     const value = user[field as keyof ExtendedUser];
-    // console.log(`Validating field: ${field}, value: ${value}`);
+
     const fieldValid =
       value !== undefined &&
       value !== null &&
       (typeof value === "number" || value.toString().trim() !== "");
 
-    // const fullName =
-    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
-    // console.log(`Validating field ${field} for ${fullName}: ${fieldValid}`);
-
     return fieldValid;
   });
-
-  // const fullName =
-  `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
-  // console.log(`Member ${fullName} validation result: ${isValid}`);
 
   return isValid;
 };

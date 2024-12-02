@@ -40,10 +40,6 @@ export const useUpdateMember = () => {
           ["members", variables.id],
           context.previousMember
         );
-        console.log(
-          "Cache restaurado con el miembro anterior:",
-          context.previousMember
-        );
       }
     },
 
@@ -53,7 +49,6 @@ export const useUpdateMember = () => {
       );
       updateMemberInStore(data);
       setAlert("updateMember");
-      // console.log("Miembro actualizado en el store:", data);
 
       // Invalidar solo si es necesario
       queryClient.invalidateQueries({ queryKey: ["teams"] });

@@ -150,7 +150,6 @@ export default observer(function AlertProvider() {
           const members = queryClient.getQueryData<TeamMember[]>(["members"]);
 
           if (stack.length > 0 && context?.stackable) {
-            console.log("Restaurando el aside anterior...");
             popAside(members);
           } else {
             setAside(undefined);

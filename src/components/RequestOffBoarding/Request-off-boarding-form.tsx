@@ -59,16 +59,8 @@ export const validateMemberBillingInfo = (user: ExtendedUser): boolean => {
       value !== null &&
       (typeof value === "number" || value.toString().trim() !== "");
 
-    // const fullName =
-    `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
-    // console.log(`Validating field ${field} for ${fullName}: ${fieldValid}`);
-
     return fieldValid;
   });
-
-  // const fullName =
-  `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
-  // console.log(`Member ${fullName} validation result: ${isValid}`);
 
   return isValid;
 };
@@ -152,7 +144,7 @@ export const RequestOffBoardingForm = observer(
       const { newMember, relocation, available } = firstProduct || {};
 
       if (!newMember && !relocation) {
-        console.log(
+        console.error(
           "No valid selection in first product. Aborting propagation."
         );
         return;
@@ -189,7 +181,7 @@ export const RequestOffBoardingForm = observer(
         if (firstProduct.newMember || firstProduct.relocation) {
           propagateFirstProductValues();
         } else {
-          console.log(
+          console.error(
             "Select All checked, but no valid selection to propagate."
           );
         }

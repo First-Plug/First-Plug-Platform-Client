@@ -28,7 +28,7 @@ const DynamicForm = ({
       key: field.name,
       value: watch(field.name) || "",
     }));
-    // console.log("Generated Attributes:", newAttributes);
+
     setAttributes(newAttributes);
     handleAttributesChange(newAttributes);
     newAttributes.forEach((attr, index) => {
@@ -53,10 +53,6 @@ const DynamicForm = ({
       attr.key === fieldKey ? { ...attr, value } : attr
     );
 
-    if (!updatedAttributes.find((attr) => attr.key === fieldKey)) {
-      updatedAttributes.push({ _id: "", key: fieldKey, value });
-    }
-
     setAttributes(updatedAttributes);
     handleAttributesChange(updatedAttributes);
 
@@ -70,6 +66,7 @@ const DynamicForm = ({
     } else {
       setValue(fieldKey, value);
     }
+
     clearErrors(fieldKey);
     setCustomErrors((prev) => ({ ...prev, [fieldKey]: undefined }));
   };

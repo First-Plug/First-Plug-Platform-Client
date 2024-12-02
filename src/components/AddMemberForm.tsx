@@ -85,10 +85,8 @@ export const AddMemberForm = observer(function ({
   };
 
   const handleSaveClick = async () => {
-    console.log("Starting handleSaveClick");
-
     if (!currentProduct) {
-      console.log("No currentProduct found, returning");
+      console.error("No currentProduct found, returning");
       return;
     }
 
@@ -117,13 +115,11 @@ export const AddMemberForm = observer(function ({
             return setShowErrorDialogOurOffice(true);
           }
         }
-        console.log("Before updateAssetMutation");
         updateAssetMutation({
           id: currentProduct._id,
           data: updatedProduct,
           showSuccessAlert: false,
         });
-        console.log("After updateAssetMutation");
         queryClient.invalidateQueries({ queryKey: ["members"] });
         // queryClient.invalidateQueries({ queryKey: ["assets"] });
         handleCloseAside();

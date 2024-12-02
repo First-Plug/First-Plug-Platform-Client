@@ -106,12 +106,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
         delete changes.products;
       }
 
-      console.log("Data enviada al backend:", {
-        id: initialData._id,
-        data: { ...changes },
-      });
-      console.log("Changes calculados:", changes);
-
       if (teamId !== undefined) {
         changes.team = teamId;
       }
@@ -143,8 +137,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
       const transformedMembers = transformData(updatedMembers, updatedTeams);
 
       if (stack.length > 0) {
-        console.log("Restoring aside from stack after member update.");
-
         const previousAside = popAside(members);
 
         if (previousAside?.type === "EditProduct") {
