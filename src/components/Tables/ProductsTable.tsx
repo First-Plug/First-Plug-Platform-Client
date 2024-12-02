@@ -167,14 +167,13 @@ export const productColumns = (
               const { clientX, clientY } = event;
               const element = document.elementFromPoint(clientX, clientY);
 
-              console.log("Clicked element:", element); // Elemento que recibió el clic
+              console.log("Clicked element:", element);
               if (element !== event.target) {
                 console.warn("Button is being blocked by:", element);
               } else {
                 console.log("Button clicked successfully.");
               }
 
-              // Continúa con la lógica normal
               const toggleHandler = row.getToggleExpandedHandler();
               if (toggleHandler) toggleHandler();
             }}
