@@ -1,17 +1,17 @@
 "use client";
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { Button, PageLayout, SectionTitle } from "@/common";
 import { useStore } from "@/models/root.store";
 import {
   Category,
   Product,
-  AttributeModel,
   emptyProduct,
   zodCreateProductModel,
+  Location,
+  ProductFormData,
 } from "@/types";
 import CategoryForm from "@/components/AddProduct/CategoryForm";
-import { cast } from "mobx-state-tree";
 import computerData from "@/components/AddProduct/JSON/computerform.json";
 import audioData from "@/components/AddProduct/JSON/audioform.json";
 import monitorData from "@/components/AddProduct/JSON/monitorform.json";
@@ -19,16 +19,26 @@ import peripheralsData from "@/components/AddProduct/JSON/peripheralsform.json";
 import othersData from "@/components/AddProduct/JSON/othersform.json";
 import merchandisingData from "@/components/AddProduct/JSON/merchandisingform.json";
 import DynamicForm from "@/components/AddProduct/DynamicForm";
-import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
 import BulkCreateForm from "./BulkCreateForm";
+import { useCreateAsset, useUpdateAsset } from "@/assets/hooks";
 import {
-  useBulkCreateAssets,
-  useCreateAsset,
-  useUpdateAsset,
-} from "@/assets/hooks";
+  validateCategory,
+  validateAttributes,
+  validateProductName,
+  validateForNext,
+} from "./utils/ProductFormValidations";
+import { handleCategoryChange } from "./utils/CategoryHelpers";
+import { prepareProductData } from "./utils/PrepareProductData";
+import {
+  formatMissingFieldsMessage,
+  getMissingFields,
+  validateBillingInfo,
+} from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -49,17 +59,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
   isUpdate = false,
 }) => {
   const {
-    user: { user },
     aside: { setAside },
     alerts: { setAlert },
+    members,
   } = useStore();
 
   const createAsset = useCreateAsset();
   const updateAsset = useUpdateAsset();
-  const bulkCreateAssets = useBulkCreateAssets();
 
-  const router = useRouter();
-  const methods = useForm({
+  const methods = useForm<ProductFormData>({
     resolver: zodResolver(zodCreateProductModel),
     defaultValues: {
       ...emptyProduct,
@@ -67,16 +75,24 @@ const ProductForm: React.FC<ProductFormProps> = ({
       category: initialData?.category || undefined,
       serialNumber: initialData?.serialNumber || undefined,
       price: initialData?.price || undefined,
+      location: (initialData?.location as Location) || undefined,
+      name: initialData?.name || undefined,
+      attributes: initialData?.attributes || [],
     },
   });
+
   const {
     handleSubmit,
     setValue,
     clearErrors,
     trigger,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting },
     watch,
   } = methods;
+
+  const session = useSession();
+  const user = session.data?.user;
+  const router = useRouter();
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -99,139 +115,85 @@ const ProductForm: React.FC<ProductFormProps> = ({
     recoverable: initialData?.recoverable || false,
   });
   const [manualChange, setManualChange] = useState(false);
+  const [missingMemberData, setMissingMemberData] = useState("");
+  const [showMissingDataDialog, setShowMissingDataDialog] = useState(false);
+  const [memberToEdit, setMemberToEdit] = useState(null);
+  const [selectedAssignedMember, setSelectedAssignedMember] =
+    useState<string>("");
+  const [selectedLocation, setSelectedLocation] = useState<
+    string | undefined
+  >();
+  const [missingDataType, setMissingDataType] = useState<
+    "member" | "billing"
+  >();
 
-  const handleCategoryChange = useCallback(
-    (category: Category | undefined) => {
-      if (!isUpdate) {
-        methods.reset({
-          ...emptyProduct,
-          category: category,
-        });
-        setSelectedCategory(category);
-        setValue("category", category || undefined);
-        setManualChange(false);
+  const userRecoverableConfig = user?.isRecoverableConfig
+    ? (new Map(user.isRecoverableConfig.entries()) as Map<Category, boolean>)
+    : undefined;
 
-        const isRecoverable =
-          user?.isRecoverableConfig?.get(category || "") ??
-          category !== "Merchandising";
-
-        setValue("recoverable", isRecoverable);
-        setFormValues((prev) => ({ ...prev, recoverable: isRecoverable }));
-      }
-    },
-    [isUpdate, setValue, methods, user?.isRecoverableConfig, setFormValues]
-  );
-
-  const validateCategory = async () => {
-    const isCategoryValid = await trigger("category");
-    if (!isCategoryValid) {
-      return false;
-    }
-    return true;
+  const onCategoryChange = (category: Category | undefined) => {
+    handleCategoryChange({
+      category,
+      isUpdate: false,
+      methods,
+      setSelectedCategory: (cat) => {
+        setSelectedCategory(cat);
+        setValue("category", cat);
+      },
+      setValue,
+      setFormValues: () => {},
+      userRecoverableConfig,
+      setManualChange: () => {},
+    });
   };
 
-  const validateAttributes = (attributes, category) => {
-    let hasError = false;
-    const newErrors: Record<string, string> = {};
-    if (category !== "Merchandising") {
-      const brand = attributes.find((attr) => attr.key === "brand")?.value;
-      const model = attributes.find((attr) => attr.key === "model")?.value;
-
-      if (!brand) {
-        newErrors["brand"] = "Brand is required.";
-        hasError = true;
-      }
-
-      if (!model) {
-        newErrors["model"] = "Model is required.";
-        hasError = true;
-      }
-    }
-
-    setCustomErrors(newErrors);
-    return !hasError;
-  };
-
-  const validateProductName = async () => {
-    const attributes = watch("attributes");
-    const model = attributes.find((attr) => attr.key === "model")?.value;
-    const productName = watch("name");
-
-    if (
-      (model === "Other" && selectedCategory !== "Merchandising") ||
-      selectedCategory === "Merchandising"
-    ) {
-      if (!productName || productName.trim() === "") {
-        methods.setError("name", {
-          type: "manual",
-          message: "Product Name is required for this category and model.",
-        });
-        return false;
-      }
-    } else {
-      clearErrors("name");
-    }
-
-    return true;
-  };
-
-  const amount = watch("price.amount");
-
-  const handleSaveProduct = async (data: Product) => {
-    setShowSuccessDialog(false);
-    setShowErrorDialog(false);
-    setErrorMessage("");
-
-    const isProductNameValid = await validateProductName();
-    if (!isProductNameValid) return;
-
-    const finalAssignedEmail = watch("assignedEmail");
-    const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
-
-    const formatData: Product = {
-      ...emptyProduct,
-      ...data,
-      ...(amount !== undefined
-        ? { price: { amount, currencyCode: data.price?.currencyCode || "USD" } }
-        : {}),
-      recoverable: currentRecoverable,
-      status:
-        finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
-      category: selectedCategory || "Other",
-      assignedEmail: finalAssignedEmail,
-      attributes: cast(
-        attributes.map((attr) => {
-          const initialAttr = initialData?.attributes.find(
-            (ia) => ia.key === attr.key
-          );
-          return {
-            ...AttributeModel.create(attr),
-            value:
-              attr.value !== ""
-                ? attr.value
-                : initialAttr
-                ? initialAttr.value
-                : attr.value,
-          };
-        })
-      ),
-      ...(data.serialNumber?.trim()
-        ? { serialNumber: data.serialNumber.trim() }
-        : {}),
-    };
-
-    const model = formatData.attributes.find(
-      (attr) => attr.key === "model"
-    )?.value;
+  const validateForm = async (forNext = false): Promise<boolean> => {
+    const isCategoryValid = await validateCategory(trigger);
 
     const isAttributesValid = validateAttributes(
-      formatData.attributes,
-      selectedCategory
+      attributes,
+      selectedCategory,
+      setCustomErrors
     );
 
-    if (quantity === 1 && !isAttributesValid) {
-      return;
+    const isProductNameValid = await validateProductName(
+      watch,
+      selectedCategory,
+      methods.setError,
+      clearErrors
+    );
+
+    let isNextSpecificValid = true;
+    if (forNext) {
+      isNextSpecificValid = validateForNext(
+        attributes,
+        selectedCategory,
+        watch,
+        methods,
+        setCustomErrors
+      );
     }
+
+    return (
+      isCategoryValid &&
+      isAttributesValid &&
+      isProductNameValid &&
+      isNextSpecificValid
+    );
+  };
+
+  const handleCreateProduct = async (data: ProductFormData) => {
+    const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
+    const preparedData = prepareProductData(
+      data,
+      isUpdate,
+      selectedCategory,
+      initialData,
+      attributes,
+      currentRecoverable,
+      watch("price.amount"),
+      watch("assignedEmail")
+    );
 
     if (quantity > 1 && selectedCategory === "Merchandising" && !data.name) {
       setCustomErrors((prevErrors) => ({
@@ -241,173 +203,54 @@ const ProductForm: React.FC<ProductFormProps> = ({
       return;
     }
 
-    let hasError = false;
-    const attributeErrors: Record<string, string> = {};
-
-    if (formatData.category !== "Merchandising") {
-      const brand = formatData.attributes.find(
-        (attr) => attr.key === "brand"
-      )?.value;
-      if (!brand) {
-        attributeErrors["brand"] = "Brand is required.";
-        hasError = true;
-        methods.setError("attributes", {
-          type: "manual",
-          message: "Brand is required.",
-        });
-      }
-      if (!model) {
-        attributeErrors["model"] = "Model is required.";
-        hasError = true;
-        methods.setError("attributes", {
-          type: "manual",
-          message: "Model is required.",
-        });
-      }
-    }
-
-    if (
-      formatData.category !== "Merchandising" &&
-      model === "Other" &&
-      !formatData.name
-    ) {
-      attributeErrors["name"] = "Name is required for this model.";
-      hasError = true;
-      methods.setError("name", {
-        type: "manual",
-        message: "Name is required for this model.",
-      });
-    }
-    setCustomErrors(attributeErrors);
-
-    const isCategoryValid = await validateCategory();
-    if (!isCategoryValid || hasError) return;
-
     try {
       setIsProcessing(true);
-      if (isUpdate && initialData) {
-        const changes: Partial<Product> = {};
-        const requiredFields = ["name", "category", "location", "status"];
-        requiredFields.forEach((field) => {
-          changes[field] = formatData[field];
-        });
-
-        Object.keys(formatData).forEach((key) => {
-          if (formatData[key] !== initialData[key]) {
-            changes[key] = formatData[key];
-          }
-        });
-
-        if (Object.keys(changes).length === 0) {
-          console.log("No changes detected");
-          setShowSuccessDialog(true);
-          return;
-        }
-        await updateAsset.mutateAsync(
-          { id: initialData._id, data: changes },
-          {
-            onSuccess: () => {
-              setAlert("updateStock");
-              setAside(undefined);
-              setShowSuccessDialog(true);
-            },
-            onError: (error) => handleMutationError(error, true),
-          }
-        );
+      if (quantity > 1) {
+        setBulkInitialData(preparedData);
+        setShowBulkCreate(true);
       } else {
-        if (quantity > 1) {
-          setBulkInitialData(formatData);
-          setShowBulkCreate(true);
-        } else {
-          await createAsset.mutateAsync(formatData, {
-            onSuccess: () => {
-              setAlert("createProduct");
-              methods.reset();
-              setSelectedCategory(undefined);
-              setAssignedEmail(undefined);
-              setShowSuccessDialog(true);
-            },
-            onError: (error) => handleMutationError(error, true),
-          });
-        }
+        createAsset.mutate(preparedData, {
+          onSuccess: () => {
+            setAlert("createProduct");
+            methods.reset();
+            setSelectedCategory(undefined);
+            setAssignedEmail(undefined);
+            setShowSuccessDialog(true);
+          },
+          onError: (error) => handleMutationError(error, false),
+        });
       }
     } catch (error) {
-      handleMutationError(error, isUpdate);
+      handleMutationError(error, false);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleMutationError = (error: any, isUpdate: boolean) => {
-    if (error.response?.data?.message === "Serial Number already exists") {
-      setErrorMessage("Serial Number already exists");
-    } else {
-      setErrorMessage(
-        `Error ${
-          isUpdate ? "updating" : "creating"
-        } your product, please check the data and try again.`
-      );
-    }
-    setShowErrorDialog(true);
-  };
+  const handleUpdateProduct = async (data: ProductFormData) => {
+    const assignedEmail =
+      selectedAssignedMember === "None" ? "" : data.assignedEmail || "";
 
-  const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
-
-  const handleNext = async () => {
-    const isProductNameValid = await validateProductName();
-    if (!isProductNameValid) return;
-
-    const data = methods.getValues();
-    const finalAssignedEmail = watch("assignedEmail");
-
-    const formattedData: Product = {
-      ...emptyProduct,
-      ...data,
-      recoverable: data.recoverable,
-      status:
-        finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
-      category: selectedCategory || "Other",
-      assignedEmail: finalAssignedEmail,
-      attributes: cast(
-        attributes.map((attr) => {
-          const initialAttr = initialData?.attributes.find(
-            (ia) => ia.key === attr.key
-          );
-          return {
-            ...AttributeModel.create(attr),
-            value:
-              attr.value !== ""
-                ? attr.value
-                : initialAttr
-                ? initialAttr.value
-                : attr.value,
-          };
-        })
-      ),
-      serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
-    };
-
-    const model = formattedData.attributes.find(
-      (attr) => attr.key === "model"
-    )?.value;
-
-    Object.keys(formattedData).forEach((key) => {
-      if (
-        key !== "attributes" &&
-        formattedData.attributes.find((attr) => attr.key === key)
-      ) {
-        delete formattedData[key];
-      }
-    });
+    const preparedData = prepareProductData(
+      { ...data, assignedEmail },
+      isUpdate,
+      selectedCategory,
+      initialData,
+      attributes,
+      formValues.recoverable,
+      watch("price.amount"),
+      // watch("assignedEmail")
+      assignedEmail
+    );
 
     let hasError = false;
     const attributeErrors: Record<string, string> = {};
 
-    if (formattedData.category !== "Merchandising") {
-      const brand = formattedData.attributes.find(
+    if (preparedData.category !== "Merchandising") {
+      const brand = preparedData.attributes.find(
         (attr) => attr.key === "brand"
       )?.value;
-      const model = formattedData.attributes.find(
+      const model = preparedData.attributes.find(
         (attr) => attr.key === "model"
       )?.value;
 
@@ -429,32 +272,196 @@ const ProductForm: React.FC<ProductFormProps> = ({
       }
     }
 
-    if (
-      formattedData.category !== "Merchandising" &&
-      model === "Other" &&
-      !formattedData.name
-    ) {
-      attributeErrors["name"] = "Name is required for this model.";
-      hasError = true;
-      methods.setError("name", {
-        type: "manual",
-        message: "Name is required for this model.",
-      });
+    if (hasError) {
+      setCustomErrors(attributeErrors);
+      return;
     }
-    setCustomErrors(attributeErrors);
 
-    const isCategoryValid = await validateCategory();
-    if (!isCategoryValid || hasError) return;
+    try {
+      setIsProcessing(true);
+      if (initialData) {
+        const changes: Partial<Product> = {};
+
+        const requiredFields = ["name", "category", "location", "status"];
+        requiredFields.forEach((field) => {
+          changes[field] = preparedData[field];
+        });
+
+        Object.keys(preparedData).forEach((key) => {
+          if (preparedData[key] !== initialData[key]) {
+            changes[key] = preparedData[key];
+          }
+        });
+
+        if (Object.keys(changes).length === 0) {
+          setShowSuccessDialog(true);
+          return;
+        }
+
+        await updateAsset.mutateAsync(
+          { id: initialData._id, data: changes },
+          {
+            onSuccess: () => {
+              setAlert("updateStock");
+              setAside(undefined);
+              setShowSuccessDialog(true);
+            },
+            onError: (error) => handleMutationError(error, true),
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Unexpected error during update:", error);
+      handleMutationError(error, true);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isUpdate) {
+      if (selectedAssignedMember === "None") {
+        if (selectedLocation) {
+          setValue("location", selectedLocation);
+        } else {
+          setValue("location", "Our office");
+        }
+      } else {
+        setValue("location", "Employee");
+      }
+      clearErrors("location");
+    }
+  }, [
+    isUpdate,
+    selectedAssignedMember,
+    selectedLocation,
+    setValue,
+    clearErrors,
+  ]);
+
+  const handleSaveProduct = async (data: ProductFormData) => {
+    const isAttributesValid = validateAttributes(
+      attributes,
+      selectedCategory,
+      setCustomErrors
+    );
+
+    if (!isAttributesValid) {
+      console.error("Attributes validation failed.");
+      return;
+    }
+
+    const isProductNameValid = await validateProductName(
+      watch,
+      selectedCategory,
+      methods.setError,
+      clearErrors
+    );
+
+    if (!isProductNameValid) {
+      console.error("Product Name validation failed");
+      return;
+    }
+
+    const location = watch("location");
+
+    if (!location) {
+      setErrorMessage("Location is required but missing.");
+      setShowErrorDialog(true);
+      return;
+    }
+
+    const assignedEmail =
+      selectedAssignedMember === "None" ? "" : watch("assignedEmail");
+    const selectedMember = members.members.find(
+      (member) => member.email === assignedEmail
+    );
+    if (selectedMember) {
+      const missingFields = getMissingFields(selectedMember);
+      if (missingFields.length > 0) {
+        setMissingMemberData(formatMissingFieldsMessage(missingFields));
+        setMemberToEdit(selectedMember);
+        setShowMissingDataDialog(true);
+        return;
+      }
+    }
+    if (
+      selectedAssignedMember === "None" &&
+      selectedLocation === "Our office"
+    ) {
+      const { isValid, missingFields } = validateBillingInfo(user);
+      if (!isValid) {
+        setMissingMemberData(
+          formatMissingFieldsMessage(missingFields.split(", "))
+        );
+        setMissingDataType("billing");
+        setErrorMessage(
+          "Billing information is incomplete. Please check settings."
+        );
+        setShowMissingDataDialog(true);
+        return;
+      }
+    }
+    const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
+    const isValid = await validateForm();
+
+    if (!isValid) {
+      console.error("Validation failed");
+      return;
+    }
+    const preparedData = prepareProductData(
+      data,
+      isUpdate,
+      selectedCategory,
+      initialData,
+      attributes,
+      currentRecoverable,
+      watch("price.amount"),
+      watch("assignedEmail")
+    );
+
+    if (isUpdate) {
+      await handleUpdateProduct(preparedData);
+    } else {
+      await handleCreateProduct(preparedData);
+    }
+  };
+
+  const handleMutationError = (error: any, isUpdate: boolean) => {
+    if (error.response?.data?.message === "Serial Number already exists") {
+      setErrorMessage("Serial Number already exists");
+    } else {
+      setErrorMessage(
+        `Error ${
+          isUpdate ? "updating" : "creating"
+        } your product, please check the data and try again.`
+      );
+    }
+    setShowErrorDialog(true);
+  };
+
+  const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
+
+  const handleNext = async () => {
+    const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
+    const isFormValid = await validateForm(true);
+    if (!isFormValid) return;
+
+    const data = methods.getValues();
+    const formattedData = prepareProductData(
+      data,
+      isUpdate,
+      selectedCategory,
+      initialData,
+      attributes,
+      currentRecoverable,
+      watch("price.amount"),
+      watch("assignedEmail")
+    );
 
     setBulkInitialData(formattedData);
     setShowBulkCreate(true);
   };
-
-  // const clearErrorsRef = useRef(clearErrors);
-
-  // useEffect(() => {
-  //   clearErrorsRef.current = clearErrors;
-  // }, [clearErrors]);
 
   useEffect(() => {
     if (quantity > 1) {
@@ -462,13 +469,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
   }, [quantity, clearErrors]);
 
-  const modelValue = watch("attributes").find(
+  const modelValue = (watch("attributes") || []).find(
     (attr) => attr.key === "model"
   )?.value;
 
-  // useEffect(() => {
-  //   console.log("Errores actuales del formulario:", errors);
-  // }, [errors]);
+  const handleLocationChange = (location: string) => {
+    setSelectedLocation(location);
+    setValue("location", location);
+  };
 
   return (
     <FormProvider {...methods}>
@@ -484,7 +492,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   <section>
                     <div className="flex items-center">
                       <CategoryForm
-                        handleCategoryChange={handleCategoryChange}
+                        handleCategoryChange={onCategoryChange}
                         selectedCategory={selectedCategory}
                         setAssignedEmail={(email) =>
                           setValue("assignedEmail", email)
@@ -501,6 +509,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         setFormValues={setFormValues}
                         setManualChange={setManualChange}
                         manualChange={manualChange}
+                        selectedAssignedMember={selectedAssignedMember}
+                        setSelectedAssignedMember={setSelectedAssignedMember}
+                        selectedLocation={selectedLocation}
+                        onLocationChange={handleLocationChange}
+                        setSelectedLocation={setSelectedLocation}
+                        setMissingDataType={setMissingDataType}
+                        missingDataType={missingDataType}
                       />
                     </div>
                   </section>
@@ -563,6 +578,32 @@ const ProductForm: React.FC<ProductFormProps> = ({
             buttonText="OK"
             onButtonClick={() => {
               setShowErrorDialog(false);
+            }}
+          />
+        </div>
+        <div className="z-50">
+          <GenericAlertDialog
+            open={showMissingDataDialog}
+            onClose={() => {
+              setShowMissingDataDialog(false);
+              setMissingMemberData("");
+              setMissingDataType(undefined);
+            }}
+            title="Please complete the missing data: "
+            description={missingMemberData}
+            buttonText={
+              missingDataType === "member" ? "Update Member" : "Go to Settings"
+            }
+            onButtonClick={() => {
+              if (missingDataType === "member") {
+                members.setMemberToEdit(memberToEdit._id);
+                setAside("EditMember", undefined, { stackable: true });
+              } else {
+                router.push("/home/settings");
+              }
+              setShowErrorDialog(false);
+              setMissingMemberData("");
+              setMissingDataType(undefined);
             }}
           />
         </div>

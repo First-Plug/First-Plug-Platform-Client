@@ -28,9 +28,14 @@ const DynamicForm = ({
       key: field.name,
       value: watch(field.name) || "",
     }));
+
     setAttributes(newAttributes);
     handleAttributesChange(newAttributes);
-  }, [fields, watch, handleAttributesChange]);
+    newAttributes.forEach((attr, index) => {
+      setValue(`attributes.${index}.key`, attr.key);
+      setValue(`attributes.${index}.value`, attr.value);
+    });
+  }, [fields, watch, handleAttributesChange, setValue]);
 
   useEffect(() => {
     if (isUpdate && initialValues) {
@@ -47,6 +52,7 @@ const DynamicForm = ({
     const updatedAttributes = attributes.map((attr) =>
       attr.key === fieldKey ? { ...attr, value } : attr
     );
+
     setAttributes(updatedAttributes);
     handleAttributesChange(updatedAttributes);
 
@@ -60,6 +66,7 @@ const DynamicForm = ({
     } else {
       setValue(fieldKey, value);
     }
+
     clearErrors(fieldKey);
     setCustomErrors((prev) => ({ ...prev, [fieldKey]: undefined }));
   };

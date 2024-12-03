@@ -145,12 +145,12 @@ export function EmptyCard({ type }: EmptyCardProps) {
 
   const handleActions = () => {
     if (type === "stock") {
-      setAside("LoadStock", "MyStock");
+      setAside("LoadStock", "MyStock", { stackable: false });
     }
 
-    if (type === "members") setAside("LoadMembers");
+    if (type === "members")
+      setAside("LoadMembers", undefined, { stackable: false });
     if (type === "registerok") {
-      console.log("a");
       return signOut({ callbackUrl: "http://localhost:3000/login" });
     }
   };

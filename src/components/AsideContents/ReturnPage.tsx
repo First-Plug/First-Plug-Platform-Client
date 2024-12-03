@@ -1,7 +1,7 @@
 import { ArrowLeft } from "@/common";
 import { Product } from "@/types";
 import { ReturnProduct } from "./ReturnProduct";
-import { useState, Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 interface IReturnPage {
   products: Product[];
@@ -16,7 +16,7 @@ export function ReturnPage({
   setSelectedProducts,
   selectedProducts,
 }: IReturnPage) {
-  // const [selectedProducts, setSelectedProducts] = useState<Product[]>(products);
+  // const [selectedProducts] = useState<Product[]>(products);
   const [enabledProductIndex, setEnabledProductIndex] = useState<number>(0);
 
   const handleSuccess = () => {

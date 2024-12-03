@@ -1,9 +1,14 @@
 "use client";
 import { Button } from "@/common";
 import { useStore } from "@/models";
-import { Product } from "@/types";
+import { Product, User } from "@/types";
 import { usePrefetchAssignData } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
+import { useRouter } from "next/navigation";
+import { validateBillingInfo } from "@/lib/utils";
 
 type ActionType = {
   text: string;
@@ -15,7 +20,7 @@ interface ActionButtonProps {
 }
 export function ActionButton({ product }: ActionButtonProps) {
   const {
-    aside: { setAside },
+    aside: { setAside, closeAside },
     members: { setSelectedMemberEmail },
     products: {
       getProductForAssign,
@@ -25,8 +30,21 @@ export function ActionButton({ product }: ActionButtonProps) {
   } = useStore();
   const queryClient = useQueryClient();
   const { prefetchAssignData } = usePrefetchAssignData(product._id);
+  const [showErrorDialogOurOffice, setShowErrorDialogOurOffice] =
+    useState(false);
+  const [missingOfficeData, setMissingOfficeData] = useState("");
+
+  const { data: session } = useSession();
+  const router = useRouter();
 
   const handleAssignAction = () => {
+    if (product.location === "Our office") {
+      if (!validateBillingInfo(session.user).isValid) {
+        setMissingOfficeData(validateBillingInfo(session.user).missingFields);
+        return setShowErrorDialogOurOffice(true);
+      }
+    }
+
     const cachedProduct = queryClient.getQueryData<Product>([
       "assets",
       product._id,
@@ -66,14 +84,28 @@ export function ActionButton({ product }: ActionButtonProps) {
   const { action, text } = ActionConfig[product.status];
 
   return (
-    <div
-      onMouseEnter={() => {
-        prefetchAssignData();
-      }}
-    >
-      <Button onClick={action} className="rounded-md" variant="text">
-        {text}
-      </Button>
-    </div>
+    <>
+      <GenericAlertDialog
+        open={showErrorDialogOurOffice}
+        onClose={() => setShowErrorDialogOurOffice(false)}
+        title="Please complete the missing data"
+        description={missingOfficeData}
+        buttonText="Update"
+        onButtonClick={() => {
+          closeAside();
+          router.push(`/home/settings`);
+          setShowErrorDialogOurOffice(false);
+        }}
+      />
+      <div
+        onMouseEnter={() => {
+          prefetchAssignData();
+        }}
+      >
+        <Button onClick={action} className="rounded-md" variant="text">
+          {text}
+        </Button>
+      </div>
+    </>
   );
 }

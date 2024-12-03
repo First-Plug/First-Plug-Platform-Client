@@ -15,6 +15,10 @@ import { useBulkCreateAssets } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchMembers } from "@/members/hooks";
 import { getMemberFullName } from "@/members/helpers/getMemberFullName";
+import ProductStatusValidator, {
+  validateMemberBillingInfo,
+} from "./utils/ProductStatusValidator";
+import GenericAlertDialog from "./ui/GenericAlertDialog";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -25,7 +29,7 @@ const BulkCreateForm: React.FC<{
 }> = ({ initialData, quantity, onBack, isProcessing, setIsProcessing }) => {
   const { mutate: bulkCreateAssets, status } = useBulkCreateAssets();
   const isLoading = status === "pending";
-
+  const { data: fetchedMembers } = useFetchMembers();
   const queryClient = useQueryClient();
 
   const numProducts = quantity;
@@ -64,6 +68,8 @@ const BulkCreateForm: React.FC<{
   const {
     products: { setProducts },
     alerts: { setAlert },
+    members: { setMemberToEdit },
+    aside: { setAside, isClosed },
   } = useStore();
 
   const methods = useForm({
@@ -89,6 +95,9 @@ const BulkCreateForm: React.FC<{
   const [members, setMembers] = useState<Instance<typeof TeamMemberModel>[]>(
     []
   );
+  const [statusList, setStatusList] = useState<string[]>(
+    Array(numProducts).fill("")
+  );
   const [loading, setLoading] = useState(true);
   const [isLocationEnabled, setIsLocationEnabled] = useState<boolean[]>(
     Array(numProducts).fill(false)
@@ -97,7 +106,11 @@ const BulkCreateForm: React.FC<{
     Array(numProducts).fill("Location")
   );
   const [assignAll, setAssignAll] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [showMissingDataDialog, setMissingDataDialog] = useState(false);
+  const [missingMemberData, setMissingMemberData] = useState<string>("");
 
+  //Desactiva Apply All si hay diferencias entre productos
   useLayoutEffect(() => {
     const subscription = watch((value, { name }) => {
       if (assignAll && name?.startsWith("products.") && name !== "products.0") {
@@ -137,8 +150,8 @@ const BulkCreateForm: React.FC<{
 
     return () => subscription.unsubscribe();
   }, [watch, assignAll]);
-  const { data: fetchedMembers } = useFetchMembers();
 
+  //carga inicial de members y sus opciones de mail
   useEffect(() => {
     if (fetchedMembers) {
       setMembers(fetchedMembers as Instance<typeof TeamMemberModel>[]);
@@ -149,7 +162,16 @@ const BulkCreateForm: React.FC<{
       setAssignedEmailOptions(memberFullNames);
       setLoading(false);
     }
-  }, []);
+  }, [fetchedMembers]);
+
+  const handleStatusChange = (status: string, index: number) => {
+    setStatusList((prevStatusList) => {
+      if (prevStatusList[index] === status) return prevStatusList;
+      const updatedStatusList = [...prevStatusList];
+      updatedStatusList[index] = status;
+      return updatedStatusList;
+    });
+  };
 
   const handleAssignedMemberChange = (
     selectedFullName: string,
@@ -177,6 +199,8 @@ const BulkCreateForm: React.FC<{
       `products.${index}.assignedEmail`,
       `products.${index}.location`,
     ]);
+
+    handleStatusChange("pending", index);
 
     if (assignAll && index === 0) {
       for (let i = 1; i < numProducts; i++) {
@@ -218,6 +242,71 @@ const BulkCreateForm: React.FC<{
       setSelectedLocations(newSelectedLocations);
     }
   };
+
+  //invalida la query de members si se cierra el aside
+  useEffect(() => {
+    if (isClosed) {
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+    }
+  }, [isClosed]);
+
+  //actualiza la lista de estados al cambiar datos de productos y members
+  useEffect(() => {
+    const subscription = watch((values) => {
+      const updatedStatusList = values.products.map(
+        (product: any, index: number) => {
+          const assignedMember = product.assignedMember;
+          const location = product.location;
+          const foundMember = members.find(
+            (m) => `${m.firstName} ${m.lastName}` === assignedMember
+          );
+
+          if (!assignedMember || assignedMember === "None")
+            return "location-required";
+          if (!location || location === "Location") return "location-required";
+          if (!foundMember || !validateMemberBillingInfo(foundMember))
+            return "not-member-available";
+
+          return "valid";
+        }
+      );
+
+      setStatusList(updatedStatusList);
+
+      // Si todos los productos son válidos, habilitamos el botón de "Save"
+      const allValid = updatedStatusList.every((status) => status === "valid");
+      setIsButtonDisabled(!allValid);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, members]);
+
+  //valida productos al cerrar el aside y actualiza estados
+  useEffect(() => {
+    if (isClosed) {
+      const products = methods.getValues("products");
+      const updatedStatusList = products.map((product, index) => {
+        const assignedMember = product.assignedMember;
+        const location = product.location;
+        const foundMember = members.find(
+          (m) => `${m.firstName} ${m.lastName}` === assignedMember
+        );
+
+        if (!assignedMember || assignedMember === "None")
+          return "location-required";
+        if (!location || location === "Location") return "location-required";
+        if (!foundMember || !validateMemberBillingInfo(foundMember))
+          return "not-member-available";
+
+        return "valid";
+      });
+
+      setStatusList(updatedStatusList);
+
+      const allValid = updatedStatusList.every((status) => status === "valid");
+      setIsButtonDisabled(!allValid);
+    }
+  }, [isClosed, members, methods]);
 
   const validateData = async (data: any) => {
     let isValid = true;
@@ -315,6 +404,31 @@ const BulkCreateForm: React.FC<{
       return;
     }
 
+    const incompleteMembers = data.products
+      .map((product: any) => {
+        if (product.assignedMember === "None") {
+          return null;
+        }
+
+        const assignedMember = members.find(
+          (m) =>
+            `${m.firstName} ${m.lastName}` === product.assignedMember &&
+            validateMemberBillingInfo(m)
+        );
+        return !assignedMember ? product.assignedMember : null;
+      })
+      .filter(Boolean);
+
+    if (incompleteMembers.length > 0) {
+      setMissingDataDialog(true);
+      setMissingMemberData(
+        `The following members have missing information: ${incompleteMembers.join(
+          ", "
+        )}. Please update their details to continue.`
+      );
+      return;
+    }
+
     handleBulkCreate(data);
   };
 
@@ -381,7 +495,7 @@ const BulkCreateForm: React.FC<{
             {Array.from({ length: numProducts }, (_, index) => (
               <div key={index} className="mb-4">
                 <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 ">
                   <div className="w-full">
                     <DropdownInputProductForm
                       options={assignedEmailOptions}
@@ -465,6 +579,19 @@ const BulkCreateForm: React.FC<{
                       className="w-full"
                     />
                   </div>
+                  <div className="w-full">
+                    <ProductStatusValidator
+                      productIndex={index}
+                      selectedMember={watch(`products.${index}.assignedMember`)}
+                      relocation={watch(`products.${index}.location`)}
+                      members={members}
+                      onStatusChange={(status) =>
+                        handleStatusChange(status, index)
+                      }
+                      setMemberToEdit={setMemberToEdit}
+                      setAside={setAside}
+                    />
+                  </div>
                 </div>
               </div>
             ))}
@@ -487,6 +614,14 @@ const BulkCreateForm: React.FC<{
               </div>
             </aside>
           </form>
+          <GenericAlertDialog
+            open={showMissingDataDialog}
+            onClose={() => setMissingDataDialog(false)}
+            title="Incomplete Member Data"
+            description={missingMemberData}
+            buttonText="OK"
+            onButtonClick={() => setMissingDataDialog(false)}
+          />
         </div>
       </PageLayout>
     </FormProvider>

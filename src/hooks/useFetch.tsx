@@ -99,7 +99,7 @@ export default function useFetch() {
         localStorage.removeItem("token");
         signOut({ callbackUrl: "http://localhost:3000/login" });
       }
-      console.log("Error fetching stock:", error);
+      console.error("Error fetching stock:", error);
     } finally {
       setFetchStock(false);
     }

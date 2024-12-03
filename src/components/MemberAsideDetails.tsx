@@ -4,7 +4,7 @@ import { Button, EmptyCardLayout, MemberDetail } from "@/common";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
 import ProductDetail from "@/common/ProductDetail";
-import { Product } from "@/types";
+import { Product, TeamMember } from "@/types";
 import Image from "next/image";
 import { LinkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,8 @@ import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { DeleteMemberModal } from "./Alerts/DeleteMemberModal";
 import { useFetchMember } from "@/members/hooks";
 import { Loader } from "./Loader";
+import { getMissingFields } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MemberAsideDetailsProps {
   className?: string;
@@ -28,10 +30,20 @@ export const MemberAsideDetails = observer(function ({
       setMemberToEdit,
       setSelectedMember,
     },
-    aside: { setAside },
+    aside: { setAside, context },
   } = useStore();
 
   const { data: member, isLoading, isError } = useFetchMember(memberToEdit);
+  const queryClient = useQueryClient();
+  const originalMember =
+    context?.originalMember ||
+    queryClient
+      .getQueryData<TeamMember[]>(["members"])
+      ?.find((m) => m._id === memberToEdit);
+
+  if (!originalMember) {
+    return <div>Error loading member data</div>;
+  }
 
   const router = useRouter();
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
@@ -62,12 +74,40 @@ export const MemberAsideDetails = observer(function ({
   };
 
   const handleRealocate = (action: "open" | "close") => {
+    const missingFields = getMissingFields(selectedMember);
+    if (getMissingFields(selectedMember).length) {
+      setMissingMemberData(
+        missingFields.reduce((acc, field, index) => {
+          if (index === 0) {
+            return capitalizeAndSeparateCamelCase(field);
+          }
+          return acc + " - " + capitalizeAndSeparateCamelCase(field);
+        }, "")
+      );
+
+      setShowErrorDialog(true);
+      return;
+    }
     setRelocatePage(!(action === "close"));
     if (action === "close") {
       setSelectedProducts([]);
     }
   };
   const handleReturn = (action: "open" | "close") => {
+    const missingFields = getMissingFields(selectedMember);
+    if (getMissingFields(selectedMember).length) {
+      setMissingMemberData(
+        missingFields.reduce((acc, field, index) => {
+          if (index === 0) {
+            return capitalizeAndSeparateCamelCase(field);
+          }
+          return acc + " - " + capitalizeAndSeparateCamelCase(field);
+        }, "")
+      );
+
+      setShowErrorDialog(true);
+      return;
+    }
     setReturnPage(!(action === "close"));
     if (action === "close") {
       setSelectedProducts([]);
@@ -173,9 +213,9 @@ export const MemberAsideDetails = observer(function ({
       ) : (
         <Fragment>
           <div className="flex flex-col gap-6   h-full   ">
-            <MemberDetail memberId={memberToEdit} />
+            <MemberDetail memberId={originalMember._id} />
             <div className=" flex-grow h-[70%]  ">
-              {member?.products?.length ? (
+              {originalMember?.products?.length ? (
                 <div className="flex flex-col gap-2 h-full">
                   <div className="flex justify-between">
                     <h1 className="font-semibold text-lg">Products</h1>
@@ -254,7 +294,10 @@ export const MemberAsideDetails = observer(function ({
             buttonText="Update Member"
             onButtonClick={() => {
               setMemberToEdit(member._id);
-              setAside("EditMember");
+              setAside("EditMember", undefined, {
+                stackable: true,
+                memberToEdit: id,
+              });
               setShowErrorDialog(false);
             }}
           />

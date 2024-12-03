@@ -101,10 +101,11 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
 
   const handleActions = () => {
     if (type === "stock") {
-      setAside("LoadStock", "MyStock");
+      setAside("LoadStock", "MyStock", { stackable: false });
     }
 
-    if (type === "members") setAside("LoadMembers");
+    if (type === "members")
+      setAside("LoadMembers", undefined, { stackable: false });
   };
 
   const { data } = useSession();

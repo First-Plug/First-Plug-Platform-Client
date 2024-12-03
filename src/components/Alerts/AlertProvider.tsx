@@ -9,6 +9,7 @@ import { XCircleIcon } from "lucide-react";
 import { CheckIcon } from "@/common";
 import useFetch from "@/hooks/useFetch";
 import { useQueryClient } from "@tanstack/react-query";
+import { TeamMember } from "@/types";
 
 function XIcon() {
   return <XCircleIcon className="text-white " size={40} />;
@@ -22,8 +23,9 @@ interface IConfig {
 
 export default observer(function AlertProvider() {
   const {
+    members,
     alerts: { alertType, setAlert },
-    aside: { setAside },
+    aside: { setAside, popAside, stack, context },
   } = useStore();
   const router = useRouter();
   const { fetchMembers, fetchStock } = useFetch();
@@ -141,11 +143,22 @@ export default observer(function AlertProvider() {
       type: "succes",
       description: " This member has been successfully updated.",
       closeAction: async () => {
-        queryClient.invalidateQueries({ queryKey: ["members"] });
-        queryClient.invalidateQueries({ queryKey: ["assets"] });
-        // await fetchStock();
-        setAside(undefined);
-        setAlert(undefined);
+        try {
+          await queryClient.invalidateQueries({ queryKey: ["members"] });
+          await queryClient.invalidateQueries({ queryKey: ["assets"] });
+
+          const members = queryClient.getQueryData<TeamMember[]>(["members"]);
+
+          if (stack.length > 0 && context?.stackable) {
+            popAside(members);
+          } else {
+            setAside(undefined);
+          }
+        } catch (error) {
+          console.error("Error al manejar el aside o stack:", error);
+        } finally {
+          setAlert(undefined);
+        }
       },
     },
     updateStock: {

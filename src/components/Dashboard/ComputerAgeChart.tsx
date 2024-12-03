@@ -102,19 +102,6 @@ const ComputerAgeChart = ({
       },
       tooltip: {
         enabled: false,
-        // callbacks: {
-        //   label: function (context) {
-        //     const value = context.raw;
-        //     const label = context.dataset.label || "Computer age";
-        //     console.log(`Valor en tooltip para barra: ${value}`);
-
-        //     if (value !== null) {
-        //       return `${label}: ${value.toFixed(1)} years`;
-        //     }
-
-        //     return label;
-        //   },
-        // },
       },
     },
     layout: {

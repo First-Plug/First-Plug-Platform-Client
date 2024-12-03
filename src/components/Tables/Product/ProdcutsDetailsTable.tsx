@@ -200,7 +200,6 @@ export default function ProdcutsDetailsTable({
 
   useEffect(() => {
     const handleScroll = () => {
-      console.log("Scroll detected in sub-table");
       setColumnFilters([]);
     };
 

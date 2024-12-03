@@ -14,6 +14,9 @@ import useActions from "@/hooks/useActions";
 import { XIcon } from "lucide-react";
 import CategoryIcons from "@/components/AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
+import { capitalizeAndSeparateCamelCase, getMissingFields } from "@/lib/utils";
+import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
+import { useRouter } from "next/navigation";
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
   product,
@@ -29,7 +32,13 @@ const MembersList = observer(function MembersList({
   handleSuccess?: () => void;
 }) {
   const {
-    members: { members, selectedMember: currentMember, setRelocateChange },
+    members: {
+      members,
+      selectedMember: currentMember,
+      setRelocateChange,
+      setMemberToEdit,
+    },
+    aside: { setAside },
   } = useStore();
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [isRelocating, setRelocating] = useState(false);
@@ -38,6 +47,9 @@ const MembersList = observer(function MembersList({
   const [selectedMember, setSelectedMember] = useState<TeamMember>();
   const { handleReassignProduct } = useActions();
   const queryClient = useQueryClient();
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [missingMemberData, setMissingMemberData] = useState("");
+  const router = useRouter();
 
   const handleSelectMember = (member: TeamMember) => {
     setSelectedMember(member);
@@ -60,6 +72,21 @@ const MembersList = observer(function MembersList({
 
   const handleRelocateProduct = async () => {
     if (selectedMember) {
+      const missingFields = getMissingFields(selectedMember);
+      if (getMissingFields(selectedMember).length) {
+        setMissingMemberData(
+          missingFields.reduce((acc, field, index) => {
+            if (index === 0) {
+              return capitalizeAndSeparateCamelCase(field);
+            }
+            return acc + " - " + capitalizeAndSeparateCamelCase(field);
+          }, "")
+        );
+
+        setShowErrorDialog(true);
+        return;
+      }
+
       setRelocating(true);
       try {
         await handleReassignProduct({
@@ -83,6 +110,19 @@ const MembersList = observer(function MembersList({
 
   return (
     <section>
+      <GenericAlertDialog
+        open={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
+        title="Please complete the missing data: "
+        description={missingMemberData}
+        buttonText="Update Member"
+        onButtonClick={() => {
+          router.push(`/home/my-team`);
+          setMemberToEdit(selectedMember._id);
+          setAside("EditMember", undefined, { stackable: true });
+          setShowErrorDialog(false);
+        }}
+      />
       {selectedMember ? (
         <section className="flex justify-between w-full py-2">
           <div className="flex items-center gap-2">
@@ -178,7 +218,7 @@ interface ProductDetailProps {
   selectedProducts?: Product[];
   onRelocateSuccess?: () => void;
   disabled?: boolean;
-  isOffboardingStyles?: boolean
+  isOffboardingStyles?: boolean;
 }
 export default function ProductDetail({
   product,
@@ -189,7 +229,7 @@ export default function ProductDetail({
   isRelocating = false,
   onRelocateSuccess,
   disabled,
-  isOffboardingStyles
+  isOffboardingStyles,
 }: ProductDetailProps) {
   const [showList, setShowList] = useState(false);
   const [relocateStatus, setRelocateStauts] =
@@ -216,7 +256,10 @@ export default function ProductDetail({
 
             <hr />
 
-            <PrdouctModelDetail product={product} isOffboardingStyles={isOffboardingStyles} />
+            <PrdouctModelDetail
+              product={product}
+              isOffboardingStyles={isOffboardingStyles}
+            />
           </section>
           {isRelocating && (
             <Button

@@ -33,7 +33,7 @@ export class AuthServices {
     try {
       return await axios.post(`${BASE_URL}/api/auth/register-providers`, user);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
@@ -51,7 +51,7 @@ export class AuthServices {
       const tokens = await axios.post(`${BASE_URL}/api/auth/get-tokens`, user);
       return tokens.data;
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 

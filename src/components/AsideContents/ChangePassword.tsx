@@ -51,7 +51,6 @@ export function ChangePassword() {
       setAlert("passwordChange");
       setAside(undefined);
     } catch (error) {
-      console.log(error);
       setAlert("ErorPasswordChange");
     } finally {
       setIsLoading(false);
