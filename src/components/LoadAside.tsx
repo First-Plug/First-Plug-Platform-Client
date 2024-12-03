@@ -153,6 +153,7 @@ export const LoadAside = function () {
     Papa.parse(csvFile, {
       skipEmptyLines: true,
       header: true,
+      delimiter: "",
       complete: function (results) {
         // Here is the UPLOAD  🗃️⬆️  file validation:
         if (type === "LoadStock") {
@@ -212,19 +213,32 @@ export const LoadAside = function () {
 
   const handleAttachFileClick = () => {
     if (csvFile) {
-      Papa.parse(csvFile, {
-        skipEmptyLines: true,
-        header: true,
-        complete: function (results) {
-          const { name, size } = csvFile;
-          setCsvInfo({
-            title: name,
-            file: `${(size / 1024).toFixed(2)}kb`,
-            currentDate: new Date().toLocaleString(),
-          });
-          postCsvToDatabase(results.data);
-        },
-      });
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        const decoder = new TextDecoder("ISO-8859-1");
+        const fileContent = decoder.decode(
+          e.target.result as AllowSharedBufferSource
+        );
+
+        Papa.parse(fileContent, {
+          skipEmptyLines: true,
+          header: true,
+          delimiter: "",
+          complete: function (results) {
+            const { name, size } = csvFile;
+            setCsvInfo({
+              title: name,
+              file: `${(size / 1024).toFixed(2)}kb`,
+              currentDate: new Date().toLocaleString(),
+            });
+
+            postCsvToDatabase(results.data);
+          },
+        });
+      };
+
+      reader.readAsArrayBuffer(csvFile);
     }
   };
 
