@@ -30,11 +30,13 @@ export const AsideStore = types
       store.context = {
         ...context,
         stackable: context?.stackable ?? false,
+        memberToEdit: context?.memberToEdit || null,
       };
+
       store.isClosed = false;
       if (context?.memberToEdit) {
         const rootStore = getRoot(store) as any;
-        rootStore.members.setMemberToEdit(context.memberToEdit);
+        rootStore.members.setMemberToEdit(context.memberToEdit._id);
       }
     },
     popAside(members: TeamMember[]) {

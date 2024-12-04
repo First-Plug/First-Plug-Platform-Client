@@ -1,14 +1,19 @@
 "use client";
 import { Button } from "@/common";
 import { useStore } from "@/models";
-import { Product, User } from "@/types";
+import { Product, TeamMember, User } from "@/types";
 import { usePrefetchAssignData } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
 import { useRouter } from "next/navigation";
-import { validateBillingInfo } from "@/lib/utils";
+import {
+  formatMissingFieldsMessage,
+  getMissingFields,
+  validateBillingInfo,
+} from "@/lib/utils";
+import { getSnapshot } from "mobx-state-tree";
 
 type ActionType = {
   text: string;
@@ -20,8 +25,8 @@ interface ActionButtonProps {
 }
 export function ActionButton({ product }: ActionButtonProps) {
   const {
-    aside: { setAside, closeAside },
-    members: { setSelectedMemberEmail },
+    aside: { setAside, closeAside, context },
+    members: { setSelectedMemberEmail, members },
     products: {
       getProductForAssign,
       getProductForReassign,
@@ -33,7 +38,10 @@ export function ActionButton({ product }: ActionButtonProps) {
   const [showErrorDialogOurOffice, setShowErrorDialogOurOffice] =
     useState(false);
   const [missingOfficeData, setMissingOfficeData] = useState("");
-
+  const [currentMissingFields, setCurrentMissingFields] = useState<string[]>(
+    []
+  );
+  const [assignedMember, setAssignedMember] = useState<TeamMember | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -62,7 +70,36 @@ export function ActionButton({ product }: ActionButtonProps) {
       product._id,
     ]);
 
-    setAside("ReassignProduct");
+    const currentProduct = cachedProduct || product;
+
+    const assignedMember = members.find(
+      (member) => member.email === currentProduct.assignedEmail
+    );
+
+    if (!assignedMember) {
+      console.error("No se encontró el miembro asignado al producto.");
+      return;
+    }
+
+    setAssignedMember(assignedMember);
+
+    const missingFields = getMissingFields({
+      personalEmail: assignedMember.personalEmail,
+      phone: assignedMember.phone,
+      dni: assignedMember.dni,
+      country: assignedMember.country,
+      city: assignedMember.city,
+      zipCode: assignedMember.zipCode,
+      address: assignedMember.address,
+    });
+
+    if (missingFields.length > 0) {
+      setMissingOfficeData(formatMissingFieldsMessage(missingFields));
+      setShowErrorDialogOurOffice(true);
+      return;
+    }
+
+    setAside("ReassignProduct", undefined, { stackable: true });
     setSelectedMemberEmail(product.assignedEmail);
     setProductToAssing(cachedProduct || product);
   };
@@ -92,9 +129,16 @@ export function ActionButton({ product }: ActionButtonProps) {
         description={missingOfficeData}
         buttonText="Update"
         onButtonClick={() => {
-          closeAside();
-          router.push(`/home/settings`);
           setShowErrorDialogOurOffice(false);
+
+          closeAside();
+          if (currentMissingFields.includes("billing")) {
+            router.push("/home/settings");
+          } else if (assignedMember) {
+            setAside("EditMember", undefined, {
+              memberToEdit: getSnapshot(assignedMember),
+            });
+          }
         }}
       />
       <div
