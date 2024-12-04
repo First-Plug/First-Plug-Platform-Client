@@ -47,8 +47,15 @@ export function ActionButton({ product }: ActionButtonProps) {
 
   const handleAssignAction = () => {
     if (product.location === "Our office") {
-      if (!validateBillingInfo(session.user).isValid) {
-        setMissingOfficeData(validateBillingInfo(session.user).missingFields);
+      const { isValid, missingFields } = validateBillingInfo(session.user);
+
+      if (!isValid) {
+        const missingFieldsArray = missingFields
+          .split(",")
+          .map((field) => field.trim());
+
+        setMissingOfficeData(missingFields);
+        setCurrentMissingFields([...missingFieldsArray, "billing"]);
         return setShowErrorDialogOurOffice(true);
       }
     }
@@ -58,7 +65,7 @@ export function ActionButton({ product }: ActionButtonProps) {
       product._id,
     ]);
 
-    setAside("AssignProduct");
+    setAside("AssignProduct", undefined, { stackable: true });
     setSelectedMemberEmail("");
 
     setProductToAssing(cachedProduct || product);
