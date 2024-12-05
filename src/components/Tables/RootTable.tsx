@@ -517,7 +517,7 @@ export function RootTable<TData, TValue>({
                               }
                             />
 
-                            {/* {filterMenuOpen === header.id && (
+                            {filterMenuOpen === header.id && (
                               <div
                                 className="fixed z-40"
                                 ref={(el) =>
@@ -556,7 +556,7 @@ export function RootTable<TData, TValue>({
                                   onClose={() => setFilterMenuOpen(null)}
                                 />
                               </div>
-                            )} */}
+                            )}
                           </div>
                         )}
                       </div>
