@@ -36,7 +36,7 @@ export const AsideStore = types
       store.isClosed = false;
       if (context?.memberToEdit) {
         const rootStore = getRoot(store) as any;
-        rootStore.members.setMemberToEdit(context.memberToEdit._id);
+        rootStore.members.setMemberToEdit(context.memberToEdit);
       }
     },
     popAside(members: TeamMember[]) {
