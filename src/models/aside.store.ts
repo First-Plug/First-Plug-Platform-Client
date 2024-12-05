@@ -27,17 +27,34 @@ export const AsideStore = types
 
       store.type = type;
       store.csvContext = csvContext;
-      store.context = {
-        ...context,
-        stackable: context?.stackable ?? false,
-        memberToEdit: context?.memberToEdit || null,
-      };
+
+      if (context?.memberToEdit && typeof context.memberToEdit === "string") {
+        const rootStore = getRoot(store) as any;
+        const member = rootStore.members.members.find(
+          (m: TeamMember) => m._id === context.memberToEdit
+        );
+
+        store.context = {
+          ...context,
+          memberToEdit: member || null,
+          stackable: context?.stackable ?? false,
+        };
+        if (member) {
+          rootStore.members.setMemberToEdit(member._id);
+        }
+      } else {
+        store.context = {
+          ...context,
+          stackable: context?.stackable ?? false,
+          memberToEdit: context?.memberToEdit || null,
+        };
+        if (context?.memberToEdit) {
+          const rootStore = getRoot(store) as any;
+          rootStore.members.setMemberToEdit(context.memberToEdit._id);
+        }
+      }
 
       store.isClosed = false;
-      if (context?.memberToEdit) {
-        const rootStore = getRoot(store) as any;
-        rootStore.members.setMemberToEdit(context.memberToEdit);
-      }
     },
     popAside(members: TeamMember[]) {
       const lastAside = store.stack.pop();
