@@ -72,6 +72,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     defaultValues: {
       ...emptyProduct,
       ...initialData,
+      assignedEmail: initialData?.assignedEmail || "None",
       category: initialData?.category || undefined,
       serialNumber: initialData?.serialNumber || undefined,
       price: initialData?.price || undefined,
@@ -298,7 +299,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           return;
         }
 
-        await updateAsset.mutateAsync(
+        updateAsset.mutate(
           { id: initialData._id, data: changes },
           {
             onSuccess: () => {
@@ -341,7 +342,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const handleSaveProduct = async (data: ProductFormData) => {
     const isAttributesValid = validateAttributes(
-      attributes,
+      isUpdate ? initialData?.attributes : attributes || [],
       selectedCategory,
       setCustomErrors
     );
@@ -553,7 +554,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     variant="primary"
                     className="rounded lg"
                     size="big"
-                    onClick={handleSubmit(handleSaveProduct)}
+                    onClick={() => {
+                      handleSubmit(handleSaveProduct)();
+                    }}
                     disabled={isSubmitting || isProcessing}
                   />
                 )}

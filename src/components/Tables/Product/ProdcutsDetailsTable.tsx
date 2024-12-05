@@ -166,7 +166,7 @@ export default function ProdcutsDetailsTable({
   onResetInternalFilters,
 }: IProdcutsDetailsTable) {
   const { prefetchAsset } = usePrefetchAsset();
-  console.log("Products for internal table:", products);
+  // console.log("Products for internal table:", products);
 
   // useEffect(() => {
   //   products.forEach((product) => prefetchAsset(product._id));

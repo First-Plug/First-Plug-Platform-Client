@@ -135,7 +135,7 @@ export function RootTable<TData, TValue>({
     ],
   });
   useEffect(() => {
-    console.log("Middleware Data:", middlewareData);
+    // console.log("Middleware Data:", middlewareData);
   }, [middlewareData]);
 
   const [clearAll, setClearAll] = useState(false);
@@ -170,7 +170,7 @@ export function RootTable<TData, TValue>({
       columnFilters,
     },
     autoResetPageIndex: true,
-    debugTable: true,
+    debugTable: false,
     columnResizeMode: "onChange",
     onPaginationChange: setPagination,
     getRowCanExpand,
@@ -578,11 +578,6 @@ export function RootTable<TData, TValue>({
                     }`}
                   >
                     {row.getVisibleCells().map((cell) => {
-                      console.log(
-                        "Rendering cell:",
-                        cell.column.id,
-                        cell.getContext()
-                      );
                       return (
                         <TableCell key={cell.id} className="text-xs">
                           {flexRender(

@@ -156,7 +156,7 @@ export const productColumns = (
           ref={(el) => {
             if (el) {
               const children = Array.from(el.children);
-              console.log("Children inside the cell:", children);
+              // console.log("Children inside the cell:", children);
             }
           }}
         >
@@ -167,12 +167,12 @@ export const productColumns = (
               const { clientX, clientY } = event;
               const element = document.elementFromPoint(clientX, clientY);
 
-              console.log("Clicked element:", element);
-              if (element !== event.target) {
-                console.warn("Button is being blocked by:", element);
-              } else {
-                console.log("Button clicked successfully.");
-              }
+              // console.log("Clicked element:", element);
+              // if (element !== event.target) {
+              //   console.warn("Button is being blocked by:", element);
+              // } else {
+              //   console.log("Button clicked successfully.");
+              // }
 
               const toggleHandler = row.getToggleExpandedHandler();
               if (toggleHandler) toggleHandler();
@@ -218,21 +218,21 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   useEffect(() => {
     autorun(() => {
       if (assets.length) {
-        console.log("Setting table data in MobX:", assets);
+        // console.log("Setting table data in MobX:", assets);
         setTable(assets);
       }
     });
   }, [assets, setTable]);
 
   useEffect(() => {
-    console.log("Assets loaded in ProductsTable:", assets);
+    // console.log("Assets loaded in ProductsTable:", assets);
   }, [assets]);
 
   const columns = productColumns(onlyAvaliable ? availableProducts : assets);
 
   document.addEventListener("click", (event) => {
     const element = document.elementFromPoint(event.clientX, event.clientY);
-    console.log("Clicked on:", element);
+    // console.log("Clicked on:", element);
   });
 
   return (

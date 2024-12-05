@@ -203,7 +203,9 @@ export const zodCreateProductModel = z
       .string()
       .optional()
       .refine(
-        (value) => value !== undefined && value !== null && value !== "None",
+        (value) => {
+          return value !== undefined || value !== null || value !== "None";
+        },
         {
           message: "Assigned Member is required",
         }
