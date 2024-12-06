@@ -22,8 +22,9 @@ type ActionType = {
 
 interface ActionButtonProps {
   product: Product;
+  assignedMember: string;
 }
-export function ActionButton({ product }: ActionButtonProps) {
+export function ActionButton({ product, assignedMember }: ActionButtonProps) {
   const {
     aside: { setAside, closeAside, context },
     members: { setSelectedMemberEmail, members },
@@ -41,7 +42,6 @@ export function ActionButton({ product }: ActionButtonProps) {
   const [currentMissingFields, setCurrentMissingFields] = useState<string[]>(
     []
   );
-  const [assignedMember, setAssignedMember] = useState<TeamMember | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -87,8 +87,7 @@ export function ActionButton({ product }: ActionButtonProps) {
       console.error("No se encontró el miembro asignado al producto.");
       return;
     }
-
-    setAssignedMember(assignedMember);
+    // setAssignedMember(assignedMember);
 
     const missingFields = getMissingFields({
       personalEmail: assignedMember.personalEmail,
@@ -141,10 +140,20 @@ export function ActionButton({ product }: ActionButtonProps) {
           closeAside();
           if (currentMissingFields.includes("billing")) {
             router.push("/home/settings");
-          } else if (assignedMember) {
-            setAside("EditMember", undefined, {
-              memberToEdit: getSnapshot(assignedMember),
-            });
+          } else {
+            const storeAssignedMember = members.find(
+              (member) => member.email === assignedMember
+            );
+
+            if (storeAssignedMember) {
+              setAside("EditMember", undefined, {
+                memberToEdit: getSnapshot(storeAssignedMember),
+              });
+            } else {
+              console.error(
+                "No se pudo encontrar el miembro correspondiente a 'assignedMember'."
+              );
+            }
           }
         }}
       />

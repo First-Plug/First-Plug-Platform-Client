@@ -144,7 +144,15 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
     accessorFn: (row) => row.status,
     header: "Actions",
     size: 85,
-    cell: ({ row, getValue }) => <ActionButton product={row.original} />,
+    cell: ({ row }) => {
+      const assignedMemberEmail = row.original.assignedEmail || "";
+      return (
+        <ActionButton
+          product={row.original}
+          assignedMember={assignedMemberEmail}
+        />
+      );
+    },
     enableColumnFilter: false,
   },
   {
