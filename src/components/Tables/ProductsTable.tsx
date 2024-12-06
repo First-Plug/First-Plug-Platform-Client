@@ -10,6 +10,7 @@ import "./table.css";
 import { useEffect, useState } from "react";
 import { autorun } from "mobx";
 import { usePrefetchAssets } from "@/assets/hooks";
+import { DetailsButton } from "@/common/DetailButton";
 
 interface ProductsTableProps {
   assets: ProductTable[];
@@ -151,46 +152,7 @@ export const productColumns = (
     header: () => null,
     size: 20,
     cell: ({ row }) => {
-      const { prefetchAssets } = usePrefetchAssets();
-      const [isLoading, setIsLoading] = useState(false);
-
-      const handleToggleExpand = async () => {
-        setIsLoading(true);
-
-        try {
-          await prefetchAssets();
-          const toggleHandler = row.getToggleExpandedHandler();
-          if (toggleHandler) toggleHandler();
-        } catch (error) {
-          console.error("Error prefetching assets:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      return (
-        row.getCanExpand() && (
-          <Button
-            variant="text"
-            className="relative"
-            onClick={handleToggleExpand}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <LoaderSpinner />
-            ) : (
-              <>
-                <span>Details</span>
-                <ArrowRight
-                  className={`transition-all duration-200 ${
-                    row.getIsExpanded() ? "rotate-[90deg]" : "rotate-[0]"
-                  }`}
-                />
-              </>
-            )}
-          </Button>
-        )
-      );
+      return row.getCanExpand() ? <DetailsButton row={row} /> : null;
     },
   },
 ];
