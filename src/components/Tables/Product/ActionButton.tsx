@@ -162,7 +162,18 @@ export function ActionButton({ product, assignedMember }: ActionButtonProps) {
           prefetchAssignData();
         }}
       >
-        <Button onClick={action} className="rounded-md" variant="text">
+        <Button
+          onClick={() => {
+            if (!members.length) {
+              console.warn("Sincronizando datos del store...");
+              prefetchAssignData().then(() => action());
+            } else {
+              action();
+            }
+          }}
+          className="rounded-md"
+          variant="text"
+        >
           {text}
         </Button>
       </div>
