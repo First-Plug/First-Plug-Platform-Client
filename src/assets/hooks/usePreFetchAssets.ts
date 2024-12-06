@@ -6,11 +6,15 @@ import { ProductTable } from "@/types";
 export const usePrefetchAssets = () => {
   const queryClient = useQueryClient();
   const {
-    products: { setTable },
+    products: { setTable, tableProducts },
   } = useStore();
 
   const prefetchAssets = async () => {
     try {
+      const currentTableProductIds = tableProducts
+        .flatMap((productTable) => productTable.products.map((p) => p._id))
+        .filter(Boolean);
+
       let assets = queryClient.getQueryData<ProductTable[]>(["assets"]);
 
       if (!assets) {
@@ -21,10 +25,21 @@ export const usePrefetchAssets = () => {
         });
       }
 
-      if (Array.isArray(assets)) {
+      const newTableProductIds = assets
+        .flatMap((productTable) => productTable.products.map((p) => p._id))
+        .filter(Boolean);
+
+      const isStoreSynced =
+        currentTableProductIds.length === newTableProductIds.length &&
+        currentTableProductIds.every(
+          (id, index) => id === newTableProductIds[index]
+        );
+
+      if (!isStoreSynced) {
+        console.log("Actualizando el store con nuevos datos.");
         setTable(assets);
       } else {
-        console.error("Los assets no tienen el formato esperado.");
+        console.log("El store ya está sincronizado.");
       }
     } catch (error) {
       console.error("Error prefetching assets:", error);
