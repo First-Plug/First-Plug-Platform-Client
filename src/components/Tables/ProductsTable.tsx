@@ -9,6 +9,7 @@ import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
 import "./table.css";
 import { useEffect, useState } from "react";
 import { autorun } from "mobx";
+import { usePrefetchAssets } from "@/assets/hooks";
 
 interface ProductsTableProps {
   assets: ProductTable[];
@@ -149,36 +150,48 @@ export const productColumns = (
     id: "expander",
     header: () => null,
     size: 20,
-    cell: ({ row }) =>
-      row.getCanExpand() && (
-        <div
-          ref={(el) => {
-            if (el) {
-              const children = Array.from(el.children);
-              // console.log("Children inside the cell:", children);
-            }
-          }}
-        >
+    cell: ({ row }) => {
+      const { prefetchAssets } = usePrefetchAssets();
+      const [isLoading, setIsLoading] = useState(false);
+
+      const handleToggleExpand = async () => {
+        setIsLoading(true);
+
+        try {
+          await prefetchAssets();
+          const toggleHandler = row.getToggleExpandedHandler();
+          if (toggleHandler) toggleHandler();
+        } catch (error) {
+          console.error("Error prefetching assets:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      return (
+        row.getCanExpand() && (
           <Button
             variant="text"
             className="relative"
-            onClick={(event) => {
-              const { clientX, clientY } = event;
-              const element = document.elementFromPoint(clientX, clientY);
-
-              const toggleHandler = row.getToggleExpandedHandler();
-              if (toggleHandler) toggleHandler();
-            }}
+            onClick={handleToggleExpand}
+            disabled={isLoading}
           >
-            <span>Details</span>
-            <ArrowRight
-              className={`transition-all duration-200 ${
-                row.getIsExpanded() ? "rotate-[90deg]" : "rotate-[0]"
-              }`}
-            />
+            {isLoading ? (
+              <LoaderSpinner />
+            ) : (
+              <>
+                <span>Details</span>
+                <ArrowRight
+                  className={`transition-all duration-200 ${
+                    row.getIsExpanded() ? "rotate-[90deg]" : "rotate-[0]"
+                  }`}
+                />
+              </>
+            )}
           </Button>
-        </div>
-      ),
+        )
+      );
+    },
   },
 ];
 
@@ -186,6 +199,7 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   onClearFilters,
   assets,
 }) {
+  const { prefetchAssets } = usePrefetchAssets();
   const {
     products: { setTable, availableProducts, onlyAvaliable },
   } = useStore();
@@ -193,6 +207,10 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   const [resetSubTableFilters, setResetSubTableFilters] = useState<
     (() => void) | null
   >(null);
+
+  useEffect(() => {
+    prefetchAssets();
+  }, [prefetchAssets]);
 
   const handleClearAllFilters = () => {
     setClearAll(true);
