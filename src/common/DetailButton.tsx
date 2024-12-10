@@ -1,5 +1,5 @@
 "use client";
-import { MouseEvent } from "react";
+import { MouseEvent, useRef } from "react";
 import { ArrowRight } from "@/common";
 // import { usePrefetchAssets } from "@/assets/hooks";
 import { Button } from "@/common";
@@ -9,11 +9,12 @@ interface DetailsButtonProps {
 }
 
 export const DetailsButton = ({ row }: DetailsButtonProps) => {
-  // const { prefetchAssets } = usePrefetchAssets();
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  console.log(`DetailsButton render count: ${renderCount.current}`);
 
   const handleClick = async (event: MouseEvent) => {
     event.stopPropagation();
-    // await prefetchAssets();
     row.getToggleExpandedHandler()();
   };
 

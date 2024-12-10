@@ -7,7 +7,7 @@ import { RootTable } from "./RootTable";
 import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
 import "./table.css";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { autorun } from "mobx";
 // import { usePrefetchAssets } from "@/assets/hooks";
 import { DetailsButton } from "@/common/DetailButton";
@@ -161,7 +161,6 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   onClearFilters,
   assets,
 }) {
-  // const { prefetchAssets } = usePrefetchAssets();
   const {
     products: { setTable, availableProducts, onlyAvaliable },
   } = useStore();
@@ -170,9 +169,10 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     (() => void) | null
   >(null);
 
-  // useEffect(() => {
-  //   prefetchAssets();
-  // }, [prefetchAssets]);
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+
+  console.log(`ProductsTable render count: ${renderCount.current}`);
 
   const handleClearAllFilters = () => {
     setClearAll(true);
@@ -187,15 +187,18 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     }
   };
 
-  useEffect(() => {
-    autorun(() => {
-      if (assets.length) {
-        setTable(assets);
-      }
-    });
-  }, [assets, setTable]);
+  // useEffect(() => {
+  //   // autorun(() => {
+  //   if (assets.length) {
+  //     setTable(assets);
+  //   }
+  //   // });
+  // }, [assets, setTable]);
 
-  const columns = productColumns(onlyAvaliable ? availableProducts : assets);
+  const columns = useMemo(
+    () => productColumns(onlyAvaliable ? availableProducts : assets),
+    [onlyAvaliable, availableProducts, assets]
+  );
 
   return (
     <>

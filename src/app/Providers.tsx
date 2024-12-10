@@ -56,6 +56,17 @@ export default function Providers({ children }: ProvidersProps) {
     };
 
     setupAxiosInterceptor();
+    const observer = new PerformanceObserver((list) => {
+      list.getEntries().forEach((entry) => {
+        console.warn("Long task detected:", entry);
+      });
+    });
+
+    observer.observe({ entryTypes: ["longtask"] });
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {
