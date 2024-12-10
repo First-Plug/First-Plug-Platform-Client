@@ -9,7 +9,7 @@ import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
 import "./table.css";
 import { useEffect, useState } from "react";
 import { autorun } from "mobx";
-import { usePrefetchAssets } from "@/assets/hooks";
+// import { usePrefetchAssets } from "@/assets/hooks";
 import { DetailsButton } from "@/common/DetailButton";
 
 interface ProductsTableProps {
@@ -161,7 +161,7 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
   onClearFilters,
   assets,
 }) {
-  const { prefetchAssets } = usePrefetchAssets();
+  // const { prefetchAssets } = usePrefetchAssets();
   const {
     products: { setTable, availableProducts, onlyAvaliable },
   } = useStore();
@@ -170,9 +170,9 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     (() => void) | null
   >(null);
 
-  useEffect(() => {
-    prefetchAssets();
-  }, [prefetchAssets]);
+  // useEffect(() => {
+  //   prefetchAssets();
+  // }, [prefetchAssets]);
 
   const handleClearAllFilters = () => {
     setClearAll(true);

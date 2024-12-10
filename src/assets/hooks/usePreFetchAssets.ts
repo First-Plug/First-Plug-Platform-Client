@@ -9,7 +9,10 @@ export const usePrefetchAssets = () => {
     products: { setTable, tableProducts },
   } = useStore();
 
+  let isPrefetching = false;
   const prefetchAssets = async () => {
+    if (isPrefetching) return;
+    isPrefetching = true;
     try {
       const currentTableProductIds = tableProducts
         .flatMap((productTable) => productTable.products.map((p) => p._id))
