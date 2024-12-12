@@ -7,6 +7,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const getMissingFields = (selectedMember: any): string[] => {
+  if (!selectedMember || typeof selectedMember !== "object") {
+    console.error("Invalid selectedMember provided:", selectedMember);
+    return [];
+  }
   const missingFields: string[] = [];
 
   const isEmptyString = (value: any) =>
@@ -45,8 +49,13 @@ export function capitalizeAndSeparateCamelCase(text: string) {
 }
 
 export const validateBillingInfo = (
-  user: User
+  user: Partial<User> | null | undefined
 ): { isValid: boolean; missingFields: string } => {
+  if (!user || typeof user !== "object") {
+    console.error("Invalid user provided:", user);
+    return { isValid: false, missingFields: "User data is missing" };
+  }
+
   const requiredFields = [
     "country",
     "city",
@@ -55,9 +64,10 @@ export const validateBillingInfo = (
     "address",
   ] as const;
 
-  const missingFieldsArray = requiredFields.filter(
-    (field) => !user[field]?.trim()
-  );
+  const missingFieldsArray = requiredFields.filter((field) => {
+    const value = user[field];
+    return typeof value !== "string" || value.trim() === "";
+  });
 
   return {
     isValid: missingFieldsArray.length === 0,
@@ -65,9 +75,12 @@ export const validateBillingInfo = (
   };
 };
 
-export const formatMissingFieldsMessage = (missingFields: string[]) => {
-  return missingFields.reduce((acc, field, index) => {
-    const fieldMessage = capitalizeAndSeparateCamelCase(field);
-    return index === 0 ? fieldMessage : `${acc} - ${fieldMessage}`;
-  }, "");
+export const formatMissingFieldsMessage = (
+  missingFields: string[],
+  context: string
+): string => {
+  const fields = missingFields
+    .map((field) => capitalizeAndSeparateCamelCase(field))
+    .join(", ");
+  return `The assignment was completed successfully, but the following ${context} is missing: ${fields}. Please update the details to proceed with the shipment.`;
 };

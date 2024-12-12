@@ -45,6 +45,10 @@ export const AddMemberForm = observer(function ({
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [genericAlertData, setGenericAlertData] = useState({
+    title: "",
+    description: "",
+  });
 
   const [isAssigning, setIsAssigning] = useState(false);
   const {
@@ -85,13 +89,14 @@ export const AddMemberForm = observer(function ({
   };
 
   const handleSaveClick = async () => {
-    if (!currentProduct) {
-      console.error("No currentProduct found, returning");
-      return;
-    }
+    if (!currentProduct) return;
+
+    console.log("Starting save action...");
+    console.log("Current Product:", currentProduct);
 
     if (selectedMember === null && !noneOption) {
       setValidationError("Please select a location");
+      console.warn("Validation Error: No member or location selected.");
       return;
     }
 
@@ -104,77 +109,132 @@ export const AddMemberForm = observer(function ({
       attributes: currentProduct.attributes,
       name: currentProduct.name,
     };
+
     setIsAssigning(true);
+
     try {
       if (selectedMember === null && noneOption) {
-        if (noneOption === "Our office") {
-          if (!validateBillingInfo(session.user).isValid) {
-            setMissingOfficeData(
-              validateBillingInfo(session.user).missingFields
-            );
-            return setShowErrorDialogOurOffice(true);
-          }
-        }
+        console.log("Assigning product to location:", noneOption);
+
         updateAssetMutation({
           id: currentProduct._id,
           data: updatedProduct,
           showSuccessAlert: false,
         });
-        queryClient.invalidateQueries({ queryKey: ["members"] });
-        // queryClient.invalidateQueries({ queryKey: ["assets"] });
-        handleCloseAside();
-        setAside(undefined);
 
-        setAlert("assignedProductSuccess");
-      } else if (selectedMember) {
-        const missingFields = getMissingFields(selectedMember);
-        if (getMissingFields(selectedMember).length) {
-          setMissingMemberData(
-            missingFields.reduce((acc, field, index) => {
-              if (index === 0) {
-                return capitalizeAndSeparateCamelCase(field);
-              }
-              return acc + " - " + capitalizeAndSeparateCamelCase(field);
-            }, "")
-          );
+        console.log("Location assigned successfully.");
+        const missingMessages = validateAfterAction();
 
+        if (missingMessages.length > 0) {
+          setGenericAlertData({
+            title: "Assignment Successful, But Details Missing",
+            description: missingMessages.join("\n"),
+          });
           setShowErrorDialog(true);
-          return;
+        } else {
+          setAlert("assignedProductSuccess");
+          handleCloseAside();
         }
+      } else if (selectedMember) {
+        console.log("Assigning product to member:", selectedMember);
 
         updatedProduct = {
           ...updatedProduct,
           assignedEmail: selectedMember.email,
-          assignedMember:
-            selectedMember.firstName + " " + selectedMember.lastName,
+          assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
           status: "Delivered",
           location: "Employee",
         };
-
-        if (currentProduct.assignedMember) {
-          updatedProduct.lastAssigned =
-            currentMember?.firstName + " " + currentMember?.lastName || "";
-        }
 
         updateAssetMutation({
           id: currentProduct._id,
           data: updatedProduct,
           showSuccessAlert: false,
         });
-        queryClient.invalidateQueries({ queryKey: ["members"] });
-        // queryClient.invalidateQueries({ queryKey: ["assets"] });
-        handleCloseAside();
-        setAside(undefined);
 
-        setAlert("assignedProductSuccess");
+        console.log("Product assigned to member successfully.");
+        const missingMessages = validateAfterAction();
+
+        if (missingMessages.length > 0) {
+          setGenericAlertData({
+            title: "Assignment Successful, But Details Missing",
+            description: missingMessages.join("\n"),
+          });
+          setShowErrorDialog(true);
+        } else {
+          setAlert("assignedProductSuccess");
+          handleCloseAside();
+        }
       }
-      // TODO: Send selectedMember and productUpdated slack channel "envios"
     } catch (error) {
+      console.error("Error during save action:", error);
       setAlert("errorAssignedProduct");
-      console.error("Failed to reassign product", error);
     } finally {
       setIsAssigning(false);
+      console.log("Save action completed.");
     }
+  };
+
+  const validateAfterAction = (): string[] => {
+    const missingMessages: string[] = [];
+
+    console.log("Starting validation after action...");
+
+    if (currentMember) {
+      console.log("Validating current member (holder):", currentMember);
+      const missingFields = getMissingFields(currentMember);
+      if (missingFields.length > 0) {
+        const fullName = `${currentMember.firstName} ${currentMember.lastName}`;
+        missingMessages.push(
+          `Current holder (${fullName}) is missing: ${missingFields
+            .map((field) => capitalizeAndSeparateCamelCase(field))
+            .join(", ")}`
+        );
+      }
+    }
+
+    if (!currentMember && currentProduct.location === "Our office") {
+      console.log("Validating billing info for Current Office...");
+      const billingValidation = validateBillingInfo(session?.user || {});
+      if (!billingValidation.isValid) {
+        missingMessages.push(
+          `Current holder (Our office) is missing: ${billingValidation.missingFields
+            .split(", ")
+            .map((field) => capitalizeAndSeparateCamelCase(field))
+            .join(", ")}`
+        );
+      }
+    }
+
+    if (selectedMember) {
+      console.log("Validating selected member (assignee):", selectedMember);
+      const missingFields = getMissingFields(selectedMember);
+      if (missingFields.length > 0) {
+        const fullName = `${selectedMember.firstName} ${selectedMember.lastName}`;
+        missingMessages.push(
+          `Assigned member (${fullName}) is missing: ${missingFields
+            .map((field) => capitalizeAndSeparateCamelCase(field))
+            .join(", ")}`
+        );
+      }
+    }
+
+    if (!selectedMember && noneOption === "Our office") {
+      console.log("Validating billing info for Assigned Office...");
+      const billingValidation = validateBillingInfo(session?.user || {});
+      if (!billingValidation.isValid) {
+        missingMessages.push(
+          `Assigned location (Our office) is missing: ${billingValidation.missingFields
+            .split(", ")
+            .map((field) => capitalizeAndSeparateCamelCase(field))
+            .join(", ")}`
+        );
+      }
+    }
+
+    console.log("Missing Messages:", missingMessages);
+
+    return missingMessages;
   };
 
   const handleSelectNoneOption = (option: string) => {
@@ -199,16 +259,18 @@ export const AddMemberForm = observer(function ({
     <section className="flex flex-col gap-6 h-full ">
       <GenericAlertDialog
         open={showErrorDialog}
-        onClose={() => setShowErrorDialog(false)}
-        title="Please complete the missing data: "
-        description={missingMemberData}
-        buttonText="Update Member"
-        onButtonClick={() => {
-          router.push(`/home/my-team`);
-          setMemberToEdit(selectedMember._id);
-          setAside("EditMember", undefined, { stackable: true });
+        onClose={() => {
           setShowErrorDialog(false);
+          if (genericAlertData.description) {
+            // After closing the error dialog, show success message
+            setAlert("assignedProductSuccess");
+            handleCloseAside();
+          }
         }}
+        title={genericAlertData.title}
+        description={genericAlertData.description}
+        buttonText="Ok"
+        onButtonClick={() => setShowErrorDialog(false)}
       />
       <GenericAlertDialog
         open={showErrorDialogOurOffice}

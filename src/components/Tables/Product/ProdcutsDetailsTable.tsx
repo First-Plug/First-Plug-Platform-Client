@@ -146,12 +146,7 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
     size: 85,
     cell: ({ row }) => {
       const assignedMemberEmail = row.original.assignedEmail || "";
-      return (
-        <ActionButton
-          product={row.original}
-          assignedMember={assignedMemberEmail}
-        />
-      );
+      return <ActionButton product={row.original} />;
     },
     enableColumnFilter: false,
   },
@@ -174,11 +169,7 @@ export default function ProdcutsDetailsTable({
   onResetInternalFilters,
 }: IProdcutsDetailsTable) {
   const { prefetchAsset } = usePrefetchAsset();
-  // console.log("Products for internal table:", products);
 
-  // useEffect(() => {
-  //   products.forEach((product) => prefetchAsset(product._id));
-  // }, [products, prefetchAsset]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [selectedFilterOptions, setSelectedFilterOptions] = useState({});
   const [key, setKey] = useState(0);

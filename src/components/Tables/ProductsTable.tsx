@@ -187,14 +187,6 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     }
   };
 
-  // useEffect(() => {
-  //   // autorun(() => {
-  //   if (assets.length) {
-  //     setTable(assets);
-  //   }
-  //   // });
-  // }, [assets, setTable]);
-
   const columns = useMemo(
     () => productColumns(onlyAvaliable ? availableProducts : assets),
     [onlyAvaliable, availableProducts, assets]

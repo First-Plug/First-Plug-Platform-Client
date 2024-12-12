@@ -7,21 +7,12 @@ import { AsideTitle } from "@/common";
 
 export var Aside = observer(function Aside() {
   const {
-    aside: { type, popAside, setAside, closeAside, stack },
+    aside: { type, setAside, closeAside },
     members,
   } = useStore();
 
   const handleCloseAside = () => {
-    const hasStack = stack.length > 0;
-    if (hasStack) {
-      popAside(members.members);
-    } else {
-      closeAside();
-    }
-  };
-
-  const handleBack = () => {
-    popAside(members.members);
+    closeAside();
   };
 
   return (
@@ -38,11 +29,6 @@ export var Aside = observer(function Aside() {
         } `}
       >
         <header className="flex justify-between items-center">
-          {stack.length > 0 && (
-            <button onClick={handleBack} className="text-blue-500">
-              Back
-            </button>
-          )}
           <h2 className="text-2xl font-sans text-black font-semibold">
             <AsideTitle />
           </h2>
