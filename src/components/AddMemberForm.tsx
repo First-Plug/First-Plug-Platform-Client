@@ -16,14 +16,10 @@ import {
 import CategoryIcons from "./AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateAsset } from "@/assets/hooks";
-import {
-  capitalizeAndSeparateCamelCase,
-  getMissingFields,
-  validateBillingInfo,
-} from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { useSession } from "next-auth/react";
+import { validateAfterAction } from "@/lib/validateAfterAction";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -32,6 +28,10 @@ interface AddMemberFormProps {
   currentProduct?: Product | null;
   currentMember?: TeamMember | null;
   showNoneOption?: boolean;
+}
+interface ValidationEntity {
+  type: "member" | "office";
+  data: TeamMember | (Partial<User> & { location?: string }) | null;
 }
 
 export const AddMemberForm = observer(function ({
@@ -100,44 +100,58 @@ export const AddMemberForm = observer(function ({
       return;
     }
 
-    let updatedProduct: Partial<Product> = {
-      assignedEmail: "",
-      assignedMember: "",
-      status: "Available",
-      location: noneOption,
-      category: currentProduct.category,
-      attributes: currentProduct.attributes,
-      name: currentProduct.name,
-    };
-
     setIsAssigning(true);
 
+    let source: ValidationEntity | null = null;
+    let destination: ValidationEntity | null = null;
+
     try {
-      if (selectedMember === null && noneOption) {
-        console.log("Assigning product to location:", noneOption);
+      // Configurar ubicación A (origen)
+      if (currentProduct.assignedEmail && currentProduct.assignedMember) {
+        // Si está asignado a un miembro
+        source = {
+          type: "member",
+          data: currentMember || {
+            firstName: currentProduct.assignedMember.split(" ")[0] || "",
+            lastName: currentProduct.assignedMember.split(" ")[1] || "",
+            email: currentProduct.assignedEmail,
+          },
+        };
+      } else if (currentProduct.location === "Our office") {
+        // Si está asignado a la oficina
+        source = {
+          type: "office",
+          data: { ...session?.user, location: "Our office" },
+        };
+      }
 
-        updateAssetMutation({
-          id: currentProduct._id,
-          data: updatedProduct,
-          showSuccessAlert: false,
-        });
+      // Configurar ubicación B (destino)
+      if (selectedMember) {
+        destination = {
+          type: "member",
+          data: selectedMember,
+        };
+      } else if (noneOption) {
+        destination = {
+          type: "office",
+          data: { ...session?.user, location: noneOption },
+        };
+      }
 
-        console.log("Location assigned successfully.");
-        const missingMessages = validateAfterAction();
+      console.log("Source:", source, "Destination:", destination);
 
-        if (missingMessages.length > 0) {
-          setGenericAlertData({
-            title: "Assignment Successful, But Details Missing",
-            description: missingMessages.join("\n"),
-          });
-          setShowErrorDialog(true);
-        } else {
-          setAlert("assignedProductSuccess");
-          handleCloseAside();
-        }
-      } else if (selectedMember) {
-        console.log("Assigning product to member:", selectedMember);
+      // Configurar producto actualizado
+      let updatedProduct: Partial<Product> = {
+        assignedEmail: "",
+        assignedMember: "",
+        status: "Available",
+        location: noneOption || "Our office",
+        category: currentProduct.category,
+        attributes: currentProduct.attributes,
+        name: currentProduct.name,
+      };
 
+      if (selectedMember) {
         updatedProduct = {
           ...updatedProduct,
           assignedEmail: selectedMember.email,
@@ -145,26 +159,48 @@ export const AddMemberForm = observer(function ({
           status: "Delivered",
           location: "Employee",
         };
+      }
 
-        updateAssetMutation({
-          id: currentProduct._id,
-          data: updatedProduct,
-          showSuccessAlert: false,
+      updateAssetMutation({
+        id: currentProduct._id,
+        data: updatedProduct,
+        showSuccessAlert: false,
+      });
+
+      console.log("Location assigned successfully.");
+
+      // Validar ambos extremos
+      const missingMessages = validateAfterAction(source, destination);
+
+      if (missingMessages.length > 0) {
+        const formattedMessages = missingMessages
+          .map(
+            (message) =>
+              `<div class="mb-2"><span>${message
+                .replace(
+                  /Current holder \((.*?)\)/,
+                  "Current holder (<strong>$1</strong>)"
+                )
+                .replace(
+                  /Assigned member \((.*?)\)/,
+                  "Assigned member (<strong>$1</strong>)"
+                )
+                .replace(
+                  /Assigned location \((.*?)\)/,
+                  "Assigned location (<strong>$1</strong>)"
+                )}</span></div>`
+          )
+          .join("");
+
+        setGenericAlertData({
+          title:
+            "The assignment was completed successfully, but details are missing",
+          description: formattedMessages,
         });
-
-        console.log("Product assigned to member successfully.");
-        const missingMessages = validateAfterAction();
-
-        if (missingMessages.length > 0) {
-          setGenericAlertData({
-            title: "Assignment Successful, But Details Missing",
-            description: missingMessages.join("\n"),
-          });
-          setShowErrorDialog(true);
-        } else {
-          setAlert("assignedProductSuccess");
-          handleCloseAside();
-        }
+        setShowErrorDialog(true);
+      } else {
+        setAlert("assignedProductSuccess");
+        handleCloseAside();
       }
     } catch (error) {
       console.error("Error during save action:", error);
@@ -173,68 +209,6 @@ export const AddMemberForm = observer(function ({
       setIsAssigning(false);
       console.log("Save action completed.");
     }
-  };
-
-  const validateAfterAction = (): string[] => {
-    const missingMessages: string[] = [];
-
-    console.log("Starting validation after action...");
-
-    if (currentMember) {
-      console.log("Validating current member (holder):", currentMember);
-      const missingFields = getMissingFields(currentMember);
-      if (missingFields.length > 0) {
-        const fullName = `${currentMember.firstName} ${currentMember.lastName}`;
-        missingMessages.push(
-          `Current holder (${fullName}) is missing: ${missingFields
-            .map((field) => capitalizeAndSeparateCamelCase(field))
-            .join(", ")}`
-        );
-      }
-    }
-
-    if (!currentMember && currentProduct.location === "Our office") {
-      console.log("Validating billing info for Current Office...");
-      const billingValidation = validateBillingInfo(session?.user || {});
-      if (!billingValidation.isValid) {
-        missingMessages.push(
-          `Current holder (Our office) is missing: ${billingValidation.missingFields
-            .split(", ")
-            .map((field) => capitalizeAndSeparateCamelCase(field))
-            .join(", ")}`
-        );
-      }
-    }
-
-    if (selectedMember) {
-      console.log("Validating selected member (assignee):", selectedMember);
-      const missingFields = getMissingFields(selectedMember);
-      if (missingFields.length > 0) {
-        const fullName = `${selectedMember.firstName} ${selectedMember.lastName}`;
-        missingMessages.push(
-          `Assigned member (${fullName}) is missing: ${missingFields
-            .map((field) => capitalizeAndSeparateCamelCase(field))
-            .join(", ")}`
-        );
-      }
-    }
-
-    if (!selectedMember && noneOption === "Our office") {
-      console.log("Validating billing info for Assigned Office...");
-      const billingValidation = validateBillingInfo(session?.user || {});
-      if (!billingValidation.isValid) {
-        missingMessages.push(
-          `Assigned location (Our office) is missing: ${billingValidation.missingFields
-            .split(", ")
-            .map((field) => capitalizeAndSeparateCamelCase(field))
-            .join(", ")}`
-        );
-      }
-    }
-
-    console.log("Missing Messages:", missingMessages);
-
-    return missingMessages;
   };
 
   const handleSelectNoneOption = (option: string) => {
@@ -262,7 +236,6 @@ export const AddMemberForm = observer(function ({
         onClose={() => {
           setShowErrorDialog(false);
           if (genericAlertData.description) {
-            // After closing the error dialog, show success message
             setAlert("assignedProductSuccess");
             handleCloseAside();
           }
@@ -271,6 +244,8 @@ export const AddMemberForm = observer(function ({
         description={genericAlertData.description}
         buttonText="Ok"
         onButtonClick={() => setShowErrorDialog(false)}
+        isHtml={true}
+        additionalMessage="Please update their details to proceed with the shipment."
       />
       <GenericAlertDialog
         open={showErrorDialogOurOffice}

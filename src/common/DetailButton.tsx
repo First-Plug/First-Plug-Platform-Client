@@ -9,9 +9,9 @@ interface DetailsButtonProps {
 }
 
 export const DetailsButton = ({ row }: DetailsButtonProps) => {
-  const renderCount = useRef(0);
-  renderCount.current += 1;
-  console.log(`DetailsButton render count: ${renderCount.current}`);
+  // const renderCount = useRef(0);
+  // renderCount.current += 1;
+  // console.log(`DetailsButton render count: ${renderCount.current}`);
 
   const handleClick = async (event: MouseEvent) => {
     event.stopPropagation();

@@ -169,10 +169,10 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     (() => void) | null
   >(null);
 
-  const renderCount = useRef(0);
-  renderCount.current += 1;
+  // const renderCount = useRef(0);
+  // renderCount.current += 1;
 
-  console.log(`ProductsTable render count: ${renderCount.current}`);
+  // console.log(`ProductsTable render count: ${renderCount.current}`);
 
   const handleClearAllFilters = () => {
     setClearAll(true);
