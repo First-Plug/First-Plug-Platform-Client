@@ -10,63 +10,58 @@ export const validateAfterAction = (source, destination): string[] => {
 
   console.log("Validating source and destination...");
 
-  // Validar origen (ubicación A)
-  if (source) {
-    if (source.type === "member" && source.data) {
-      const missingFields = getMissingFields(source.data as TeamMember);
+  // Función genérica para manejar validaciones
+  const validateEntity = (
+    entity: { type: "member" | "office"; data: any },
+    role: "Current holder" | "Assigned member" | "Assigned location"
+  ) => {
+    if (!entity || !entity.data) return;
+
+    // Excepción para FP warehouse
+    if (
+      entity.type === "office" &&
+      entity.data.location &&
+      entity.data.location === "FP warehouse"
+    ) {
+      console.log(`Skipping validation for ${role} (${entity.data.location})`);
+      return;
+    }
+
+    if (entity.type === "member") {
+      const missingFields = getMissingFields(entity.data as TeamMember);
       if (missingFields.length > 0) {
-        const fullName = `${(source.data as TeamMember).firstName} ${
-          (source.data as TeamMember).lastName
-        }`.trim();
+        const fullName =
+          `${entity.data.firstName || ""} ${
+            entity.data.lastName || ""
+          }`.trim() || "Unknown";
         missingMessages.push(
-          `Current holder (${fullName || "Unknown"}) is missing: ${missingFields
+          `${role} (${fullName}) is missing: ${missingFields
             .map((field) => capitalizeAndSeparateCamelCase(field))
             .join(", ")}`
         );
       }
-    } else if (source.type === "office" && source.data) {
+    } else if (entity.type === "office") {
       const billingValidation = validateBillingInfo(
-        source.data as Partial<User>
+        entity.data as Partial<User>
       );
       if (!billingValidation.isValid) {
         missingMessages.push(
-          `Current holder (${source.data.location || "Office"}) is missing: ${
+          `${role} (${entity.data.location || "Office"}) is missing: ${
             billingValidation.missingFields
           }`
         );
       }
     }
-  }
+  };
+
+  // Validar origen (ubicación A)
+  validateEntity(source, "Current holder");
 
   // Validar destino (ubicación B)
-  if (destination) {
-    if (destination.type === "member" && destination.data) {
-      const missingFields = getMissingFields(destination.data as TeamMember);
-      if (missingFields.length > 0) {
-        const fullName = `${(destination.data as TeamMember).firstName} ${
-          (destination.data as TeamMember).lastName
-        }`.trim();
-        missingMessages.push(
-          `Assigned member (${
-            fullName || "Unknown"
-          }) is missing: ${missingFields
-            .map((field) => capitalizeAndSeparateCamelCase(field))
-            .join(", ")}`
-        );
-      }
-    } else if (destination.type === "office" && destination.data) {
-      const billingValidation = validateBillingInfo(
-        destination.data as Partial<User>
-      );
-      if (!billingValidation.isValid) {
-        missingMessages.push(
-          `Assigned location (${
-            destination.data.location || "Office"
-          }) is missing: ${billingValidation.missingFields}`
-        );
-      }
-    }
-  }
+  validateEntity(
+    destination,
+    source?.type === "office" ? "Assigned location" : "Assigned member"
+  );
 
   console.log("Missing Messages:", missingMessages);
   return missingMessages;
