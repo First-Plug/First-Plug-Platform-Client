@@ -93,17 +93,12 @@ export const AddMemberForm = observer(function ({
   const handleSaveClick = async () => {
     if (!currentProduct) return;
 
-    console.log("Starting save action...");
-    console.log("Current Product:", currentProduct);
-
     if (selectedMember === null && !noneOption) {
       setValidationError("Please select a location");
-      console.warn("Validation Error: No member or location selected.");
       return;
     }
 
     if (loadingMembers) {
-      console.log("Members are still loading...");
       return;
     }
 
@@ -122,16 +117,6 @@ export const AddMemberForm = observer(function ({
           data: currentMemberData,
         };
       } else if (currentProduct.assignedEmail) {
-        // const fullMemberData = members.find(
-        //   (member) => member.email === currentProduct.assignedEmail
-        // );
-
-        // if (fullMemberData) {
-        //   source = {
-        //     type: "member",
-        //     data: fullMemberData,
-        //   };
-        // } else {
         source = {
           type: "member",
           data: {
@@ -159,8 +144,6 @@ export const AddMemberForm = observer(function ({
         };
       }
 
-      console.log("Source:", source, "Destination:", destination);
-
       let updatedProduct: Partial<Product> = {
         assignedEmail: "",
         assignedMember: "",
@@ -186,8 +169,6 @@ export const AddMemberForm = observer(function ({
         data: updatedProduct,
         showSuccessAlert: false,
       });
-
-      console.log("Location assigned successfully.");
 
       const missingMessages = validateAfterAction(source, destination);
 

@@ -11,8 +11,6 @@ const getMissingFields = (selectedMember: any): string[] => {
     return [];
   }
 
-  console.log("Evaluating selectedMember for missing fields:", selectedMember);
-
   const requiredFields = [
     "personalEmail",
     "phone",
@@ -27,12 +25,10 @@ const getMissingFields = (selectedMember: any): string[] => {
   requiredFields.forEach((field) => {
     const value = selectedMember[field as keyof TeamMember];
     if (!value || (typeof value === "string" && value.trim() === "")) {
-      console.log(`Missing ${field}:`, value);
       missingFields.push(field);
     }
   });
 
-  console.log("Detected Missing Fields:", missingFields);
   return missingFields;
 };
 
@@ -40,7 +36,6 @@ const validateBillingInfo = (
   user: Partial<User> | null | undefined
 ): { isValid: boolean; missingFields: string } => {
   if (!user || typeof user !== "object") {
-    console.error("Invalid user provided:", user);
     return { isValid: false, missingFields: "User data is missing" };
   }
 
@@ -56,8 +51,6 @@ const validateBillingInfo = (
     const value = user[field];
     return typeof value !== "string" || value.trim() === "";
   });
-  console.log("Validated User:", user);
-  console.log("Missing Billing Fields:", missingFieldsArray);
 
   return {
     isValid: missingFieldsArray.length === 0,
@@ -77,8 +70,6 @@ export const validateAfterAction = (
 ): string[] => {
   const missingMessages: string[] = [];
 
-  console.log("Validating source and destination...");
-
   const validateEntity = (
     entity: { type: "member" | "office"; data: any },
     role: "Current holder" | "Assigned member" | "Assigned location"
@@ -90,20 +81,16 @@ export const validateAfterAction = (
       entity.data.location &&
       entity.data.location === "FP warehouse"
     ) {
-      console.log(`Skipping validation for ${role} (${entity.data.location})`);
       return;
     }
 
     if (entity.type === "member") {
-      console.log(`Validating Member Data for ${role}:`, entity.data);
-
       const missingFields = getMissingFields(entity.data as TeamMember);
       if (missingFields.length > 0) {
         const fullName =
           `${entity.data.firstName || ""} ${
             entity.data.lastName || ""
           }`.trim() || "Unknown";
-        console.log(`Missing Fields for ${role}:`, missingFields);
 
         missingMessages.push(
           `${role} (${fullName}) is missing: ${missingFields
@@ -112,8 +99,6 @@ export const validateAfterAction = (
         );
       }
     } else if (entity.type === "office") {
-      console.log(`Validating Office Data for ${role}:`, entity.data);
-
       const billingValidation = validateBillingInfo(
         entity.data as Partial<User>
       );
@@ -132,18 +117,15 @@ export const validateAfterAction = (
   };
 
   if (source) {
-    console.log("Validating Source:", source);
     validateEntity(source, "Current holder");
   }
 
   if (destination) {
-    console.log("Validating Destination:", destination);
     validateEntity(
       destination,
       source?.type === "office" ? "Assigned location" : "Assigned member"
     );
   }
 
-  console.log("Missing Messages:", missingMessages);
   return missingMessages;
 };
