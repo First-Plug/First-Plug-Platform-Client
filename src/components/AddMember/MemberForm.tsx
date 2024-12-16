@@ -26,9 +26,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
   isUpdate = false,
 }) => {
   const {
-    members: { setMembers, members },
+    members: { setMembers },
+    alerts: { setAlert },
     teams: { setTeams },
-    aside: { closeAside, popAside, stack, type, context },
+    aside: { closeAside },
   } = useStore();
   const queryClient = new QueryClient();
 
@@ -39,10 +40,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
   const methods = useForm({
     resolver: zodResolver(zodCreateMembertModel),
-    defaultValues: {
-      ...initialData,
-      personalEmail: initialData?.personalEmail ?? "",
-    },
+    defaultValues: initialData || {},
   });
 
   const {
@@ -50,13 +48,14 @@ const MemberForm: React.FC<MemberFormProps> = ({
     formState: { isSubmitting },
   } = methods;
 
+  // const [isProcessing, setIsProcessing] = useState(false);
+
   const formatAcquisitionDate = (date: string) => {
     if (!date) return "";
     const d = new Date(date);
     return isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
   };
   const { getOrCreateTeam } = useGetOrCreateTeam();
-
   const handleSaveMember = async (data: TeamMember) => {
     setButtonDisabled(true);
     try {
@@ -64,7 +63,11 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       if (data.team && typeof data.team === "object" && data.team._id) {
         teamId = data.team._id;
-      } else if (typeof data.team === "string" && data.team.trim() !== "") {
+      } else if (
+        data.team &&
+        typeof data.team === "string" &&
+        data.team.trim() !== ""
+      ) {
         const team = await getOrCreateTeam(data.team);
         teamId = team._id;
       } else {
@@ -84,8 +87,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
           if (newDni !== initialDni) {
             changes[key] = newDni;
           }
-        } else if (typeof data[key] === "string" && data[key].trim() === "") {
-          changes[key] = "";
         } else if (data[key] !== initialData?.[key]) {
           if (key === "acquisitionDate" || key === "birthDate") {
             changes[key] = data[key] ? formatAcquisitionDate(data[key]) : null;
@@ -95,10 +96,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
-      if (
-        "personalEmail" in data &&
-        data.personalEmail === initialData?.personalEmail
-      ) {
+      if (changes.personalEmail === "") {
         delete changes.personalEmail;
       }
 
@@ -108,10 +106,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       if (changes.products) {
         delete changes.products;
-      }
-
-      if (teamId !== undefined) {
-        changes.team = teamId;
       }
 
       if (isUpdate && initialData) {
@@ -136,6 +130,9 @@ const MemberForm: React.FC<MemberFormProps> = ({
       await queryClient.invalidateQueries({ queryKey: ["members"] });
       await queryClient.invalidateQueries({ queryKey: ["teams"] });
 
+      closeAside();
+
+      // Actualiza el estado global de MobX si es necesario
       const updatedMembers = queryClient.getQueryData<TeamMember[]>([
         "members",
       ]);
@@ -143,25 +140,14 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       const transformedMembers = transformData(updatedMembers, updatedTeams);
 
-      if (stack.length > 0) {
-        const previousAside = popAside(members);
-
-        if (previousAside?.type === "EditProduct") {
-          const updatedMember = updatedMembers.find(
-            (m) => m._id === initialData?._id
-          );
-
-          if (updatedMember) {
-            const memberName = `${updatedMember.firstName} ${updatedMember.lastName}`;
-            previousAside.context.setSelectedAssignedMember(memberName);
-          }
-        }
-      } else {
-        closeAside();
-      }
       setMembers(transformedMembers);
       setTeams(updatedTeams);
-    } catch (error: any) {}
+      closeAside();
+    } catch (error: any) {
+      console.error("Error al guardar miembro:", error);
+    } finally {
+      setButtonDisabled(false);
+    }
   };
 
   return (
