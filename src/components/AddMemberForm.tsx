@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { useSession } from "next-auth/react";
 import { validateAfterAction } from "@/lib/validateAfterAction";
+import { useFetchMembers } from "@/members/hooks";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -42,6 +43,7 @@ export const AddMemberForm = observer(function ({
   currentMember,
   showNoneOption,
 }: AddMemberFormProps) {
+  const { data: allMembers, isLoading: loadingMembers } = useFetchMembers();
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -100,32 +102,51 @@ export const AddMemberForm = observer(function ({
       return;
     }
 
+    if (loadingMembers) {
+      console.log("Members are still loading...");
+      return;
+    }
+
     setIsAssigning(true);
 
     let source: ValidationEntity | null = null;
     let destination: ValidationEntity | null = null;
 
     try {
-      // Configurar ubicación A (origen)
-      if (currentProduct.assignedEmail && currentProduct.assignedMember) {
-        // Si está asignado a un miembro
+      const currentMemberData = allMembers.find(
+        (member) => member.email === currentProduct.assignedEmail
+      );
+      if (currentMemberData) {
         source = {
           type: "member",
-          data: currentMember || {
+          data: currentMemberData,
+        };
+      } else if (currentProduct.assignedEmail) {
+        // const fullMemberData = members.find(
+        //   (member) => member.email === currentProduct.assignedEmail
+        // );
+
+        // if (fullMemberData) {
+        //   source = {
+        //     type: "member",
+        //     data: fullMemberData,
+        //   };
+        // } else {
+        source = {
+          type: "member",
+          data: {
             firstName: currentProduct.assignedMember.split(" ")[0] || "",
             lastName: currentProduct.assignedMember.split(" ")[1] || "",
             email: currentProduct.assignedEmail,
           },
         };
       } else if (currentProduct.location === "Our office") {
-        // Si está asignado a la oficina
         source = {
           type: "office",
           data: { ...session?.user, location: "Our office" },
         };
       }
 
-      // Configurar ubicación B (destino)
       if (selectedMember) {
         destination = {
           type: "member",
@@ -140,7 +161,6 @@ export const AddMemberForm = observer(function ({
 
       console.log("Source:", source, "Destination:", destination);
 
-      // Configurar producto actualizado
       let updatedProduct: Partial<Product> = {
         assignedEmail: "",
         assignedMember: "",
@@ -169,7 +189,6 @@ export const AddMemberForm = observer(function ({
 
       console.log("Location assigned successfully.");
 
-      // Validar ambos extremos
       const missingMessages = validateAfterAction(source, destination);
 
       if (missingMessages.length > 0) {
