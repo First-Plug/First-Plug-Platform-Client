@@ -341,7 +341,7 @@ export const RequestOffBoardingForm = observer(
             `${member.firstName} ${member.lastName}` === selectedMember
         );
         setMemberToEdit(foundMember?._id);
-        setAside("EditMember", undefined, { memberToEdit: foundMember?._id });
+        setAside("EditMember");
         // router.push("/home/my-team");
       }
     };
