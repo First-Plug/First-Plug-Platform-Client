@@ -103,10 +103,6 @@ export const validateAfterAction = (
         entity.data as Partial<User>
       );
       if (!billingValidation.isValid) {
-        console.log(
-          `Missing Billing Fields for ${role}:`,
-          billingValidation.missingFields
-        );
         missingMessages.push(
           `${role} (${entity.data.location || "Office"}) is missing: ${
             billingValidation.missingFields
