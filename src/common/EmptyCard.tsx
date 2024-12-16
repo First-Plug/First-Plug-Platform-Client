@@ -150,7 +150,6 @@ export function EmptyCard({ type }: EmptyCardProps) {
 
     if (type === "members") setAside("LoadMembers");
     if (type === "registerok") {
-      console.log("a");
       return signOut({ callbackUrl: "http://localhost:3000/login" });
     }
   };

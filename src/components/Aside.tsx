@@ -8,12 +8,13 @@ import { AsideTitle } from "@/common";
 export var Aside = observer(function Aside() {
   const {
     aside: { type, setAside, closeAside },
+    members,
   } = useStore();
 
   const handleCloseAside = () => {
-    setAside(undefined);
     closeAside();
   };
+
   return (
     <>
       <div

@@ -70,7 +70,6 @@ export const LoadAside = function () {
             setAlert("csvSuccess");
             clearCsvData();
           } catch (error) {
-            console.log(error.response.data);
             toast({
               title:
                 "The uploaded file is not correct. Please verify it and try again.  ",
@@ -127,7 +126,7 @@ export const LoadAside = function () {
             });
           }
         } else {
-          console.log({ error });
+          console.error({ error });
           toast({
             title:
               "The uploaded file is not correct. Please verify it and try again.  ",
@@ -137,7 +136,7 @@ export const LoadAside = function () {
         }
       }
     } catch (error) {
-      console.log({ error });
+      console.error({ error });
       return toast({
         title:
           "The uploaded file is not correct. Please verify it and try again.  ",
@@ -196,7 +195,7 @@ export const LoadAside = function () {
               currentDate: new Date().toLocaleString(),
             });
           } else {
-            console.log("ERROR EN LA SUBIDAD DE CSV MEMBERS", error);
+            console.error("ERROR EN LA SUBIDAD DE CSV MEMBERS", error);
             setCsvFile(null);
             toast({
               title:

@@ -1,5 +1,5 @@
-import { LOCATION, Location, Product } from "@/types";
-import React, { useState, Dispatch, SetStateAction } from "react";
+import { LOCATION, Location, Product, User } from "@/types";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import ProductDetail, { RelocateStatus } from "@/common/ProductDetail";
 import { Button, LoaderSpinner } from "@/common";
@@ -16,6 +16,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge, badgeVariants } from "../ui/badge";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import GenericAlertDialog from "../AddProduct/ui/GenericAlertDialog";
+import { validateBillingInfo } from "@/lib/utils";
 
 interface IRemoveItems {
   product: Product;
@@ -33,18 +37,22 @@ export function ReturnProduct({
 }: IRemoveItems) {
   const {
     alerts: { setAlert },
-    aside: { setAside },
+    aside: { closeAside },
+    members: { selectedMember },
   } = useStore();
   const [isRemoving, setIsRemoving] = useState(false);
   const [newLocation, setNewLocation] = useState<Location>(null);
   const [returnStatus, setReturnStatus] = useState<RelocateStatus>(undefined);
 
   const { unassignProduct } = useActions();
-  const { fetchMembers } = useFetch();
 
-  const {
-    members: { selectedMember },
-  } = useStore();
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  const [showErrorDialogOurOffice, setShowErrorDialogOurOffice] =
+    useState(false);
+
+  const [missingOfficeData, setMissingOfficeData] = useState("");
 
   const handleRemoveItems = async (location: Location) => {
     if (!location) {
@@ -60,6 +68,13 @@ export function ReturnProduct({
     if (!selectedMember || typeof selectedMember !== "object") {
       console.error("Selected member is not valid");
       return;
+    }
+
+    if (location === "Our office") {
+      if (!validateBillingInfo(session.user).isValid) {
+        setMissingOfficeData(validateBillingInfo(session.user).missingFields);
+        return setShowErrorDialogOurOffice(true);
+      }
     }
 
     setIsRemoving(true);
@@ -82,6 +97,19 @@ export function ReturnProduct({
 
   return (
     <div className="flex flex-col border-b pb-2 mb-2 rounded-sm items-start gap-1">
+      <GenericAlertDialog
+        open={showErrorDialogOurOffice}
+        onClose={() => setShowErrorDialogOurOffice(false)}
+        title="Please complete the missing data"
+        description={missingOfficeData}
+        buttonText="Update"
+        onButtonClick={() => {
+          closeAside();
+          router.push(`/home/settings`);
+          setShowErrorDialogOurOffice(false);
+        }}
+      />
+
       <div className="w-full">
         <ProductDetail product={product} selectedProducts={selectedProducts} />
       </div>

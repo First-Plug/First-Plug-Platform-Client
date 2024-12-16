@@ -37,7 +37,7 @@ export default function Register() {
       });
       router.push("/login");
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }

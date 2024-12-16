@@ -56,13 +56,23 @@ export default function Providers({ children }: ProvidersProps) {
     };
 
     setupAxiosInterceptor();
+    const observer = new PerformanceObserver((list) => {
+      list.getEntries().forEach((entry) => {
+        console.warn("Long task detected:", entry);
+      });
+    });
+
+    observer.observe({ entryTypes: ["longtask"] });
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {
     const persistedData = window.localStorage.getItem(
       "REACT_QUERY_OFFLINE_CACHE"
     );
-    // console.log("Persisted data:", persistedData);
   }, []);
 
   useEffect(() => {
@@ -75,8 +85,6 @@ export default function Providers({ children }: ProvidersProps) {
           maxAge: 1000 * 60 * 60 * 24,
           buster,
         });
-
-        // window.localStorage.getItem("REACT_QUERY_OFFLINE_CACHE");
       } catch (error) {
         console.error("Error restaurando los datos persistidos:", error);
       }

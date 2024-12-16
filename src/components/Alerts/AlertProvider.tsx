@@ -9,6 +9,7 @@ import { XCircleIcon } from "lucide-react";
 import { CheckIcon } from "@/common";
 import useFetch from "@/hooks/useFetch";
 import { useQueryClient } from "@tanstack/react-query";
+import { TeamMember } from "@/types";
 
 function XIcon() {
   return <XCircleIcon className="text-white " size={40} />;
@@ -22,6 +23,7 @@ interface IConfig {
 
 export default observer(function AlertProvider() {
   const {
+    members,
     alerts: { alertType, setAlert },
     aside: { setAside },
   } = useStore();

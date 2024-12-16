@@ -2,9 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Button, LoaderSpinner, SearchInput } from "@/common";
 import { observer } from "mobx-react-lite";
-import { TeamMember, Product, LOCATION, Location } from "@/types";
+import { TeamMember, Product, LOCATION, Location, User } from "@/types";
 import { useStore } from "@/models";
-import useFetch from "@/hooks/useFetch";
 import {
   Select,
   SelectContent,
@@ -17,6 +16,11 @@ import {
 import CategoryIcons from "./AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateAsset } from "@/assets/hooks";
+import { useRouter } from "next/navigation";
+import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
+import { useSession } from "next-auth/react";
+import { validateAfterAction } from "@/lib/validateAfterAction";
+import { useFetchMembers } from "@/members/hooks";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -25,6 +29,10 @@ interface AddMemberFormProps {
   currentProduct?: Product | null;
   currentMember?: TeamMember | null;
   showNoneOption?: boolean;
+}
+interface ValidationEntity {
+  type: "member" | "office";
+  data: TeamMember | (Partial<User> & { location?: string }) | null;
 }
 
 export const AddMemberForm = observer(function ({
@@ -35,19 +43,28 @@ export const AddMemberForm = observer(function ({
   currentMember,
   showNoneOption,
 }: AddMemberFormProps) {
+  const { data: allMembers, isLoading: loadingMembers } = useFetchMembers();
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [genericAlertData, setGenericAlertData] = useState({
+    title: "",
+    description: "",
+  });
 
   const [isAssigning, setIsAssigning] = useState(false);
   const {
+    members: { setMemberToEdit },
     products: { reassignProduct },
     alerts: { setAlert },
-    aside: { setAside },
+    aside: { setAside, closeAside },
   } = useStore();
 
   const queryClient = useQueryClient();
   const { mutate: updateAssetMutation } = useUpdateAsset();
+
+  const router = useRouter();
+  const { data: session } = useSession();
 
   useEffect(() => {
     setSearchedMembers(members);
@@ -68,6 +85,11 @@ export const AddMemberForm = observer(function ({
     (member) => member.email !== currentMember?.email
   );
 
+  const handleCloseAside = () => {
+    setAside(undefined);
+    closeAside();
+  };
+
   const handleSaveClick = async () => {
     if (!currentProduct) return;
 
@@ -76,55 +98,113 @@ export const AddMemberForm = observer(function ({
       return;
     }
 
-    let updatedProduct: Partial<Product> = {
-      assignedEmail: "",
-      assignedMember: "",
-      status: "Available",
-      location: noneOption,
-      category: currentProduct.category,
-      attributes: currentProduct.attributes,
-      name: currentProduct.name,
-    };
+    if (loadingMembers) {
+      return;
+    }
+
     setIsAssigning(true);
+
+    let source: ValidationEntity | null = null;
+    let destination: ValidationEntity | null = null;
+
     try {
-      if (selectedMember === null && noneOption) {
-        updateAssetMutation({
-          id: currentProduct._id,
-          data: updatedProduct,
-          showSuccessAlert: false,
-        });
-        queryClient.invalidateQueries({ queryKey: ["members"] });
-        // queryClient.invalidateQueries({ queryKey: ["assets"] });
-        setAside(undefined);
-        setAlert("assignedProductSuccess");
-      } else if (selectedMember) {
+      const currentMemberData = allMembers.find(
+        (member) => member.email === currentProduct.assignedEmail
+      );
+      if (currentMemberData) {
+        source = {
+          type: "member",
+          data: currentMemberData,
+        };
+      } else if (currentProduct.assignedEmail) {
+        source = {
+          type: "member",
+          data: {
+            firstName: currentProduct.assignedMember.split(" ")[0] || "",
+            lastName: currentProduct.assignedMember.split(" ")[1] || "",
+            email: currentProduct.assignedEmail,
+          },
+        };
+      } else if (currentProduct.location === "Our office") {
+        source = {
+          type: "office",
+          data: { ...session?.user, location: "Our office" },
+        };
+      }
+
+      if (selectedMember) {
+        destination = {
+          type: "member",
+          data: selectedMember,
+        };
+      } else if (noneOption) {
+        destination = {
+          type: "office",
+          data: { ...session?.user, location: noneOption },
+        };
+      }
+
+      let updatedProduct: Partial<Product> = {
+        assignedEmail: "",
+        assignedMember: "",
+        status: "Available",
+        location: noneOption || "Our office",
+        category: currentProduct.category,
+        attributes: currentProduct.attributes,
+        name: currentProduct.name,
+      };
+
+      if (selectedMember) {
         updatedProduct = {
           ...updatedProduct,
           assignedEmail: selectedMember.email,
-          assignedMember:
-            selectedMember.firstName + " " + selectedMember.lastName,
+          assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
           status: "Delivered",
           location: "Employee",
         };
+      }
 
-        if (currentProduct.assignedMember) {
-          updatedProduct.lastAssigned =
-            currentMember?.firstName + " " + currentMember?.lastName || "";
-        }
+      updateAssetMutation({
+        id: currentProduct._id,
+        data: updatedProduct,
+        showSuccessAlert: false,
+      });
 
-        updateAssetMutation({
-          id: currentProduct._id,
-          data: updatedProduct,
-          showSuccessAlert: false,
+      const missingMessages = validateAfterAction(source, destination);
+
+      if (missingMessages.length > 0) {
+        const formattedMessages = missingMessages
+          .map(
+            (message) =>
+              `<div class="mb-2"><span>${message
+                .replace(
+                  /Current holder \((.*?)\)/,
+                  "Current holder (<strong>$1</strong>)"
+                )
+                .replace(
+                  /Assigned member \((.*?)\)/,
+                  "Assigned member (<strong>$1</strong>)"
+                )
+                .replace(
+                  /Assigned location \((.*?)\)/,
+                  "Assigned location (<strong>$1</strong>)"
+                )}</span></div>`
+          )
+          .join("");
+
+        setGenericAlertData({
+          title:
+            "The assignment was completed successfully, but details are missing",
+          description: formattedMessages,
         });
-        queryClient.invalidateQueries({ queryKey: ["members"] });
-        // queryClient.invalidateQueries({ queryKey: ["assets"] });
-        setAside(undefined);
+        setShowErrorDialog(true);
+      } else {
         setAlert("assignedProductSuccess");
+        handleCloseAside();
       }
     } catch (error) {
+      console.error("Error during save action:", error);
       setAlert("errorAssignedProduct");
-      console.error("Failed to reassign product", error);
     } finally {
       setIsAssigning(false);
     }
@@ -142,8 +222,42 @@ export const AddMemberForm = observer(function ({
     setValidationError(null);
   };
 
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [showErrorDialogOurOffice, setShowErrorDialogOurOffice] =
+    useState(false);
+  const [missingMemberData, setMissingMemberData] = useState("");
+  const [missingOfficeData, setMissingOfficeData] = useState("");
+
   return (
     <section className="flex flex-col gap-6 h-full ">
+      <GenericAlertDialog
+        open={showErrorDialog}
+        onClose={() => {
+          setShowErrorDialog(false);
+          if (genericAlertData.description) {
+            setAlert("assignedProductSuccess");
+            handleCloseAside();
+          }
+        }}
+        title={genericAlertData.title}
+        description={genericAlertData.description}
+        buttonText="Ok"
+        onButtonClick={() => setShowErrorDialog(false)}
+        isHtml={true}
+        additionalMessage="Please update their details to proceed with the shipment."
+      />
+      <GenericAlertDialog
+        open={showErrorDialogOurOffice}
+        onClose={() => setShowErrorDialogOurOffice(false)}
+        title="Please complete the missing data"
+        description={missingOfficeData}
+        buttonText="Update"
+        onButtonClick={() => {
+          closeAside();
+          router.push(`/home/settings`);
+          setShowErrorDialogOurOffice(false);
+        }}
+      />
       <div className="h-[90%] w-full ">
         {showNoneOption && (
           <section className="flex flex-col gap-2">

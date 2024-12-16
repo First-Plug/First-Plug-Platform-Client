@@ -73,6 +73,7 @@ export const MemberStore = types
       }
       const membersG = members.map((member) => ({
         ...member,
+        personalEmail: member.personalEmail ?? null,
         //@ts-ignore
         teamId: member.team ? member.team._id : "Not Assigned",
       }));
@@ -105,8 +106,10 @@ export const MemberStore = types
     },
     updateMember(member) {
       const index = store.members.findIndex((m) => m._id === member._id);
+
       if (index !== -1) {
         store.members[index] = member;
+        store.members.splice(index, 1, member);
       } else {
         console.error(
           "No se encontró el miembro a actualizar en el estado:",

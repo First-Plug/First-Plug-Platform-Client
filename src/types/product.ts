@@ -103,6 +103,13 @@ export const ProductModel = types.model({
 });
 export type Product = Instance<typeof ProductModel>;
 
+export type ProductFormData = Omit<Product, "price"> & {
+  price?: {
+    amount?: number;
+    currencyCode?: (typeof CURRENCY_CODES)[number];
+  };
+};
+
 export const emptyProduct: Omit<Product, "category"> & { category: string } = {
   _id: "",
   name: "",
@@ -196,7 +203,9 @@ export const zodCreateProductModel = z
       .string()
       .optional()
       .refine(
-        (value) => value !== undefined && value !== null && value !== "None",
+        (value) => {
+          return value !== undefined || value !== null || value !== "None";
+        },
         {
           message: "Assigned Member is required",
         }

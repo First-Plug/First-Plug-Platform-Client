@@ -31,7 +31,6 @@ export const TeamStore = types
     const fetchTeams = flow(function* () {
       try {
         const teams = yield TeamServices.getAllTeams();
-        console.log("TeamStore.fetchTeams fetched teams:", teams);
         setTeams(teams);
       } catch (error) {
         console.error("Failed to fetch teams", error);

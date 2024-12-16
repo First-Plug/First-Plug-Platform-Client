@@ -23,30 +23,34 @@ const DynamicForm = ({
   const selectedCategory = watch("category");
 
   useEffect(() => {
-    const newAttributes = fields.map((field) => ({
-      _id: "",
-      key: field.name,
-      value: watch(field.name) || "",
-    }));
+    const watchedAttributes = watch("attributes") || [];
+
+    const newAttributes = fields.map((field) => {
+      const matchingAttribute = watchedAttributes.find(
+        (attr) => attr.key === field.name
+      );
+
+      return {
+        _id: matchingAttribute?._id || "",
+        key: field.name,
+        value: matchingAttribute?.value || "",
+      };
+    });
+
     setAttributes(newAttributes);
     handleAttributesChange(newAttributes);
-  }, [fields, watch, handleAttributesChange]);
 
-  useEffect(() => {
-    if (isUpdate && initialValues) {
-      fields.forEach((field) => {
-        const value = initialValues.attributes.find(
-          (attr) => attr.key === field.name
-        )?.value;
-        setValue(field.name, value);
-      });
-    }
-  }, [isUpdate, initialValues, fields, setValue]);
+    newAttributes.forEach((attr, index) => {
+      setValue(`attributes.${index}.key`, attr.key);
+      setValue(`attributes.${index}.value`, attr.value);
+    });
+  }, [fields, watch, handleAttributesChange, setValue]);
 
   const handleChange = (fieldKey, value) => {
     const updatedAttributes = attributes.map((attr) =>
       attr.key === fieldKey ? { ...attr, value } : attr
     );
+
     setAttributes(updatedAttributes);
     handleAttributesChange(updatedAttributes);
 
@@ -60,6 +64,7 @@ const DynamicForm = ({
     } else {
       setValue(fieldKey, value);
     }
+
     clearErrors(fieldKey);
     setCustomErrors((prev) => ({ ...prev, [fieldKey]: undefined }));
   };
@@ -74,42 +79,25 @@ const DynamicForm = ({
         isUpdate ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 lg:grid-cols-3"
       }`}
     >
-      {selectedCategory === "Merchandising" && (
-        <div className="w-full">
-          <InputProductForm
-            name="name"
-            type="text"
-            value={watch("name") as string}
-            onChange={(e) => {
-              setValue("name", e.target.value);
-              clearErrors("name");
-            }}
-            placeholder="Product Name"
-            title="Product Name*"
-          />
-          <div className="min-h-[24px]">
-            {errors.name && (
-              <p className="text-red-500">{(errors.name as any)?.message}</p>
-            )}
-          </div>
-        </div>
-      )}
-      {fields.map((field) => (
+      {fields.map((field, index) => (
         <div key={field.name}>
           <Controller
-            name={field.name}
+            name={`attributes.${index}.value`}
             control={control}
+            defaultValue={
+              attributes.find((attr) => attr.key === field.name)?.value || ""
+            }
             render={({ field: { onChange, value } }) => (
               <DropdownInputProductForm
                 name={field.name}
                 options={field.options}
                 placeholder={field.title}
                 title={field.title}
-                selectedOption={value || ""}
+                selectedOption={value}
                 searchable={true}
                 onChange={(option) => {
-                  onChange(option);
-                  handleChange(field.name, option);
+                  onChange(option); // Actualizamos el valor interno del formulario
+                  handleChange(field.name, option); // Actualizamos `attributes`
                 }}
                 required={
                   selectedCategory !== "Merchandising" &&
