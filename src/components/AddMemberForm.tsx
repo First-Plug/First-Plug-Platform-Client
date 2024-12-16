@@ -207,7 +207,6 @@ export const AddMemberForm = observer(function ({
       setAlert("errorAssignedProduct");
     } finally {
       setIsAssigning(false);
-      console.log("Save action completed.");
     }
   };
 
