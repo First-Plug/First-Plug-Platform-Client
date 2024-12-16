@@ -294,10 +294,7 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
 
   const handleEdit = (memberId: TeamMember["_id"]) => {
     setMemberToEdit(memberId);
-    setAside("EditMember", undefined, {
-      stackable: false,
-      memberToEdit: memberId,
-    });
+    setAside("EditMember");
   };
 
   const handleDelete = async (memberId: TeamMember["_id"]) => {
@@ -314,7 +311,7 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
   const handleViewDetail = (memberId: TeamMember["_id"]) => {
     setMemberToEdit(memberId);
     setSelectedMember(memberId);
-    setAside("MemberDetails", undefined, { memberToEdit: memberId });
+    setAside("MemberDetails");
   };
 
   const membersToRender = propMembers.length > 0 ? propMembers : fetchedMembers;
