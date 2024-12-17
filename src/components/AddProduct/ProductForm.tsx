@@ -9,6 +9,7 @@ import {
   AttributeModel,
   emptyProduct,
   zodCreateProductModel,
+  TeamMember,
 } from "@/types";
 import CategoryForm from "@/components/AddProduct/CategoryForm";
 import { cast } from "mobx-state-tree";
@@ -29,6 +30,8 @@ import {
   useCreateAsset,
   useUpdateAsset,
 } from "@/assets/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import { validateProductAssignment } from "@/lib/validateAfterAction";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -49,7 +52,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   isUpdate = false,
 }) => {
   const {
-    user: { user },
+    user: { user: sessionUser },
     aside: { setAside },
     alerts: { setAlert },
   } = useStore();
@@ -57,6 +60,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const createAsset = useCreateAsset();
   const updateAsset = useUpdateAsset();
   const bulkCreateAssets = useBulkCreateAssets();
+  const queryClient = useQueryClient();
 
   const router = useRouter();
   const methods = useForm({
@@ -99,6 +103,21 @@ const ProductForm: React.FC<ProductFormProps> = ({
     recoverable: initialData?.recoverable || false,
   });
   const [manualChange, setManualChange] = useState(false);
+  const [genericAlertData, setGenericAlertData] = useState({
+    title: "",
+    description: "",
+    isOpen: false,
+  });
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [noneOption, setNoneOption] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedMember) {
+      setNoneOption("Our office");
+    } else {
+      setNoneOption(null);
+    }
+  }, [selectedMember]);
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -112,14 +131,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
         setManualChange(false);
 
         const isRecoverable =
-          user?.isRecoverableConfig?.get(category || "") ??
+          sessionUser?.isRecoverableConfig?.get(category || "") ??
           category !== "Merchandising";
 
         setValue("recoverable", isRecoverable);
         setFormValues((prev) => ({ ...prev, recoverable: isRecoverable }));
       }
     },
-    [isUpdate, setValue, methods, user?.isRecoverableConfig, setFormValues]
+    [
+      isUpdate,
+      setValue,
+      methods,
+      sessionUser?.isRecoverableConfig,
+      setFormValues,
+    ]
   );
 
   const validateCategory = async () => {
@@ -282,6 +307,42 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     const isCategoryValid = await validateCategory();
     if (!isCategoryValid || hasError) return;
+
+    if (isUpdate && initialData) {
+      const finalAssignedEmail = watch("assignedEmail");
+      const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+
+      const updatedMember =
+        allMembers?.find((member) => member.email === finalAssignedEmail) ||
+        null;
+
+      const sessionUserData = {
+        country: sessionUser?.country,
+        city: sessionUser?.city,
+        state: sessionUser?.state,
+        zipCode: sessionUser?.zipCode,
+        address: sessionUser?.address,
+      };
+      const validationResult = validateProductAssignment(
+        initialData,
+        finalAssignedEmail,
+        updatedMember,
+        queryClient,
+        (data) =>
+          setGenericAlertData({
+            title: data.title,
+            description: data.description,
+            isOpen: true,
+          }),
+        () => {},
+        sessionUserData,
+        noneOption
+      );
+
+      if (validationResult.hasErrors) {
+        console.warn("Validation errors detected, halting update process.");
+      }
+    }
 
     try {
       setIsProcessing(true);
@@ -450,12 +511,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setShowBulkCreate(true);
   };
 
-  // const clearErrorsRef = useRef(clearErrors);
-
-  // useEffect(() => {
-  //   clearErrorsRef.current = clearErrors;
-  // }, [clearErrors]);
-
   useEffect(() => {
     if (quantity > 1) {
       clearErrors(["assignedEmail", "assignedMember", "location"]);
@@ -465,10 +520,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const modelValue = watch("attributes").find(
     (attr) => attr.key === "model"
   )?.value;
-
-  // useEffect(() => {
-  //   console.log("Errores actuales del formulario:", errors);
-  // }, [errors]);
 
   return (
     <FormProvider {...methods}>
@@ -555,6 +606,19 @@ const ProductForm: React.FC<ProductFormProps> = ({
           )}
         </div>
         <div className="z-50">
+          <GenericAlertDialog
+            open={genericAlertData.isOpen}
+            onClose={() =>
+              setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
+            }
+            title={genericAlertData.title || "Warning"}
+            description={genericAlertData.description || ""}
+            buttonText="OK"
+            onButtonClick={() =>
+              setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
+            }
+            isHtml={true}
+          />
           <GenericAlertDialog
             open={showErrorDialog}
             onClose={() => setShowErrorDialog(false)}

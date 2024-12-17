@@ -14,9 +14,14 @@ import useActions from "@/hooks/useActions";
 import { XIcon } from "lucide-react";
 import CategoryIcons from "@/components/AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
-import { capitalizeAndSeparateCamelCase, getMissingFields } from "@/lib/utils";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
 import { useRouter } from "next/navigation";
+import {
+  buildValidationEntities,
+  validateAfterAction,
+  validateProductAssignment,
+} from "@/lib/validateAfterAction";
+import { toJS } from "mobx";
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
   product,
@@ -39,6 +44,7 @@ const MembersList = observer(function MembersList({
       setMemberToEdit,
     },
     aside: { setAside },
+    user: { user: sessionUser },
   } = useStore();
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [isRelocating, setRelocating] = useState(false);
@@ -49,6 +55,11 @@ const MembersList = observer(function MembersList({
   const queryClient = useQueryClient();
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
+  const [genericAlertData, setGenericAlertData] = useState({
+    title: "",
+    description: "",
+    isOpen: false,
+  });
   const router = useRouter();
 
   const handleSelectMember = (member: TeamMember) => {
@@ -70,46 +81,124 @@ const MembersList = observer(function MembersList({
     (member) => member.email !== currentMember?.email
   );
 
+  const currentHolder = members.find(
+    (member) => member.email === product.assignedEmail
+  );
+
   const handleRelocateProduct = async () => {
-    if (selectedMember) {
-      const missingFields = getMissingFields(selectedMember);
-      if (getMissingFields(selectedMember).length) {
-        setMissingMemberData(
-          missingFields.reduce((acc, field, index) => {
-            if (index === 0) {
-              return capitalizeAndSeparateCamelCase(field);
-            }
-            return acc + " - " + capitalizeAndSeparateCamelCase(field);
-          }, "")
-        );
+    if (!selectedMember) return;
 
-        setShowErrorDialog(true);
-        return;
-      }
+    const sessionUserData = {
+      country: sessionUser?.country,
+      city: sessionUser?.city,
+      state: sessionUser?.state,
+      zipCode: sessionUser?.zipCode,
+      address: sessionUser?.address,
+    };
 
-      setRelocating(true);
-      try {
-        await handleReassignProduct({
-          currentMember,
-          selectedMember,
-          product: product,
-        });
-        queryClient.invalidateQueries({ queryKey: ["members"] });
-        queryClient.invalidateQueries({ queryKey: ["assets"] });
-        setRelocateResult("success");
-        setRelocateStauts("success");
-        handleSuccess();
-      } catch (error) {
-        setRelocateResult("error");
-        setRelocateStauts("error");
-      } finally {
-        setRelocating(false);
-      }
+    // Capturar y aplanar el current holder
+    const currentHolder = members.find(
+      (member) => member.email === product.assignedEmail
+    );
+    const flattenedCurrentHolder = currentHolder
+      ? JSON.parse(JSON.stringify(currentHolder))
+      : null;
+
+    const flattenedSelectedMember = selectedMember
+      ? JSON.parse(JSON.stringify(selectedMember))
+      : null;
+
+    console.log("🔎 Flattened Current Holder:", flattenedCurrentHolder);
+    console.log("🔎 Flattened Selected Member:", flattenedSelectedMember);
+
+    // Construir las entidades source y destination usando los datos aplanados
+    const { source, destination } = buildValidationEntities(
+      product,
+      members,
+      flattenedSelectedMember, // Usar el selectedMember aplanado
+      sessionUserData,
+      null
+    );
+
+    // Forzar el source si no existe
+    if (!source || !source.data) {
+      source.data = flattenedCurrentHolder || {
+        firstName: product.assignedMember?.split(" ")[0] || "",
+        lastName: product.assignedMember?.split(" ")[1] || "",
+        email: product.assignedEmail,
+      };
+    }
+
+    console.log("🔎 Source Entity (Flat):", source);
+    console.log("🔎 Destination Entity (Flat):", destination);
+
+    // Realizar la validación y capturar mensajes de error
+    const missingMessages = validateAfterAction(source, destination);
+
+    if (missingMessages.length > 0) {
+      const formattedMessages = missingMessages
+        .map(
+          (message) =>
+            `<div class="mb-2"><span>${message
+              .replace(
+                /Current holder \((.*?)\)/,
+                "Current holder (<strong>$1</strong>)"
+              )
+              .replace(
+                /Assigned member \((.*?)\)/,
+                "Assigned member (<strong>$1</strong>)"
+              )
+              .replace(
+                /Assigned location \((.*?)\)/,
+                "Assigned location (<strong>$1</strong>)"
+              )}</span></div>`
+        )
+        .join("");
+
+      setGenericAlertData({
+        title:
+          "The relocation was completed successfully, but details are missing",
+        description: formattedMessages,
+        isOpen: true,
+      });
+      console.warn("Validation warnings detected, proceeding with relocation.");
+    }
+
+    setRelocating(true);
+    try {
+      await handleReassignProduct({
+        currentMember,
+        selectedMember,
+        product: product,
+      });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+      setRelocateResult("success");
+      setRelocateStauts("success");
+      handleSuccess();
+    } catch (error) {
+      setRelocateResult("error");
+      setRelocateStauts("error");
+    } finally {
+      setRelocating(false);
     }
   };
 
   return (
     <section>
+      <GenericAlertDialog
+        open={genericAlertData.isOpen}
+        onClose={() =>
+          setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
+        }
+        title={genericAlertData.title || "Warning"}
+        description={genericAlertData.description || ""}
+        buttonText="OK"
+        onButtonClick={() =>
+          setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
+        }
+        isHtml={true}
+      />
       <GenericAlertDialog
         open={showErrorDialog}
         onClose={() => setShowErrorDialog(false)}
