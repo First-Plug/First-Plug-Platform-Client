@@ -70,23 +70,29 @@ export const validateAfterAction = (
   } | null
 ): string[] => {
   const missingMessages: string[] = [];
+  console.log("🔎 Validating Source:", source);
+  console.log("🔎 Validating Destination:", destination);
 
   const validateEntity = (
     entity: { type: "member" | "office"; data: any },
     role: "Current holder" | "Assigned member" | "Assigned location"
   ) => {
-    if (!entity || !entity.data) return;
-
+    if (!entity || !entity.data) {
+      console.log(`${role} is missing data:`, entity);
+      return;
+    }
     if (
       entity.type === "office" &&
       entity.data.location &&
       entity.data.location === "FP warehouse"
     ) {
+      console.log(`${role} is FP warehouse, skipping validation.`);
       return;
     }
 
     if (entity.type === "member") {
       const missingFields = getMissingFields(entity.data as TeamMember);
+      console.log(`${role} Missing Fields:`, missingFields);
       if (missingFields.length > 0) {
         const fullName =
           `${entity.data.firstName || ""} ${
@@ -103,6 +109,7 @@ export const validateAfterAction = (
       const billingValidation = validateBillingInfo(
         entity.data as Partial<User>
       );
+      console.log(`${role} Billing Validation:`, billingValidation);
       if (!billingValidation.isValid) {
         missingMessages.push(
           `${role} (${entity.data.location || "Office"}) is missing: ${
@@ -123,7 +130,7 @@ export const validateAfterAction = (
       source?.type === "office" ? "Assigned location" : "Assigned member"
     );
   }
-
+  console.log("✅ Final Missing Messages:", missingMessages);
   return missingMessages;
 };
 
@@ -131,32 +138,52 @@ export const buildValidationEntities = (
   product: Product,
   allMembers: TeamMember[] = [],
   selectedMember?: TeamMember | null,
-  sessionUser?: Partial<User>
+  sessionUser?: Partial<User>,
+  noneOption?: string | null
 ) => {
   let source: { type: "member" | "office"; data: any } | null = null;
   let destination: { type: "member" | "office"; data: any } | null = null;
 
-  const currentHolder = allMembers.find(
+  // Source
+  const currentMemberData = allMembers.find(
     (member) => member.email === product.assignedEmail
   );
 
-  if (currentHolder) {
-    source = { type: "member", data: currentHolder };
+  if (currentMemberData) {
+    source = { type: "member", data: currentMemberData };
+  } else if (product.assignedEmail) {
+    source = {
+      type: "member",
+      data: {
+        firstName: product.assignedMember?.split(" ")[0] || "",
+        lastName: product.assignedMember?.split(" ")[1] || "",
+        email: product.assignedEmail,
+      },
+    };
   } else if (product.location === "Our office") {
     source = {
       type: "office",
-      data: { location: "Our office", ...sessionUser },
+      data: { ...sessionUser, location: "Our office" },
     };
   }
 
   if (selectedMember) {
+    console.log("✅ Selected Member Found:", selectedMember);
     destination = { type: "member", data: selectedMember };
-  } else if (product.location === "Our office" || selectedMember === null) {
+  } else if (noneOption) {
     destination = {
       type: "office",
-      data: { location: "Our office", ...sessionUser },
+      data: { ...sessionUser, location: noneOption },
+    };
+  } else if (product.location === "Our office") {
+    destination = {
+      type: "office",
+      data: { ...sessionUser, location: "Our office" },
     };
   }
+
+  console.log("🔎 Source Entity:", source);
+  console.log("🔎 Destination Entity:", destination);
 
   return { source, destination };
 };
@@ -175,7 +202,8 @@ export const validateProductAssignment = (
   queryClient: QueryClient,
   setGenericAlertData: (data: { title: string; description: string }) => void,
   setShowErrorDialog: (show: boolean) => void,
-  sessionUser: Partial<User>
+  sessionUser: Partial<User>,
+  noneOption: string | null
 ): ValidationResult => {
   const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
 
@@ -183,7 +211,8 @@ export const validateProductAssignment = (
     product,
     allMembers || [],
     selectedMember,
-    sessionUser
+    sessionUser,
+    noneOption
   );
 
   const missingMessages = validateAfterAction(source, destination);

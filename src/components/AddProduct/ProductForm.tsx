@@ -109,6 +109,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
     isOpen: false,
   });
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [noneOption, setNoneOption] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedMember) {
+      setNoneOption("Our office");
+    } else {
+      setNoneOption(null);
+    }
+  }, [selectedMember]);
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -301,6 +310,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     if (isUpdate && initialData) {
       const finalAssignedEmail = watch("assignedEmail");
+      const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+
+      const updatedMember =
+        allMembers?.find((member) => member.email === finalAssignedEmail) ||
+        null;
 
       const sessionUserData = {
         country: sessionUser?.country,
@@ -312,7 +326,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       const validationResult = validateProductAssignment(
         initialData,
         finalAssignedEmail,
-        selectedMember,
+        updatedMember,
         queryClient,
         (data) =>
           setGenericAlertData({
@@ -321,7 +335,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
             isOpen: true,
           }),
         () => {},
-        sessionUserData
+        sessionUserData,
+        noneOption
       );
 
       if (validationResult.hasErrors) {
@@ -596,8 +611,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
             onClose={() =>
               setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
             }
-            title={genericAlertData.title || "Error"}
-            description={genericAlertData.description || errorMessage}
+            title={genericAlertData.title || "Warning"}
+            description={genericAlertData.description || ""}
             buttonText="OK"
             onButtonClick={() =>
               setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
