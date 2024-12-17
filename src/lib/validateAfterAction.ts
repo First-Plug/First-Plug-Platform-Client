@@ -1,4 +1,5 @@
-import { TeamMember, User } from "@/types";
+import { Product, TeamMember, User } from "@/types";
+import { QueryClient } from "@tanstack/react-query";
 
 const capitalizeAndSeparateCamelCase = (text: string): string => {
   const separated = text.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -124,4 +125,97 @@ export const validateAfterAction = (
   }
 
   return missingMessages;
+};
+
+export const buildValidationEntities = (
+  product: Product,
+  allMembers: TeamMember[] = [],
+  selectedMember?: TeamMember | null,
+  sessionUser?: Partial<User>
+) => {
+  let source: { type: "member" | "office"; data: any } | null = null;
+  let destination: { type: "member" | "office"; data: any } | null = null;
+
+  const currentHolder = allMembers.find(
+    (member) => member.email === product.assignedEmail
+  );
+
+  if (currentHolder) {
+    source = { type: "member", data: currentHolder };
+  } else if (product.location === "Our office") {
+    source = {
+      type: "office",
+      data: { location: "Our office", ...sessionUser },
+    };
+  }
+
+  if (selectedMember) {
+    destination = { type: "member", data: selectedMember };
+  } else if (product.location === "Our office" || selectedMember === null) {
+    destination = {
+      type: "office",
+      data: { location: "Our office", ...sessionUser },
+    };
+  }
+
+  return { source, destination };
+};
+
+/* --------------------- Validate Product Assignment --------------------- */
+
+interface ValidationResult {
+  hasErrors: boolean;
+  formattedMessages: string | null;
+}
+
+export const validateProductAssignment = (
+  product: Product,
+  finalAssignedEmail: string | undefined,
+  selectedMember: TeamMember | null,
+  queryClient: QueryClient,
+  setGenericAlertData: (data: { title: string; description: string }) => void,
+  setShowErrorDialog: (show: boolean) => void,
+  sessionUser: Partial<User>
+): ValidationResult => {
+  const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+
+  const { source, destination } = buildValidationEntities(
+    product,
+    allMembers || [],
+    selectedMember,
+    sessionUser
+  );
+
+  const missingMessages = validateAfterAction(source, destination);
+
+  if (missingMessages.length > 0) {
+    const formattedMessages = missingMessages
+      .map(
+        (message) =>
+          `<div class="mb-2"><span>${message
+            .replace(
+              /Current holder \((.*?)\)/,
+              "Current holder (<strong>$1</strong>)"
+            )
+            .replace(
+              /Assigned member \((.*?)\)/,
+              "Assigned member (<strong>$1</strong>)"
+            )
+            .replace(
+              /Assigned location \((.*?)\)/,
+              "Assigned location (<strong>$1</strong>)"
+            )}</span></div>`
+      )
+      .join("");
+
+    setGenericAlertData({
+      title: "The update was completed successfully, but details are missing",
+      description: formattedMessages,
+    });
+    setShowErrorDialog(true);
+
+    return { hasErrors: true, formattedMessages };
+  }
+
+  return { hasErrors: false, formattedMessages: null };
 };

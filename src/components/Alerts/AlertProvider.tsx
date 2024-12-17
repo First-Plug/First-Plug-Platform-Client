@@ -156,8 +156,6 @@ export default observer(function AlertProvider() {
       description: " Your product has been successfully updated.",
       closeAction: async () => {
         queryClient.invalidateQueries({ queryKey: ["members"] });
-        // queryClient.invalidateQueries({ queryKey: ["assets"] });
-        // await fetchStock();
         setAlert(undefined);
       },
     },
