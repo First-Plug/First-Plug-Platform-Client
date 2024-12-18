@@ -111,6 +111,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
   });
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [noneOption, setNoneOption] = useState<string | null>(null);
+  const [proceedWithSuccessAlert, setProceedWithSuccessAlert] = useState(false);
+  const [isGenericAlertOpen, setIsGenericAlertOpen] = useState(false);
 
   useEffect(() => {
     if (!selectedMember) {
@@ -208,6 +210,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setShowSuccessDialog(false);
     setShowErrorDialog(false);
     setErrorMessage("");
+    setGenericAlertData({ title: "", description: "", isOpen: false });
 
     const isProductNameValid = await validateProductName();
     if (!isProductNameValid) return;
@@ -310,6 +313,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const isCategoryValid = await validateCategory();
     if (!isCategoryValid || hasError) return;
 
+    //validacion de datos faltantes de los members o our office
     if (isUpdate && initialData) {
       const finalAssignedEmail = watch("assignedEmail");
       const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
@@ -325,21 +329,37 @@ const ProductForm: React.FC<ProductFormProps> = ({
         zipCode: sessionUser?.zipCode,
         address: sessionUser?.address,
       };
+
+      const adjustedNoneOption =
+        data.location === "FP warehouse" ? "FP warehouse" : noneOption;
+
+      console.log("🚀 Adjusted None Option:", adjustedNoneOption);
       const validationResult = validateProductAssignment(
         initialData,
         finalAssignedEmail,
         updatedMember,
         queryClient,
-        (data) =>
+        (data) => {
+          // Mostrar alerta genérica si hay errores
           setGenericAlertData({
             title: data.title,
             description: data.description,
             isOpen: true,
-          }),
+          });
+          setIsGenericAlertOpen(true);
+        },
         () => {},
         sessionUserData,
-        noneOption
+        adjustedNoneOption
       );
+      console.log("🚀 Adjusted None Option:", adjustedNoneOption);
+      console.log("🚀 Final Data for Validation:", {
+        product: initialData,
+        finalAssignedEmail,
+        selectedMember: updatedMember,
+        sessionUser: sessionUserData,
+        noneOption: adjustedNoneOption,
+      });
 
       if (validationResult.hasErrors) {
         console.warn("Validation errors detected, halting update process.");
@@ -370,9 +390,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
           { id: initialData._id, data: changes },
           {
             onSuccess: () => {
-              setAlert("updateStock");
-              setAside(undefined);
-              setShowSuccessDialog(true);
+              if (!isGenericAlertOpen) {
+                setAlert("updateStock");
+                setAside(undefined);
+                setShowSuccessDialog(true);
+              } else {
+                setProceedWithSuccessAlert(true);
+              }
             },
             onError: (error) => handleMutationError(error, true),
           }
@@ -610,15 +634,29 @@ const ProductForm: React.FC<ProductFormProps> = ({
         <div className="z-50">
           <GenericAlertDialog
             open={genericAlertData.isOpen}
-            onClose={() =>
-              setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
-            }
+            onClose={() => {
+              setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
+              setIsGenericAlertOpen(false);
+
+              if (proceedWithSuccessAlert) {
+                setAlert("updateStock");
+                setAside(undefined);
+                setShowSuccessDialog(true);
+              }
+            }}
             title={genericAlertData.title || "Warning"}
             description={genericAlertData.description || ""}
             buttonText="OK"
-            onButtonClick={() =>
-              setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
-            }
+            onButtonClick={() => {
+              setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
+              setIsGenericAlertOpen(false);
+
+              if (proceedWithSuccessAlert) {
+                setAlert("updateStock");
+                setAside(undefined);
+                setShowSuccessDialog(true);
+              }
+            }}
             isHtml={true}
           />
           <GenericAlertDialog

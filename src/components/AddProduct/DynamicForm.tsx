@@ -72,9 +72,6 @@ const DynamicForm = ({
   const getAttributeError = (key) => {
     return errors[key]?.message || customErrors[key] || null;
   };
-  // useEffect(() => {
-  //   console.log("Watched attributes in effect:", watch("attributes"));
-  // }, [watch("attributes")]);
 
   return (
     <div
