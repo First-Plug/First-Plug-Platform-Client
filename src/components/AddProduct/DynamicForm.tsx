@@ -44,7 +44,7 @@ const DynamicForm = ({
       setValue(`attributes.${index}.key`, attr.key);
       setValue(`attributes.${index}.value`, attr.value);
     });
-  }, [fields, watch, handleAttributesChange, setValue]);
+  }, [fields, watch("attributes"), handleAttributesChange, setValue]);
 
   const handleChange = (fieldKey, value) => {
     const updatedAttributes = attributes.map((attr) =>
@@ -54,16 +54,16 @@ const DynamicForm = ({
     setAttributes(updatedAttributes);
     handleAttributesChange(updatedAttributes);
 
-    if (isUpdate) {
-      setValue(
-        `attributes.${attributes.findIndex(
-          (attr) => attr.key === fieldKey
-        )}.value`,
-        value
-      );
-    } else {
-      setValue(fieldKey, value);
-    }
+    // if (isUpdate) {
+    setValue(
+      `attributes.${attributes.findIndex(
+        (attr) => attr.key === fieldKey
+      )}.value`,
+      value
+    );
+    // } else {
+    //   setValue(fieldKey, value);
+    // }
 
     clearErrors(fieldKey);
     setCustomErrors((prev) => ({ ...prev, [fieldKey]: undefined }));
@@ -87,26 +87,28 @@ const DynamicForm = ({
             defaultValue={
               attributes.find((attr) => attr.key === field.name)?.value || ""
             }
-            render={({ field: { onChange, value } }) => (
-              <DropdownInputProductForm
-                name={field.name}
-                options={field.options}
-                placeholder={field.title}
-                title={field.title}
-                selectedOption={value}
-                searchable={true}
-                onChange={(option) => {
-                  onChange(option); // Actualizamos el valor interno del formulario
-                  handleChange(field.name, option); // Actualizamos `attributes`
-                }}
-                required={
-                  selectedCategory !== "Merchandising" &&
-                  ["brand", "model"].includes(field.name)
-                    ? "required"
-                    : undefined
-                }
-              />
-            )}
+            render={({ field: { onChange, value } }) => {
+              return (
+                <DropdownInputProductForm
+                  name={field.name}
+                  options={field.options}
+                  placeholder={field.title}
+                  title={field.title}
+                  selectedOption={value}
+                  searchable={true}
+                  onChange={(option) => {
+                    onChange(option);
+                    handleChange(field.name, option);
+                  }}
+                  required={
+                    selectedCategory !== "Merchandising" &&
+                    ["brand", "model"].includes(field.name)
+                      ? "required"
+                      : undefined
+                  }
+                />
+              );
+            }}
           />
           <div className="min-h-[24px]">
             {getAttributeError(field.name) && (

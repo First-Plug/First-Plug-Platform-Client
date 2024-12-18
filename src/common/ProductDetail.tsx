@@ -81,10 +81,6 @@ const MembersList = observer(function MembersList({
     (member) => member.email !== currentMember?.email
   );
 
-  const currentHolder = members.find(
-    (member) => member.email === product.assignedEmail
-  );
-
   const handleRelocateProduct = async () => {
     if (!selectedMember) return;
 
@@ -96,7 +92,6 @@ const MembersList = observer(function MembersList({
       address: sessionUser?.address,
     };
 
-    // Capturar y aplanar el current holder
     const currentHolder = members.find(
       (member) => member.email === product.assignedEmail
     );
@@ -111,16 +106,14 @@ const MembersList = observer(function MembersList({
     console.log("🔎 Flattened Current Holder:", flattenedCurrentHolder);
     console.log("🔎 Flattened Selected Member:", flattenedSelectedMember);
 
-    // Construir las entidades source y destination usando los datos aplanados
     const { source, destination } = buildValidationEntities(
       product,
       members,
-      flattenedSelectedMember, // Usar el selectedMember aplanado
+      flattenedSelectedMember,
       sessionUserData,
       null
     );
 
-    // Forzar el source si no existe
     if (!source || !source.data) {
       source.data = flattenedCurrentHolder || {
         firstName: product.assignedMember?.split(" ")[0] || "",
@@ -132,7 +125,6 @@ const MembersList = observer(function MembersList({
     console.log("🔎 Source Entity (Flat):", source);
     console.log("🔎 Destination Entity (Flat):", destination);
 
-    // Realizar la validación y capturar mensajes de error
     const missingMessages = validateAfterAction(source, destination);
 
     if (missingMessages.length > 0) {

@@ -61,11 +61,11 @@ const validateBillingInfo = (
 
 export const validateAfterAction = (
   source: {
-    type: "member" | "office";
+    type: "member" | "office" | "warehouse";
     data: TeamMember | Partial<User>;
   } | null,
   destination: {
-    type: "member" | "office";
+    type: "member" | "office" | "warehouse";
     data: TeamMember | Partial<User>;
   } | null
 ): string[] => {
@@ -74,25 +74,39 @@ export const validateAfterAction = (
   console.log("🔎 Validating Destination:", destination);
 
   const validateEntity = (
-    entity: { type: "member" | "office"; data: any },
+    entity: { type: "member" | "office" | "warehouse"; data: any },
     role: "Current holder" | "Assigned member" | "Assigned location"
   ) => {
     if (!entity || !entity.data) {
       console.log(`${role} is missing data:`, entity);
       return;
     }
-    if (
-      entity.type === "office" &&
-      entity.data.location &&
-      entity.data.location === "FP warehouse"
-    ) {
+
+    if (entity.type === "warehouse") {
       console.log(`${role} is FP warehouse, skipping validation.`);
+      return;
+    }
+
+    if (entity.type === "office" && entity.data.location === "Our office") {
+      const billingValidation = validateBillingInfo(
+        entity.data as Partial<User>
+      );
+      console.log(`${role} Billing Validation:`, billingValidation);
+
+      if (!billingValidation.isValid) {
+        missingMessages.push(
+          `${role} (${entity.data.location || "Office"}) is missing: ${
+            billingValidation.missingFields
+          }`
+        );
+      }
       return;
     }
 
     if (entity.type === "member") {
       const missingFields = getMissingFields(entity.data as TeamMember);
       console.log(`${role} Missing Fields:`, missingFields);
+
       if (missingFields.length > 0) {
         const fullName =
           `${entity.data.firstName || ""} ${
@@ -103,18 +117,6 @@ export const validateAfterAction = (
           `${role} (${fullName}) is missing: ${missingFields
             .map((field) => capitalizeAndSeparateCamelCase(field))
             .join(", ")}`
-        );
-      }
-    } else if (entity.type === "office") {
-      const billingValidation = validateBillingInfo(
-        entity.data as Partial<User>
-      );
-      console.log(`${role} Billing Validation:`, billingValidation);
-      if (!billingValidation.isValid) {
-        missingMessages.push(
-          `${role} (${entity.data.location || "Office"}) is missing: ${
-            billingValidation.missingFields
-          }`
         );
       }
     }
@@ -141,10 +143,14 @@ export const buildValidationEntities = (
   sessionUser?: Partial<User>,
   noneOption?: string | null
 ) => {
-  let source: { type: "member" | "office"; data: any } | null = null;
-  let destination: { type: "member" | "office"; data: any } | null = null;
+  let source: { type: "member" | "office" | "warehouse"; data: any } | null =
+    null;
+  let destination: {
+    type: "member" | "office" | "warehouse";
+    data: any;
+  } | null = null;
 
-  // Source
+  // Determinar `source`
   const currentMemberData = allMembers.find(
     (member) => member.email === product.assignedEmail
   );
@@ -160,6 +166,11 @@ export const buildValidationEntities = (
         email: product.assignedEmail,
       },
     };
+  } else if (product.location === "FP warehouse") {
+    source = {
+      type: "warehouse",
+      data: { location: "FP warehouse" },
+    };
   } else if (product.location === "Our office") {
     source = {
       type: "office",
@@ -167,23 +178,20 @@ export const buildValidationEntities = (
     };
   }
 
+  // Determinar `destination`
   if (selectedMember) {
-    console.log("✅ Selected Member Found:", selectedMember);
     destination = { type: "member", data: selectedMember };
-  } else if (noneOption) {
-    destination = {
-      type: "office",
-      data: { ...sessionUser, location: noneOption },
-    };
-  } else if (product.location === "Our office") {
+  } else if (noneOption === "FP warehouse") {
+    destination = { type: "warehouse", data: { location: "FP warehouse" } };
+  } else if (noneOption === "Our office") {
     destination = {
       type: "office",
       data: { ...sessionUser, location: "Our office" },
     };
   }
 
-  console.log("🔎 Source Entity:", source);
-  console.log("🔎 Destination Entity:", destination);
+  console.log("buildValidationEntities - Source:", source);
+  console.log("buildValidationEntities - Destination:", destination);
 
   return { source, destination };
 };
