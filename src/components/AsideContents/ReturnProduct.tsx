@@ -5,7 +5,6 @@ import ProductDetail, { RelocateStatus } from "@/common/ProductDetail";
 import { Button, LoaderSpinner } from "@/common";
 import useActions from "@/hooks/useActions";
 import { useStore } from "@/models";
-import useFetch from "@/hooks/useFetch";
 import {
   Select,
   SelectContent,
@@ -19,7 +18,10 @@ import { Badge, badgeVariants } from "../ui/badge";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import GenericAlertDialog from "../AddProduct/ui/GenericAlertDialog";
-import { validateBillingInfo } from "@/lib/utils";
+import {
+  buildValidationEntities,
+  validateAfterAction,
+} from "@/lib/validateAfterAction";
 
 interface IRemoveItems {
   product: Product;
@@ -43,6 +45,11 @@ export function ReturnProduct({
   const [isRemoving, setIsRemoving] = useState(false);
   const [newLocation, setNewLocation] = useState<Location>(null);
   const [returnStatus, setReturnStatus] = useState<RelocateStatus>(undefined);
+  const [genericAlertData, setGenericAlertData] = useState({
+    title: "",
+    description: "",
+    isOpen: false,
+  });
 
   const { unassignProduct } = useActions();
 
@@ -70,10 +77,52 @@ export function ReturnProduct({
       return;
     }
 
+    const sessionUserData = {
+      country: session?.user?.country,
+      city: session?.user?.city,
+      state: session?.user?.state,
+      zipCode: session?.user?.zipCode,
+      address: session?.user?.address,
+    };
+
     if (location === "Our office") {
-      if (!validateBillingInfo(session.user).isValid) {
-        setMissingOfficeData(validateBillingInfo(session.user).missingFields);
-        return setShowErrorDialogOurOffice(true);
+      const { source, destination } = buildValidationEntities(
+        product,
+        [],
+        null,
+        sessionUserData,
+        "Our office"
+      );
+
+      console.log("🔎 Source Entity (Current Holder):", source);
+      console.log("🔎 Destination Entity (Our Office):", destination);
+
+      const missingMessages = validateAfterAction(source, destination);
+
+      if (missingMessages.length > 0) {
+        const formattedMessages = missingMessages
+          .map(
+            (message) =>
+              `<div class="mb-2"><span>${message
+                .replace(
+                  /Current holder \((.*?)\)/,
+                  "Current holder (<strong>$1</strong>)"
+                )
+                .replace(
+                  /Assigned location \((.*?)\)/,
+                  "Assigned location (<strong>$1</strong>)"
+                )}</span></div>`
+          )
+          .join("");
+
+        setGenericAlertData({
+          title:
+            "The return was completed successfully, but details are missing",
+          description: formattedMessages,
+          isOpen: true,
+        });
+
+        console.warn("Validation warnings detected, proceeding with return.");
       }
     }
 
@@ -97,6 +146,21 @@ export function ReturnProduct({
 
   return (
     <div className="flex flex-col border-b pb-2 mb-2 rounded-sm items-start gap-1">
+      {genericAlertData.isOpen && (
+        <GenericAlertDialog
+          open={genericAlertData.isOpen}
+          onClose={() =>
+            setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
+          }
+          title={genericAlertData.title || "Warning"}
+          description={genericAlertData.description || ""}
+          buttonText="OK"
+          onButtonClick={() =>
+            setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
+          }
+          isHtml={true}
+        />
+      )}
       <GenericAlertDialog
         open={showErrorDialogOurOffice}
         onClose={() => setShowErrorDialogOurOffice(false)}

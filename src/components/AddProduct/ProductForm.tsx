@@ -71,6 +71,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       category: initialData?.category || undefined,
       serialNumber: initialData?.serialNumber || undefined,
       price: initialData?.price || undefined,
+      attributes: initialData?.attributes || [],
     },
   });
   const {
@@ -189,8 +190,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
       if (!productName || productName.trim() === "") {
         methods.setError("name", {
           type: "manual",
-          message: "Product Name is required for this category and model.",
+          message: "Product Name is required.",
         });
+        console.log("Model in validateProductName:", model);
         return false;
       }
     } else {

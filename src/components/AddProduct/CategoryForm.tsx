@@ -152,14 +152,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 
   useEffect(() => {
     if (selectedModel === "Other") {
-      setShowNameInput(true);
-    } else {
-      setShowNameInput(false);
-    }
-  }, [selectedModel]);
-
-  useEffect(() => {
-    if (selectedModel === "Other") {
       setValue("name", watch("name") || "");
     }
   }, [selectedModel, setValue, watch]);
@@ -168,6 +160,10 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     setIsRecoverable(value);
     setValue("recoverable", value);
   };
+
+  useEffect(() => {
+    watch("attributes").find((attr) => attr.key === "model")?.value;
+  }, [watch("attributes")]);
 
   if (isLoading) {
     return (
@@ -323,8 +319,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             />
           </div>
 
-          {selectedModel === "Other" ||
-          (isUpdate && watch("name") && selectedModel === "Other") ? (
+          {watch("attributes").find((attr) => attr.key === "model")?.value ===
+          "Other" ? (
             <div className="w-full">
               <InputProductForm
                 placeholder="Product Name"
@@ -392,7 +388,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               />
             </div>
 
-            {selectedModel === "Other" ? (
+            {watch("attributes").find((attr) => attr.key === "model")?.value ===
+            "Other" ? (
               <div>
                 <InputProductForm
                   placeholder="Product Name"
