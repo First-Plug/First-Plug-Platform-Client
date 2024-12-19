@@ -31,7 +31,10 @@ import {
   useUpdateAsset,
 } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
-import { validateProductAssignment } from "@/lib/validateAfterAction";
+import {
+  validateOnCreate,
+  validateProductAssignment,
+} from "@/lib/validateAfterAction";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -217,6 +220,44 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     const finalAssignedEmail = watch("assignedEmail");
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
+    const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+    const selectedMember =
+      allMembers?.find((member) => member.email === finalAssignedEmail) || null;
+
+    const adjustedNoneOption = selectedMember
+      ? null
+      : data.location === "FP warehouse"
+      ? "FP warehouse"
+      : "Our office";
+
+    let missingMessages: string[] = [];
+
+    if (!isUpdate) {
+      missingMessages = await validateOnCreate(
+        selectedMember,
+        {
+          country: sessionUser?.country,
+          city: sessionUser?.city,
+          state: sessionUser?.state,
+          zipCode: sessionUser?.zipCode,
+          address: sessionUser?.address,
+        },
+        adjustedNoneOption
+      );
+    }
+
+    if (missingMessages.length > 0) {
+      const formattedMessages = missingMessages
+        .map((msg) => `<div class="mb-2">${msg}</div>`)
+        .join("");
+
+      setGenericAlertData({
+        title: "Missing Information",
+        description: formattedMessages,
+        isOpen: true,
+      });
+      setIsGenericAlertOpen(true);
+    }
 
     const formatData: Product = {
       ...emptyProduct,
