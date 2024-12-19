@@ -248,11 +248,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     if (missingMessages.length > 0) {
       const formattedMessages = missingMessages
-        .map((msg) => `<div class="mb-2">${msg}</div>`)
+        .map((msg) => `<div class="mb-2"><span>${msg}</span></div>`)
         .join("");
 
       setGenericAlertData({
-        title: "Missing Information",
+        title:
+          "The creation was completed successfully, but details are missing",
         description: formattedMessages,
         isOpen: true,
       });
@@ -374,7 +375,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       const adjustedNoneOption =
         data.location === "FP warehouse" ? "FP warehouse" : noneOption;
 
-      console.log("🚀 Adjusted None Option:", adjustedNoneOption);
       const validationResult = validateProductAssignment(
         initialData,
         finalAssignedEmail,
@@ -393,14 +393,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
         sessionUserData,
         adjustedNoneOption
       );
-      console.log("🚀 Adjusted None Option:", adjustedNoneOption);
-      console.log("🚀 Final Data for Validation:", {
-        product: initialData,
-        finalAssignedEmail,
-        selectedMember: updatedMember,
-        sessionUser: sessionUserData,
-        noneOption: adjustedNoneOption,
-      });
 
       if (validationResult.hasErrors) {
         console.warn("Validation errors detected, halting update process.");

@@ -274,9 +274,9 @@ export const validateOnCreate = async (
     const missingFields = getMissingFields(selectedMember);
     if (missingFields.length > 0) {
       missingMessages.push(
-        `Assigned member (${selectedMember.firstName} ${
+        `Assigned member (<strong>${selectedMember.firstName} ${
           selectedMember.lastName
-        }) is missing: ${missingFields
+        }</strong>) is missing: ${missingFields
           .map(capitalizeAndSeparateCamelCase)
           .join(", ")}`
       );
@@ -285,7 +285,7 @@ export const validateOnCreate = async (
     const billingValidation = validateBillingInfo(sessionUser);
     if (!billingValidation.isValid) {
       missingMessages.push(
-        `Assigned location (${noneOption}) is missing: ${billingValidation.missingFields}`
+        `Assigned location (<strong>${noneOption}</strong>) is missing: ${billingValidation.missingFields}`
       );
     }
   }
