@@ -256,3 +256,43 @@ export const validateProductAssignment = (
 
   return { hasErrors: false, formattedMessages: null };
 };
+
+/* --------------------- Validate OnCreate --------------------- */
+
+export const validateOnCreate = async (
+  selectedMember: TeamMember | null,
+  sessionUser: Partial<User>,
+  noneOption: string | null
+): Promise<string[]> => {
+  const missingMessages: string[] = [];
+
+  if (noneOption === "FP warehouse") {
+    return missingMessages;
+  }
+
+  if (selectedMember) {
+    const missingFields = getMissingFields(selectedMember);
+    if (missingFields.length > 0) {
+      missingMessages.push(
+        `Assigned member (<strong>${selectedMember.firstName} ${
+          selectedMember.lastName
+        }</strong>) is missing: ${missingFields
+          .map(capitalizeAndSeparateCamelCase)
+          .join(", ")}`
+      );
+    }
+  } else if (noneOption === "Our office") {
+    const billingValidation = validateBillingInfo(sessionUser);
+    if (!billingValidation.isValid) {
+      missingMessages.push(
+        `Assigned location (<strong>${noneOption}</strong>) is missing: ${billingValidation.missingFields}`
+      );
+    }
+  }
+
+  if (missingMessages.length > 0) {
+    console.log("🔍 validateOnCreate - Missing Messages:", missingMessages);
+  }
+
+  return missingMessages;
+};

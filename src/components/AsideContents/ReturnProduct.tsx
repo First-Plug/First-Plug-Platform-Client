@@ -85,6 +85,40 @@ export function ReturnProduct({
       address: session?.user?.address,
     };
 
+    const { source, destination } = buildValidationEntities(
+      product,
+      [],
+      null,
+      sessionUserData,
+      location
+    );
+
+    console.log("🔎 Source Entity (Current Holder):", source);
+    console.log("🔎 Destination Entity:", destination);
+
+    // Always validate the source (Current Holder)
+    const missingMessagesForSource = validateAfterAction(source, null);
+
+    if (missingMessagesForSource.length > 0) {
+      const formattedMessages = missingMessagesForSource
+        .map(
+          (message) =>
+            `<div class="mb-2"><span>${message.replace(
+              /Current holder \((.*?)\)/,
+              "Current holder (<strong>$1</strong>)"
+            )}</span></div>`
+        )
+        .join("");
+
+      setGenericAlertData({
+        title: "Details are missing for the current holder",
+        description: formattedMessages,
+        isOpen: true,
+      });
+
+      console.warn("Validation warnings for current holder detected.");
+    }
+
     if (location === "Our office") {
       const { source, destination } = buildValidationEntities(
         product,
@@ -93,9 +127,6 @@ export function ReturnProduct({
         sessionUserData,
         "Our office"
       );
-
-      console.log("🔎 Source Entity (Current Holder):", source);
-      console.log("🔎 Destination Entity (Our Office):", destination);
 
       const missingMessages = validateAfterAction(source, destination);
 
@@ -122,7 +153,7 @@ export function ReturnProduct({
           isOpen: true,
         });
 
-        console.warn("Validation warnings detected, proceeding with return.");
+        console.warn("Validation warnings for destination detected.");
       }
     }
 
