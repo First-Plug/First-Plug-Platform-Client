@@ -75,7 +75,7 @@ export const MemberStore = types
         ...member,
         personalEmail: member.personalEmail ?? null,
         //@ts-ignore
-        teamId: member.team ? member.team._id : "Not Assigned",
+        team: member.team ?? "Not Assigned",
       }));
       store.members.replace(membersG);
     },

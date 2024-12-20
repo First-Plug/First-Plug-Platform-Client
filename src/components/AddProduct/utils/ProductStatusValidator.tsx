@@ -26,7 +26,10 @@ interface ProductStatusValidatorProps {
 
 const validateBillingInfo = (user: User): boolean => {
   const requiredFields = ["country", "city", "state", "zipCode", "address"];
-  return requiredFields.every((field) => user[field]?.trim() !== "");
+  console.log("Validating user billing info:", user);
+  const result = requiredFields.every((field) => user[field]?.trim() !== "");
+  console.log("Billing info valid:", result);
+  return result;
 };
 
 export const validateMemberBillingInfo = (user: ExtendedUser): boolean => {
@@ -90,8 +93,23 @@ const ProductStatusValidator: React.FC<ProductStatusValidatorProps> = observer(
       }
     }, [isClosed]);
 
+    useEffect(() => {
+      console.log("Revalidating status...");
+      console.log("Selected Member:", selectedMember);
+      console.log("Relocation:", relocation);
+      console.log("User:", user);
+
+      revalidateStatus();
+    }, [selectedMember, relocation, members]);
+
     const revalidateStatus = () => {
+      console.log("Revalidating status...");
+      console.log("Selected Member:", selectedMember);
+      console.log("Relocation:", relocation);
+      console.log("User:", user);
+
       if (!selectedMember && !relocation) {
+        console.log("No selected member or relocation.");
         setStatus("none");
         onStatusChange("none", productIndex);
         return;
@@ -100,19 +118,24 @@ const ProductStatusValidator: React.FC<ProductStatusValidatorProps> = observer(
       const foundMember = members.find(
         (m) => `${m.firstName} ${m.lastName}` === selectedMember
       );
+      console.log("Found Member:", foundMember);
 
       let newStatus = "none";
 
       if (relocation === "Employee") {
         if (!foundMember) {
           newStatus = "selectMembers";
+          console.log("Status set to: selectMembers");
         } else if (!validateMemberBillingInfo(foundMember)) {
           newStatus = "not-member-available";
+          console.log("Status set to: not-member-available");
         } else {
           newStatus = "valid";
+          console.log("Status set to: valid");
         }
       } else if (relocation === "Our office" && !validateBillingInfo(user)) {
         newStatus = "not-billing-information";
+        console.log("Status set to: not-billing-information");
       }
 
       if (newStatus !== status) {

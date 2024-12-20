@@ -66,6 +66,7 @@ export default function useActions() {
     try {
       await reassignProduct(product._id, updatedProduct);
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     } catch (error) {
       console.error("Error unassigning product:", error);
     }
