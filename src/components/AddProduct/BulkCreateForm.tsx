@@ -19,6 +19,7 @@ import ProductStatusValidator, {
   validateMemberBillingInfo,
 } from "./utils/ProductStatusValidator";
 import GenericAlertDialog from "./ui/GenericAlertDialog";
+import { validateBillingInfo } from "@/lib/utils";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -66,6 +67,7 @@ const BulkCreateForm: React.FC<{
   const productInstance = ProductModel.create(initialProductData);
 
   const {
+    user: { user },
     products: { setProducts },
     alerts: { setAlert },
     members: { setMemberToEdit },
@@ -109,6 +111,12 @@ const BulkCreateForm: React.FC<{
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [showMissingDataDialog, setMissingDataDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState<string>("");
+  const [genericAlertData, setGenericAlertData] = useState({
+    title: "",
+    description: "",
+    isOpen: false,
+  });
+  const [proceedWithSuccess, setProceedWithSuccess] = useState(false);
 
   //Desactiva Apply All si hay diferencias entre productos
   useLayoutEffect(() => {
@@ -220,10 +228,12 @@ const BulkCreateForm: React.FC<{
   };
 
   const handleLocationChange = (value: string, index: number) => {
+    console.log(`Location changed to: ${value} for product at index: ${index}`);
     setValue(`products.${index}.location`, value);
     const newSelectedLocations = [...selectedLocations];
     newSelectedLocations[index] = value;
     setSelectedLocations(newSelectedLocations);
+    console.log("Updated selectedLocations:", newSelectedLocations);
 
     const firstProductLocation = watch("products.0.location");
     if (assignAll && firstProductLocation !== value) {
@@ -335,6 +345,11 @@ const BulkCreateForm: React.FC<{
   };
 
   const handleBulkCreate = async (data: any) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+
+    console.log("📦 Products data for bulk creation:", data);
+
     const firstProductPrice = data.products[0].price;
     const productsData = data.products.map((productData: any) => {
       const assignedMember = productData.assignedMember;
@@ -359,6 +374,7 @@ const BulkCreateForm: React.FC<{
         ...(price ? { price } : {}),
       };
     });
+    console.log("📝 Final products data to be sent:", productsData);
 
     const isCategoryValid = await trigger("products.0.category");
     if (!isCategoryValid) {
@@ -375,6 +391,7 @@ const BulkCreateForm: React.FC<{
             setAlert("bulkCreateProductSuccess");
             onBack();
           });
+          console.log("✅ Bulk create completed successfully");
 
           setIsProcessing(false);
         },
@@ -404,28 +421,34 @@ const BulkCreateForm: React.FC<{
       return;
     }
 
-    const incompleteMembers = data.products
-      .map((product: any) => {
-        if (product.assignedMember === "None") {
-          return null;
-        }
+    let hasIncompleteMembers = false;
+    let hasIncompleteOfficeData = false;
 
-        const assignedMember = members.find(
+    data.products.forEach((product: any) => {
+      if (product.assignedMember !== "None") {
+        const foundMember = members.find(
           (m) =>
             `${m.firstName} ${m.lastName}` === product.assignedMember &&
             validateMemberBillingInfo(m)
         );
-        return !assignedMember ? product.assignedMember : null;
-      })
-      .filter(Boolean);
+        if (!foundMember) {
+          hasIncompleteMembers = true;
+        }
+      } else if (product.location === "Our office") {
+        if (!validateBillingInfo(user)) {
+          hasIncompleteOfficeData = true;
+        }
+      }
+    });
 
-    if (incompleteMembers.length > 0) {
-      setMissingDataDialog(true);
-      setMissingMemberData(
-        `The following members have missing information: ${incompleteMembers.join(
-          ", "
-        )}. Please update their details to continue.`
-      );
+    if (hasIncompleteMembers || hasIncompleteOfficeData) {
+      setGenericAlertData({
+        title: "Incomplete Data",
+        description:
+          "Some members or locations have missing information. Please complete the details later to finalize shipments.",
+        isOpen: true,
+      });
+      setProceedWithSuccess(true);
       return;
     }
 
@@ -583,7 +606,9 @@ const BulkCreateForm: React.FC<{
                     <ProductStatusValidator
                       productIndex={index}
                       selectedMember={watch(`products.${index}.assignedMember`)}
-                      relocation={watch(`products.${index}.location`)}
+                      relocation={methods.getValues(
+                        `products.${index}.location`
+                      )}
                       members={members}
                       onStatusChange={(status) =>
                         handleStatusChange(status, index)
@@ -614,6 +639,27 @@ const BulkCreateForm: React.FC<{
               </div>
             </aside>
           </form>
+          <GenericAlertDialog
+            open={genericAlertData.isOpen}
+            onClose={() => {
+              setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
+              setProceedWithSuccess(false);
+              if (proceedWithSuccess) {
+                handleBulkCreate(methods.getValues());
+              }
+            }}
+            title={genericAlertData.title || "Warning"}
+            description={genericAlertData.description || ""}
+            buttonText="OK"
+            onButtonClick={() => {
+              setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
+              setProceedWithSuccess(false);
+              if (proceedWithSuccess) {
+                handleBulkCreate(methods.getValues());
+              }
+            }}
+            isHtml={true}
+          />
           <GenericAlertDialog
             open={showMissingDataDialog}
             onClose={() => setMissingDataDialog(false)}
