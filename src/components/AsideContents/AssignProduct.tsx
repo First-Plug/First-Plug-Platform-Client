@@ -65,6 +65,7 @@ export const AssignProduct = observer(() => {
         members={filteredMembers}
         currentProduct={product}
         showNoneOption={type === "ReassignProduct"}
+        actionType={type as "AssignProduct" | "ReassignProduct"}
       />
     </div>
   );

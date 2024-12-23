@@ -21,6 +21,10 @@ import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { useSession } from "next-auth/react";
 import { validateAfterAction } from "@/lib/validateAfterAction";
 import { useFetchMembers } from "@/members/hooks";
+import {
+  sendSlackNotification,
+  SlackNotificationPayload,
+} from "@/services/slackNotifications.services";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -29,6 +33,7 @@ interface AddMemberFormProps {
   currentProduct?: Product | null;
   currentMember?: TeamMember | null;
   showNoneOption?: boolean;
+  actionType?: "AssignProduct" | "ReassignProduct";
 }
 interface ValidationEntity {
   type: "member" | "office";
@@ -42,6 +47,7 @@ export const AddMemberForm = observer(function ({
   currentProduct,
   currentMember,
   showNoneOption,
+  actionType,
 }: AddMemberFormProps) {
   const { data: allMembers, isLoading: loadingMembers } = useFetchMembers();
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
@@ -90,8 +96,112 @@ export const AddMemberForm = observer(function ({
     closeAside();
   };
 
+  const buildSlackPayload = (
+    currentProduct: Product,
+    selectedMember: TeamMember | null,
+    session: any,
+    actionLabel: string,
+    source: ValidationEntity,
+    noneOption: string | null,
+    tenantName: string
+  ): SlackNotificationPayload => {
+    const brandAttribute = currentProduct.attributes.find(
+      (attr) => attr.key === "brand"
+    );
+    const modelAttribute = currentProduct.attributes.find(
+      (attr) => attr.key === "model"
+    );
+
+    const brand = brandAttribute?.value || "N/A";
+    const model = modelAttribute?.value || "N/A";
+
+    let from;
+    if (source.type === "member") {
+      const memberData = source.data as TeamMember;
+      from = {
+        name: `${memberData.firstName} ${memberData.lastName}`,
+        address: memberData.address || "Dirección no especificada",
+        zipCode: memberData.zipCode || "Código postal no especificado",
+        phone: memberData.phone || "Teléfono no especificado",
+        email: memberData.email || "Correo no especificado",
+      };
+    } else if (source.type === "office") {
+      const officeData = source.data as Partial<User> & { location?: string };
+      const isOurOffice = officeData?.location === "Our office";
+
+      from = {
+        name: isOurOffice ? "Oficina del cliente" : "FP warehouse",
+        address: isOurOffice ? session.user.address || "" : "",
+        zipCode: isOurOffice ? session.user.zipCode || "" : "",
+        phone: isOurOffice ? session.user.phone || "" : "",
+        email: isOurOffice ? session.user.email || "" : "",
+      };
+    } else {
+      from = {
+        name: "FP warehouse",
+        address: "",
+        zipCode: "",
+        phone: "",
+        email: "",
+      };
+    }
+
+    let to;
+    if (selectedMember) {
+      to = {
+        name: `${selectedMember.firstName} ${selectedMember.lastName}`,
+        address: selectedMember.address || "Dirección no especificada",
+        zipCode: selectedMember.zipCode || "Código postal no especificado",
+        phone: selectedMember.phone || "Teléfono no especificado",
+        email: selectedMember.email || "Correo no especificado",
+      };
+    } else if (noneOption === "Our office") {
+      to = {
+        name: "Oficina del cliente",
+        address: session.user.address || "Dirección no especificada",
+        zipCode: session.user.zipCode || "Código postal no especificado",
+        phone: session.user.phone || "Teléfono no especificado",
+        email: session.user.email || "Correo no especificado",
+      };
+    } else if (noneOption === "FP warehouse") {
+      to = {
+        name: "FP warehouse",
+        address: "",
+        zipCode: "",
+        phone: "",
+        email: "",
+      };
+    } else {
+      to = {
+        name: "Destino no especificado",
+        address: "",
+        zipCode: "",
+        phone: "",
+        email: "",
+      };
+    }
+
+    return {
+      from,
+      to,
+      products: [
+        {
+          category: currentProduct.category,
+          brand,
+          model,
+          name: currentProduct.name || "N/A",
+          serialNumber: currentProduct.serialNumber || "N/A",
+        },
+      ],
+      tenantName,
+      action: actionLabel,
+    };
+  };
+
+  console.log("Session User:", session.user);
+
   const handleSaveClick = async () => {
-    if (!currentProduct) return;
+    if (!currentProduct || !actionType) return;
 
     if (selectedMember === null && !noneOption) {
       setValidationError("Please select a location");
@@ -108,9 +218,20 @@ export const AddMemberForm = observer(function ({
     let destination: ValidationEntity | null = null;
 
     try {
+      const actionLabel =
+        actionType === "ReassignProduct"
+          ? "Reassign Product"
+          : "Assign Product";
+
+      // const sourceLocation =
+      //   currentProduct.location === "Our office"
+      //     ? "Our office"
+      //     : "FP warehouse";
+
       const currentMemberData = allMembers.find(
         (member) => member.email === currentProduct.assignedEmail
       );
+
       if (currentMemberData) {
         source = {
           type: "member",
@@ -169,6 +290,18 @@ export const AddMemberForm = observer(function ({
         data: updatedProduct,
         showSuccessAlert: false,
       });
+
+      const slackPayload = buildSlackPayload(
+        currentProduct,
+        selectedMember || null,
+        session,
+        actionLabel,
+        source,
+        noneOption,
+        session.user.tenantName
+      );
+
+      await sendSlackNotification(slackPayload);
 
       const missingMessages = validateAfterAction(source, destination);
 

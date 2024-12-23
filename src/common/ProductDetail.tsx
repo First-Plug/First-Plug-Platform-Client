@@ -19,9 +19,8 @@ import { useRouter } from "next/navigation";
 import {
   buildValidationEntities,
   validateAfterAction,
-  validateProductAssignment,
 } from "@/lib/validateAfterAction";
-import { toJS } from "mobx";
+
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
   product,
@@ -103,9 +102,6 @@ const MembersList = observer(function MembersList({
       ? JSON.parse(JSON.stringify(selectedMember))
       : null;
 
-    console.log("🔎 Flattened Current Holder:", flattenedCurrentHolder);
-    console.log("🔎 Flattened Selected Member:", flattenedSelectedMember);
-
     const { source, destination } = buildValidationEntities(
       product,
       members,
@@ -121,9 +117,6 @@ const MembersList = observer(function MembersList({
         email: product.assignedEmail,
       };
     }
-
-    console.log("🔎 Source Entity (Flat):", source);
-    console.log("🔎 Destination Entity (Flat):", destination);
 
     const missingMessages = validateAfterAction(source, destination);
 
