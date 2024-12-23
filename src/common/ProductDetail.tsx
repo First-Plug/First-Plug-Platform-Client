@@ -20,6 +20,7 @@ import {
   buildValidationEntities,
   validateAfterAction,
 } from "@/lib/validateAfterAction";
+import { sendSlackNotification } from "@/services/slackNotifications.services";
 
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
@@ -79,6 +80,44 @@ const MembersList = observer(function MembersList({
   const displayedMembers = searchedMembers.filter(
     (member) => member.email !== currentMember?.email
   );
+
+  const buildSlackPayload = (
+    tenantName: string,
+    currentHolder: TeamMember | null,
+    selectedMember: TeamMember,
+    product: Product,
+    action: string
+  ) => {
+    return {
+      tenantName,
+      from: {
+        name: `${currentHolder?.firstName || "Unknown"} ${
+          currentHolder?.lastName || "Unknown"
+        }`,
+        address: currentHolder?.address || "Dirección no especificada",
+        zipCode: currentHolder?.zipCode || "Código postal no especificado",
+        phone: currentHolder?.phone || "Teléfono no especificado",
+        email: currentHolder?.email || "Correo no especificado",
+      },
+      to: {
+        name: `${selectedMember.firstName} ${selectedMember.lastName}`,
+        address: selectedMember.address || "Dirección no especificada",
+        zipCode: selectedMember.zipCode || "Código postal no especificado",
+        phone: selectedMember.phone || "Teléfono no especificado",
+        email: selectedMember.email || "Correo no especificado",
+      },
+      products: [
+        {
+          category: product.category,
+          brand: product.attributes.find((attr) => attr.key === "brand")?.value,
+          model: product.attributes.find((attr) => attr.key === "model")?.value,
+          name: product.name || "N/A",
+          serialNumber: product.serialNumber || "N/A",
+        },
+      ],
+      action,
+    };
+  };
 
   const handleRelocateProduct = async () => {
     if (!selectedMember) return;
@@ -158,6 +197,17 @@ const MembersList = observer(function MembersList({
       });
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+
+      const slackPayload = buildSlackPayload(
+        sessionUser?.tenantName || "Unknown Tenant",
+        flattenedCurrentHolder,
+        flattenedSelectedMember,
+        product,
+        "Relocate Product"
+      );
+
+      await sendSlackNotification(slackPayload);
+
       setRelocateResult("success");
       setRelocateStauts("success");
       handleSuccess();

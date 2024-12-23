@@ -1,4 +1,4 @@
-import { LOCATION, Location, Product, User } from "@/types";
+import { LOCATION, Location, Product, TeamMember, User } from "@/types";
 import React, { Dispatch, SetStateAction, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import ProductDetail, { RelocateStatus } from "@/common/ProductDetail";
@@ -22,6 +22,7 @@ import {
   buildValidationEntities,
   validateAfterAction,
 } from "@/lib/validateAfterAction";
+import { sendSlackNotification } from "@/services/slackNotifications.services";
 
 interface IRemoveItems {
   product: Product;
@@ -61,12 +62,56 @@ export function ReturnProduct({
 
   const [missingOfficeData, setMissingOfficeData] = useState("");
 
+  const buildReturnSlackPayload = (
+    tenantName: string,
+    currentHolder: TeamMember | null,
+    product: Product,
+    location: "Our office" | "FP Warehouse",
+    action: string,
+    sessionUser: User
+  ) => {
+    const isOurOffice = location === "Our office";
+
+    return {
+      tenantName,
+      from: {
+        name: `${currentHolder?.firstName || "Unknown"} ${
+          currentHolder?.lastName || "Unknown"
+        }`,
+        address: currentHolder?.address || "Dirección no especificada",
+        zipCode: currentHolder?.zipCode || "Código postal no especificado",
+        phone: currentHolder?.phone || "Teléfono no especificado",
+        email: currentHolder?.email || "Correo no especificado",
+      },
+      to: {
+        name: isOurOffice ? "Oficina del cliente" : "FP Warehouse",
+        address: isOurOffice
+          ? `${sessionUser.address}, ${sessionUser.apartment || "N/A"}`
+          : "N/A",
+        city: isOurOffice ? sessionUser.city : "N/A",
+        state: isOurOffice ? sessionUser.state : "N/A",
+        country: isOurOffice ? sessionUser.country : "N/A",
+        zipCode: isOurOffice ? sessionUser.zipCode : "N/A",
+      },
+      products: [
+        {
+          category: product.category,
+          brand: product.attributes.find((attr) => attr.key === "brand")?.value,
+          model: product.attributes.find((attr) => attr.key === "model")?.value,
+          name: product.name || "N/A",
+          serialNumber: product.serialNumber || "N/A",
+        },
+      ],
+      action,
+    };
+  };
+
   const handleRemoveItems = async (location: Location) => {
     if (!location) {
       console.error("Location is required for return");
       return;
     }
-
+    const currentHolder = selectedMember;
     if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
       console.error("No products selected for return");
       return;
@@ -92,9 +137,6 @@ export function ReturnProduct({
       sessionUserData,
       location
     );
-
-    console.log("🔎 Source Entity (Current Holder):", source);
-    console.log("🔎 Destination Entity:", destination);
 
     // Always validate the source (Current Holder)
     const missingMessagesForSource = validateAfterAction(source, null);
@@ -164,6 +206,18 @@ export function ReturnProduct({
         product,
         currentMember: selectedMember,
       });
+
+      const slackPayload = buildReturnSlackPayload(
+        session?.user?.tenantName || "Unknown Tenant",
+        currentHolder,
+        product,
+        location as "Our office" | "FP Warehouse",
+        "Return Product",
+        session?.user
+      );
+
+      await sendSlackNotification(slackPayload);
+
       setReturnStatus("success");
 
       onRemoveSuccess();

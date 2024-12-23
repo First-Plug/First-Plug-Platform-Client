@@ -57,11 +57,21 @@ export async function POST(request: Request) {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Para:* ${to.name}\nDirección: ${to.address}\nCódigo postal: ${
-          to.zipCode
-        }\n${to.phone ? `Teléfono: ${to.phone}\n` : ""}${
-          to.email ? `Correo personal: ${to.email}\n` : ""
-        }${to.dni ? `DNI/CI: ${to.dni}\n` : ""}`,
+        text:
+          `*Para:* ${to.name || "N/A"}\n` +
+          (to.name === "Oficina del cliente"
+            ? `Dirección: ${to.address || "N/A"}, ${to.apartment || "N/A"}\n` +
+              `Código postal: ${to.zipCode || "N/A"}\n` +
+              `Ciudad: ${to.city || "N/A"}\n` +
+              `Estado: ${to.state || "N/A"}\n` +
+              `País: ${to.country || "N/A"}\n`
+            : to.name === "FP Warehouse"
+            ? "Dirección: N/A\nCódigo postal: N/A\n"
+            : `Dirección: ${to.address || "N/A"}\n` +
+              `Código postal: ${to.zipCode || "N/A"}\n` +
+              (to.phone ? `Teléfono: ${to.phone}\n` : "") +
+              (to.email ? `Correo personal: ${to.email}\n` : "") +
+              (to.dni ? `DNI/CI: ${to.dni}\n` : "")),
       },
     });
     console.log("🔵 Blocks enviados a Slack:", blocks);
