@@ -407,8 +407,19 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     let source: ValidationEntity | null = null;
 
-    // Determina el tipo de `source`
-    if (initialData) {
+    if (!isUpdate) {
+      if (adjustedNoneOption === "Our office") {
+        source = {
+          type: "office",
+          data: { ...sessionUser, location: "Our office" },
+        };
+      } else if (adjustedNoneOption === "FP warehouse") {
+        source = {
+          type: "office",
+          data: { location: "FP warehouse" },
+        };
+      }
+    } else if (isUpdate && initialData) {
       if (initialData.location === "Employee" && initialData.assignedEmail) {
         const currentMember = allMembers?.find(
           (member) => member.email === initialData.assignedEmail
@@ -429,10 +440,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     try {
       setIsProcessing(true);
-      console.log(">> Start handleSaveProduct");
-      console.log("Data:", data);
-      console.log("InitialData:", initialData);
-      console.log("SessionUser:", sessionUser);
 
       if (isUpdate && initialData) {
         const changes: Partial<Product> = {};
@@ -446,8 +453,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
             changes[key] = formatData[key];
           }
         });
-
-        console.log("Changes to be updated:", changes);
 
         if (Object.keys(changes).length === 0) {
           console.log("No changes detected");
@@ -464,16 +469,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 setAside(undefined);
                 setShowSuccessDialog(true);
 
-                console.log("Slack payload data:");
-                console.log("FormatData:", formatData);
-                console.log("SelectedMember:", selectedMember);
-                console.log(
-                  "Passing sessionUser to Slack payload:",
-                  sessionUser
-                );
-                console.log("Source:", source);
-                console.log("AdjustedNoneOption:", adjustedNoneOption);
-
                 const slackPayload = prepareSlackNotificationPayload(
                   formatData,
                   selectedMember,
@@ -483,7 +478,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   adjustedNoneOption,
                   sessionUser.tenantName
                 );
-                console.log("Slack Payload:", slackPayload);
                 await sendSlackNotification(slackPayload);
               } else {
                 setProceedWithSuccessAlert(true);
@@ -494,26 +488,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
         );
       } else {
         if (quantity > 1) {
-          console.log(">> Bulk creation triggered");
           setBulkInitialData(formatData);
           setShowBulkCreate(true);
         } else {
-          console.log(">> Single product creation triggered");
           await createAsset.mutateAsync(formatData, {
             onSuccess: async () => {
-              console.log(">> Create success, preparing Slack payload");
               setAlert("createProduct");
               methods.reset();
               setSelectedCategory(undefined);
               setAssignedEmail(undefined);
               setShowSuccessDialog(true);
-
-              console.log("Slack payload data:");
-              console.log("FormatData:", formatData);
-              console.log("SelectedMember:", selectedMember);
-              console.log("SessionUser:", sessionUser);
-              console.log("Source:", source);
-              console.log("AdjustedNoneOption:", adjustedNoneOption);
 
               const slackPayload = prepareSlackNotificationPayload(
                 formatData,
@@ -524,7 +508,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 adjustedNoneOption,
                 sessionUser.tenantName
               );
-              console.log("Slack Payload:", slackPayload);
               await sendSlackNotification(slackPayload);
             },
             onError: (error) => handleMutationError(error, true),

@@ -3,7 +3,10 @@ import { Product, TeamMember, User } from "@/types";
 
 export interface ValidationEntity {
   type: "member" | "office";
-  data: TeamMember | (Partial<User> & { location?: string }) | null;
+  data:
+    | TeamMember
+    | (Partial<User> & { location?: string; state?: string })
+    | null;
 }
 
 export const prepareSlackNotificationPayload = (
@@ -19,12 +22,6 @@ export const prepareSlackNotificationPayload = (
     console.log(`${label}:`, data);
   };
 
-  logData("Current Product", currentProduct);
-  logData("Selected Member", selectedMember);
-  logData("Session", session);
-  logData("Source", source);
-  logData("None Option", noneOption);
-
   const brandAttribute = currentProduct.attributes.find(
     (attr) => attr.key === "brand"
   );
@@ -34,6 +31,85 @@ export const prepareSlackNotificationPayload = (
 
   const brand = brandAttribute?.value || "N/A";
   const model = modelAttribute?.value || "N/A";
+
+  if (actionLabel === "Create Product") {
+    logData(
+      "Action is Create Product. Using simplified logic for 'from' and 'to'.",
+      null
+    );
+
+    // Priorizar selectedMember
+    const to = selectedMember
+      ? {
+          name: `${selectedMember.firstName} ${selectedMember.lastName}`,
+          address: selectedMember.address || "Dirección no especificada",
+          apartment: selectedMember.apartment || "Apartamento no especificado",
+          zipCode: selectedMember.zipCode || "Código postal no especificado",
+          city: selectedMember.city || "Ciudad no especificada",
+          state: "",
+          country: selectedMember.country || "País no especificado",
+          phone: selectedMember.phone || "Teléfono no especificado",
+          email: selectedMember.email || "Correo no especificado",
+        }
+      : noneOption === "Our office" && source?.data
+      ? {
+          name: "Oficina del cliente",
+          address: source.data.address || "Dirección no especificada",
+          apartment: source.data.apartment || "Apartamento no especificado",
+          zipCode: source.data.zipCode || "Código postal no especificado",
+          city: source.data.city || "Ciudad no especificada",
+          state: "state" in source.data ? source.data.state || "" : "",
+          country: source.data.country || "País no especificado",
+          phone: source.data.phone || "Teléfono no especificado",
+          email: source.data.email || "Correo no especificado",
+        }
+      : {
+          name: "FP warehouse",
+          address: "",
+          apartment: "",
+          zipCode: "",
+          city: "",
+          state: "",
+          country: "",
+          phone: "",
+          email: "",
+        };
+
+    const payload: SlackNotificationPayload = {
+      from: {
+        name: "N/A",
+        address: "",
+        apartment: "",
+        zipCode: "",
+        city: "",
+        state: "",
+        country: "",
+        phone: "",
+        email: "",
+      },
+      to,
+      products: [
+        {
+          category: currentProduct.category,
+          brand,
+          model,
+          name: currentProduct.name || "N/A",
+          serialNumber: currentProduct.serialNumber || "N/A",
+        },
+      ],
+      tenantName,
+      action: actionLabel,
+    };
+
+    logData("Slack Payload for Create Product", payload);
+    return payload;
+  }
+
+  // Lógica para "Update Product"
+  logData(
+    "Action is Update Product. Using full logic for 'from' and 'to'.",
+    null
+  );
 
   // Inicializar "from"
   let from = {
@@ -48,7 +124,6 @@ export const prepareSlackNotificationPayload = (
     email: "",
   };
 
-  // Configurar "from" basado en el source
   if (source) {
     if (source.type === "member") {
       const memberData = source.data as TeamMember;
@@ -95,13 +170,7 @@ export const prepareSlackNotificationPayload = (
     phone: "",
     email: "",
   };
-  const hasState = (
-    data: any
-  ): data is Partial<User> & { location?: string; state?: string } => {
-    return data && "state" in data;
-  };
 
-  // Configurar "to" basado en selectedMember o noneOption
   if (selectedMember) {
     to = {
       name: `${selectedMember.firstName} ${selectedMember.lastName}`,
@@ -114,14 +183,14 @@ export const prepareSlackNotificationPayload = (
       phone: selectedMember.phone || "",
       email: selectedMember.email || "",
     };
-  } else if (noneOption === "Our office" && hasState(source.data)) {
+  } else if (noneOption === "Our office" && source?.data) {
     to = {
       name: "Oficina del cliente",
       address: source.data.address || "",
       apartment: source.data.apartment || "",
       zipCode: source.data.zipCode || "",
       city: source.data.city || "",
-      state: source.data.state || "",
+      state: "state" in source.data ? source.data.state || "" : "",
       country: source.data.country || "",
       phone: source.data.phone || "",
       email: source.data.email || "",
@@ -140,7 +209,6 @@ export const prepareSlackNotificationPayload = (
     };
   }
 
-  // Retornar el payload de Slack
   const payload: SlackNotificationPayload = {
     from,
     to,
@@ -157,5 +225,6 @@ export const prepareSlackNotificationPayload = (
     action: actionLabel,
   };
 
+  logData("Slack Payload for Update Product", payload);
   return payload;
 };

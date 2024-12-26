@@ -4,6 +4,7 @@ export interface SlackNotificationPayload {
   from: {
     name: string;
     address: string;
+    apartment?: string;
     zipCode: string;
     phone?: string;
     email?: string;
@@ -15,6 +16,7 @@ export interface SlackNotificationPayload {
   to: {
     name: string;
     address: string;
+    apartment?: string;
     zipCode: string;
     phone?: string;
     email?: string;
@@ -38,9 +40,7 @@ export const sendSlackNotification = async (
   payload: SlackNotificationPayload
 ) => {
   try {
-    console.log("🔵 Payload enviado a /api/sendToSlack:", payload);
-    const response = await axios.post("/api/sendToSlack", payload);
-    console.log("✅ Respuesta del endpoint Slack:", response.data);
+    await axios.post("/api/sendToSlack", payload);
   } catch (error: any) {
     console.error("❌ Error al enviar la notificación a Slack:", error.message);
   }
