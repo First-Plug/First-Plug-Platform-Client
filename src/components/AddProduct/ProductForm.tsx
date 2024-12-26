@@ -35,6 +35,11 @@ import {
   validateOnCreate,
   validateProductAssignment,
 } from "@/lib/validateAfterAction";
+import {
+  prepareSlackNotificationPayload,
+  ValidationEntity,
+} from "@/components/AddProduct/PrepareSlackNotificationPayload";
+import { sendSlackNotification } from "@/services/slackNotifications.services";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -399,8 +404,35 @@ const ProductForm: React.FC<ProductFormProps> = ({
       }
     }
 
+    let source: ValidationEntity | null = null;
+
+    // Determina el tipo de `source`
+    if (initialData) {
+      if (initialData.location === "Employee" && initialData.assignedEmail) {
+        const currentMember = allMembers?.find(
+          (member) => member.email === initialData.assignedEmail
+        );
+        if (currentMember) {
+          source = {
+            type: "member",
+            data: currentMember,
+          };
+        }
+      } else {
+        source = {
+          type: "office",
+          data: { ...sessionUser, location: initialData.location },
+        };
+      }
+    }
+
     try {
       setIsProcessing(true);
+      console.log(">> Start handleSaveProduct");
+      console.log("Data:", data);
+      console.log("InitialData:", initialData);
+      console.log("SessionUser:", sessionUser);
+
       if (isUpdate && initialData) {
         const changes: Partial<Product> = {};
         const requiredFields = ["name", "category", "location", "status"];
@@ -414,6 +446,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
           }
         });
 
+        console.log("Changes to be updated:", changes);
+
         if (Object.keys(changes).length === 0) {
           console.log("No changes detected");
           setShowSuccessDialog(true);
@@ -422,11 +456,31 @@ const ProductForm: React.FC<ProductFormProps> = ({
         await updateAsset.mutateAsync(
           { id: initialData._id, data: changes },
           {
-            onSuccess: () => {
+            onSuccess: async () => {
+              console.log(">> Update success, preparing Slack payload");
               if (!isGenericAlertOpen) {
                 setAlert("updateStock");
                 setAside(undefined);
                 setShowSuccessDialog(true);
+
+                console.log("Slack payload data:");
+                console.log("FormatData:", formatData);
+                console.log("SelectedMember:", selectedMember);
+                console.log("SessionUser:", sessionUser);
+                console.log("Source:", source);
+                console.log("AdjustedNoneOption:", adjustedNoneOption);
+
+                const slackPayload = prepareSlackNotificationPayload(
+                  formatData,
+                  selectedMember,
+                  sessionUser,
+                  "Update Product",
+                  source,
+                  adjustedNoneOption,
+                  sessionUser.tenantName
+                );
+                console.log("Slack Payload:", slackPayload);
+                await sendSlackNotification(slackPayload);
               } else {
                 setProceedWithSuccessAlert(true);
               }
@@ -436,16 +490,38 @@ const ProductForm: React.FC<ProductFormProps> = ({
         );
       } else {
         if (quantity > 1) {
+          console.log(">> Bulk creation triggered");
           setBulkInitialData(formatData);
           setShowBulkCreate(true);
         } else {
+          console.log(">> Single product creation triggered");
           await createAsset.mutateAsync(formatData, {
-            onSuccess: () => {
+            onSuccess: async () => {
+              console.log(">> Create success, preparing Slack payload");
               setAlert("createProduct");
               methods.reset();
               setSelectedCategory(undefined);
               setAssignedEmail(undefined);
               setShowSuccessDialog(true);
+
+              console.log("Slack payload data:");
+              console.log("FormatData:", formatData);
+              console.log("SelectedMember:", selectedMember);
+              console.log("SessionUser:", sessionUser);
+              console.log("Source:", source);
+              console.log("AdjustedNoneOption:", adjustedNoneOption);
+
+              const slackPayload = prepareSlackNotificationPayload(
+                formatData,
+                selectedMember,
+                sessionUser,
+                "Create Product",
+                source,
+                adjustedNoneOption,
+                sessionUser.tenantName
+              );
+              console.log("Slack Payload:", slackPayload);
+              await sendSlackNotification(slackPayload);
             },
             onError: (error) => handleMutationError(error, true),
           });

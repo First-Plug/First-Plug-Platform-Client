@@ -8,6 +8,9 @@ export interface SlackNotificationPayload {
     phone?: string;
     email?: string;
     dni?: string;
+    city?: string;
+    state?: string;
+    country?: string;
   };
   to: {
     name: string;
@@ -16,6 +19,9 @@ export interface SlackNotificationPayload {
     phone?: string;
     email?: string;
     dni?: string;
+    city?: string;
+    state?: string;
+    country?: string;
   };
   products: {
     category: string;
