@@ -375,6 +375,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         state: sessionUser?.state,
         zipCode: sessionUser?.zipCode,
         address: sessionUser?.address,
+        apartment: sessionUser?.apartment,
       };
 
       const adjustedNoneOption =
@@ -466,7 +467,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 console.log("Slack payload data:");
                 console.log("FormatData:", formatData);
                 console.log("SelectedMember:", selectedMember);
-                console.log("SessionUser:", sessionUser);
+                console.log(
+                  "Passing sessionUser to Slack payload:",
+                  sessionUser
+                );
                 console.log("Source:", source);
                 console.log("AdjustedNoneOption:", adjustedNoneOption);
 

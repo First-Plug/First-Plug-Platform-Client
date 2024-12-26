@@ -15,6 +15,16 @@ export const prepareSlackNotificationPayload = (
   noneOption: string | null,
   tenantName: string
 ): SlackNotificationPayload => {
+  const logData = (label: string, data: any) => {
+    console.log(`${label}:`, data);
+  };
+
+  logData("Current Product", currentProduct);
+  logData("Selected Member", selectedMember);
+  logData("Session", session);
+  logData("Source", source);
+  logData("None Option", noneOption);
+
   const brandAttribute = currentProduct.attributes.find(
     (attr) => attr.key === "brand"
   );
@@ -25,10 +35,6 @@ export const prepareSlackNotificationPayload = (
   const brand = brandAttribute?.value || "N/A";
   const model = modelAttribute?.value || "N/A";
 
-  const logData = (label: string, data: any) => {
-    console.log(`${label}:`, data);
-  };
-
   // Inicializar "from"
   let from = {
     name: "N/A",
@@ -36,6 +42,7 @@ export const prepareSlackNotificationPayload = (
     apartment: "",
     zipCode: "",
     city: "",
+    state: "",
     country: "",
     phone: "",
     email: "",
@@ -53,6 +60,7 @@ export const prepareSlackNotificationPayload = (
         apartment: memberData.apartment || "",
         zipCode: memberData.zipCode || "",
         city: memberData.city || "",
+        state: "",
         country: memberData.country || "",
         phone: memberData.phone || "",
         email: memberData.email || "",
@@ -63,13 +71,14 @@ export const prepareSlackNotificationPayload = (
 
       from = {
         name: isOurOffice ? "Oficina del cliente" : "FP warehouse",
-        address: isOurOffice ? session?.user?.address || "" : "",
-        apartment: isOurOffice ? session?.user?.apartment || "" : "",
-        zipCode: isOurOffice ? session?.user?.zipCode || "" : "",
-        city: isOurOffice ? session?.user?.city || "" : "",
-        country: isOurOffice ? session?.user?.country || "" : "",
-        phone: isOurOffice ? session?.user?.phone || "" : "",
-        email: isOurOffice ? session?.user?.email || "" : "",
+        address: officeData.address || "",
+        apartment: officeData.apartment || "",
+        zipCode: officeData.zipCode || "",
+        city: officeData.city || "",
+        state: officeData.state || "",
+        country: officeData.country || "",
+        phone: officeData.phone || "",
+        email: officeData.email || "",
       };
     }
   }
@@ -81,9 +90,15 @@ export const prepareSlackNotificationPayload = (
     apartment: "",
     zipCode: "",
     city: "",
+    state: "",
     country: "",
     phone: "",
     email: "",
+  };
+  const hasState = (
+    data: any
+  ): data is Partial<User> & { location?: string; state?: string } => {
+    return data && "state" in data;
   };
 
   // Configurar "to" basado en selectedMember o noneOption
@@ -94,20 +109,22 @@ export const prepareSlackNotificationPayload = (
       apartment: selectedMember.apartment || "",
       zipCode: selectedMember.zipCode || "",
       city: selectedMember.city || "",
+      state: "",
       country: selectedMember.country || "",
       phone: selectedMember.phone || "",
       email: selectedMember.email || "",
     };
-  } else if (noneOption === "Our office") {
+  } else if (noneOption === "Our office" && hasState(source.data)) {
     to = {
       name: "Oficina del cliente",
-      address: session?.user?.address || "",
-      apartment: session?.user?.apartment || "",
-      zipCode: session?.user?.zipCode || "",
-      city: session?.user?.city || "",
-      country: session?.user?.country || "",
-      phone: session?.user?.phone || "",
-      email: session?.user?.email || "",
+      address: source.data.address || "",
+      apartment: source.data.apartment || "",
+      zipCode: source.data.zipCode || "",
+      city: source.data.city || "",
+      state: source.data.state || "",
+      country: source.data.country || "",
+      phone: source.data.phone || "",
+      email: source.data.email || "",
     };
   } else if (noneOption === "FP warehouse") {
     to = {
@@ -116,6 +133,7 @@ export const prepareSlackNotificationPayload = (
       apartment: "",
       zipCode: "",
       city: "",
+      state: "",
       country: "",
       phone: "",
       email: "",
@@ -123,7 +141,7 @@ export const prepareSlackNotificationPayload = (
   }
 
   // Retornar el payload de Slack
-  return {
+  const payload: SlackNotificationPayload = {
     from,
     to,
     products: [
@@ -138,4 +156,6 @@ export const prepareSlackNotificationPayload = (
     tenantName,
     action: actionLabel,
   };
+
+  return payload;
 };
