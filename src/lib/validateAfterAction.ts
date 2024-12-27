@@ -70,20 +70,16 @@ export const validateAfterAction = (
   } | null
 ): string[] => {
   const missingMessages: string[] = [];
-  console.log("🔎 Validating Source:", source);
-  console.log("🔎 Validating Destination:", destination);
 
   const validateEntity = (
     entity: { type: "member" | "office" | "warehouse"; data: any },
     role: "Current holder" | "Assigned member" | "Assigned location"
   ) => {
     if (!entity || !entity.data) {
-      console.log(`${role} is missing data:`, entity);
       return;
     }
 
     if (entity.type === "warehouse") {
-      console.log(`${role} is FP warehouse, skipping validation.`);
       return;
     }
 
@@ -91,7 +87,6 @@ export const validateAfterAction = (
       const billingValidation = validateBillingInfo(
         entity.data as Partial<User>
       );
-      console.log(`${role} Billing Validation:`, billingValidation);
 
       if (!billingValidation.isValid) {
         missingMessages.push(
@@ -105,7 +100,6 @@ export const validateAfterAction = (
 
     if (entity.type === "member") {
       const missingFields = getMissingFields(entity.data as TeamMember);
-      console.log(`${role} Missing Fields:`, missingFields);
 
       if (missingFields.length > 0) {
         const fullName =
@@ -132,7 +126,7 @@ export const validateAfterAction = (
       source?.type === "office" ? "Assigned location" : "Assigned member"
     );
   }
-  console.log("✅ Final Missing Messages:", missingMessages);
+
   return missingMessages;
 };
 
@@ -189,9 +183,6 @@ export const buildValidationEntities = (
       data: { ...sessionUser, location: "Our office" },
     };
   }
-
-  console.log("buildValidationEntities - Source:", source);
-  console.log("buildValidationEntities - Destination:", destination);
 
   return { source, destination };
 };

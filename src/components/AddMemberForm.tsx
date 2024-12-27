@@ -198,8 +198,6 @@ export const AddMemberForm = observer(function ({
     };
   };
 
-  console.log("Session User:", session.user);
-
   const handleSaveClick = async () => {
     if (!currentProduct || !actionType) return;
 
