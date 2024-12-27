@@ -20,6 +20,9 @@ import ProductStatusValidator, {
 } from "./utils/ProductStatusValidator";
 import GenericAlertDialog from "./ui/GenericAlertDialog";
 import { validateBillingInfo } from "@/lib/utils";
+import { prepareBulkCreateSlackPayload } from "@/components/AddProduct/PrepareBulkCreateSlackPayload";
+import { sendSlackNotification } from "@/services/slackNotifications.services";
+import { useSession } from "next-auth/react";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -32,6 +35,8 @@ const BulkCreateForm: React.FC<{
   const isLoading = status === "pending";
   const { data: fetchedMembers } = useFetchMembers();
   const queryClient = useQueryClient();
+  const session = useSession();
+  const sessionUser = session.data?.user;
 
   const numProducts = quantity;
 
@@ -228,12 +233,10 @@ const BulkCreateForm: React.FC<{
   };
 
   const handleLocationChange = (value: string, index: number) => {
-    console.log(`Location changed to: ${value} for product at index: ${index}`);
     setValue(`products.${index}.location`, value);
     const newSelectedLocations = [...selectedLocations];
     newSelectedLocations[index] = value;
     setSelectedLocations(newSelectedLocations);
-    console.log("Updated selectedLocations:", newSelectedLocations);
 
     const firstProductLocation = watch("products.0.location");
     if (assignAll && firstProductLocation !== value) {
@@ -386,6 +389,43 @@ const BulkCreateForm: React.FC<{
       bulkCreateAssets(productsData, {
         onSuccess: (data) => {
           setProducts(data);
+
+          const slackPayloads = prepareBulkCreateSlackPayload(
+            data.map((product: any) => ({
+              assignedMember: product.assignedMember
+                ? {
+                    firstName: product.assignedMember.split(" ")[0],
+                    lastName: product.assignedMember.split(" ")[1] || "",
+                    email: product.assignedEmail || "",
+                  }
+                : null,
+              assignedEmail: product.assignedEmail || "",
+              location: product.location,
+              serialNumber: product.serialNumber,
+            })),
+            {
+              name: initialProductData.name,
+              category: initialProductData.category,
+              attributes: attributesArray,
+            },
+            user.tenantName,
+            sessionUser,
+            members
+          );
+
+          // Enviar las notificaciones de Slack
+          Promise.all(
+            slackPayloads.map((payload) => sendSlackNotification(payload))
+          )
+            .then(() => {
+              console.log("✅ Slack notifications sent for bulk create");
+            })
+            .catch((error) => {
+              console.error(
+                "❌ Error sending Slack notifications for bulk create:",
+                error
+              );
+            });
 
           queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
             setAlert("bulkCreateProductSuccess");

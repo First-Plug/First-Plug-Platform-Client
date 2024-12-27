@@ -35,6 +35,11 @@ import {
   validateOnCreate,
   validateProductAssignment,
 } from "@/lib/validateAfterAction";
+import {
+  prepareSlackNotificationPayload,
+  ValidationEntity,
+} from "@/components/AddProduct/PrepareSlackNotificationPayload";
+import { sendSlackNotification } from "@/services/slackNotifications.services";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -370,6 +375,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         state: sessionUser?.state,
         zipCode: sessionUser?.zipCode,
         address: sessionUser?.address,
+        apartment: sessionUser?.apartment,
       };
 
       const adjustedNoneOption =
@@ -399,8 +405,42 @@ const ProductForm: React.FC<ProductFormProps> = ({
       }
     }
 
+    let source: ValidationEntity | null = null;
+
+    if (!isUpdate) {
+      if (adjustedNoneOption === "Our office") {
+        source = {
+          type: "office",
+          data: { ...sessionUser, location: "Our office" },
+        };
+      } else if (adjustedNoneOption === "FP warehouse") {
+        source = {
+          type: "office",
+          data: { location: "FP warehouse" },
+        };
+      }
+    } else if (isUpdate && initialData) {
+      if (initialData.location === "Employee" && initialData.assignedEmail) {
+        const currentMember = allMembers?.find(
+          (member) => member.email === initialData.assignedEmail
+        );
+        if (currentMember) {
+          source = {
+            type: "member",
+            data: currentMember,
+          };
+        }
+      } else {
+        source = {
+          type: "office",
+          data: { ...sessionUser, location: initialData.location },
+        };
+      }
+    }
+
     try {
       setIsProcessing(true);
+
       if (isUpdate && initialData) {
         const changes: Partial<Product> = {};
         const requiredFields = ["name", "category", "location", "status"];
@@ -422,11 +462,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
         await updateAsset.mutateAsync(
           { id: initialData._id, data: changes },
           {
-            onSuccess: () => {
+            onSuccess: async () => {
+              console.log(">> Update success, preparing Slack payload");
               if (!isGenericAlertOpen) {
                 setAlert("updateStock");
                 setAside(undefined);
                 setShowSuccessDialog(true);
+
+                const slackPayload = prepareSlackNotificationPayload(
+                  formatData,
+                  selectedMember,
+                  sessionUser,
+                  "Update Product",
+                  source,
+                  adjustedNoneOption,
+                  sessionUser.tenantName
+                );
+                await sendSlackNotification(slackPayload);
               } else {
                 setProceedWithSuccessAlert(true);
               }
@@ -440,12 +492,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowBulkCreate(true);
         } else {
           await createAsset.mutateAsync(formatData, {
-            onSuccess: () => {
+            onSuccess: async () => {
               setAlert("createProduct");
               methods.reset();
               setSelectedCategory(undefined);
               setAssignedEmail(undefined);
               setShowSuccessDialog(true);
+
+              const slackPayload = prepareSlackNotificationPayload(
+                formatData,
+                selectedMember,
+                sessionUser,
+                "Create Product",
+                source,
+                adjustedNoneOption,
+                sessionUser.tenantName
+              );
+              await sendSlackNotification(slackPayload);
             },
             onError: (error) => handleMutationError(error, true),
           });
