@@ -29,7 +29,6 @@ export const prepareBulkCreateSlackPayload = (
   const generateToField = (
     product: (typeof products)[number]
   ): SlackNotificationPayload["to"] => {
-    // Si hay un miembro asignado directamente
     if (product.assignedMember) {
       const member = members.find((m) => m.email === product.assignedEmail);
       return {
@@ -44,7 +43,6 @@ export const prepareBulkCreateSlackPayload = (
       };
     }
 
-    // Si es "Our office"
     if (product.location === "Our office") {
       return {
         name: "Oficina del cliente",
@@ -59,7 +57,6 @@ export const prepareBulkCreateSlackPayload = (
       };
     }
 
-    // Si es "FP warehouse"
     return {
       name: "FP warehouse",
       address: "",
@@ -73,7 +70,6 @@ export const prepareBulkCreateSlackPayload = (
     };
   };
 
-  // Generar el payload por producto
   const payloads = products.map((product) => {
     const to = generateToField(product);
 
