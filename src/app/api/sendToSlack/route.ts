@@ -74,7 +74,7 @@ export async function POST(request: Request) {
               (to.dni ? `DNI/CI: ${to.dni}\n` : "")),
       },
     });
-    console.log("🔵 Blocks enviados a Slack:", blocks);
+
     await axios.post(webhookUrl, { blocks });
 
     return NextResponse.json(
@@ -82,7 +82,6 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("Error al enviar el mensaje a Slack:", error.message);
     return NextResponse.json(
       { error: error.message || "Error desconocido" },
       { status: 500 }

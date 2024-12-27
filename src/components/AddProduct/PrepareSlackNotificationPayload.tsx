@@ -33,11 +33,6 @@ export const prepareSlackNotificationPayload = (
   const model = modelAttribute?.value || "N/A";
 
   if (actionLabel === "Create Product") {
-    logData(
-      "Action is Create Product. Using simplified logic for 'from' and 'to'.",
-      null
-    );
-
     // Priorizar selectedMember
     const to = selectedMember
       ? {
@@ -101,15 +96,8 @@ export const prepareSlackNotificationPayload = (
       action: actionLabel,
     };
 
-    logData("Slack Payload for Create Product", payload);
     return payload;
   }
-
-  // Lógica para "Update Product"
-  logData(
-    "Action is Update Product. Using full logic for 'from' and 'to'.",
-    null
-  );
 
   // Inicializar "from"
   let from = {
@@ -225,6 +213,5 @@ export const prepareSlackNotificationPayload = (
     action: actionLabel,
   };
 
-  logData("Slack Payload for Update Product", payload);
   return payload;
 };

@@ -290,9 +290,9 @@ export const validateOnCreate = async (
     }
   }
 
-  if (missingMessages.length > 0) {
-    console.log("🔍 validateOnCreate - Missing Messages:", missingMessages);
-  }
+  // if (missingMessages.length > 0) {
+  //   console.log("🔍 validateOnCreate - Missing Messages:", missingMessages);
+  // }
 
   return missingMessages;
 };
