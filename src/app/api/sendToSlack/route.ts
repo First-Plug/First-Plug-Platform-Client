@@ -29,11 +29,13 @@ export async function POST(request: Request) {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*De:* ${from.name}\nDirección: ${from.address}\nCódigo postal: ${
-          from.zipCode
-        }\n${from.phone ? `Teléfono: ${from.phone}\n` : ""}${
-          from.email ? `Correo personal: ${from.email}\n` : ""
-        }${from.dni ? `DNI/CI: ${from.dni}\n` : ""}`,
+        text: `*De:* ${from.name}\nDirección: ${from.address}\nApartamento: ${
+          from.apartment || "N/A"
+        }\nCiudad: ${from.city || "N/A"}\nCódigo postal: ${from.zipCode}\n${
+          from.phone ? `Teléfono: ${from.phone}\n` : ""
+        }${from.email ? `Correo personal: ${from.email}\n` : ""}${
+          from.dni ? `DNI/CI: ${from.dni}\n` : ""
+        }`,
       },
     });
 
@@ -68,13 +70,22 @@ export async function POST(request: Request) {
             : to.name === "FP Warehouse"
             ? "Dirección: N/A\nCódigo postal: N/A\n"
             : `Dirección: ${to.address || "N/A"}\n` +
+              `Apartamento: ${to.apartment || "N/A"}\n` +
+              `Ciudad: ${to.city || "N/A"}\n` +
               `Código postal: ${to.zipCode || "N/A"}\n` +
               (to.phone ? `Teléfono: ${to.phone}\n` : "") +
               (to.email ? `Correo personal: ${to.email}\n` : "") +
               (to.dni ? `DNI/CI: ${to.dni}\n` : "")),
       },
     });
-
+    console.log("Payload recibido:", {
+      from,
+      to,
+      products,
+      action,
+      tenantName,
+    });
+    console.log("Datos del destinatario (to):", to);
     await axios.post(webhookUrl, { blocks });
 
     return NextResponse.json(
