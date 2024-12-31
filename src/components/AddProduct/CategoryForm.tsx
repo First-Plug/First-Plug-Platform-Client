@@ -165,6 +165,20 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     watch("attributes").find((attr) => attr.key === "model")?.value;
   }, [watch("attributes")]);
 
+  const shouldShowProductNameInput = () => {
+    const selectedModel =
+      watch("model") ||
+      watch("attributes")?.find((attr) => attr.key === "model")?.value;
+
+    if (selectedCategory === "Merchandising") {
+      return true;
+    }
+    if (selectedModel === "Other") {
+      return true;
+    }
+    return false;
+  };
+
   if (isLoading) {
     return (
       <div className="h-full w-full flex flex-col gap-2">
@@ -319,8 +333,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             />
           </div>
 
-          {watch("attributes").find((attr) => attr.key === "model")?.value ===
-          "Other" ? (
+          {shouldShowProductNameInput() && (
             <div className="w-full">
               <InputProductForm
                 placeholder="Product Name"
@@ -336,7 +349,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 )}
               </div>
             </div>
-          ) : null}
+          )}
         </div>
       ) : (
         <>
@@ -388,8 +401,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               />
             </div>
 
-            {watch("attributes").find((attr) => attr.key === "model")?.value ===
-            "Other" ? (
+            {shouldShowProductNameInput() ? (
               <div>
                 <InputProductForm
                   placeholder="Product Name"
