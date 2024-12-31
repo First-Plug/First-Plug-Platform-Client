@@ -68,7 +68,9 @@ export async function POST(request: Request) {
               `Código postal: ${to.zipCode || "N/A"}\n` +
               `Ciudad: ${to.city || "N/A"}\n` +
               `Estado: ${to.state || "N/A"}\n` +
-              `País: ${to.country || "N/A"}\n`
+              `País: ${to.country || "N/A"}\n` +
+              `Telefono: ${to.phone || "N/A"}\n` +
+              `Email: ${to.email || "N/A"}\n`
             : to.name === "FP Warehouse"
             ? "Dirección: N/A\nCódigo postal: N/A\n"
             : `Dirección: ${to.address || "N/A"}\n` +

@@ -120,10 +120,15 @@ export const AddMemberForm = observer(function ({
       const memberData = source.data as TeamMember;
       from = {
         name: `${memberData.firstName} ${memberData.lastName}`,
-        address: memberData.address || "Dirección no especificada",
-        zipCode: memberData.zipCode || "Código postal no especificado",
-        phone: memberData.phone || "Teléfono no especificado",
-        email: memberData.email || "Correo no especificado",
+        address: memberData.address || "N/A",
+        apartment: memberData.apartment || "N/A",
+        zipCode: memberData.zipCode || "N/A",
+        city: memberData.city || "N/A",
+        state: "",
+        country: memberData.country || "N/A",
+        phone: memberData.phone || "N/A",
+        email: memberData.email || "N/A",
+        dni: memberData.dni || "N/A",
       };
     } else if (source.type === "office") {
       const officeData = source.data as Partial<User> & { location?: string };
@@ -132,7 +137,11 @@ export const AddMemberForm = observer(function ({
       from = {
         name: isOurOffice ? "Oficina del cliente" : "FP warehouse",
         address: isOurOffice ? session.user.address || "" : "",
+        apartment: isOurOffice ? session.user.apartment || "" : "",
         zipCode: isOurOffice ? session.user.zipCode || "" : "",
+        city: isOurOffice ? session.user.city || "" : "",
+        state: isOurOffice ? session.user.state || "" : "",
+        country: isOurOffice ? session.user.country || "" : "",
         phone: isOurOffice ? session.user.phone || "" : "",
         email: isOurOffice ? session.user.email || "" : "",
       };
@@ -150,18 +159,27 @@ export const AddMemberForm = observer(function ({
     if (selectedMember) {
       to = {
         name: `${selectedMember.firstName} ${selectedMember.lastName}`,
-        address: selectedMember.address || "Dirección no especificada",
-        zipCode: selectedMember.zipCode || "Código postal no especificado",
-        phone: selectedMember.phone || "Teléfono no especificado",
-        email: selectedMember.email || "Correo no especificado",
+        address: selectedMember.address || "N/A",
+        apartment: selectedMember.apartment || "N/A",
+        zipCode: selectedMember.zipCode || "N/A",
+        city: selectedMember.city || "N/A",
+        state: "",
+        country: selectedMember.country || "N/A",
+        phone: selectedMember.phone || "N/A",
+        email: selectedMember.email || "N/A",
+        dni: selectedMember.dni || "N/A",
       };
     } else if (noneOption === "Our office") {
       to = {
         name: "Oficina del cliente",
-        address: session.user.address || "Dirección no especificada",
-        zipCode: session.user.zipCode || "Código postal no especificado",
-        phone: session.user.phone || "Teléfono no especificado",
-        email: session.user.email || "Correo no especificado",
+        address: session.user.address || "N/A",
+        apartment: session.user.apartment || "N/A",
+        zipCode: session.user.zipCode || "N/A",
+        city: session.user.city || "N/A",
+        state: session.user.state || "N/A",
+        country: session.user.country || "N/A",
+        phone: session.user.phone || "N/A",
+        email: session.user.email || "N/A",
       };
     } else if (noneOption === "FP warehouse") {
       to = {
