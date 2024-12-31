@@ -201,9 +201,6 @@ export const prepareSlackNotificationPayload = (
     };
   }
 
-  console.log("Current product location:", currentProduct.location);
-  console.log("TO data:", to);
-
   const payload: SlackNotificationPayload = {
     from,
     to,

@@ -31,9 +31,11 @@ export async function POST(request: Request) {
         type: "mrkdwn",
         text: `*De:* ${from.name}\nDirección: ${from.address}\nApartamento: ${
           from.apartment || "N/A"
-        }\nCiudad: ${from.city || "N/A"}\nCódigo postal: ${from.zipCode}\n${
-          from.phone ? `Teléfono: ${from.phone}\n` : ""
-        }${from.email ? `Correo personal: ${from.email}\n` : ""}${
+        }\nCódigo postal: ${from.zipCode || "N/A"}\nCiudad: ${
+          from.city || "N/A"
+        }\nEstado: ${from.state || "N/A"}\nPaís: ${from.country || "N/A"}\n${
+          from.email ? `Correo personal: ${from.email}\n` : ""
+        }${from.phone ? `Teléfono: ${from.phone}\n` : ""}${
           from.dni ? `DNI/CI: ${from.dni}\n` : ""
         }`,
       },

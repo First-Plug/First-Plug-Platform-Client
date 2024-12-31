@@ -466,7 +466,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
           { id: initialData._id, data: changes },
           {
             onSuccess: async () => {
-              console.log(">> Update success, preparing Slack payload");
               if (!isGenericAlertOpen) {
                 setAlert("updateStock");
                 setAside(undefined);
