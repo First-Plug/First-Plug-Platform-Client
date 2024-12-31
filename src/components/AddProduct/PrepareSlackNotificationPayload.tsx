@@ -12,11 +12,12 @@ export interface ValidationEntity {
 export const prepareSlackNotificationPayload = (
   currentProduct: Product,
   selectedMember: TeamMember | null,
-  session: any,
+  // session: any,
   actionLabel: string,
   source: ValidationEntity | null,
   noneOption: string | null,
-  tenantName: string
+  tenantName: string,
+  sessionUser: any
 ): SlackNotificationPayload => {
   const logData = (label: string, data: any) => {
     console.log(`${label}:`, data);
@@ -28,6 +29,8 @@ export const prepareSlackNotificationPayload = (
   const modelAttribute = currentProduct.attributes.find(
     (attr) => attr.key === "model"
   );
+
+  const productLocation = currentProduct.location || "N/A";
 
   const brand = brandAttribute?.value || "N/A";
   const model = modelAttribute?.value || "N/A";
@@ -99,6 +102,7 @@ export const prepareSlackNotificationPayload = (
     return payload;
   }
 
+  //update product
   // Inicializar "from"
   let from = {
     name: "N/A",
@@ -171,17 +175,17 @@ export const prepareSlackNotificationPayload = (
       phone: selectedMember.phone || "",
       email: selectedMember.email || "",
     };
-  } else if (noneOption === "Our office" && source?.data) {
+  } else if (currentProduct.location === "Our office") {
     to = {
       name: "Oficina del cliente",
-      address: source.data.address || "",
-      apartment: source.data.apartment || "",
-      zipCode: source.data.zipCode || "",
-      city: source.data.city || "",
-      state: "state" in source.data ? source.data.state || "" : "",
-      country: source.data.country || "",
-      phone: source.data.phone || "",
-      email: source.data.email || "",
+      address: sessionUser.address || "Dirección no especificada",
+      apartment: sessionUser.apartment || "Apartamento no especificado",
+      zipCode: sessionUser.zipCode || "Código postal no especificado",
+      city: sessionUser.city || "Ciudad no especificada",
+      state: sessionUser.state || "Estado no especificado",
+      country: sessionUser.country || "País no especificado",
+      phone: sessionUser.phone || "Teléfono no especificado",
+      email: sessionUser.email || "Correo no especificado",
     };
   } else if (noneOption === "FP warehouse") {
     to = {
@@ -196,6 +200,9 @@ export const prepareSlackNotificationPayload = (
       email: "",
     };
   }
+
+  console.log("Current product location:", currentProduct.location);
+  console.log("TO data:", to);
 
   const payload: SlackNotificationPayload = {
     from,

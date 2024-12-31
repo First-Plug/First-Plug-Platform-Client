@@ -433,7 +433,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
       } else {
         source = {
           type: "office",
-          data: { ...sessionUser, location: initialData.location },
+          data:
+            initialData.location === "Our office"
+              ? { ...sessionUser, location: "Our office" }
+              : { location: "FP warehouse" },
         };
       }
     }
@@ -472,11 +475,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 const slackPayload = prepareSlackNotificationPayload(
                   formatData,
                   selectedMember,
-                  sessionUser,
                   "Update Product",
                   source,
                   adjustedNoneOption,
-                  sessionUser.tenantName
+                  sessionUser.tenantName,
+                  sessionUser
                 );
                 await sendSlackNotification(slackPayload);
               } else {
@@ -502,11 +505,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
               const slackPayload = prepareSlackNotificationPayload(
                 formatData,
                 selectedMember,
-                sessionUser,
                 "Create Product",
                 source,
                 adjustedNoneOption,
-                sessionUser.tenantName
+                sessionUser.tenantName,
+                sessionUser
               );
               await sendSlackNotification(slackPayload);
             },
