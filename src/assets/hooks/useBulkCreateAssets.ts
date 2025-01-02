@@ -15,20 +15,19 @@ export const useBulkCreateAssets = () => {
     onMutate: async (newProducts: Product[]) => {
       await queryClient.cancelQueries({ queryKey: ["assets"] });
 
-      setProducts(newProducts);
-
       const previousProducts = queryClient.getQueryData<Product[]>(["assets"]);
-
       queryClient.setQueryData<Product[]>(["assets"], (old) => [
         ...(old || []),
         ...newProducts,
       ]);
 
+      setProducts(newProducts);
       return { previousProducts };
     },
     onSuccess: (data) => {
-      setProducts(data);
+      // setProducts(data);
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
       setAlert("bulkCreateProductSuccess");
     },
     onError: (error: any) => {
@@ -39,6 +38,11 @@ export const useBulkCreateAssets = () => {
           ? "bulkCreateSerialNumberError"
           : "bulkCreateProductError"
       );
+    },
+    retry: (failureCount, error) => {
+      // Reintentar solo para ciertos errores
+      const isRecoverableError = error?.response?.status === 429; // Too Many Requests
+      return isRecoverableError && failureCount < 3;
     },
   });
 };

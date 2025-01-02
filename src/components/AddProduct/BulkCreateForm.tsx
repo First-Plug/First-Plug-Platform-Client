@@ -123,6 +123,14 @@ const BulkCreateForm: React.FC<{
   });
   const [proceedWithSuccess, setProceedWithSuccess] = useState(false);
 
+  useEffect(() => {
+    if (status === "pending" && !isProcessing) {
+      setIsProcessing(true);
+    } else if (status !== "pending" && isProcessing) {
+      setIsProcessing(false);
+    }
+  }, [status, isProcessing]);
+
   //Desactiva Apply All si hay diferencias entre productos
   useLayoutEffect(() => {
     const subscription = watch((value, { name }) => {
@@ -387,7 +395,7 @@ const BulkCreateForm: React.FC<{
     try {
       setIsProcessing(true);
       bulkCreateAssets(productsData, {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           setProducts(data);
 
           const slackPayloads = prepareBulkCreateSlackPayload(
@@ -414,7 +422,7 @@ const BulkCreateForm: React.FC<{
           );
 
           // Enviar las notificaciones de Slack
-          Promise.all(
+          await Promise.all(
             slackPayloads.map((payload) => sendSlackNotification(payload))
           )
             .then(() => {
@@ -427,10 +435,12 @@ const BulkCreateForm: React.FC<{
               );
             });
 
-          queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
-            setAlert("bulkCreateProductSuccess");
-            onBack();
-          });
+          await queryClient
+            .invalidateQueries({ queryKey: ["assets"] })
+            .then(() => {
+              setAlert("bulkCreateProductSuccess");
+              onBack();
+            });
           console.log("✅ Bulk create completed successfully");
 
           setIsProcessing(false);
