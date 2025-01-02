@@ -101,7 +101,7 @@ const MembersList = observer(function MembersList({
         country: currentHolder?.country || "N/A",
         phone: currentHolder?.phone || "N/A",
         email: currentHolder?.email || "N/A",
-        dni: currentHolder?.dni.toString() || "N/A",
+        dni: currentHolder?.dni ? currentHolder.dni.toString() : "N/A",
       },
       to: {
         name: `${selectedMember.firstName} ${selectedMember.lastName}`,
@@ -112,7 +112,7 @@ const MembersList = observer(function MembersList({
         country: selectedMember.country || "N/A",
         phone: selectedMember.phone || "N/A",
         email: selectedMember.email || "N/A",
-        dni: selectedMember.dni.toString() || "N/A",
+        dni: selectedMember?.dni ? selectedMember.dni.toString() : "N/A",
       },
       products: [
         {

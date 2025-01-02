@@ -85,7 +85,7 @@ export function ReturnProduct({
         country: currentHolder?.country || "N/A",
         phone: currentHolder?.phone || "N/A",
         email: currentHolder?.email || "N/A",
-        dni: currentHolder?.dni.toString() || "N/A",
+        dni: currentHolder?.dni ? currentHolder?.dni.toString() : "N/A",
       },
       to: {
         name: isOurOffice ? "Oficina del cliente" : "FP Warehouse",
