@@ -27,6 +27,7 @@ export const useBulkCreateAssets = () => {
     onSuccess: (data) => {
       // setProducts(data);
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
       setAlert("bulkCreateProductSuccess");
     },
     onError: (error: any) => {
