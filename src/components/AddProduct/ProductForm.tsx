@@ -524,16 +524,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleMutationError = (error: any, isUpdate: boolean) => {
-    if (error.response?.data?.message === "Serial Number already exists") {
-      setErrorMessage("Serial Number already exists");
-    } else {
-      setErrorMessage(
-        `Error ${
-          isUpdate ? "updating" : "creating"
-        } your product, please check the data and try again.`
-      );
-    }
-    setShowErrorDialog(true);
+    const message =
+      error.response?.data?.message === "Serial Number already exists"
+        ? "Serial Number already exists"
+        : `Error ${isUpdate ? "updating" : "creating"} your product.`;
+
+    setGenericAlertData({
+      title: "Error",
+      description: message,
+      isOpen: true,
+    });
+
+    setShowErrorDialog(false);
   };
 
   const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
