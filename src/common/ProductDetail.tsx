@@ -112,7 +112,7 @@ const MembersList = observer(function MembersList({
         country: selectedMember.country || "N/A",
         phone: selectedMember.phone || "N/A",
         email: selectedMember.email || "N/A",
-        dni: selectedMember.dni ? selectedMember.dni.toString() : "N/A",
+        dni: selectedMember?.dni ? selectedMember.dni.toString() : "N/A",
       },
       products: [
         {
