@@ -40,7 +40,7 @@ export const prepareBulkCreateSlackPayload = (
         country: member?.country || "N/A",
         phone: member?.phone || "N/A",
         email: member?.email || "N/A",
-        dni: member?.dni.toString() || "N/A",
+        dni: member?.dni ? member.dni.toString() : "N/A",
       };
     }
 
