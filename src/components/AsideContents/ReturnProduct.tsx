@@ -78,10 +78,14 @@ export function ReturnProduct({
         name: `${currentHolder?.firstName || "Unknown"} ${
           currentHolder?.lastName || "Unknown"
         }`,
-        address: currentHolder?.address || "Dirección no especificada",
-        zipCode: currentHolder?.zipCode || "Código postal no especificado",
-        phone: currentHolder?.phone || "Teléfono no especificado",
-        email: currentHolder?.email || "Correo no especificado",
+        address: currentHolder?.address || "N/A",
+        apartment: currentHolder?.apartment || "N/A",
+        zipCode: currentHolder?.zipCode || "N/A",
+        city: currentHolder?.city || "N/A",
+        country: currentHolder?.country || "N/A",
+        phone: currentHolder?.phone || "N/A",
+        email: currentHolder?.email || "N/A",
+        dni: currentHolder?.dni.toString() || "N/A",
       },
       to: {
         name: isOurOffice ? "Oficina del cliente" : "FP Warehouse",
@@ -92,6 +96,8 @@ export function ReturnProduct({
         state: isOurOffice ? sessionUser.state : "N/A",
         country: isOurOffice ? sessionUser.country : "N/A",
         zipCode: isOurOffice ? sessionUser.zipCode : "N/A",
+        phone: isOurOffice ? sessionUser.phone : "N/A",
+        email: isOurOffice ? sessionUser.email : "N/A",
       },
       products: [
         {

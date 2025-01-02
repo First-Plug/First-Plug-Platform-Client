@@ -33,27 +33,28 @@ export const prepareBulkCreateSlackPayload = (
       const member = members.find((m) => m.email === product.assignedEmail);
       return {
         name: `${member?.firstName || "N/A"} ${member?.lastName || "N/A"}`,
-        address: member?.address || "Dirección no especificada",
-        apartment: member?.apartment || "Apartamento no especificado",
-        zipCode: member?.zipCode || "Código postal no especificado",
-        city: member?.city || "Ciudad no especificada",
-        country: member?.country || "País no especificado",
-        phone: member?.phone || "Teléfono no especificado",
-        email: member?.email || "Correo no especificado",
+        address: member?.address || "N/A",
+        apartment: member?.apartment || "N/A",
+        zipCode: member?.zipCode || "N/A",
+        city: member?.city || "N/A",
+        country: member?.country || "N/A",
+        phone: member?.phone || "N/A",
+        email: member?.email || "N/A",
+        dni: member?.dni.toString() || "N/A",
       };
     }
 
     if (product.location === "Our office") {
       return {
         name: "Oficina del cliente",
-        address: sessionUser.address || "Dirección no especificada",
-        apartment: sessionUser.apartment || "Apartamento no especificado",
-        zipCode: sessionUser.zipCode || "Código postal no especificado",
-        city: sessionUser.city || "Ciudad no especificada",
+        address: sessionUser.address || "N/A",
+        apartment: sessionUser.apartment || "N/A",
+        zipCode: sessionUser.zipCode || "N/A",
+        city: sessionUser.city || "N/A",
         state: sessionUser.state || "",
-        country: sessionUser.country || "País no especificado",
-        phone: sessionUser.phone || "Teléfono no especificado",
-        email: sessionUser.email || "Correo no especificado",
+        country: sessionUser.country || "N/A",
+        phone: sessionUser.phone || "N/A",
+        email: sessionUser.email || "N/A",
       };
     }
 
