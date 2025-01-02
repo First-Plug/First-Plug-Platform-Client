@@ -171,16 +171,18 @@ export const prepareSlackNotificationPayload = (
   if (selectedMember) {
     to = {
       name: `${selectedMember.firstName} ${selectedMember.lastName}`,
-      address: selectedMember.address || "",
-      apartment: selectedMember.apartment || "",
-      zipCode: selectedMember.zipCode || "",
-      city: selectedMember.city || "",
+      address: selectedMember.address || "N/A",
+      apartment: selectedMember.apartment || "N/A",
+      zipCode: selectedMember.zipCode || "N/A",
+      city: selectedMember.city || "N/A",
       state: "",
-      country: selectedMember.country || "",
-      phone: selectedMember.phone || "",
-      email: selectedMember.email || "",
+      country: selectedMember.country || "N/A",
+      phone: selectedMember.phone || "N/A",
+      email: selectedMember.email || "N/A",
       dni: selectedMember.dni.toString() || "N/A",
     };
+    console.log("Selected Member:", selectedMember);
+    console.log("Selected Member Country:", selectedMember.country);
   } else if (currentProduct.location === "Our office") {
     to = {
       name: "Oficina del cliente",

@@ -77,6 +77,7 @@ export async function POST(request: Request) {
               `Apartamento: ${to.apartment || "N/A"}\n` +
               `Ciudad: ${to.city || "N/A"}\n` +
               `Código postal: ${to.zipCode || "N/A"}\n` +
+              `País: ${to.country || "N/A"}\n` +
               (to.phone ? `Teléfono: ${to.phone}\n` : "") +
               (to.email ? `Correo personal: ${to.email}\n` : "") +
               (to.dni ? `DNI/CI: ${to.dni}\n` : "")),
