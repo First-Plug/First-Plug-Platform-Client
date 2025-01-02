@@ -94,17 +94,25 @@ const MembersList = observer(function MembersList({
         name: `${currentHolder?.firstName || "Unknown"} ${
           currentHolder?.lastName || "Unknown"
         }`,
-        address: currentHolder?.address || "Dirección no especificada",
-        zipCode: currentHolder?.zipCode || "Código postal no especificado",
-        phone: currentHolder?.phone || "Teléfono no especificado",
-        email: currentHolder?.email || "Correo no especificado",
+        address: currentHolder?.address || "N/A",
+        apartment: currentHolder?.apartment || "N/A",
+        zipCode: currentHolder?.zipCode || "N/A",
+        city: currentHolder?.city || "N/A",
+        country: currentHolder?.country || "N/A",
+        phone: currentHolder?.phone || "N/A",
+        email: currentHolder?.email || "N/A",
+        dni: currentHolder?.dni.toString() || "N/A",
       },
       to: {
         name: `${selectedMember.firstName} ${selectedMember.lastName}`,
-        address: selectedMember.address || "Dirección no especificada",
-        zipCode: selectedMember.zipCode || "Código postal no especificado",
-        phone: selectedMember.phone || "Teléfono no especificado",
-        email: selectedMember.email || "Correo no especificado",
+        address: selectedMember.address || "N/A",
+        apartment: selectedMember.apartment || "N/A",
+        zipCode: selectedMember.zipCode || "N/A",
+        city: selectedMember.city || "N/A",
+        country: selectedMember.country || "N/A",
+        phone: selectedMember.phone || "N/A",
+        email: selectedMember.email || "N/A",
+        dni: selectedMember.dni.toString() || "N/A",
       },
       products: [
         {
