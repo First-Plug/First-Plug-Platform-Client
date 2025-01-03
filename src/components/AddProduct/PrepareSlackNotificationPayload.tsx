@@ -48,7 +48,7 @@ export const prepareSlackNotificationPayload = (
           country: selectedMember.country || "N/A",
           phone: selectedMember.phone || "N/A",
           email: selectedMember.email || "N/A",
-          dni: selectedMember.dni.toString() || "N/A",
+          dni: selectedMember?.dni ? selectedMember.dni.toString() : "N/A",
         }
       : noneOption === "Our office" && source?.data
       ? {
@@ -133,7 +133,7 @@ export const prepareSlackNotificationPayload = (
         country: memberData.country || "",
         phone: memberData.phone || "",
         email: memberData.email || "",
-        dni: memberData.dni.toString() || "N/A",
+        dni: memberData.dni ? memberData.dni.toString() : "N/A",
       };
     } else if (source.type === "office") {
       const officeData = source.data as Partial<User> & { location?: string };
