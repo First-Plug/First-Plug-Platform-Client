@@ -85,12 +85,15 @@ export function ReturnProduct({
         country: currentHolder?.country || "N/A",
         phone: currentHolder?.phone || "N/A",
         email: currentHolder?.email || "N/A",
+        personalEmail: currentHolder?.personalEmail || "N/A",
         dni: currentHolder?.dni ? currentHolder?.dni.toString() : "N/A",
       },
       to: {
         name: isOurOffice ? "Oficina del cliente" : "FP Warehouse",
         address: isOurOffice
-          ? `${sessionUser.address}, ${sessionUser.apartment || "N/A"}`
+          ? `${sessionUser.address}${
+              sessionUser.apartment ? `, ${sessionUser.apartment}` : ""
+            }`
           : "N/A",
         city: isOurOffice ? sessionUser.city : "N/A",
         state: isOurOffice ? sessionUser.state : "N/A",

@@ -8,6 +8,7 @@ export interface SlackNotificationPayload {
     zipCode: string;
     phone?: string;
     email?: string;
+    personalEmail?: string;
     dni?: string;
     city?: string;
     state?: string;
@@ -20,6 +21,7 @@ export interface SlackNotificationPayload {
     zipCode: string;
     phone?: string;
     email?: string;
+    personalEmail?: string;
     dni?: string;
     city?: string;
     state?: string;

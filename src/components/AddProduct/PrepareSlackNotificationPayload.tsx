@@ -48,6 +48,7 @@ export const prepareSlackNotificationPayload = (
           country: selectedMember.country || "N/A",
           phone: selectedMember.phone || "N/A",
           email: selectedMember.email || "N/A",
+          personalEmail: selectedMember.personalEmail || "N/A",
           dni: selectedMember?.dni ? selectedMember.dni.toString() : "N/A",
         }
       : noneOption === "Our office" && source?.data
@@ -85,6 +86,7 @@ export const prepareSlackNotificationPayload = (
         country: "",
         phone: "",
         email: "",
+        personalEmail: "",
       },
       to,
       products: [
@@ -105,17 +107,18 @@ export const prepareSlackNotificationPayload = (
 
   //update product
   // Inicializar "from"
-  let from = {
-    name: "N/A",
-    address: "",
-    apartment: "",
-    zipCode: "",
-    city: "",
-    state: "",
-    country: "",
-    phone: "",
-    email: "",
-    dni: "",
+  let from: {
+    name: string;
+    address: string;
+    apartment: string;
+    zipCode: string;
+    city: string;
+    state: string;
+    country: string;
+    phone: string;
+    email: string;
+    personalEmail?: string;
+    dni: string;
   };
 
   if (source) {
@@ -133,6 +136,7 @@ export const prepareSlackNotificationPayload = (
         country: memberData.country || "",
         phone: memberData.phone || "",
         email: memberData.email || "",
+        personalEmail: memberData.personalEmail || "",
         dni: memberData.dni ? memberData.dni.toString() : "N/A",
       };
     } else if (source.type === "office") {
@@ -165,6 +169,7 @@ export const prepareSlackNotificationPayload = (
     country: "",
     phone: "",
     email: "",
+    personalEmail: "",
     dni: "",
   };
 
@@ -179,6 +184,7 @@ export const prepareSlackNotificationPayload = (
       country: selectedMember.country || "N/A",
       phone: selectedMember.phone || "N/A",
       email: selectedMember.email || "N/A",
+      personalEmail: selectedMember.personalEmail || "N/A",
       dni: selectedMember.dni ? selectedMember.dni.toString() : "N/A",
     };
     console.log("Selected Member:", selectedMember);
@@ -194,6 +200,7 @@ export const prepareSlackNotificationPayload = (
       country: sessionUser.country || "N/A",
       phone: sessionUser.phone || "N/A",
       email: sessionUser.email || "N/A",
+      personalEmail: sessionUser.personalEmail || "N/A",
       dni: "N/A",
     };
   } else if (noneOption === "FP warehouse") {
@@ -207,6 +214,7 @@ export const prepareSlackNotificationPayload = (
       country: "",
       phone: "",
       email: "",
+      personalEmail: "",
       dni: "",
     };
   }
