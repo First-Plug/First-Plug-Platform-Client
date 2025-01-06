@@ -116,7 +116,7 @@ export const AddMemberForm = observer(function ({
     const model = modelAttribute?.value || "N/A";
 
     let from;
-    if (source.type === "member") {
+    if (source?.type === "member") {
       const memberData = source.data as TeamMember;
       from = {
         name: `${memberData.firstName} ${memberData.lastName}`,
@@ -128,6 +128,7 @@ export const AddMemberForm = observer(function ({
         country: memberData.country || "N/A",
         phone: memberData.phone || "N/A",
         email: memberData.email || "N/A",
+        personalEmail: memberData.personalEmail || "N/A",
         dni: memberData.dni || "N/A",
       };
     } else if (source.type === "office") {
@@ -167,6 +168,7 @@ export const AddMemberForm = observer(function ({
         country: selectedMember.country || "N/A",
         phone: selectedMember.phone || "N/A",
         email: selectedMember.email || "N/A",
+        personalEmail: selectedMember.personalEmail || "N/A",
         dni: selectedMember.dni || "N/A",
       };
     } else if (noneOption === "Our office") {
