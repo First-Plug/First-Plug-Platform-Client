@@ -187,8 +187,6 @@ export const prepareSlackNotificationPayload = (
       personalEmail: selectedMember.personalEmail || "N/A",
       dni: selectedMember.dni ? selectedMember.dni.toString() : "N/A",
     };
-    console.log("Selected Member:", selectedMember);
-    console.log("Selected Member Country:", selectedMember.country);
   } else if (currentProduct.location === "Our office") {
     to = {
       name: "Oficina del cliente",
