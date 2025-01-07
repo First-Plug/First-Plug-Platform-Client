@@ -40,8 +40,7 @@ export const useBulkCreateAssets = () => {
       );
     },
     retry: (failureCount, error) => {
-      // Reintentar solo para ciertos errores
-      const isRecoverableError = error?.response?.status === 429; // Too Many Requests
+      const isRecoverableError = error?.response?.status === 429;
       return isRecoverableError && failureCount < 3;
     },
   });
