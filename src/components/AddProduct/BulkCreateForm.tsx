@@ -359,8 +359,6 @@ const BulkCreateForm: React.FC<{
     if (isProcessing) return;
     setIsProcessing(true);
 
-    console.log("📦 Products data for bulk creation:", data);
-
     const firstProductPrice = data.products[0].price;
     const productsData = data.products.map((productData: any) => {
       const assignedMember = productData.assignedMember;
@@ -385,7 +383,6 @@ const BulkCreateForm: React.FC<{
         ...(price ? { price } : {}),
       };
     });
-    console.log("📝 Final products data to be sent:", productsData);
 
     const isCategoryValid = await trigger("products.0.category");
     if (!isCategoryValid) {
