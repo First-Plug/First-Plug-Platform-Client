@@ -256,18 +256,29 @@ export const AddMemberForm = observer(function ({
           data: currentMemberData,
         };
       } else if (currentProduct.assignedEmail) {
+        const assignedMemberParts = currentProduct.assignedMember
+          ? currentProduct.assignedMember.split(" ")
+          : ["", ""];
         source = {
           type: "member",
           data: {
-            firstName: currentProduct.assignedMember.split(" ")[0] || "",
-            lastName: currentProduct.assignedMember.split(" ")[1] || "",
+            firstName: assignedMemberParts[0] || "",
+            lastName: assignedMemberParts[1] || "",
             email: currentProduct.assignedEmail,
           },
         };
-      } else if (currentProduct.location === "Our office") {
+      } else if (
+        currentProduct.location === "Our office" ||
+        currentProduct.location === "FP warehouse"
+      ) {
         source = {
           type: "office",
-          data: { ...session?.user, location: "Our office" },
+          data: { ...session?.user, location: currentProduct.location },
+        };
+      } else {
+        source = {
+          type: "office",
+          data: { location: "Unknown" },
         };
       }
 
