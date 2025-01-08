@@ -82,28 +82,11 @@ export class ProductServices {
   static async bulkCreateProducts(
     products: CreationProduct[]
   ): Promise<Product[]> {
-    try {
-      const response = await HTTPRequests.post(
-        `${BASE_URL}/api/products/bulkcreate`,
-        products
-      );
-
-      if (!response || !response.data) {
-        console.warn("⚠️ API response does not contain 'data':", response);
-        throw new Error("Invalid API response: missing 'data'");
-      }
-
-      console.log("✅ API Response:", response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error("❌ Error in bulkCreateProducts:", {
-        message: error.message,
-        stack: error.stack,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
-      throw error;
-    }
+    const response = await HTTPRequests.post(
+      `${BASE_URL}/api/products/bulkcreate`,
+      products
+    );
+    return response.data;
   }
 
   static async exportProductsCsv(): Promise<void> {
