@@ -390,6 +390,11 @@ const BulkCreateForm: React.FC<{
     }
 
     try {
+      console.log(
+        productsData,
+        "ACA MIREMOS LOS DATOS DEL BULK CREATE PRODUCT"
+      );
+
       setIsProcessing(true);
       bulkCreateAssets(productsData, {
         onSuccess: async (data) => {
