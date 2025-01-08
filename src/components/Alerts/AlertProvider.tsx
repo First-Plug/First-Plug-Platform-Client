@@ -9,7 +9,6 @@ import { XCircleIcon } from "lucide-react";
 import { CheckIcon } from "@/common";
 import useFetch from "@/hooks/useFetch";
 import { useQueryClient } from "@tanstack/react-query";
-import { TeamMember } from "@/types";
 
 function XIcon() {
   return <XCircleIcon className="text-white " size={40} />;
@@ -17,7 +16,7 @@ function XIcon() {
 interface IConfig {
   title: string;
   description: string;
-  type: "succes" | "error";
+  type: "succes" | "error" | "warning";
   closeAction: () => void;
 }
 
@@ -32,6 +31,15 @@ export default observer(function AlertProvider() {
   const queryClient = useQueryClient();
 
   const Config: Record<AlertType, IConfig> = {
+    incompleteBulkCreateData: {
+      title: "Incomplete Data",
+      type: "warning",
+      description:
+        "Some members or locations have missing information. Please complete the details later to finalize shipments.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     memberMissingFields: {
       title: "Error",
       type: "error",

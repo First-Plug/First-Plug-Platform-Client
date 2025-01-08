@@ -82,11 +82,16 @@ export class ProductServices {
   static async bulkCreateProducts(
     products: CreationProduct[]
   ): Promise<Product[]> {
-    const response = await HTTPRequests.post(
-      `${BASE_URL}/api/products/bulkcreate`,
-      products
-    );
-    return response.data;
+    try {
+      const response = await HTTPRequests.post(
+        `${BASE_URL}/api/products/bulkcreate`,
+        products
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error al crear productos:", error);
+      throw error;
+    }
   }
 
   static async exportProductsCsv(): Promise<void> {

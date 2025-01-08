@@ -24,12 +24,12 @@ interface BulkCreateValidatorProps {
   setAside: (view: string) => void;
 }
 
-const validateCompanyBillingInfo = (user: any): boolean => {
+export const validateCompanyBillingInfo = (user: any): boolean => {
   const requiredFields = ["country", "city", "state", "zipCode", "address"];
   return requiredFields.every((field) => user[field]?.trim() !== "");
 };
 
-const validateMemberInfo = (user: ExtendedUser): boolean => {
+export const validateMemberInfo = (user: ExtendedUser): boolean => {
   const requiredFields = [
     "country",
     "city",
@@ -131,10 +131,6 @@ const BulkCreateValidator: React.FC<BulkCreateValidatorProps> = observer(
       }
 
       if (newStatus !== status) {
-        console.log(
-          `Cambiando estado de producto ${productIndex} a:`,
-          newStatus
-        );
         setStatus(newStatus);
         onStatusChange(newStatus, productIndex);
       }

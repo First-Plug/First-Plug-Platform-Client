@@ -29,20 +29,27 @@ export const prepareBulkCreateSlackPayload = (
   const generateToField = (
     product: (typeof products)[number]
   ): SlackNotificationPayload["to"] => {
-    if (product.assignedMember) {
-      const member = members.find((m) => m.email === product.assignedEmail);
-      return {
-        name: `${member?.firstName || "N/A"} ${member?.lastName || "N/A"}`,
-        address: member?.address || "N/A",
-        apartment: member?.apartment || "N/A",
-        zipCode: member?.zipCode || "N/A",
-        city: member?.city || "N/A",
-        country: member?.country || "N/A",
-        phone: member?.phone || "N/A",
-        email: member?.email || "N/A",
-        personalEmail: member?.personalEmail || "N/A",
-        dni: member?.dni ? member.dni.toString() : "N/A",
-      };
+    const normalizedEmail = product.assignedEmail?.trim().toLowerCase();
+
+    if (normalizedEmail) {
+      const member = members.find(
+        (m) => m.email.trim().toLowerCase() === normalizedEmail
+      );
+
+      if (member) {
+        return {
+          name: `${member.firstName || "N/A"} ${member.lastName || "N/A"}`,
+          address: member.address || "N/A",
+          apartment: member.apartment || "N/A",
+          zipCode: member.zipCode || "N/A",
+          city: member.city || "N/A",
+          country: member.country || "N/A",
+          phone: member.phone || "N/A",
+          email: member.email || "N/A",
+          personalEmail: member.personalEmail || "N/A",
+          dni: member.dni ? member.dni.toString() : "N/A",
+        };
+      }
     }
 
     if (product.location === "Our office") {

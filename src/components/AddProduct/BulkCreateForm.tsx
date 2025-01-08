@@ -15,7 +15,13 @@ import { useBulkCreateAssets } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchMembers } from "@/members/hooks";
 import { getMemberFullName } from "@/members/helpers/getMemberFullName";
-import BulkCreateValidator from "@/components/AddProduct/utils/BulkCreateValidator";
+import BulkCreateValidator, {
+  validateCompanyBillingInfo,
+  validateMemberInfo,
+} from "@/components/AddProduct/utils/BulkCreateValidator";
+import { useSession } from "next-auth/react";
+import { prepareBulkCreateSlackPayload } from "@/components/AddProduct/PrepareBulkCreateSlackPayload";
+import { sendSlackNotification } from "@/services/slackNotifications.services";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -25,7 +31,8 @@ const BulkCreateForm: React.FC<{
   setIsProcessing?: (isProcessing: boolean) => void;
 }> = ({ initialData, quantity, onBack, isProcessing, setIsProcessing }) => {
   const { mutate: bulkCreateAssets, status } = useBulkCreateAssets();
-
+  const session = useSession();
+  const sessionUser = session.data?.user;
   const { data: fetchedMembers } = useFetchMembers();
   const isLoading = status === "pending";
 
@@ -103,6 +110,12 @@ const BulkCreateForm: React.FC<{
   );
   const [assignAll, setAssignAll] = useState(false);
   const [productStatuses, setProductStatuses] = useState<string[]>([]);
+  const [genericAlertData, setGenericAlertData] = useState({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
+  const [proceedWithBulkCreate, setProceedWithBulkCreate] = useState(false);
 
   //Desactiva Apply All si hay diferencias entre productos
   useLayoutEffect(() => {
@@ -283,11 +296,43 @@ const BulkCreateForm: React.FC<{
       return;
     }
 
+    const slackPayloads = prepareBulkCreateSlackPayload(
+      productsData.map((product) => ({
+        assignedMember: product.assignedMember
+          ? {
+              firstName: product.assignedMember.split(" ")[0],
+              lastName: product.assignedMember.split(" ")[1] || "",
+              email: product.assignedEmail || "",
+            }
+          : null,
+        assignedEmail: product.assignedEmail || "",
+        location: product.location,
+        serialNumber: product.serialNumber,
+      })),
+      {
+        name: initialProductData.name,
+        category: initialProductData.category,
+        attributes: attributesArray,
+      },
+      sessionUser.tenantName,
+      sessionUser,
+      members
+    );
+
     try {
       setIsProcessing(true);
+
       bulkCreateAssets(productsData, {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           setProducts(data);
+
+          try {
+            await Promise.all(
+              slackPayloads.map((payload) => sendSlackNotification(payload))
+            );
+          } catch (error) {
+            console.error("❌ Error al enviar notificaciones a Slack:", error);
+          }
 
           queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
             setAlert("bulkCreateProductSuccess");
@@ -297,7 +342,6 @@ const BulkCreateForm: React.FC<{
           setIsProcessing(false);
         },
         onError: (error) => {
-          console.error("Error en bulkCreate:", error);
           if (
             error.response?.data?.message === "Serial Number already exists"
           ) {
@@ -314,6 +358,24 @@ const BulkCreateForm: React.FC<{
     }
   };
 
+  const checkIncompleteData = (data: any): boolean => {
+    let hasIncompleteData = false;
+
+    data.products.forEach((product: any) => {
+      const { assignedMember, location } = product;
+
+      if (
+        (assignedMember !== "None" && !validateMemberInfo(assignedMember)) ||
+        (location === "Our office" &&
+          !validateCompanyBillingInfo(fetchedMembers))
+      ) {
+        hasIncompleteData = true;
+      }
+    });
+
+    return hasIncompleteData;
+  };
+
   const onSubmit = async (data: any) => {
     const isValid = await trigger();
     const isDataValid = await validateData(data);
@@ -322,7 +384,20 @@ const BulkCreateForm: React.FC<{
       return;
     }
 
-    handleBulkCreate(data);
+    const hasIncompleteData = checkIncompleteData(data);
+
+    if (hasIncompleteData) {
+      setAlert("incompleteBulkCreateData");
+      setTimeout(() => {
+        handleBulkCreate(data).then(() => {
+          setAlert("bulkCreateProductSuccess");
+        });
+      }, 3000);
+    } else {
+      handleBulkCreate(data).then(() => {
+        setAlert("bulkCreateProductSuccess");
+      });
+    }
   };
 
   if (loading) {
@@ -479,7 +554,6 @@ const BulkCreateForm: React.FC<{
                       relocation={watch(`products.${index}.location`)}
                       members={members}
                       onStatusChange={(status, i) => {
-                        console.log(`Status for product ${i}:`, status);
                         setProductStatuses((prev) => {
                           const newStatuses = [...prev];
                           newStatuses[i] = status;

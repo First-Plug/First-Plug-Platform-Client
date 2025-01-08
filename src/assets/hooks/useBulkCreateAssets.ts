@@ -28,16 +28,19 @@ export const useBulkCreateAssets = () => {
       // setProducts(data);
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      setAlert("bulkCreateProductSuccess");
+      // setAlert("bulkCreateProductSuccess");
     },
     onError: (error: any) => {
       const message =
-        error?.response?.data?.message || "An unexpected error occurred";
+        error?.response?.data?.message ||
+        error?.message ||
+        "An unexpected error occurred";
       setAlert(
         message.includes("Serial Number")
           ? "bulkCreateSerialNumberError"
           : "bulkCreateProductError"
       );
+      console.error("Error al crear productos:", message, error);
     },
     retry: (failureCount, error) => {
       const isRecoverableError = error?.response?.status === 429;
