@@ -266,6 +266,7 @@ const BulkCreateForm: React.FC<{
   };
 
   const handleBulkCreate = async (data: any) => {
+    console.log("📤 Starting bulk create");
     const firstProductPrice = data.products[0].price;
     const productsData = data.products.map((productData: any) => {
       const assignedMember = productData.assignedMember;
@@ -320,11 +321,6 @@ const BulkCreateForm: React.FC<{
     );
 
     try {
-      console.log(
-        productsData,
-        "ACA MIREMOS LOS DATOS DEL BULK CREATE PRODUCT"
-      );
-
       setIsProcessing(true);
 
       bulkCreateAssets(productsData, {
@@ -340,8 +336,14 @@ const BulkCreateForm: React.FC<{
           }
 
           queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
-            setAlert("bulkCreateProductSuccess");
-            onBack();
+            if (!proceedWithBulkCreate) {
+              // console.log(
+              //   "✅ Success alert triggered after query invalidation"
+              // );
+              setProceedWithBulkCreate(true);
+              // setAlert("bulkCreateProductSuccess");
+              onBack();
+            }
           });
 
           setIsProcessing(false);
@@ -369,10 +371,13 @@ const BulkCreateForm: React.FC<{
     data.products.forEach((product: any) => {
       const { assignedMember, location } = product;
 
+      if (assignedMember !== "None" && !validateMemberInfo(assignedMember)) {
+        hasIncompleteData = true;
+      }
+
       if (
-        (assignedMember !== "None" && !validateMemberInfo(assignedMember)) ||
-        (location === "Our office" &&
-          !validateCompanyBillingInfo(fetchedMembers))
+        location === "Our office" &&
+        !validateCompanyBillingInfo(sessionUser)
       ) {
         hasIncompleteData = true;
       }
@@ -395,12 +400,18 @@ const BulkCreateForm: React.FC<{
       setAlert("incompleteBulkCreateData");
       setTimeout(() => {
         handleBulkCreate(data).then(() => {
-          setAlert("bulkCreateProductSuccess");
+          if (!proceedWithBulkCreate) {
+            setProceedWithBulkCreate(true);
+            setAlert("bulkCreateProductSuccess");
+          }
         });
       }, 3000);
     } else {
       handleBulkCreate(data).then(() => {
-        setAlert("bulkCreateProductSuccess");
+        if (!proceedWithBulkCreate) {
+          setProceedWithBulkCreate(true);
+          setAlert("bulkCreateProductSuccess");
+        }
       });
     }
   };
