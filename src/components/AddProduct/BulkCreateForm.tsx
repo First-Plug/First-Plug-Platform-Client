@@ -328,20 +328,27 @@ const BulkCreateForm: React.FC<{
           setProducts(data);
 
           try {
-            await Promise.all(
-              slackPayloads.map((payload) => sendSlackNotification(payload))
-            );
+            const sendNotificationsSequentially = async (payloads) => {
+              for (const payload of payloads) {
+                try {
+                  await sendSlackNotification(payload);
+                } catch (error) {
+                  console.error(
+                    "❌ Error al enviar notificación a Slack:",
+                    error
+                  );
+                }
+              }
+            };
+
+            await sendNotificationsSequentially(slackPayloads);
           } catch (error) {
             console.error("❌ Error al enviar notificaciones a Slack:", error);
           }
 
           queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
             if (!proceedWithBulkCreate) {
-              // console.log(
-              //   "✅ Success alert triggered after query invalidation"
-              // );
               setProceedWithBulkCreate(true);
-              // setAlert("bulkCreateProductSuccess");
               onBack();
             }
           });
