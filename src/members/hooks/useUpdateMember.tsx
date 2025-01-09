@@ -44,9 +44,11 @@ export const useUpdateMember = () => {
     },
 
     onSuccess: (data, id) => {
-      queryClient.setQueryData<TeamMember[]>(["members"], (oldMembers) =>
-        oldMembers.map((member) => (member._id === data._id ? data : member))
-      );
+      queryClient.setQueryData<TeamMember[]>(["members"], (oldMembers) => {
+        return oldMembers.map((member) =>
+          member._id === data._id ? data : member
+        );
+      });
       updateMemberInStore(data);
       setAlert("updateMember");
 

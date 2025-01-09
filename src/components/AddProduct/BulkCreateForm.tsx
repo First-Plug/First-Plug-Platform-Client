@@ -15,14 +15,13 @@ import { useBulkCreateAssets } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchMembers } from "@/members/hooks";
 import { getMemberFullName } from "@/members/helpers/getMemberFullName";
-import ProductStatusValidator, {
-  validateMemberBillingInfo,
-} from "./utils/ProductStatusValidator";
-import GenericAlertDialog from "./ui/GenericAlertDialog";
-import { validateBillingInfo } from "@/lib/utils";
+import BulkCreateValidator, {
+  validateCompanyBillingInfo,
+  validateMemberInfo,
+} from "@/components/AddProduct/utils/BulkCreateValidator";
+import { useSession } from "next-auth/react";
 import { prepareBulkCreateSlackPayload } from "@/components/AddProduct/PrepareBulkCreateSlackPayload";
 import { sendSlackNotification } from "@/services/slackNotifications.services";
-import { useSession } from "next-auth/react";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -32,11 +31,12 @@ const BulkCreateForm: React.FC<{
   setIsProcessing?: (isProcessing: boolean) => void;
 }> = ({ initialData, quantity, onBack, isProcessing, setIsProcessing }) => {
   const { mutate: bulkCreateAssets, status } = useBulkCreateAssets();
-  const isLoading = status === "pending";
-  const { data: fetchedMembers } = useFetchMembers();
-  const queryClient = useQueryClient();
   const session = useSession();
   const sessionUser = session.data?.user;
+  const { data: fetchedMembers } = useFetchMembers();
+  const isLoading = status === "pending";
+
+  const queryClient = useQueryClient();
 
   const numProducts = quantity;
 
@@ -72,11 +72,10 @@ const BulkCreateForm: React.FC<{
   const productInstance = ProductModel.create(initialProductData);
 
   const {
-    user: { user },
+    members: { setMemberToEdit },
+    aside: { setAside },
     products: { setProducts },
     alerts: { setAlert },
-    members: { setMemberToEdit },
-    aside: { setAside, isClosed },
   } = useStore();
 
   const methods = useForm({
@@ -102,9 +101,6 @@ const BulkCreateForm: React.FC<{
   const [members, setMembers] = useState<Instance<typeof TeamMemberModel>[]>(
     []
   );
-  const [statusList, setStatusList] = useState<string[]>(
-    Array(numProducts).fill("")
-  );
   const [loading, setLoading] = useState(true);
   const [isLocationEnabled, setIsLocationEnabled] = useState<boolean[]>(
     Array(numProducts).fill(false)
@@ -113,23 +109,13 @@ const BulkCreateForm: React.FC<{
     Array(numProducts).fill("Location")
   );
   const [assignAll, setAssignAll] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  const [showMissingDataDialog, setMissingDataDialog] = useState(false);
-  const [missingMemberData, setMissingMemberData] = useState<string>("");
+  const [productStatuses, setProductStatuses] = useState<string[]>([]);
   const [genericAlertData, setGenericAlertData] = useState({
+    isOpen: false,
     title: "",
     description: "",
-    isOpen: false,
   });
-  const [proceedWithSuccess, setProceedWithSuccess] = useState(false);
-
-  useEffect(() => {
-    if (status === "pending" && !isProcessing) {
-      setIsProcessing(true);
-    } else if (status !== "pending" && isProcessing) {
-      setIsProcessing(false);
-    }
-  }, [status, isProcessing]);
+  const [proceedWithBulkCreate, setProceedWithBulkCreate] = useState(false);
 
   //Desactiva Apply All si hay diferencias entre productos
   useLayoutEffect(() => {
@@ -183,16 +169,7 @@ const BulkCreateForm: React.FC<{
       setAssignedEmailOptions(memberFullNames);
       setLoading(false);
     }
-  }, [fetchedMembers]);
-
-  const handleStatusChange = (status: string, index: number) => {
-    setStatusList((prevStatusList) => {
-      if (prevStatusList[index] === status) return prevStatusList;
-      const updatedStatusList = [...prevStatusList];
-      updatedStatusList[index] = status;
-      return updatedStatusList;
-    });
-  };
+  }, []);
 
   const handleAssignedMemberChange = (
     selectedFullName: string,
@@ -220,8 +197,6 @@ const BulkCreateForm: React.FC<{
       `products.${index}.assignedEmail`,
       `products.${index}.location`,
     ]);
-
-    handleStatusChange("pending", index);
 
     if (assignAll && index === 0) {
       for (let i = 1; i < numProducts; i++) {
@@ -264,71 +239,6 @@ const BulkCreateForm: React.FC<{
     }
   };
 
-  //invalida la query de members si se cierra el aside
-  useEffect(() => {
-    if (isClosed) {
-      queryClient.invalidateQueries({ queryKey: ["members"] });
-    }
-  }, [isClosed]);
-
-  //actualiza la lista de estados al cambiar datos de productos y members
-  useEffect(() => {
-    const subscription = watch((values) => {
-      const updatedStatusList = values.products.map(
-        (product: any, index: number) => {
-          const assignedMember = product.assignedMember;
-          const location = product.location;
-          const foundMember = members.find(
-            (m) => `${m.firstName} ${m.lastName}` === assignedMember
-          );
-
-          if (!assignedMember || assignedMember === "None")
-            return "location-required";
-          if (!location || location === "Location") return "location-required";
-          if (!foundMember || !validateMemberBillingInfo(foundMember))
-            return "not-member-available";
-
-          return "valid";
-        }
-      );
-
-      setStatusList(updatedStatusList);
-
-      // Si todos los productos son válidos, habilitamos el botón de "Save"
-      const allValid = updatedStatusList.every((status) => status === "valid");
-      setIsButtonDisabled(!allValid);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [watch, members]);
-
-  //valida productos al cerrar el aside y actualiza estados
-  useEffect(() => {
-    if (isClosed) {
-      const products = methods.getValues("products");
-      const updatedStatusList = products.map((product, index) => {
-        const assignedMember = product.assignedMember;
-        const location = product.location;
-        const foundMember = members.find(
-          (m) => `${m.firstName} ${m.lastName}` === assignedMember
-        );
-
-        if (!assignedMember || assignedMember === "None")
-          return "location-required";
-        if (!location || location === "Location") return "location-required";
-        if (!foundMember || !validateMemberBillingInfo(foundMember))
-          return "not-member-available";
-
-        return "valid";
-      });
-
-      setStatusList(updatedStatusList);
-
-      const allValid = updatedStatusList.every((status) => status === "valid");
-      setIsButtonDisabled(!allValid);
-    }
-  }, [isClosed, members, methods]);
-
   const validateData = async (data: any) => {
     let isValid = true;
     for (let index = 0; index < numProducts; index++) {
@@ -356,9 +266,6 @@ const BulkCreateForm: React.FC<{
   };
 
   const handleBulkCreate = async (data: any) => {
-    if (isProcessing) return;
-    setIsProcessing(true);
-
     const firstProductPrice = data.products[0].price;
     const productsData = data.products.map((productData: any) => {
       const assignedMember = productData.assignedMember;
@@ -389,6 +296,29 @@ const BulkCreateForm: React.FC<{
       return;
     }
 
+    const slackPayloads = prepareBulkCreateSlackPayload(
+      productsData.map((product) => ({
+        assignedMember: product.assignedMember
+          ? {
+              firstName: product.assignedMember.split(" ")[0],
+              lastName: product.assignedMember.split(" ")[1] || "",
+              email: product.assignedEmail || "",
+            }
+          : null,
+        assignedEmail: product.assignedEmail || "",
+        location: product.location,
+        serialNumber: product.serialNumber,
+      })),
+      {
+        name: initialProductData.name,
+        category: initialProductData.category,
+        attributes: attributesArray,
+      },
+      sessionUser.tenantName,
+      sessionUser,
+      members
+    );
+
     try {
       console.log(
         productsData,
@@ -396,59 +326,27 @@ const BulkCreateForm: React.FC<{
       );
 
       setIsProcessing(true);
+
       bulkCreateAssets(productsData, {
         onSuccess: async (data) => {
           setProducts(data);
 
-          const slackPayloads = prepareBulkCreateSlackPayload(
-            data.map((product: any) => ({
-              assignedMember: product.assignedMember
-                ? {
-                    firstName: product.assignedMember.split(" ")[0],
-                    lastName: product.assignedMember.split(" ")[1] || "",
-                    email: product.assignedEmail || "",
-                  }
-                : null,
-              assignedEmail: product.assignedEmail || "",
-              location: product.location,
-              serialNumber: product.serialNumber,
-            })),
-            {
-              name: initialProductData.name,
-              category: initialProductData.category,
-              attributes: attributesArray,
-            },
-            user.tenantName,
-            sessionUser,
-            members
-          );
+          try {
+            await Promise.all(
+              slackPayloads.map((payload) => sendSlackNotification(payload))
+            );
+          } catch (error) {
+            console.error("❌ Error al enviar notificaciones a Slack:", error);
+          }
 
-          // Enviar las notificaciones de Slack
-          await Promise.all(
-            slackPayloads.map((payload) => sendSlackNotification(payload))
-          )
-            .then(() => {
-              console.log("✅ Slack notifications sent for bulk create");
-            })
-            .catch((error) => {
-              console.error(
-                "❌ Error sending Slack notifications for bulk create:",
-                error
-              );
-            });
-
-          await queryClient
-            .invalidateQueries({ queryKey: ["assets"] })
-            .then(() => {
-              setAlert("bulkCreateProductSuccess");
-              onBack();
-            });
-          console.log("✅ Bulk create completed successfully");
+          queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
+            setAlert("bulkCreateProductSuccess");
+            onBack();
+          });
 
           setIsProcessing(false);
         },
         onError: (error) => {
-          console.error("Error en bulkCreate:", error);
           if (
             error.response?.data?.message === "Serial Number already exists"
           ) {
@@ -465,6 +363,24 @@ const BulkCreateForm: React.FC<{
     }
   };
 
+  const checkIncompleteData = (data: any): boolean => {
+    let hasIncompleteData = false;
+
+    data.products.forEach((product: any) => {
+      const { assignedMember, location } = product;
+
+      if (
+        (assignedMember !== "None" && !validateMemberInfo(assignedMember)) ||
+        (location === "Our office" &&
+          !validateCompanyBillingInfo(fetchedMembers))
+      ) {
+        hasIncompleteData = true;
+      }
+    });
+
+    return hasIncompleteData;
+  };
+
   const onSubmit = async (data: any) => {
     const isValid = await trigger();
     const isDataValid = await validateData(data);
@@ -473,38 +389,20 @@ const BulkCreateForm: React.FC<{
       return;
     }
 
-    let hasIncompleteMembers = false;
-    let hasIncompleteOfficeData = false;
+    const hasIncompleteData = checkIncompleteData(data);
 
-    data.products.forEach((product: any) => {
-      if (product.assignedMember !== "None") {
-        const foundMember = members.find(
-          (m) =>
-            `${m.firstName} ${m.lastName}` === product.assignedMember &&
-            validateMemberBillingInfo(m)
-        );
-        if (!foundMember) {
-          hasIncompleteMembers = true;
-        }
-      } else if (product.location === "Our office") {
-        if (!validateBillingInfo(user)) {
-          hasIncompleteOfficeData = true;
-        }
-      }
-    });
-
-    if (hasIncompleteMembers || hasIncompleteOfficeData) {
-      setGenericAlertData({
-        title: "Incomplete Data",
-        description:
-          "Some members or locations have missing information. Please complete the details later to finalize shipments.",
-        isOpen: true,
+    if (hasIncompleteData) {
+      setAlert("incompleteBulkCreateData");
+      setTimeout(() => {
+        handleBulkCreate(data).then(() => {
+          setAlert("bulkCreateProductSuccess");
+        });
+      }, 3000);
+    } else {
+      handleBulkCreate(data).then(() => {
+        setAlert("bulkCreateProductSuccess");
       });
-      setProceedWithSuccess(true);
-      return;
     }
-
-    handleBulkCreate(data);
   };
 
   if (loading) {
@@ -655,16 +553,18 @@ const BulkCreateForm: React.FC<{
                     />
                   </div>
                   <div className="w-full">
-                    <ProductStatusValidator
+                    <BulkCreateValidator
                       productIndex={index}
                       selectedMember={watch(`products.${index}.assignedMember`)}
-                      relocation={methods.getValues(
-                        `products.${index}.location`
-                      )}
+                      relocation={watch(`products.${index}.location`)}
                       members={members}
-                      onStatusChange={(status) =>
-                        handleStatusChange(status, index)
-                      }
+                      onStatusChange={(status, i) => {
+                        setProductStatuses((prev) => {
+                          const newStatuses = [...prev];
+                          newStatuses[i] = status;
+                          return newStatuses;
+                        });
+                      }}
                       setMemberToEdit={setMemberToEdit}
                       setAside={setAside}
                     />
@@ -691,35 +591,6 @@ const BulkCreateForm: React.FC<{
               </div>
             </aside>
           </form>
-          <GenericAlertDialog
-            open={genericAlertData.isOpen}
-            onClose={() => {
-              setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
-              setProceedWithSuccess(false);
-              if (proceedWithSuccess) {
-                handleBulkCreate(methods.getValues());
-              }
-            }}
-            title={genericAlertData.title || "Warning"}
-            description={genericAlertData.description || ""}
-            buttonText="OK"
-            onButtonClick={() => {
-              setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
-              setProceedWithSuccess(false);
-              if (proceedWithSuccess) {
-                handleBulkCreate(methods.getValues());
-              }
-            }}
-            isHtml={true}
-          />
-          <GenericAlertDialog
-            open={showMissingDataDialog}
-            onClose={() => setMissingDataDialog(false)}
-            title="Incomplete Member Data"
-            description={missingMemberData}
-            buttonText="OK"
-            onButtonClick={() => setMissingDataDialog(false)}
-          />
         </div>
       </PageLayout>
     </FormProvider>

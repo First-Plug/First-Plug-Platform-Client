@@ -93,14 +93,7 @@ export async function POST(request: Request) {
               (to.dni ? `DNI/CI: ${to.dni}\n` : "")),
       },
     });
-    console.log("Payload recibido:", {
-      from,
-      to,
-      products,
-      action,
-      tenantName,
-    });
-    console.log("Datos del destinatario (to):", to);
+
     await axios.post(webhookUrl, { blocks });
 
     return NextResponse.json(

@@ -87,21 +87,9 @@ export class ProductServices {
         `${BASE_URL}/api/products/bulkcreate`,
         products
       );
-
-      if (!response || !response.data) {
-        console.warn("⚠️ API response does not contain 'data':", response);
-        throw new Error("Invalid API response: missing 'data'");
-      }
-
-      console.log("✅ API Response:", response.data);
       return response.data;
-    } catch (error: any) {
-      console.error("❌ Error in bulkCreateProducts:", {
-        message: error.message,
-        stack: error.stack,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
+    } catch (error) {
+      console.error("Error al crear productos:", error);
       throw error;
     }
   }

@@ -108,6 +108,7 @@ export const MemberStore = types
       const index = store.members.findIndex((m) => m._id === member._id);
 
       if (index !== -1) {
+        console.log("Actualizando miembro en el store:", member);
         store.members[index] = member;
         store.members.splice(index, 1, member);
       } else {
