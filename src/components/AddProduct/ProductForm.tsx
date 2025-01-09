@@ -28,7 +28,7 @@ import BulkCreateForm from "./BulkCreateForm";
 import {
   useBulkCreateAssets,
   useCreateAsset,
-  useUpdateAsset,
+  useUpdateEntityAsset,
 } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -66,7 +66,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   } = useStore();
 
   const createAsset = useCreateAsset();
-  const updateAsset = useUpdateAsset();
+  const updateEntityAsset = useUpdateEntityAsset();
   const bulkCreateAssets = useBulkCreateAssets();
   const queryClient = useQueryClient();
 
@@ -462,7 +462,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowSuccessDialog(true);
           return;
         }
-        await updateAsset.mutateAsync(
+        await updateEntityAsset.mutateAsync(
           { id: initialData._id, data: changes },
           {
             onSuccess: async () => {

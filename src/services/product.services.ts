@@ -35,6 +35,22 @@ export class ProductServices {
         `${BASE_URL}/api/products/${id}`,
         data
       );
+      console.log("se llama el  update");
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateEntityProduct(
+    id: Product["_id"],
+    data: Partial<Product>
+  ): Promise<Product> {
+    try {
+      const response = await HTTPRequests.patch(
+        `${BASE_URL}/api/products/entity/${id}`,
+        data
+      );
       return response.data;
     } catch (error) {
       throw error;
