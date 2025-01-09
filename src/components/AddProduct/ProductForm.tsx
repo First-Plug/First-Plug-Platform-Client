@@ -251,20 +251,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
       );
     }
 
-    if (missingMessages.length > 0) {
-      const formattedMessages = missingMessages
-        .map((msg) => `<div class="mb-2"><span>${msg}</span></div>`)
-        .join("");
-
-      setGenericAlertData({
-        title:
-          "The creation was completed successfully, but details are missing",
-        description: formattedMessages,
-        isOpen: true,
-      });
-      setIsGenericAlertOpen(true);
-    }
-
     const formatData: Product = {
       ...emptyProduct,
       ...data,
@@ -495,12 +481,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
         } else {
           await createAsset.mutateAsync(formatData, {
             onSuccess: async () => {
-              setAlert("createProduct");
-              methods.reset();
-              setSelectedCategory(undefined);
-              setAssignedEmail(undefined);
-              setShowSuccessDialog(true);
-
               const slackPayload = prepareSlackNotificationPayload(
                 formatData,
                 selectedMember,
@@ -514,6 +494,30 @@ const ProductForm: React.FC<ProductFormProps> = ({
             },
             onError: (error) => handleMutationError(error, true),
           });
+          if (missingMessages.length > 0) {
+            const formattedMessages = missingMessages
+              .map((msg) => `<div class="mb-2"><span>${msg}</span></div>`)
+              .join("");
+
+            setAlert("dynamicWarning", {
+              title: "Details Missing",
+              description: formattedMessages,
+              isHtml: true,
+              onClose: () => {
+                setAlert("createProduct");
+                methods.reset();
+                setSelectedCategory(undefined);
+                setAssignedEmail(undefined);
+                setShowSuccessDialog(true);
+              },
+            });
+          } else {
+            setAlert("createProduct");
+            methods.reset();
+            setSelectedCategory(undefined);
+            setAssignedEmail(undefined);
+            setShowSuccessDialog(true);
+          }
         }
       }
     } catch (error) {
@@ -732,7 +736,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           )}
         </div>
         <div className="z-50">
-          <GenericAlertDialog
+          {/* <GenericAlertDialog
             open={genericAlertData.isOpen}
             onClose={() => {
               setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
@@ -758,7 +762,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
               }
             }}
             isHtml={true}
-          />
+          /> */}
           <GenericAlertDialog
             open={showErrorDialog}
             onClose={() => setShowErrorDialog(false)}
