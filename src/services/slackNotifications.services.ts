@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export interface SlackNotificationPayload {
-  from: {
+  from?: {
     name: string;
     address: string;
     apartment?: string;

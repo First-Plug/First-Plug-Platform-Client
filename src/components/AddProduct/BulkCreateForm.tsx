@@ -320,6 +320,10 @@ const BulkCreateForm: React.FC<{
       members
     );
 
+    for (const payload of slackPayloads) {
+      await sendSlackNotification(payload);
+    }
+
     try {
       setIsProcessing(true);
 
@@ -328,20 +332,16 @@ const BulkCreateForm: React.FC<{
           setProducts(data);
 
           try {
-            const sendNotificationsSequentially = async (payloads) => {
-              for (const payload of payloads) {
-                try {
-                  await sendSlackNotification(payload);
-                } catch (error) {
-                  console.error(
-                    "❌ Error al enviar notificación a Slack:",
-                    error
-                  );
-                }
+            for (const payload of slackPayloads) {
+              try {
+                await sendSlackNotification(payload);
+              } catch (error) {
+                console.error(
+                  "❌ Error al enviar notificación a Slack:",
+                  error
+                );
               }
-            };
-
-            await sendNotificationsSequentially(slackPayloads);
+            }
           } catch (error) {
             console.error("❌ Error al enviar notificaciones a Slack:", error);
           }
