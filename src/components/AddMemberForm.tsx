@@ -21,10 +21,8 @@ import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { useSession } from "next-auth/react";
 import { validateAfterAction } from "@/lib/validateAfterAction";
 import { useFetchMembers } from "@/members/hooks";
-import {
-  sendSlackNotification,
-  SlackNotificationPayload,
-} from "@/services/slackNotifications.services";
+import { sendSlackNotification } from "@/services/slackNotifications.services";
+import { SlackNotificationPayload } from "@/types/slack";
 
 interface AddMemberFormProps {
   members: TeamMember[];
