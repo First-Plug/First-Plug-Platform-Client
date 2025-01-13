@@ -5,7 +5,7 @@ import { Product } from "@/types";
 
 interface UpdateAssetProps {
   id: string;
-  data: Partial<Product>;
+  data: Partial<Product> & { actionType: string };
   showSuccessAlert?: boolean;
 }
 

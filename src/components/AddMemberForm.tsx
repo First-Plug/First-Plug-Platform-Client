@@ -294,7 +294,7 @@ export const AddMemberForm = observer(function ({
         };
       }
 
-      let updatedProduct: Partial<Product> = {
+      let updatedProduct: Partial<Product> & { actionType: string } = {
         assignedEmail: "",
         assignedMember: "",
         status: "Available",
@@ -302,6 +302,7 @@ export const AddMemberForm = observer(function ({
         category: currentProduct.category,
         attributes: currentProduct.attributes,
         name: currentProduct.name,
+        actionType: actionType === "ReassignProduct" ? "reassign" : "assign",
       };
 
       if (selectedMember) {
@@ -311,6 +312,7 @@ export const AddMemberForm = observer(function ({
           assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
           status: "Delivered",
           location: "Employee",
+          actionType: actionType === "ReassignProduct" ? "reassign" : "assign",
         };
       }
 
