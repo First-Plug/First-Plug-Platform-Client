@@ -52,7 +52,7 @@ const Config: Record<EmptyCardType, TConfig> = {
   },
   computer: {
     title: "Computer Update",
-    image: "/orders.svg",
+    image: "/Orders.svg",
     paragraph: "There are no recent updates for your computers.",
     // ButtonIcon: UploadIcon,
     // buttonText: "Update Computers",

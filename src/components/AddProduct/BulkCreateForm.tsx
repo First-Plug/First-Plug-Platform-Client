@@ -323,59 +323,46 @@ const BulkCreateForm: React.FC<{
       members
     );
 
-    console.log("🔍 Payloads para Slack:", slackPayloads);
+    setIsProcessing(true);
 
     try {
-      setIsProcessing(true);
-
-      bulkCreateAssets(productsData, {
+      const creationPromise = bulkCreateAssets(productsData, {
         onSuccess: async (data) => {
           setProducts(data);
-
-          try {
-            for (const payload of slackPayloads) {
-              try {
-                console.log("📤 Intentando enviar a Slack:", payload);
-                await sendSlackNotificationBulk(payload);
-                console.log("✅ Notificación enviada exitosamente:", payload);
-              } catch (error) {
-                console.error(
-                  "❌ Error al enviar el payload a Slack:",
-                  payload,
-                  error.message
-                );
-              }
-            }
-          } catch (error) {
-            console.error(
-              "❌ Error al enviar notificaciones a Slack:",
-              error.message
-            );
-          }
-
-          queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
-            if (!proceedWithBulkCreate) {
-              setProceedWithBulkCreate(true);
-              onBack();
-            }
-          });
-
-          setIsProcessing(false);
+          queryClient.invalidateQueries({ queryKey: ["assets"] });
+          console.log("✅ Productos creados exitosamente.");
         },
         onError: (error) => {
-          console.error("❌ Error al crear productos:", error.message);
-          if (
+          setAlert(
             error.response?.data?.message === "Serial Number already exists"
-          ) {
-            setAlert("bulkCreateSerialNumberError");
-          } else {
-            setAlert("bulkCreateProductError");
-          }
-          setIsProcessing(false);
+              ? "bulkCreateSerialNumberError"
+              : "bulkCreateProductError"
+          );
+          throw error;
         },
       });
+
+      const slackPromise = Promise.allSettled(
+        slackPayloads.map((payload) =>
+          sendSlackNotificationBulk(payload)
+            .then(() => {
+              console.log("✅ Notificación enviada exitosamente:", payload);
+            })
+            .catch((error) => {
+              console.error(
+                "❌ Error al enviar el payload a Slack:",
+                payload,
+                error.message
+              );
+            })
+        )
+      );
+
+      await Promise.all([creationPromise, slackPromise]);
+
+      setIsProcessing(false);
+      setAlert("bulkCreateProductSuccess");
     } catch (error) {
-      console.error("Error durante la creación:", error);
       setIsProcessing(false);
     }
   };
@@ -405,30 +392,15 @@ const BulkCreateForm: React.FC<{
     const isValid = await trigger();
     const isDataValid = await validateData(data);
 
-    if (!isValid || !isDataValid) {
-      return;
-    }
+    if (!isValid || !isDataValid) return;
 
     const hasIncompleteData = checkIncompleteData(data);
 
     if (hasIncompleteData) {
       setAlert("incompleteBulkCreateData");
-      setTimeout(() => {
-        handleBulkCreate(data).then(() => {
-          if (!proceedWithBulkCreate) {
-            setProceedWithBulkCreate(true);
-            setAlert("bulkCreateProductSuccess");
-          }
-        });
-      }, 3000);
-    } else {
-      handleBulkCreate(data).then(() => {
-        if (!proceedWithBulkCreate) {
-          setProceedWithBulkCreate(true);
-          setAlert("bulkCreateProductSuccess");
-        }
-      });
     }
+
+    await handleBulkCreate(data);
   };
 
   if (loading) {

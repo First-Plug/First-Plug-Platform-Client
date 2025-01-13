@@ -77,7 +77,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     additionalButtonText: "Add Team Member",
   },
   orders: {
-    image: "/orders.svg",
+    image: "/Orders.svg",
     paragraph: "You don't have any orders.",
     LinkIcon: ShopIcon,
     link: "/shop",
