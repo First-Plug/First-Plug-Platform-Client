@@ -1,4 +1,4 @@
-import { SlackNotificationPayload } from "@/services/slackNotifications.services";
+import { SlackNotificationPayloadBulk } from "@/types/slack";
 
 export const prepareBulkCreateSlackPayload = (
   products,
@@ -6,7 +6,7 @@ export const prepareBulkCreateSlackPayload = (
   tenantName,
   sessionUser,
   members
-): SlackNotificationPayload[] => {
+): SlackNotificationPayloadBulk[] => {
   const commonAttributes = initialData.attributes.reduce((acc, attr) => {
     acc[attr.key] = attr.value || "N/A";
     return acc;
@@ -31,6 +31,7 @@ export const prepareBulkCreateSlackPayload = (
           apartment: member.apartment || "N/A",
           zipCode: member.zipCode || "N/A",
           city: member.city || "N/A",
+          state: member.state || "N/A",
           country: member.country || "N/A",
           phone: member.phone || "N/A",
           email: member.email || "N/A",
@@ -78,7 +79,12 @@ export const prepareBulkCreateSlackPayload = (
       };
     }
 
-    acc[assignmentKey].serialNumbers.push(product.serialNumber || "N/A");
+    if (product.serialNumber) {
+      acc[assignmentKey].serialNumbers.push(product.serialNumber);
+    } else {
+      acc[assignmentKey].serialNumbers.push("N/A");
+    }
+
     acc[assignmentKey].quantity += 1;
 
     return acc;
@@ -93,21 +99,16 @@ export const prepareBulkCreateSlackPayload = (
         brand: commonAttributes["brand"],
         model: commonAttributes["model"],
         name: initialData.name || "N/A",
-        quantity: assignment.quantity,
+        quantity: products.length,
       },
     ],
-    to: {
-      name: assignment.name || "N/A",
-      address: assignment.address || "N/A",
-      apartment: assignment.apartment || "N/A",
-      zipCode: assignment.zipCode || "N/A",
-      city: assignment.city || "N/A",
-      state: assignment.state || "N/A",
-      country: assignment.country || "N/A",
-      phone: assignment.phone || "N/A",
-      email: assignment.email || "N/A",
-      personalEmail: assignment.personalEmail || "N/A",
-      dni: assignment.dni || "N/A",
-    },
+    to: [
+      {
+        ...assignment,
+        serialNumbers: Array.isArray(assignment.serialNumbers)
+          ? assignment.serialNumbers
+          : [],
+      },
+    ],
   }));
 };

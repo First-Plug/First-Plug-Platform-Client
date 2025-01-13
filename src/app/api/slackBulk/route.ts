@@ -5,7 +5,7 @@ const webhookUrl = process.env.SLACK_WEBHOOK_URL_BULK_SHIPMENTS;
 
 export async function POST(request: Request) {
   try {
-    const { tenantName, action, products, assignments } = await request.json();
+    const { tenantName, action, products, to } = await request.json();
 
     if (!webhookUrl) {
       throw new Error(
@@ -13,8 +13,12 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!tenantName || !action || !products || !assignments) {
+    if (!tenantName || !action || !products || !to) {
       throw new Error("Faltan datos requeridos en el payload");
+    }
+
+    if (!Array.isArray(to)) {
+      throw new Error("'to' debe ser un array");
     }
 
     const blocks = [];
@@ -32,7 +36,7 @@ export async function POST(request: Request) {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Producto:*\nCantidad total: ${products.length}\nCategoría: ${
+        text: `*Producto:*\nCantidad total: ${product.quantity}\nCategoría: ${
           product.category
         }\nMarca: ${product.brand || "N/A"}\nModelo: ${
           product.model || "N/A"
@@ -40,52 +44,44 @@ export async function POST(request: Request) {
       },
     });
 
-    assignments.forEach((assignment) => {
+    to.forEach((assignment: any) => {
       const {
-        locationType,
         name,
         quantity,
         serialNumbers,
-        country,
-        state,
-        city,
         address,
-        zipCode,
+        apartment,
+        city,
+        country,
         email,
         personalEmail,
         phone,
+        state,
+        zipCode,
         dni,
       } = assignment;
 
-      let assignmentDetails = `*Para:* ${
-        name || locationType
-      }\nCantidad: ${quantity}\n`;
+      let assignmentDetails = `*Para:* ${name}\nCantidad asignada: ${quantity}\n`;
 
-      if (serialNumbers && serialNumbers.length > 0) {
-        assignmentDetails += `Número de serie: ${serialNumbers.join(", ")}\n`;
+      const formattedSerialNumbers = Array.isArray(serialNumbers)
+        ? serialNumbers.join(", ")
+        : serialNumbers;
+
+      if (formattedSerialNumbers && formattedSerialNumbers !== "N/A") {
+        assignmentDetails += `Números de serie: ${formattedSerialNumbers}\n`;
       }
 
-      if (locationType === "Oficina del cliente") {
-        assignmentDetails += `País: ${country || "N/A"}\nEstado: ${
-          state || "N/A"
-        }\nCiudad: ${city || "N/A"}\nDirección: ${
-          address || "N/A"
-        }\nCódigo postal: ${zipCode || "N/A"}\nEmail: ${
-          email || "N/A"
-        }\nTeléfono: ${phone || "N/A"}`;
-      } else if (locationType === "FP Warehouse") {
-        assignmentDetails += "Dirección: N/A\nCódigo postal: N/A\n";
-      } else if (locationType === "Empleado") {
-        assignmentDetails += `País: ${country || "N/A"}\nEstado: ${
-          state || "N/A"
-        }\nCiudad: ${city || "N/A"}\nDirección: ${
-          address || "N/A"
-        }\nCódigo postal: ${zipCode || "N/A"}\nEmail: ${
-          email || "N/A"
-        }\nCorreo personal: ${personalEmail || "N/A"}\nTeléfono: ${
-          phone || "N/A"
-        }\nDNI/CI: ${dni || "N/A"}`;
-      }
+      const fullAddress = `${address || "N/A"}${
+        apartment && apartment !== "N/A" ? `, ${apartment}` : ""
+      }`;
+
+      assignmentDetails += `País: ${country || "N/A"}\nEstado: ${
+        state || "N/A"
+      }\nCiudad: ${city || "N/A"}\nDirección: ${fullAddress}\nCódigo postal: ${
+        zipCode || "N/A"
+      }\nEmail: ${email || "N/A"}\nCorreo personal: ${
+        personalEmail || "N/A"
+      }\nTeléfono: ${phone || "N/A"}\nDNI/CI: ${dni || "N/A"}`;
 
       blocks.push({
         type: "section",
@@ -103,7 +99,6 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("Error al enviar el mensaje a Slack:", error.message);
     return NextResponse.json(
       { error: error.message || "Error desconocido" },
       { status: 500 }

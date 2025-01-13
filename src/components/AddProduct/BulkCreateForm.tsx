@@ -21,7 +21,10 @@ import BulkCreateValidator, {
 } from "@/components/AddProduct/utils/BulkCreateValidator";
 import { useSession } from "next-auth/react";
 import { prepareBulkCreateSlackPayload } from "@/components/AddProduct/PrepareBulkCreateSlackPayload";
-import { sendSlackNotification } from "@/services/slackNotifications.services";
+import {
+  sendSlackNotification,
+  sendSlackNotificationBulk,
+} from "@/services/slackNotifications.services";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -320,9 +323,7 @@ const BulkCreateForm: React.FC<{
       members
     );
 
-    for (const payload of slackPayloads) {
-      await sendSlackNotification(payload);
-    }
+    console.log("🔍 Payloads para Slack:", slackPayloads);
 
     try {
       setIsProcessing(true);
@@ -334,16 +335,22 @@ const BulkCreateForm: React.FC<{
           try {
             for (const payload of slackPayloads) {
               try {
-                await sendSlackNotification(payload);
+                console.log("📤 Intentando enviar a Slack:", payload);
+                await sendSlackNotificationBulk(payload);
+                console.log("✅ Notificación enviada exitosamente:", payload);
               } catch (error) {
                 console.error(
-                  "❌ Error al enviar notificación a Slack:",
-                  error
+                  "❌ Error al enviar el payload a Slack:",
+                  payload,
+                  error.message
                 );
               }
             }
           } catch (error) {
-            console.error("❌ Error al enviar notificaciones a Slack:", error);
+            console.error(
+              "❌ Error al enviar notificaciones a Slack:",
+              error.message
+            );
           }
 
           queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
@@ -356,6 +363,7 @@ const BulkCreateForm: React.FC<{
           setIsProcessing(false);
         },
         onError: (error) => {
+          console.error("❌ Error al crear productos:", error.message);
           if (
             error.response?.data?.message === "Serial Number already exists"
           ) {

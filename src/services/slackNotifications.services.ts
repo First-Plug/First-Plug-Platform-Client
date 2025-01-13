@@ -1,42 +1,8 @@
 import axios from "axios";
-
-export interface SlackNotificationPayload {
-  from?: {
-    name: string;
-    address: string;
-    apartment?: string;
-    zipCode: string;
-    phone?: string;
-    email?: string;
-    personalEmail?: string;
-    dni?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-  };
-  to: {
-    name: string;
-    address: string;
-    apartment?: string;
-    zipCode: string;
-    phone?: string;
-    email?: string;
-    personalEmail?: string;
-    dni?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-  };
-  products: {
-    category: string;
-    brand?: string;
-    model?: string;
-    name?: string;
-    serialNumber?: string;
-  }[];
-  action: string;
-  tenantName: string;
-}
+import {
+  SlackNotificationPayloadBulk,
+  SlackNotificationPayload,
+} from "../types/slack";
 
 export const sendSlackNotification = async (
   payload: SlackNotificationPayload
@@ -45,5 +11,18 @@ export const sendSlackNotification = async (
     await axios.post("/api/sendToSlack", payload);
   } catch (error: any) {
     console.error("❌ Error al enviar la notificación a Slack:", error.message);
+  }
+};
+
+export const sendSlackNotificationBulk = async (
+  payload: SlackNotificationPayloadBulk
+) => {
+  try {
+    await axios.post("/api/slackBulk", payload);
+  } catch (error: any) {
+    console.error(
+      "❌ Error al enviar la notificación a Slack Bulk:",
+      error.message
+    );
   }
 };

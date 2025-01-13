@@ -1,4 +1,4 @@
-import { SlackNotificationPayload } from "@/services/slackNotifications.services";
+import { SlackNotificationPayload } from "@/types/slack";
 import { Product, TeamMember, User } from "@/types";
 
 export interface ValidationEntity {
