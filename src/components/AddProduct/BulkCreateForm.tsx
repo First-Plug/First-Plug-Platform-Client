@@ -21,7 +21,10 @@ import BulkCreateValidator, {
 } from "@/components/AddProduct/utils/BulkCreateValidator";
 import { useSession } from "next-auth/react";
 import { prepareBulkCreateSlackPayload } from "@/components/AddProduct/PrepareBulkCreateSlackPayload";
-import { sendSlackNotification } from "@/services/slackNotifications.services";
+import {
+  sendSlackNotification,
+  sendSlackNotificationBulk,
+} from "@/services/slackNotifications.services";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -320,54 +323,46 @@ const BulkCreateForm: React.FC<{
       members
     );
 
-    try {
-      setIsProcessing(true);
+    setIsProcessing(true);
 
-      bulkCreateAssets(productsData, {
+    try {
+      const creationPromise = bulkCreateAssets(productsData, {
         onSuccess: async (data) => {
           setProducts(data);
-
-          try {
-            const sendNotificationsSequentially = async (payloads) => {
-              for (const payload of payloads) {
-                try {
-                  await sendSlackNotification(payload);
-                } catch (error) {
-                  console.error(
-                    "❌ Error al enviar notificación a Slack:",
-                    error
-                  );
-                }
-              }
-            };
-
-            await sendNotificationsSequentially(slackPayloads);
-          } catch (error) {
-            console.error("❌ Error al enviar notificaciones a Slack:", error);
-          }
-
-          queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
-            if (!proceedWithBulkCreate) {
-              setProceedWithBulkCreate(true);
-              onBack();
-            }
-          });
-
-          setIsProcessing(false);
+          queryClient.invalidateQueries({ queryKey: ["assets"] });
+          console.log("✅ Productos creados exitosamente.");
         },
         onError: (error) => {
-          if (
+          setAlert(
             error.response?.data?.message === "Serial Number already exists"
-          ) {
-            setAlert("bulkCreateSerialNumberError");
-          } else {
-            setAlert("bulkCreateProductError");
-          }
-          setIsProcessing(false);
+              ? "bulkCreateSerialNumberError"
+              : "bulkCreateProductError"
+          );
+          throw error;
         },
       });
+
+      const slackPromise = Promise.allSettled(
+        slackPayloads.map((payload) =>
+          sendSlackNotificationBulk(payload)
+            .then(() => {
+              console.log("✅ Notificación enviada exitosamente:", payload);
+            })
+            .catch((error) => {
+              console.error(
+                "❌ Error al enviar el payload a Slack:",
+                payload,
+                error.message
+              );
+            })
+        )
+      );
+
+      await Promise.all([creationPromise, slackPromise]);
+
+      setIsProcessing(false);
+      setAlert("bulkCreateProductSuccess");
     } catch (error) {
-      console.error("Error durante la creación:", error);
       setIsProcessing(false);
     }
   };
@@ -397,30 +392,15 @@ const BulkCreateForm: React.FC<{
     const isValid = await trigger();
     const isDataValid = await validateData(data);
 
-    if (!isValid || !isDataValid) {
-      return;
-    }
+    if (!isValid || !isDataValid) return;
 
     const hasIncompleteData = checkIncompleteData(data);
 
     if (hasIncompleteData) {
       setAlert("incompleteBulkCreateData");
-      setTimeout(() => {
-        handleBulkCreate(data).then(() => {
-          if (!proceedWithBulkCreate) {
-            setProceedWithBulkCreate(true);
-            setAlert("bulkCreateProductSuccess");
-          }
-        });
-      }, 3000);
-    } else {
-      handleBulkCreate(data).then(() => {
-        if (!proceedWithBulkCreate) {
-          setProceedWithBulkCreate(true);
-          setAlert("bulkCreateProductSuccess");
-        }
-      });
     }
+
+    await handleBulkCreate(data);
   };
 
   if (loading) {

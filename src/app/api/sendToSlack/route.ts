@@ -25,23 +25,25 @@ export async function POST(request: Request) {
       },
     });
 
-    blocks.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*De:* ${from.name}\nPaís: ${from.country || "N/A"}\nEstado: ${
-          from.state || "N/A"
-        }\nCiudad: ${from.city || "N/A"}\nDirección: ${
-          from.address || "N/A"
-        }, ${from.apartment || "N/A"}\nCódigo postal: ${
-          from.zipCode || "N/A"
-        }\n${from.email ? `Email: ${from.email}\n` : ""}${
-          from.personalEmail ? `Correo personal: ${from.personalEmail}\n` : ""
-        }${from.phone ? `Teléfono: ${from.phone}\n` : ""}${
-          from.dni ? `DNI/CI: ${from.dni}\n` : ""
-        }`,
-      },
-    });
+    if (action !== "Create Product") {
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*De:* ${from.name}\nPaís: ${from.country || "N/A"}\nEstado: ${
+            from.state || "N/A"
+          }\nCiudad: ${from.city || "N/A"}\nDirección: ${
+            from.address || "N/A"
+          }, ${from.apartment || "N/A"}\nCódigo postal: ${
+            from.zipCode || "N/A"
+          }\n${from.email ? `Email: ${from.email}\n` : ""}${
+            from.personalEmail ? `Correo personal: ${from.personalEmail}\n` : ""
+          }${from.phone ? `Teléfono: ${from.phone}\n` : ""}${
+            from.dni ? `DNI/CI: ${from.dni}\n` : ""
+          }`,
+        },
+      });
+    }
 
     products.forEach((product, index) => {
       blocks.push({
