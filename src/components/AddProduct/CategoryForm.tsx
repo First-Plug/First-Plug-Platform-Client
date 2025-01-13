@@ -224,6 +224,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               onChange={handleAssignedMemberChange}
               searchable={true}
               className="w-full "
+              disabled={true}
             />
             <div className="min-h-[24px]">
               {errors.assignedEmail && (
@@ -251,7 +252,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   }}
                   required="required"
                   className="w-full"
-                  disabled={!isLocationEnabled && !isUpdate}
+                  disabled={true}
                 />
                 <div className="min-h-[24px]">
                   {errors.location && (
