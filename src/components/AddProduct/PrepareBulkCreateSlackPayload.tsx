@@ -1,11 +1,13 @@
 import { SlackNotificationPayloadBulk } from "@/types/slack";
+import { QueryClient } from "@tanstack/react-query";
 
 export const prepareBulkCreateSlackPayload = (
   products,
   initialData,
   tenantName,
   sessionUser,
-  members
+  members,
+  queryClient: QueryClient
 ): SlackNotificationPayloadBulk[] => {
   const commonAttributes = initialData.attributes.reduce((acc, attr) => {
     acc[attr.key] = attr.value || "N/A";

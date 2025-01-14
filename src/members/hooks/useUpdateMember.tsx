@@ -52,7 +52,6 @@ export const useUpdateMember = () => {
       updateMemberInStore(data);
       setAlert("updateMember");
 
-      // Invalidar solo si es necesario
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
     },
