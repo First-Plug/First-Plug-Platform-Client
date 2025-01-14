@@ -43,12 +43,11 @@ export const validateMemberInfo = (user: ExtendedUser): boolean => {
   const isValid = requiredFields.every((field) => {
     const value = user[field as keyof ExtendedUser];
 
-    const fieldValid =
+    return (
       value !== undefined &&
       value !== null &&
-      (typeof value === "number" || value.toString().trim() !== "");
-
-    return fieldValid;
+      (typeof value === "number" || value.toString().trim() !== "")
+    );
   });
 
   return isValid;
