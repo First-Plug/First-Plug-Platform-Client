@@ -123,7 +123,7 @@ export const validateAfterAction = (
   if (destination) {
     validateEntity(
       destination,
-      source?.type === "office" ? "Assigned location" : "Assigned member"
+      destination?.type === "office" ? "Assigned location" : "Assigned member"
     );
   }
 
