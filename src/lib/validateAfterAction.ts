@@ -115,6 +115,10 @@ export const validateAfterAction = (
       }
     }
   };
+  if (!source) {
+    console.error("Source entity is undefined. Validation skipped.");
+    return;
+  }
 
   if (source) {
     validateEntity(source, "Current holder");
@@ -143,11 +147,17 @@ export const buildValidationEntities = (
     type: "member" | "office" | "warehouse";
     data: any;
   } | null = null;
-
   // Determinar `source`
   const currentMemberData = allMembers.find(
     (member) => member.email === product.assignedEmail
   );
+
+  if (!currentMemberData) {
+    console.warn(
+      `No member found for email ${product.assignedEmail}. Check the member data or product assignment.`
+    );
+    return { source: null, destination: null };
+  }
 
   if (currentMemberData) {
     source = { type: "member", data: currentMemberData };

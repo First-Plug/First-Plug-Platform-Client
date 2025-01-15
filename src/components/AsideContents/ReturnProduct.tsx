@@ -23,6 +23,7 @@ import {
   validateAfterAction,
 } from "@/lib/validateAfterAction";
 import { sendSlackNotification } from "@/services/slackNotifications.services";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface IRemoveItems {
   product: Product;
@@ -43,6 +44,7 @@ export function ReturnProduct({
     aside: { closeAside },
     members: { selectedMember },
   } = useStore();
+  const queryClient = useQueryClient();
   const [isRemoving, setIsRemoving] = useState(false);
   const [newLocation, setNewLocation] = useState<Location>(null);
   const [returnStatus, setReturnStatus] = useState<RelocateStatus>(undefined);
@@ -138,11 +140,17 @@ export function ReturnProduct({
       zipCode: session?.user?.zipCode,
       address: session?.user?.address,
     };
+    const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+
+    if (!allMembers || allMembers.length === 0) {
+      console.error("Member list is empty or unavailable.");
+      return { source: null, destination: null };
+    }
 
     const { source, destination } = buildValidationEntities(
       product,
-      [],
-      null,
+      allMembers,
+      location === "Our office" ? null : selectedMember,
       sessionUserData,
       location
     );
@@ -171,14 +179,6 @@ export function ReturnProduct({
     }
 
     if (location === "Our office") {
-      const { source, destination } = buildValidationEntities(
-        product,
-        [],
-        null,
-        sessionUserData,
-        "Our office"
-      );
-
       const missingMessages = validateAfterAction(source, destination);
 
       if (missingMessages.length > 0) {
