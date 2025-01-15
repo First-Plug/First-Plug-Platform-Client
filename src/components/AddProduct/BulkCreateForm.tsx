@@ -26,11 +26,7 @@ import BulkCreateValidator, {
 } from "@/components/AddProduct/utils/BulkCreateValidator";
 import { useSession } from "next-auth/react";
 import { prepareBulkCreateSlackPayload } from "@/components/AddProduct/PrepareBulkCreateSlackPayload";
-import {
-  sendSlackNotification,
-  sendSlackNotificationBulk,
-} from "@/services/slackNotifications.services";
-import { getAllMembers } from "@/members/actions";
+import { sendSlackNotificationBulk } from "@/services/slackNotifications.services";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -397,15 +393,15 @@ const BulkCreateForm: React.FC<{
   };
 
   const checkIncompleteData = (data: any): boolean => {
+    const updatedMembers =
+      queryClient.getQueryData<TeamMember[]>(["members"]) || [];
     let hasIncompleteData = false;
 
     data.products.forEach((product: any, index: number) => {
       const { assignedMember, location } = product;
 
-      console.log(`🔍 Producto ${index + 1}:`, product);
-
       if (assignedMember !== "None") {
-        const foundMember = members.find(
+        const foundMember = updatedMembers.find(
           (m) =>
             `${m.firstName} ${m.lastName}`.trim().toLowerCase() ===
             assignedMember.trim().toLowerCase()
