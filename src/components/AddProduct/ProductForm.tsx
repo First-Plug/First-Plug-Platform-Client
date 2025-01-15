@@ -360,51 +360,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const isCategoryValid = await validateCategory();
     if (!isCategoryValid || hasError) return;
 
-    //validacion de datos faltantes de los members o our office
-    if (isUpdate && initialData) {
-      const finalAssignedEmail = watch("assignedEmail");
-      const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
-
-      const updatedMember =
-        allMembers?.find((member) => member.email === finalAssignedEmail) ||
-        null;
-
-      const sessionUserData = {
-        country: sessionUser?.country,
-        city: sessionUser?.city,
-        state: sessionUser?.state,
-        zipCode: sessionUser?.zipCode,
-        address: sessionUser?.address,
-        apartment: sessionUser?.apartment,
-      };
-
-      const adjustedNoneOption =
-        data.location === "FP warehouse" ? "FP warehouse" : noneOption;
-
-      const validationResult = validateProductAssignment(
-        initialData,
-        finalAssignedEmail,
-        updatedMember,
-        queryClient,
-        (data) => {
-          // Mostrar alerta genérica si hay errores
-          setGenericAlertData({
-            title: data.title,
-            description: data.description,
-            isOpen: true,
-          });
-          setIsGenericAlertOpen(true);
-        },
-        () => {},
-        sessionUserData,
-        adjustedNoneOption
-      );
-
-      if (validationResult.hasErrors) {
-        console.warn("Validation errors detected, halting update process.");
-      }
-    }
-
     let source: ValidationEntity | null = null;
 
     if (!isUpdate) {
@@ -470,17 +425,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 setAlert("updateStock");
                 setAside(undefined);
                 setShowSuccessDialog(true);
-
-                const slackPayload = prepareSlackNotificationPayload(
-                  formatData,
-                  selectedMember,
-                  "Update Product",
-                  source,
-                  adjustedNoneOption,
-                  sessionUser.tenantName,
-                  sessionUser
-                );
-                await sendSlackNotification(slackPayload);
               } else {
                 setProceedWithSuccessAlert(true);
               }
