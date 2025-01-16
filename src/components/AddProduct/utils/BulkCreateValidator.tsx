@@ -35,7 +35,7 @@ export const validateMemberInfo = (user: ExtendedUser): boolean => {
     "city",
     "zipCode",
     "address",
-    "apartment",
+    // "apartment",
     "personalEmail",
     "phone",
     "dni",
