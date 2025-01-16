@@ -39,7 +39,6 @@ export const usePrefetchAssets = () => {
         );
 
       if (!isStoreSynced) {
-        console.log("Actualizando el store con nuevos datos.");
         setTable(assets);
       } else {
         console.log("El store ya está sincronizado.");
