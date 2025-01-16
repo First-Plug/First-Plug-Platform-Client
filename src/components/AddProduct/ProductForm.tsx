@@ -417,6 +417,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowSuccessDialog(true);
           return;
         }
+
+        if (changes.price?.amount === undefined) {
+          changes.price = null;
+        }
+
         await updateEntityAsset.mutateAsync(
           { id: initialData._id, data: changes },
           {
