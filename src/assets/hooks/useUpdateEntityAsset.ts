@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateAsset } from "../actions";
 import { useStore } from "@/models";
 import { Product } from "@/types";
+import { updateEntityAsset } from "../actions/updateEntityAsset";
 
 interface UpdateAssetProps {
   id: string;
-  data: Partial<Product> & { actionType: string };
+  data: Partial<Product>;
   showSuccessAlert?: boolean;
 }
 
@@ -18,7 +18,7 @@ function isProduct(response: BackendResponse): response is Product {
   return (response as Product)._id !== undefined;
 }
 
-export const useUpdateAsset = () => {
+export const useUpdateEntityAsset = () => {
   const queryClient = useQueryClient();
   const {
     products: { updateProduct },
@@ -31,7 +31,7 @@ export const useUpdateAsset = () => {
     UpdateAssetProps,
     MutationContext
   >({
-    mutationFn: ({ id, data }) => updateAsset(id, data),
+    mutationFn: ({ id, data }) => updateEntityAsset(id, data),
 
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ["assets", id] });
