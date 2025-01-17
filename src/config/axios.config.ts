@@ -32,7 +32,7 @@ export class HTTPRequests {
     try {
       return await axiosInstance.get(url, config);
     } catch (error) {
-      // Aquí puedes hacer más manejo de errores si es necesario, pero ya está gestionado en el interceptor
+      throw error;
     }
   }
 
@@ -40,7 +40,7 @@ export class HTTPRequests {
     try {
       return await axiosInstance.post(url, payload);
     } catch (error) {
-      // El interceptor ya maneja el 401
+      throw error;
     }
   }
 
@@ -64,7 +64,7 @@ export class HTTPRequests {
     try {
       return await axiosInstance.patch(url, payload);
     } catch (error) {
-      // El interceptor ya maneja el 401
+      throw error;
     }
   }
 }
