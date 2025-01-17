@@ -110,4 +110,17 @@ export class ProductServices {
     link.click();
     link.remove();
   }
+
+  static async softDeleteMany(ids: string[]): Promise<void> {
+    const response = await HTTPRequests.post(
+      `${BASE_URL}/api/products/soft-delete-many`,
+      {
+        data: { ids },
+      }
+    );
+
+    if (!response || !response.data) {
+      throw new Error("Failed to soft delete products");
+    }
+  }
 }

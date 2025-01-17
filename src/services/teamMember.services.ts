@@ -1,4 +1,4 @@
-import { TeamMember } from "@/types";
+import { Product, TeamMember } from "@/types";
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 
 type CreationMember = Omit<Omit<TeamMember, "_id">, "__v">;
@@ -43,10 +43,12 @@ export class Memberservices {
     }
   }
 
-  static async deleteMember(id: TeamMember["_id"]): Promise<TeamMember> {
+  static deleteMember = async (
+    id: string
+  ): Promise<{ member: TeamMember; products: Product[] }> => {
     const response = await HTTPRequests.delete(`${BASE_URL}/api/members/${id}`);
     return response.data;
-  }
+  };
 
   static async getAllMembersByTeam(teamId: string): Promise<TeamMember[]> {
     const response = await HTTPRequests.get(

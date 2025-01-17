@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteMemberAction } from "../actions";
 import { useStore } from "@/models";
-import { TeamMember } from "@/types";
+import { Product, TeamMember } from "@/types";
+import { Memberservices, ProductServices } from "@/services";
 
 export const useDeleteMember = () => {
   const queryClient = useQueryClient();
@@ -11,7 +12,31 @@ export const useDeleteMember = () => {
   } = useStore();
 
   return useMutation({
-    mutationFn: (id: string) => deleteMemberAction(id),
+    mutationFn: async (id: string) => {
+      const member = await Memberservices.getOneMember(id);
+
+      if (!member) {
+        throw new Error("Member not found");
+      }
+
+      const nonRecoverableProducts = member.products.filter(
+        (product: Product) => !product.recoverable
+      );
+
+      await deleteMemberAction(id);
+
+      if (nonRecoverableProducts.length > 0) {
+        const productIds = nonRecoverableProducts.map((product) => product._id);
+        await ProductServices.softDeleteMany(productIds);
+
+        await queryClient.cancelQueries({ queryKey: ["assets"] });
+        queryClient.setQueryData<Product[]>(["products"], (oldProducts = []) =>
+          oldProducts.filter((product) => !productIds.includes(product._id))
+        );
+      }
+
+      return { member, nonRecoverableProducts };
+    },
 
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: ["members"] });
