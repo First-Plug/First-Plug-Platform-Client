@@ -40,8 +40,11 @@ export const useDeleteMember = () => {
       const updatedMembers = queryClient.getQueryData<TeamMember[]>([
         "members",
       ]);
+
       deleteMember(id);
       setMembers(updatedMembers || []);
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
   });
 };
