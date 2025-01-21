@@ -9,3 +9,4 @@ export * from "./getAssetsForReassign";
 export * from "./reassignAsset";
 export * from "./exportAssetsCsv";
 export * from "./getTableAssets";
+export * from "./updateEntityAsset";

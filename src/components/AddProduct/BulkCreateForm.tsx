@@ -7,7 +7,12 @@ import { Button, PageLayout, SectionTitle } from "@/common";
 import { DropdownInputProductForm } from "@/components/AddProduct/DropDownProductForm";
 import { InputProductForm } from "@/components/AddProduct/InputProductForm";
 import { getSnapshot, Instance } from "mobx-state-tree";
-import { AttributeModel, ProductModel, TeamMemberModel } from "@/types";
+import {
+  AttributeModel,
+  ProductModel,
+  TeamMember,
+  TeamMemberModel,
+} from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
@@ -15,6 +20,13 @@ import { useBulkCreateAssets } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchMembers } from "@/members/hooks";
 import { getMemberFullName } from "@/members/helpers/getMemberFullName";
+import BulkCreateValidator, {
+  validateCompanyBillingInfo,
+  validateMemberInfo,
+} from "@/components/AddProduct/utils/BulkCreateValidator";
+import { useSession } from "next-auth/react";
+import { prepareBulkCreateSlackPayload } from "@/components/AddProduct/PrepareBulkCreateSlackPayload";
+import { sendSlackNotificationBulk } from "@/services/slackNotifications.services";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -24,6 +36,9 @@ const BulkCreateForm: React.FC<{
   setIsProcessing?: (isProcessing: boolean) => void;
 }> = ({ initialData, quantity, onBack, isProcessing, setIsProcessing }) => {
   const { mutate: bulkCreateAssets, status } = useBulkCreateAssets();
+  const session = useSession();
+  const sessionUser = session.data?.user;
+  const { data: fetchedMembers } = useFetchMembers();
   const isLoading = status === "pending";
 
   const queryClient = useQueryClient();
@@ -62,6 +77,8 @@ const BulkCreateForm: React.FC<{
   const productInstance = ProductModel.create(initialProductData);
 
   const {
+    members: { setMemberToEdit, members: storeMembers },
+    aside: { setAside },
     products: { setProducts },
     alerts: { setAlert },
   } = useStore();
@@ -97,7 +114,15 @@ const BulkCreateForm: React.FC<{
     Array(numProducts).fill("Location")
   );
   const [assignAll, setAssignAll] = useState(false);
+  const [productStatuses, setProductStatuses] = useState<string[]>([]);
+  const [genericAlertData, setGenericAlertData] = useState({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
+  const [proceedWithBulkCreate, setProceedWithBulkCreate] = useState(false);
 
+  //Desactiva Apply All si hay diferencias entre productos
   useLayoutEffect(() => {
     const subscription = watch((value, { name }) => {
       if (assignAll && name?.startsWith("products.") && name !== "products.0") {
@@ -137,8 +162,8 @@ const BulkCreateForm: React.FC<{
 
     return () => subscription.unsubscribe();
   }, [watch, assignAll]);
-  const { data: fetchedMembers } = useFetchMembers();
 
+  //carga inicial de members y sus opciones de mail
   useEffect(() => {
     if (fetchedMembers) {
       setMembers(fetchedMembers as Instance<typeof TeamMemberModel>[]);
@@ -246,6 +271,13 @@ const BulkCreateForm: React.FC<{
   };
 
   const handleBulkCreate = async (data: any) => {
+    await queryClient.invalidateQueries({ queryKey: ["members"] });
+    const updatedMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+    if (!updatedMembers) {
+      console.error("❌ No se pudieron obtener los miembros actualizados");
+      return;
+    }
+
     const firstProductPrice = data.products[0].price;
     const productsData = data.products.map((productData: any) => {
       const assignedMember = productData.assignedMember;
@@ -276,46 +308,129 @@ const BulkCreateForm: React.FC<{
       return;
     }
 
-    try {
-      setIsProcessing(true);
-      bulkCreateAssets(productsData, {
-        onSuccess: (data) => {
-          setProducts(data);
+    setIsProcessing(true);
 
-          queryClient.invalidateQueries({ queryKey: ["assets"] }).then(() => {
-            setAlert("bulkCreateProductSuccess");
-            onBack();
-          });
+    try {
+      await bulkCreateAssets(productsData, {
+        onSuccess: async (createdProducts) => {
+          setProducts(createdProducts);
+          queryClient.invalidateQueries({ queryKey: ["assets"] });
+
+          // Solo si la creación es exitosa, se envían las notificaciones a Slack
+          const slackPayloads = prepareBulkCreateSlackPayload(
+            productsData.map((product) => {
+              const memberData = updatedMembers.find(
+                (m) => m.email === product.assignedEmail
+              );
+
+              return {
+                assignedMember: memberData
+                  ? {
+                      firstName: memberData.firstName,
+                      lastName: memberData.lastName,
+                      email: memberData.email,
+                    }
+                  : null,
+                assignedEmail: product.assignedEmail || "",
+                location: product.location,
+                serialNumber: product.serialNumber,
+              };
+            }),
+            {
+              name: initialProductData.name,
+              category: initialProductData.category,
+              attributes: attributesArray,
+            },
+            sessionUser.tenantName,
+            sessionUser,
+            updatedMembers,
+            queryClient
+          );
+
+          await Promise.allSettled(
+            slackPayloads.map((payload) =>
+              sendSlackNotificationBulk(payload)
+                .then(() => {
+                  console.log("✅ Notificación enviada exitosamente:", payload);
+                })
+                .catch((error) => {
+                  console.error(
+                    "❌ Error al enviar el payload a Slack:",
+                    payload,
+                    error.message
+                  );
+                })
+            )
+          );
 
           setIsProcessing(false);
+          setAlert("bulkCreateProductSuccess");
         },
         onError: (error) => {
-          console.error("Error en bulkCreate:", error);
-          if (
-            error.response?.data?.message === "Serial Number already exists"
-          ) {
+          setIsProcessing(false);
+          if (error.response?.data?.error === "Serial Number already exists") {
             setAlert("bulkCreateSerialNumberError");
           } else {
             setAlert("bulkCreateProductError");
           }
-          setIsProcessing(false);
         },
       });
     } catch (error) {
-      console.error("Error durante la creación:", error);
       setIsProcessing(false);
     }
+  };
+
+  const checkIncompleteData = (data: any): boolean => {
+    const updatedMembers =
+      queryClient.getQueryData<TeamMember[]>(["members"]) || [];
+    let hasIncompleteData = false;
+
+    data.products.forEach((product: any, index: number) => {
+      const { assignedMember, location } = product;
+
+      if (assignedMember !== "None") {
+        const foundMember = updatedMembers.find(
+          (m) =>
+            `${m.firstName} ${m.lastName}`.trim().toLowerCase() ===
+            assignedMember.trim().toLowerCase()
+        );
+
+        if (foundMember) {
+          const isMemberValid = validateMemberInfo(foundMember);
+
+          if (!isMemberValid) {
+            hasIncompleteData = true;
+          }
+        } else {
+          hasIncompleteData = true;
+        }
+      }
+
+      if (location === "Our office") {
+        const isBillingValid = validateCompanyBillingInfo(sessionUser);
+
+        if (!isBillingValid) {
+          hasIncompleteData = true;
+        }
+      }
+    });
+
+    return hasIncompleteData;
   };
 
   const onSubmit = async (data: any) => {
     const isValid = await trigger();
     const isDataValid = await validateData(data);
 
-    if (!isValid || !isDataValid) {
-      return;
+    if (!isValid || !isDataValid) return;
+
+    const hasIncompleteData = checkIncompleteData(data);
+
+    if (hasIncompleteData) {
+      setAlert("incompleteBulkCreateData");
     }
 
-    handleBulkCreate(data);
+    await handleBulkCreate(data);
   };
 
   if (loading) {
@@ -381,7 +496,7 @@ const BulkCreateForm: React.FC<{
             {Array.from({ length: numProducts }, (_, index) => (
               <div key={index} className="mb-4">
                 <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 ">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 ">
                   <div className="w-full">
                     <DropdownInputProductForm
                       options={assignedEmailOptions}
@@ -463,6 +578,23 @@ const BulkCreateForm: React.FC<{
                         )
                       }
                       className="w-full"
+                    />
+                  </div>
+                  <div className="w-full">
+                    <BulkCreateValidator
+                      productIndex={index}
+                      selectedMember={watch(`products.${index}.assignedMember`)}
+                      relocation={watch(`products.${index}.location`)}
+                      members={members}
+                      onStatusChange={(status, i) => {
+                        setProductStatuses((prev) => {
+                          const newStatuses = [...prev];
+                          newStatuses[i] = status;
+                          return newStatuses;
+                        });
+                      }}
+                      setMemberToEdit={setMemberToEdit}
+                      setAside={setAside}
                     />
                   </div>
                 </div>

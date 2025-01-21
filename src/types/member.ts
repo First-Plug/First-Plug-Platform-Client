@@ -11,7 +11,7 @@ export const TeamMemberModel = types.model({
   email: types.string,
   picture: types.optional(types.string, ""),
   position: types.optional(types.string, ""),
-  personalEmail: types.optional(types.string, ""),
+  personalEmail: types.maybeNull(types.string),
   phone: types.optional(types.string, ""),
   city: types.optional(types.string, ""),
   country: types.optional(types.string, ""),

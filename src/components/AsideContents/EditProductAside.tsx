@@ -17,7 +17,7 @@ export var EditProductAside = observer(() => {
     if (cachedProduct) {
       setProductToEdit(cachedProduct);
     } else {
-      console.log("Producto no encontrado en caché, mostrando loader.");
+      console.error("Producto no encontrado en caché, mostrando loader.");
     }
 
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {

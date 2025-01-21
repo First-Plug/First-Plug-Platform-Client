@@ -26,10 +26,8 @@ export const useUpdateMember = () => {
         id,
       ]);
 
-      // Crear un miembro optimista
       const optimisticMember = { ...previousMember, ...data };
 
-      // Actualizar el cache con el miembro optimista
       queryClient.setQueryData<TeamMember>(["members", id], optimisticMember);
 
       return { previousMember };
@@ -42,20 +40,18 @@ export const useUpdateMember = () => {
           ["members", variables.id],
           context.previousMember
         );
-        console.log(
-          "Cache restaurado con el miembro anterior:",
-          context.previousMember
-        );
       }
     },
 
     onSuccess: (data, id) => {
-      queryClient.setQueryData<TeamMember[]>(["members"], (oldMembers) =>
-        oldMembers.map((member) => (member._id === data._id ? data : member))
-      );
+      queryClient.setQueryData<TeamMember[]>(["members"], (oldMembers) => {
+        return oldMembers.map((member) =>
+          member._id === data._id ? data : member
+        );
+      });
       updateMemberInStore(data);
       setAlert("updateMember");
-      // Invalidar solo si es necesario
+
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
     },

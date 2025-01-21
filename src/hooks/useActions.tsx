@@ -18,7 +18,7 @@ export default function useActions() {
     currentMember: TeamMember;
     product: Product;
   }) => {
-    const updatedProduct: Partial<Product> = {
+    const updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
       name: product.name,
@@ -26,6 +26,7 @@ export default function useActions() {
       assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
       status: "Delivered",
       location: "Employee",
+      actionType: "relocate",
     };
     if (product.assignedMember) {
       updatedProduct.lastAssigned =
@@ -49,7 +50,7 @@ export default function useActions() {
     product: Product;
     currentMember?: TeamMember;
   }) => {
-    let updatedProduct: Partial<Product> = {
+    let updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
       name: product.name,
@@ -57,6 +58,7 @@ export default function useActions() {
       assignedMember: "",
       status: "Available",
       location,
+      actionType: "return",
     };
     if (product.assignedMember) {
       updatedProduct.lastAssigned =
@@ -66,6 +68,7 @@ export default function useActions() {
     try {
       await reassignProduct(product._id, updatedProduct);
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     } catch (error) {
       console.error("Error unassigning product:", error);
     }

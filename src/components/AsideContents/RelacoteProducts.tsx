@@ -1,7 +1,7 @@
 import { ArrowLeft } from "@/common";
 import ProductDetail from "@/common/ProductDetail";
 import { Product } from "@/types";
-import { useState, Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 interface IRelacoteProducts {
   products: Product[];

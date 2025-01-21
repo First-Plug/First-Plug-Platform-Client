@@ -32,7 +32,7 @@ export default observer(function EditProduct({
       queryClient.setQueryData(["selectedProduct"], cachedProduct);
       setAside("EditProduct");
     } else {
-      console.log(
+      console.error(
         "Producto no encontrado en caché; el aside mostrará un loader."
       );
     }

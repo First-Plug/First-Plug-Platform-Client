@@ -1,4 +1,6 @@
 export const ALERTS_TYPES = [
+  "incompleteBulkCreateData",
+  "dynamicWarning",
   "csvSuccess",
   "updateMember",
   "updateStock",

@@ -7,7 +7,6 @@ import { AlertType } from "@/types/alerts";
 import { useRouter } from "next/navigation";
 import { XCircleIcon } from "lucide-react";
 import { CheckIcon } from "@/common";
-import useFetch from "@/hooks/useFetch";
 import { useQueryClient } from "@tanstack/react-query";
 
 function XIcon() {
@@ -15,21 +14,41 @@ function XIcon() {
 }
 interface IConfig {
   title: string;
-  description: string;
-  type: "succes" | "error";
+  description: string | React.ReactNode;
+  type: "succes" | "error" | "warning";
   closeAction: () => void;
 }
 
+type DynamicAlertType = AlertType | "dynamicWarning";
+
 export default observer(function AlertProvider() {
   const {
-    alerts: { alertType, setAlert },
+    members,
+    alerts: { alertType, setAlert, alertData },
     aside: { setAside },
   } = useStore();
   const router = useRouter();
-  const { fetchMembers, fetchStock } = useFetch();
   const queryClient = useQueryClient();
 
   const Config: Record<AlertType, IConfig> = {
+    incompleteBulkCreateData: {
+      title: "Incomplete Data",
+      type: "warning",
+      description:
+        "Some members or locations have missing information. Please complete the details later to finalize shipments.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    dynamicWarning: {
+      title: alertData?.title || "Warning",
+      type: "warning",
+      description: alertData?.description || "Details are missing.",
+      closeAction: () => {
+        setAlert(undefined);
+        if (alertData?.onClose) alertData.onClose();
+      },
+    },
     memberMissingFields: {
       title: "Error",
       type: "error",
@@ -154,8 +173,6 @@ export default observer(function AlertProvider() {
       description: " Your product has been successfully updated.",
       closeAction: async () => {
         queryClient.invalidateQueries({ queryKey: ["members"] });
-        // queryClient.invalidateQueries({ queryKey: ["assets"] });
-        // await fetchStock();
         setAlert(undefined);
       },
     },
@@ -394,7 +411,11 @@ export default observer(function AlertProvider() {
             <span className="font-semibold text-black text-2xl">{title}</span>
           </Dialog.Title>
           <Dialog.Description className="text-lg text-center my-2 ">
-            {description}
+            {alertData?.isHtml ? (
+              <div dangerouslySetInnerHTML={{ __html: description }} />
+            ) : (
+              description
+            )}
           </Dialog.Description>
           <div className="mt-4 flex justify-end">
             <Dialog.Close asChild>

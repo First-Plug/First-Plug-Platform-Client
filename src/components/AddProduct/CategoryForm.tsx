@@ -152,14 +152,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 
   useEffect(() => {
     if (selectedModel === "Other") {
-      setShowNameInput(true);
-    } else {
-      setShowNameInput(false);
-    }
-  }, [selectedModel]);
-
-  useEffect(() => {
-    if (selectedModel === "Other") {
       setValue("name", watch("name") || "");
     }
   }, [selectedModel, setValue, watch]);
@@ -167,6 +159,24 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const handleRecoverableChange = (value: boolean) => {
     setIsRecoverable(value);
     setValue("recoverable", value);
+  };
+
+  useEffect(() => {
+    watch("attributes").find((attr) => attr.key === "model")?.value;
+  }, [watch("attributes")]);
+
+  const shouldShowProductNameInput = () => {
+    const selectedModel =
+      watch("model") ||
+      watch("attributes")?.find((attr) => attr.key === "model")?.value;
+
+    if (selectedCategory === "Merchandising") {
+      return true;
+    }
+    if (selectedModel === "Other") {
+      return true;
+    }
+    return false;
   };
 
   if (isLoading) {
@@ -214,6 +224,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               onChange={handleAssignedMemberChange}
               searchable={true}
               className="w-full "
+              disabled={true}
             />
             <div className="min-h-[24px]">
               {errors.assignedEmail && (
@@ -241,7 +252,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   }}
                   required="required"
                   className="w-full"
-                  disabled={!isLocationEnabled && !isUpdate}
+                  disabled={true}
                 />
                 <div className="min-h-[24px]">
                   {errors.location && (
@@ -258,6 +269,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 type="text"
                 name="location"
                 value="Employee"
+                disabled={true}
                 onChange={(e) => handleInputChange("location", e.target.value)}
                 className="w-full"
                 readOnly={selectedLocation === "Employee"}
@@ -323,8 +335,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             />
           </div>
 
-          {selectedModel === "Other" ||
-          (isUpdate && watch("name") && selectedModel === "Other") ? (
+          {shouldShowProductNameInput() && (
             <div className="w-full">
               <InputProductForm
                 placeholder="Product Name"
@@ -340,7 +351,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 )}
               </div>
             </div>
-          ) : null}
+          )}
         </div>
       ) : (
         <>
@@ -392,7 +403,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               />
             </div>
 
-            {selectedModel === "Other" ? (
+            {shouldShowProductNameInput() ? (
               <div>
                 <InputProductForm
                   placeholder="Product Name"

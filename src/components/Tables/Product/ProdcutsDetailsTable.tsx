@@ -144,7 +144,10 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
     accessorFn: (row) => row.status,
     header: "Actions",
     size: 85,
-    cell: ({ row, getValue }) => <ActionButton product={row.original} />,
+    cell: ({ row }) => {
+      const assignedMemberEmail = row.original.assignedEmail || "";
+      return <ActionButton product={row.original} />;
+    },
     enableColumnFilter: false,
   },
   {
@@ -166,11 +169,7 @@ export default function ProdcutsDetailsTable({
   onResetInternalFilters,
 }: IProdcutsDetailsTable) {
   const { prefetchAsset } = usePrefetchAsset();
-  console.log("Products for internal table:", products);
 
-  // useEffect(() => {
-  //   products.forEach((product) => prefetchAsset(product._id));
-  // }, [products, prefetchAsset]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [selectedFilterOptions, setSelectedFilterOptions] = useState({});
   const [key, setKey] = useState(0);
@@ -200,7 +199,6 @@ export default function ProdcutsDetailsTable({
 
   useEffect(() => {
     const handleScroll = () => {
-      console.log("Scroll detected in sub-table");
       setColumnFilters([]);
     };
 

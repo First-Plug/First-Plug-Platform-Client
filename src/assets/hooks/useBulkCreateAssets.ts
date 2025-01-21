@@ -15,30 +15,34 @@ export const useBulkCreateAssets = () => {
     onMutate: async (newProducts: Product[]) => {
       await queryClient.cancelQueries({ queryKey: ["assets"] });
 
-      setProducts(newProducts);
-
       const previousProducts = queryClient.getQueryData<Product[]>(["assets"]);
-
       queryClient.setQueryData<Product[]>(["assets"], (old) => [
         ...(old || []),
         ...newProducts,
       ]);
 
+      setProducts(newProducts);
       return { previousProducts };
     },
     onSuccess: (data) => {
-      setProducts(data);
       queryClient.invalidateQueries({ queryKey: ["assets"] });
-      setAlert("bulkCreateProductSuccess");
+      queryClient.invalidateQueries({ queryKey: ["members"] });
     },
     onError: (error: any) => {
       const message =
-        error?.response?.data?.message || "An unexpected error occurred";
+        error?.response?.data?.message ||
+        error?.message ||
+        "An unexpected error occurred";
       setAlert(
         message.includes("Serial Number")
           ? "bulkCreateSerialNumberError"
           : "bulkCreateProductError"
       );
+      console.error("Error al crear productos:", message, error);
+    },
+    retry: (failureCount, error) => {
+      const isRecoverableError = error?.response?.status === 429;
+      return isRecoverableError && failureCount < 3;
     },
   });
 };

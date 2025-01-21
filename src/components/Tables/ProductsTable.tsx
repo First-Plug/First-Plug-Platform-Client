@@ -7,8 +7,10 @@ import { RootTable } from "./RootTable";
 import { useStore } from "@/models";
 import ProdcutsDetailsTable from "./Product/ProdcutsDetailsTable";
 import "./table.css";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { autorun } from "mobx";
+// import { usePrefetchAssets } from "@/assets/hooks";
+import { DetailsButton } from "@/common/DetailButton";
 
 interface ProductsTableProps {
   assets: ProductTable[];
@@ -149,26 +151,9 @@ export const productColumns = (
     id: "expander",
     header: () => null,
     size: 20,
-    cell: ({ row }) =>
-      row.getCanExpand() && (
-        <Button
-          variant="text"
-          className="flex justify-end px-4 py-2 rounded-lg cursor-pointer"
-          onClick={() => {
-            console.log("Details button clicked for row:", row.original);
-            const toggleHandler = row.getToggleExpandedHandler();
-            console.log("Toggle handler:", toggleHandler);
-            toggleHandler();
-          }}
-        >
-          <span>Details</span>
-          <ArrowRight
-            className={`transition-all duration-200 ${
-              row.getIsExpanded() ? "rotate-[90deg]" : "rotate-[0]"
-            }`}
-          />
-        </Button>
-      ),
+    cell: ({ row }) => {
+      return row.getCanExpand() ? <DetailsButton row={row} /> : null;
+    },
   },
 ];
 
@@ -184,6 +169,11 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     (() => void) | null
   >(null);
 
+  // const renderCount = useRef(0);
+  // renderCount.current += 1;
+
+  // console.log(`ProductsTable render count: ${renderCount.current}`);
+
   const handleClearAllFilters = () => {
     setClearAll(true);
     if (resetSubTableFilters) {
@@ -197,20 +187,10 @@ export var ProductsTable = observer(function ProductsTable<ProductsTableProps>({
     }
   };
 
-  useEffect(() => {
-    autorun(() => {
-      if (assets.length) {
-        console.log("Setting table data in MobX:", assets);
-        setTable(assets);
-      }
-    });
-  }, [assets, setTable]);
-
-  useEffect(() => {
-    console.log("Assets loaded in ProductsTable:", assets);
-  }, [assets]);
-
-  const columns = productColumns(onlyAvaliable ? availableProducts : assets);
+  const columns = useMemo(
+    () => productColumns(onlyAvaliable ? availableProducts : assets),
+    [onlyAvaliable, availableProducts, assets]
+  );
 
   return (
     <>

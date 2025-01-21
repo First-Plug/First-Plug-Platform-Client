@@ -108,7 +108,7 @@ export default function SettingsForm() {
           setAlert("dataUpdatedSuccessfully");
         }
       } catch (error) {
-        console.log(error);
+        console.error(error);
         setAlert("errorUpdateTeam");
       } finally {
         setIsLoading(false);

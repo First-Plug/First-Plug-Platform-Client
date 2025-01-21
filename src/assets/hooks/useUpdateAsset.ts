@@ -5,7 +5,7 @@ import { Product } from "@/types";
 
 interface UpdateAssetProps {
   id: string;
-  data: Partial<Product>;
+  data: Partial<Product> & { actionType: string };
   showSuccessAlert?: boolean;
 }
 
@@ -73,9 +73,10 @@ export const useUpdateAsset = () => {
 
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      if (showSuccessAlert) {
-        setAlert("updateStock");
-      }
+      // if (showSuccessAlert) {
+      //   console.log("🚀 Asset actualizado con éxito:", response);
+      //   setAlert("updateStock");
+      // }
     },
   });
 

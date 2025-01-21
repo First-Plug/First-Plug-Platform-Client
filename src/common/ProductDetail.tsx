@@ -14,6 +14,14 @@ import useActions from "@/hooks/useActions";
 import { XIcon } from "lucide-react";
 import CategoryIcons from "@/components/AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
+import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
+import { useRouter } from "next/navigation";
+import {
+  buildValidationEntities,
+  validateAfterAction,
+} from "@/lib/validateAfterAction";
+import { sendSlackNotification } from "@/services/slackNotifications.services";
+
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
   product,
@@ -29,7 +37,14 @@ const MembersList = observer(function MembersList({
   handleSuccess?: () => void;
 }) {
   const {
-    members: { members, selectedMember: currentMember, setRelocateChange },
+    members: {
+      members,
+      selectedMember: currentMember,
+      setRelocateChange,
+      setMemberToEdit,
+    },
+    aside: { setAside },
+    user: { user: sessionUser },
   } = useStore();
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [isRelocating, setRelocating] = useState(false);
@@ -38,6 +53,14 @@ const MembersList = observer(function MembersList({
   const [selectedMember, setSelectedMember] = useState<TeamMember>();
   const { handleReassignProduct } = useActions();
   const queryClient = useQueryClient();
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [missingMemberData, setMissingMemberData] = useState("");
+  const [genericAlertData, setGenericAlertData] = useState({
+    title: "",
+    description: "",
+    isOpen: false,
+  });
+  const router = useRouter();
 
   const handleSelectMember = (member: TeamMember) => {
     setSelectedMember(member);
@@ -58,31 +81,182 @@ const MembersList = observer(function MembersList({
     (member) => member.email !== currentMember?.email
   );
 
+  const buildSlackPayload = (
+    tenantName: string,
+    currentHolder: TeamMember | null,
+    selectedMember: TeamMember,
+    product: Product,
+    action: string
+  ) => {
+    return {
+      tenantName,
+      from: {
+        name: `${currentHolder?.firstName || "Unknown"} ${
+          currentHolder?.lastName || "Unknown"
+        }`,
+        address: currentHolder?.address || "N/A",
+        apartment: currentHolder?.apartment || "N/A",
+        zipCode: currentHolder?.zipCode || "N/A",
+        city: currentHolder?.city || "N/A",
+        country: currentHolder?.country || "N/A",
+        phone: currentHolder?.phone || "N/A",
+        personalEmail: currentHolder?.personalEmail || "N/A",
+        email: currentHolder?.email || "N/A",
+        dni: currentHolder?.dni ? currentHolder.dni.toString() : "N/A",
+      },
+      to: {
+        name: `${selectedMember.firstName} ${selectedMember.lastName}`,
+        address: selectedMember.address || "N/A",
+        apartment: selectedMember.apartment || "N/A",
+        zipCode: selectedMember.zipCode || "N/A",
+        city: selectedMember.city || "N/A",
+        country: selectedMember.country || "N/A",
+        phone: selectedMember.phone || "N/A",
+        personalEmail: selectedMember.personalEmail || "N/A",
+        email: selectedMember.email || "N/A",
+        dni: selectedMember?.dni ? selectedMember.dni.toString() : "N/A",
+      },
+      products: [
+        {
+          category: product.category,
+          brand: product.attributes.find((attr) => attr.key === "brand")?.value,
+          model: product.attributes.find((attr) => attr.key === "model")?.value,
+          name: product.name || "N/A",
+          serialNumber: product.serialNumber || "N/A",
+        },
+      ],
+      action,
+    };
+  };
+
   const handleRelocateProduct = async () => {
-    if (selectedMember) {
-      setRelocating(true);
-      try {
-        await handleReassignProduct({
-          currentMember,
-          selectedMember,
-          product: product,
-        });
-        queryClient.invalidateQueries({ queryKey: ["members"] });
-        queryClient.invalidateQueries({ queryKey: ["assets"] });
-        setRelocateResult("success");
-        setRelocateStauts("success");
-        handleSuccess();
-      } catch (error) {
-        setRelocateResult("error");
-        setRelocateStauts("error");
-      } finally {
-        setRelocating(false);
-      }
+    if (!selectedMember) return;
+
+    const sessionUserData = {
+      country: sessionUser?.country,
+      city: sessionUser?.city,
+      state: sessionUser?.state,
+      zipCode: sessionUser?.zipCode,
+      address: sessionUser?.address,
+    };
+
+    const currentHolder = members.find(
+      (member) => member.email === product.assignedEmail
+    );
+    const flattenedCurrentHolder = currentHolder
+      ? JSON.parse(JSON.stringify(currentHolder))
+      : null;
+
+    const flattenedSelectedMember = selectedMember
+      ? JSON.parse(JSON.stringify(selectedMember))
+      : null;
+
+    const { source, destination } = buildValidationEntities(
+      product,
+      members,
+      flattenedSelectedMember,
+      sessionUserData,
+      null
+    );
+
+    if (!source || !source.data) {
+      source.data = flattenedCurrentHolder || {
+        firstName: product.assignedMember?.split(" ")[0] || "",
+        lastName: product.assignedMember?.split(" ")[1] || "",
+        email: product.assignedEmail,
+      };
+    }
+
+    const missingMessages = validateAfterAction(source, destination);
+
+    if (missingMessages.length > 0) {
+      const formattedMessages = missingMessages
+        .map(
+          (message) =>
+            `<div class="mb-2"><span>${message
+              .replace(
+                /Current holder \((.*?)\)/,
+                "Current holder (<strong>$1</strong>)"
+              )
+              .replace(
+                /Assigned member \((.*?)\)/,
+                "Assigned member (<strong>$1</strong>)"
+              )
+              .replace(
+                /Assigned location \((.*?)\)/,
+                "Assigned location (<strong>$1</strong>)"
+              )}</span></div>`
+        )
+        .join("");
+
+      setGenericAlertData({
+        title:
+          "The relocation was completed successfully, but details are missing",
+        description: formattedMessages,
+        isOpen: true,
+      });
+      console.warn("Validation warnings detected, proceeding with relocation.");
+    }
+
+    setRelocating(true);
+    try {
+      await handleReassignProduct({
+        currentMember,
+        selectedMember,
+        product: product,
+      });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+
+      const slackPayload = buildSlackPayload(
+        sessionUser?.tenantName || "Unknown Tenant",
+        flattenedCurrentHolder,
+        flattenedSelectedMember,
+        product,
+        "Relocate Product"
+      );
+
+      await sendSlackNotification(slackPayload);
+
+      setRelocateResult("success");
+      setRelocateStauts("success");
+      handleSuccess();
+    } catch (error) {
+      setRelocateResult("error");
+      setRelocateStauts("error");
+    } finally {
+      setRelocating(false);
     }
   };
 
   return (
     <section>
+      <GenericAlertDialog
+        open={genericAlertData.isOpen}
+        onClose={() =>
+          setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
+        }
+        title={genericAlertData.title || "Warning"}
+        description={genericAlertData.description || ""}
+        buttonText="OK"
+        onButtonClick={() =>
+          setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
+        }
+        isHtml={true}
+      />
+      <GenericAlertDialog
+        open={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
+        title="Please complete the missing data: "
+        description={missingMemberData}
+        buttonText="Update Member"
+        onButtonClick={() => {
+          router.push(`/home/my-team`);
+          setMemberToEdit(selectedMember._id);
+          setAside("EditMember");
+          setShowErrorDialog(false);
+        }}
+      />
       {selectedMember ? (
         <section className="flex justify-between w-full py-2">
           <div className="flex items-center gap-2">
@@ -178,7 +352,7 @@ interface ProductDetailProps {
   selectedProducts?: Product[];
   onRelocateSuccess?: () => void;
   disabled?: boolean;
-  isOffboardingStyles?: boolean
+  isOffboardingStyles?: boolean;
 }
 export default function ProductDetail({
   product,
@@ -189,7 +363,7 @@ export default function ProductDetail({
   isRelocating = false,
   onRelocateSuccess,
   disabled,
-  isOffboardingStyles
+  isOffboardingStyles,
 }: ProductDetailProps) {
   const [showList, setShowList] = useState(false);
   const [relocateStatus, setRelocateStauts] =
@@ -216,7 +390,10 @@ export default function ProductDetail({
 
             <hr />
 
-            <PrdouctModelDetail product={product} isOffboardingStyles={isOffboardingStyles} />
+            <PrdouctModelDetail
+              product={product}
+              isOffboardingStyles={isOffboardingStyles}
+            />
           </section>
           {isRelocating && (
             <Button

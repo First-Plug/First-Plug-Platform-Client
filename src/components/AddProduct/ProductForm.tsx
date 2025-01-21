@@ -9,6 +9,7 @@ import {
   AttributeModel,
   emptyProduct,
   zodCreateProductModel,
+  TeamMember,
 } from "@/types";
 import CategoryForm from "@/components/AddProduct/CategoryForm";
 import { cast } from "mobx-state-tree";
@@ -27,8 +28,18 @@ import BulkCreateForm from "./BulkCreateForm";
 import {
   useBulkCreateAssets,
   useCreateAsset,
-  useUpdateAsset,
+  useUpdateEntityAsset,
 } from "@/assets/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  validateOnCreate,
+  validateProductAssignment,
+} from "@/lib/validateAfterAction";
+import {
+  prepareSlackNotificationPayload,
+  ValidationEntity,
+} from "@/components/AddProduct/PrepareSlackNotificationPayload";
+import { sendSlackNotification } from "@/services/slackNotifications.services";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -49,14 +60,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
   isUpdate = false,
 }) => {
   const {
-    user: { user },
+    user: { user: sessionUser },
     aside: { setAside },
     alerts: { setAlert },
   } = useStore();
 
   const createAsset = useCreateAsset();
-  const updateAsset = useUpdateAsset();
+  const updateEntityAsset = useUpdateEntityAsset();
   const bulkCreateAssets = useBulkCreateAssets();
+  const queryClient = useQueryClient();
 
   const router = useRouter();
   const methods = useForm({
@@ -67,6 +79,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       category: initialData?.category || undefined,
       serialNumber: initialData?.serialNumber || undefined,
       price: initialData?.price || undefined,
+      attributes: initialData?.attributes || [],
     },
   });
   const {
@@ -99,6 +112,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
     recoverable: initialData?.recoverable || false,
   });
   const [manualChange, setManualChange] = useState(false);
+  const [genericAlertData, setGenericAlertData] = useState({
+    title: "",
+    description: "",
+    isOpen: false,
+  });
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [noneOption, setNoneOption] = useState<string | null>(null);
+  const [proceedWithSuccessAlert, setProceedWithSuccessAlert] = useState(false);
+  const [isGenericAlertOpen, setIsGenericAlertOpen] = useState(false);
+
+  useEffect(() => {
+    if (!selectedMember) {
+      setNoneOption("Our office");
+    } else {
+      setNoneOption(null);
+    }
+  }, [selectedMember]);
 
   const handleCategoryChange = useCallback(
     (category: Category | undefined) => {
@@ -112,14 +142,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
         setManualChange(false);
 
         const isRecoverable =
-          user?.isRecoverableConfig?.get(category || "") ??
+          sessionUser?.isRecoverableConfig?.get(category || "") ??
           category !== "Merchandising";
 
         setValue("recoverable", isRecoverable);
         setFormValues((prev) => ({ ...prev, recoverable: isRecoverable }));
       }
     },
-    [isUpdate, setValue, methods, user?.isRecoverableConfig, setFormValues]
+    [
+      isUpdate,
+      setValue,
+      methods,
+      sessionUser?.isRecoverableConfig,
+      setFormValues,
+    ]
   );
 
   const validateCategory = async () => {
@@ -164,8 +200,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
       if (!productName || productName.trim() === "") {
         methods.setError("name", {
           type: "manual",
-          message: "Product Name is required for this category and model.",
+          message: "Product Name is required.",
         });
+        console.log("Model in validateProductName:", model);
         return false;
       }
     } else {
@@ -181,12 +218,38 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setShowSuccessDialog(false);
     setShowErrorDialog(false);
     setErrorMessage("");
+    setGenericAlertData({ title: "", description: "", isOpen: false });
 
     const isProductNameValid = await validateProductName();
     if (!isProductNameValid) return;
 
     const finalAssignedEmail = watch("assignedEmail");
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
+    const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+    const selectedMember =
+      allMembers?.find((member) => member.email === finalAssignedEmail) || null;
+
+    const adjustedNoneOption = selectedMember
+      ? null
+      : data.location === "FP warehouse"
+      ? "FP warehouse"
+      : "Our office";
+
+    let missingMessages: string[] = [];
+
+    if (!isUpdate) {
+      missingMessages = await validateOnCreate(
+        selectedMember,
+        {
+          country: sessionUser?.country,
+          city: sessionUser?.city,
+          state: sessionUser?.state,
+          zipCode: sessionUser?.zipCode,
+          address: sessionUser?.address,
+        },
+        adjustedNoneOption
+      );
+    }
 
     const formatData: Product = {
       ...emptyProduct,
@@ -283,8 +346,45 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const isCategoryValid = await validateCategory();
     if (!isCategoryValid || hasError) return;
 
+    let source: ValidationEntity | null = null;
+
+    if (!isUpdate) {
+      if (adjustedNoneOption === "Our office") {
+        source = {
+          type: "office",
+          data: { ...sessionUser, location: "Our office" },
+        };
+      } else if (adjustedNoneOption === "FP warehouse") {
+        source = {
+          type: "office",
+          data: { location: "FP warehouse" },
+        };
+      }
+    } else if (isUpdate && initialData) {
+      if (initialData.location === "Employee" && initialData.assignedEmail) {
+        const currentMember = allMembers?.find(
+          (member) => member.email === initialData.assignedEmail
+        );
+        if (currentMember) {
+          source = {
+            type: "member",
+            data: currentMember,
+          };
+        }
+      } else {
+        source = {
+          type: "office",
+          data:
+            initialData.location === "Our office"
+              ? { ...sessionUser, location: "Our office" }
+              : { location: "FP warehouse" },
+        };
+      }
+    }
+
     try {
       setIsProcessing(true);
+
       if (isUpdate && initialData) {
         const changes: Partial<Product> = {};
         const requiredFields = ["name", "category", "location", "status"];
@@ -303,13 +403,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowSuccessDialog(true);
           return;
         }
-        await updateAsset.mutateAsync(
+
+        if (changes.price?.amount === undefined) {
+          changes.price = null;
+        }
+
+        await updateEntityAsset.mutateAsync(
           { id: initialData._id, data: changes },
           {
-            onSuccess: () => {
-              setAlert("updateStock");
-              setAside(undefined);
-              setShowSuccessDialog(true);
+            onSuccess: async () => {
+              if (!isGenericAlertOpen) {
+                setAlert("updateStock");
+                setAside(undefined);
+                setShowSuccessDialog(true);
+              } else {
+                setProceedWithSuccessAlert(true);
+              }
             },
             onError: (error) => handleMutationError(error, true),
           }
@@ -320,15 +429,44 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowBulkCreate(true);
         } else {
           await createAsset.mutateAsync(formatData, {
-            onSuccess: () => {
-              setAlert("createProduct");
-              methods.reset();
-              setSelectedCategory(undefined);
-              setAssignedEmail(undefined);
-              setShowSuccessDialog(true);
+            onSuccess: async () => {
+              const slackPayload = prepareSlackNotificationPayload(
+                formatData,
+                selectedMember,
+                "Create Product",
+                source,
+                adjustedNoneOption,
+                sessionUser.tenantName,
+                sessionUser
+              );
+              await sendSlackNotification(slackPayload);
             },
             onError: (error) => handleMutationError(error, true),
           });
+          if (missingMessages.length > 0) {
+            const formattedMessages = missingMessages
+              .map((msg) => `<div class="mb-2"><span>${msg}</span></div>`)
+              .join("");
+
+            setAlert("dynamicWarning", {
+              title: "Details Missing",
+              description: formattedMessages,
+              isHtml: true,
+              onClose: () => {
+                setAlert("createProduct");
+                methods.reset();
+                setSelectedCategory(undefined);
+                setAssignedEmail(undefined);
+                setShowSuccessDialog(true);
+              },
+            });
+          } else {
+            setAlert("createProduct");
+            methods.reset();
+            setSelectedCategory(undefined);
+            setAssignedEmail(undefined);
+            setShowSuccessDialog(true);
+          }
         }
       }
     } catch (error) {
@@ -450,12 +588,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setShowBulkCreate(true);
   };
 
-  // const clearErrorsRef = useRef(clearErrors);
-
-  // useEffect(() => {
-  //   clearErrorsRef.current = clearErrors;
-  // }, [clearErrors]);
-
   useEffect(() => {
     if (quantity > 1) {
       clearErrors(["assignedEmail", "assignedMember", "location"]);
@@ -465,10 +597,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const modelValue = watch("attributes").find(
     (attr) => attr.key === "model"
   )?.value;
-
-  // useEffect(() => {
-  //   console.log("Errores actuales del formulario:", errors);
-  // }, [errors]);
 
   return (
     <FormProvider {...methods}>

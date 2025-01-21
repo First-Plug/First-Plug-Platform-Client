@@ -35,6 +35,22 @@ export class ProductServices {
         `${BASE_URL}/api/products/${id}`,
         data
       );
+      console.log("se llama el  update");
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateEntityProduct(
+    id: Product["_id"],
+    data: Partial<Product>
+  ): Promise<Product> {
+    try {
+      const response = await HTTPRequests.patch(
+        `${BASE_URL}/api/products/entity/${id}`,
+        data
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -82,11 +98,16 @@ export class ProductServices {
   static async bulkCreateProducts(
     products: CreationProduct[]
   ): Promise<Product[]> {
-    const response = await HTTPRequests.post(
-      `${BASE_URL}/api/products/bulkcreate`,
-      products
-    );
-    return response.data;
+    try {
+      const response = await HTTPRequests.post(
+        `${BASE_URL}/api/products/bulkcreate`,
+        products
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error al crear productos:", error);
+      throw error;
+    }
   }
 
   static async exportProductsCsv(): Promise<void> {

@@ -4,7 +4,6 @@ import { AddMemberForm } from "../AddMemberForm";
 import { useEffect, useState } from "react";
 import { Product, TeamMember } from "@/types";
 import { observer } from "mobx-react-lite";
-import { setAuthInterceptor } from "@/config/axios.config";
 import { Skeleton } from "../ui/skeleton";
 import { useFetchAssetById } from "@/assets/hooks";
 import { useFetchMembers } from "@/members/hooks";
@@ -66,6 +65,7 @@ export const AssignProduct = observer(() => {
         members={filteredMembers}
         currentProduct={product}
         showNoneOption={type === "ReassignProduct"}
+        actionType={type as "AssignProduct" | "ReassignProduct"}
       />
     </div>
   );
