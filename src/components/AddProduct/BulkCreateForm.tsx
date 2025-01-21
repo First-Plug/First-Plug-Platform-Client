@@ -308,85 +308,73 @@ const BulkCreateForm: React.FC<{
       return;
     }
 
-    const slackPayloads = prepareBulkCreateSlackPayload(
-      productsData.map((product) => {
-        const memberData = updatedMembers.find(
-          (m) => m.email === product.assignedEmail
-        );
-
-        return {
-          assignedMember: memberData
-            ? {
-                firstName: memberData.firstName,
-                lastName: memberData.lastName,
-                email: memberData.email,
-              }
-            : null,
-          assignedEmail: product.assignedEmail || "",
-          location: product.location,
-          serialNumber: product.serialNumber,
-        };
-      }),
-      {
-        name: initialProductData.name,
-        category: initialProductData.category,
-        attributes: attributesArray,
-      },
-      sessionUser.tenantName,
-      sessionUser,
-      updatedMembers,
-      queryClient
-    );
-
     setIsProcessing(true);
 
     try {
-      const creationPromise = bulkCreateAssets(productsData, {
-        onSuccess: async (data) => {
-          setProducts(data);
+      await bulkCreateAssets(productsData, {
+        onSuccess: async (createdProducts) => {
+          setProducts(createdProducts);
           queryClient.invalidateQueries({ queryKey: ["assets"] });
+
+          // Solo si la creación es exitosa, se envían las notificaciones a Slack
+          const slackPayloads = prepareBulkCreateSlackPayload(
+            productsData.map((product) => {
+              const memberData = updatedMembers.find(
+                (m) => m.email === product.assignedEmail
+              );
+
+              return {
+                assignedMember: memberData
+                  ? {
+                      firstName: memberData.firstName,
+                      lastName: memberData.lastName,
+                      email: memberData.email,
+                    }
+                  : null,
+                assignedEmail: product.assignedEmail || "",
+                location: product.location,
+                serialNumber: product.serialNumber,
+              };
+            }),
+            {
+              name: initialProductData.name,
+              category: initialProductData.category,
+              attributes: attributesArray,
+            },
+            sessionUser.tenantName,
+            sessionUser,
+            updatedMembers,
+            queryClient
+          );
+
+          await Promise.allSettled(
+            slackPayloads.map((payload) =>
+              sendSlackNotificationBulk(payload)
+                .then(() => {
+                  console.log("✅ Notificación enviada exitosamente:", payload);
+                })
+                .catch((error) => {
+                  console.error(
+                    "❌ Error al enviar el payload a Slack:",
+                    payload,
+                    error.message
+                  );
+                })
+            )
+          );
+
+          setIsProcessing(false);
+          setAlert("bulkCreateProductSuccess");
         },
         onError: (error) => {
-          setAlert(
-            error.response?.data?.message === "Serial Number already exists"
-              ? "bulkCreateSerialNumberError"
-              : "bulkCreateProductError"
-          );
-          throw error;
+          setIsProcessing(false);
+          if (error.response?.data?.error === "Serial Number already exists") {
+            setAlert("bulkCreateSerialNumberError");
+          } else {
+            setAlert("bulkCreateProductError");
+          }
         },
       });
-
-      const slackPromise = Promise.allSettled(
-        slackPayloads.map((payload) =>
-          sendSlackNotificationBulk(payload)
-            .then(() => {
-              console.log("✅ Notificación enviada exitosamente:", payload);
-            })
-            .catch((error) => {
-              console.error(
-                "❌ Error al enviar el payload a Slack:",
-                payload,
-                error.message
-              );
-            })
-        )
-      );
-
-      await Promise.all([creationPromise, slackPromise]);
-      slackPromise.then((results) => {
-        results.forEach((result, index) => {
-          if (result.status === "rejected") {
-            console.error(
-              `❌ Error en la notificación ${index}:`,
-              slackPayloads[index],
-              result.reason
-            );
-          }
-        });
-      });
-
-      setIsProcessing(false);
-      setAlert("bulkCreateProductSuccess");
     } catch (error) {
       setIsProcessing(false);
     }
