@@ -6,7 +6,6 @@ import { useStore } from "@/models";
 import { observer } from "mobx-react-lite";
 import { Location, CATEGORIES, Category } from "@/types";
 import { FieldValues, useFormContext } from "react-hook-form";
-import { setAuthInterceptor } from "@/config/axios.config";
 import { Skeleton } from "../ui/skeleton";
 import QuantityCounter from "./QuantityCounter";
 import RecoverableSwitch from "./RecoverableSwitch";
@@ -327,7 +326,11 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
           </div>
 
           <div>
-            <ProductCondition isUpdate={isUpdate} isDisabled={false} />
+            <ProductCondition
+              isUpdate={isUpdate}
+              isDisabled={false}
+              selectedOption={watch("productCondition")}
+            />
           </div>
 
           {shouldShowProductNameInput() && (
@@ -539,7 +542,11 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
           </div>
           <div className="grid grid-cols-4 gap-4 items-start mt-2">
             <div className="col-span-1">
-              <ProductCondition isUpdate={isUpdate} isDisabled={false} />
+              <ProductCondition
+                isUpdate={isUpdate}
+                isDisabled={false}
+                selectedOption={watch("productCondition")}
+              />
             </div>
 
             <div className="col-span-3">

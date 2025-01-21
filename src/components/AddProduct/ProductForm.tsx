@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { Button, PageLayout, SectionTitle } from "@/common";
 import { useStore } from "@/models/root.store";
@@ -31,10 +31,7 @@ import {
   useUpdateEntityAsset,
 } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  validateOnCreate,
-  validateProductAssignment,
-} from "@/lib/validateAfterAction";
+import { validateOnCreate } from "@/lib/validateAfterAction";
 import {
   prepareSlackNotificationPayload,
   ValidationEntity,
@@ -67,10 +64,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const createAsset = useCreateAsset();
   const updateEntityAsset = useUpdateEntityAsset();
-  const bulkCreateAssets = useBulkCreateAssets();
   const queryClient = useQueryClient();
 
-  const router = useRouter();
   const methods = useForm({
     resolver: zodResolver(zodCreateProductModel),
     defaultValues: {
@@ -80,6 +75,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
       serialNumber: initialData?.serialNumber || undefined,
       price: initialData?.price || undefined,
       attributes: initialData?.attributes || [],
+      productCondition: initialData?.productCondition || undefined,
+      additionalInfo: initialData?.additionalInfo || undefined,
     },
   });
   const {
@@ -213,6 +210,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const amount = watch("price.amount");
+  const condition = watch("productCondition");
 
   const handleSaveProduct = async (data: Product) => {
     setShowSuccessDialog(false);
@@ -251,6 +249,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
       );
     }
 
+    let status: "Available" | "Delivered" | "Deprecated" | "Unavailable" =
+      "Available";
+
+    if (data.productCondition === "Unusable") {
+      status = "Unavailable";
+    } else {
+      // Si se ha asignado un miembro y la ubicación es "Employee", el status es "Delivered"
+      if (finalAssignedEmail && data.location === "Employee") {
+        status = "Delivered";
+      } else if (["FP warehouse", "Our office"].includes(data.location)) {
+        status = "Available";
+      }
+    }
+
     const formatData: Product = {
       ...emptyProduct,
       ...data,
@@ -258,10 +270,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
         ? { price: { amount, currencyCode: data.price?.currencyCode || "USD" } }
         : {}),
       recoverable: currentRecoverable,
-      status:
-        finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
+      status,
       category: selectedCategory || "Other",
       assignedEmail: finalAssignedEmail,
+      productCondition: data.productCondition || "Optimal",
+      additionalInfo: data.additionalInfo || "",
       attributes: cast(
         attributes.map((attr) => {
           const initialAttr = initialData?.attributes.find(
@@ -282,6 +295,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
         ? { serialNumber: data.serialNumber.trim() }
         : {}),
     };
+
+    console.log("Final formatted data:", formatData);
+    console.log("Final status:", status);
 
     const model = formatData.attributes.find(
       (attr) => attr.key === "model"

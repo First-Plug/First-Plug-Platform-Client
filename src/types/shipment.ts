@@ -8,6 +8,7 @@ export const SHIPMENT_STATUS = [
   "Available",
   "Shipped",
   "Complete",
+  "Unavailable",
 ] as const;
 
 export type ShipmentStatus = (typeof SHIPMENT_STATUS)[number];

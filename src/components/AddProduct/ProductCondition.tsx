@@ -5,7 +5,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { DropdownInputProductForm } from "@/components/AddProduct/DropDownProductForm";
 import { PRODUCT_CONDITIONS } from "@/types";
 
-const ProductCondition = function ({ isUpdate, isDisabled }) {
+const ProductCondition = function ({ isUpdate, isDisabled, selectedOption }) {
   const { control } = useFormContext();
   return (
     <div className={` ${isUpdate ? "mb-6" : "mb-10"}`}>
@@ -18,7 +18,7 @@ const ProductCondition = function ({ isUpdate, isDisabled }) {
             placeholder="Select Product Condition"
             title="Product Condition"
             name="productCondition"
-            selectedOption={field.value || ""}
+            selectedOption={selectedOption || field.value || ""}
             onChange={(value) => field.onChange(value)}
             searchable={false}
             className="w-full"

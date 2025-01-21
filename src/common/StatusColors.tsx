@@ -8,6 +8,7 @@ export const StatusColors = {
   error: "bg-red",
   disabled: "bg-disabled",
   preparing: "bg-lightYellow",
+  unavailable: "bg-[#FFC6D3]",
 } as const;
 
 export type StatusColor = keyof typeof StatusColors;
@@ -26,6 +27,7 @@ export const ShipmentStateColors: Record<ShipmentStatus, StatusColor> = {
   Delivered: "success",
   Preparing: "preparing",
   Shipped: "info",
+  Unavailable: "unavailable",
 } as const;
 
 export const JobPositionColors: string[] = [
