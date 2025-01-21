@@ -62,6 +62,10 @@ export function ActionButton({ product }: ActionButtonProps) {
       text: "Deprecated",
       action: () => {},
     },
+    Unavailable: {
+      text: "",
+      action: () => {},
+    },
   };
   const { action, text } = ActionConfig[product.status];
 
