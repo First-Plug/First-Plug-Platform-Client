@@ -2,6 +2,7 @@ import axios from "axios";
 import { NextResponse } from "next/server";
 
 const webhookUrl = process.env.SLACK_WEBHOOK_URL_SHIPMENTS;
+console.log("🔍 Webhook URL:", webhookUrl || "No definido");
 
 export async function POST(request: Request) {
   try {

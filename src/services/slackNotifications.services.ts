@@ -3,6 +3,7 @@ import {
   SlackNotificationPayloadBulk,
   SlackNotificationPayload,
 } from "../types/slack";
+import { NextResponse } from "next/server";
 
 export const sendSlackNotification = async (
   payload: SlackNotificationPayload
@@ -10,7 +11,18 @@ export const sendSlackNotification = async (
   try {
     await axios.post("/api/sendToSlack", payload);
   } catch (error: any) {
-    console.error("❌ Error al enviar la notificación a Slack:", error.message);
+    console.error("❌ Error al enviar la notificación a Slack:", {
+      message: error.message,
+      stack: error.stack,
+      config: error.config,
+      response: error.response ? error.response.data : "Sin respuesta de Slack",
+      status: error.response ? error.response.status : "Sin estado",
+    });
+
+    return NextResponse.json(
+      { error: error.message || "Error desconocido" },
+      { status: 500 }
+    );
   }
 };
 
