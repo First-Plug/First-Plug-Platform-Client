@@ -147,7 +147,15 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       setSelectedAssignedMember("");
       setValue("location", "");
       setSelectedLocation("");
-      clearErrors(["assignedEmail", "assignedMember", "location"]);
+      setValue("productCondition", "Optimal");
+      setValue("additionalInfo", "");
+      clearErrors([
+        "assignedEmail",
+        "assignedMember",
+        "location",
+        "productCondition",
+        "additionalInfo",
+      ]);
     }
   }, [quantity, clearErrors, setValue]);
 
@@ -544,13 +552,17 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             <div className="col-span-1">
               <ProductCondition
                 isUpdate={isUpdate}
-                isDisabled={false}
+                isDisabled={quantity > 1}
                 selectedOption={watch("productCondition")}
               />
             </div>
 
             <div className="col-span-3">
-              <AdditionalInfo isUpdate={isUpdate} initialData={formValues} />
+              <AdditionalInfo
+                isUpdate={isUpdate}
+                initialData={formValues}
+                disabled={quantity > 1}
+              />
             </div>
           </div>
         </>

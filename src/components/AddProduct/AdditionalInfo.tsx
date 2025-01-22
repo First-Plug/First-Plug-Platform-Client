@@ -4,7 +4,17 @@ import { observer } from "mobx-react-lite";
 import { InputProductForm } from "@/components/AddProduct/InputProductForm";
 import { useFormContext, Controller } from "react-hook-form";
 
-const AdditionalInfo = function ({ isUpdate, initialData }) {
+interface AdditionalInfoProps {
+  isUpdate: boolean;
+  initialData: any;
+  disabled?: boolean;
+}
+
+const AdditionalInfo: React.FC<AdditionalInfoProps> = function ({
+  isUpdate,
+  initialData,
+  disabled = false,
+}) {
   const { control } = useFormContext();
 
   return (
@@ -21,6 +31,7 @@ const AdditionalInfo = function ({ isUpdate, initialData }) {
             value={field.value || ""}
             onChange={(e) => field.onChange(e.target.value)}
             className="w-full"
+            disabled={disabled}
           />
         )}
       />
