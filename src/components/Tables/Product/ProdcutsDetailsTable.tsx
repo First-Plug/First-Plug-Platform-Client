@@ -113,12 +113,33 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
         | "Defective"
         | "Unusable",
     }),
-    header: "Status | Product Condition",
+    header: "Status + Product Condition",
     size: 200,
     meta: {
       filterVariant: "select",
-      options: PRODUCT_STATUSES.filter((status) => status !== "Deprecated"),
+      options: (rows) => {
+        const options = new Set<string>();
+
+        rows.forEach((row) => {
+          const product = row.original as {
+            status?: string;
+            productCondition?: string;
+          };
+
+          const status = product.status || "No Data";
+          const productCondition = product.productCondition || "Optimal";
+
+          const combinedOption = `${status} - ${productCondition}`;
+
+          if (status !== "Deprecated") {
+            options.add(combinedOption);
+          }
+        });
+
+        return Array.from(options);
+      },
     },
+
     cell: ({ getValue }) => {
       const value = getValue<{
         status: ShipmentStatus;
@@ -145,8 +166,19 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
     },
     enableColumnFilter: true,
     filterFn: (row, columnId, filterValue) => {
+      const product = row.original as {
+        status?: string;
+        productCondition?: string;
+      };
+
+      const status = product.status || "No Data";
+      const productCondition = product.productCondition || "Optimal";
+
+      const combinedValue = `${status} - ${productCondition}`;
+
       if (filterValue.length === 0) return true;
-      return filterValue.includes(row.getValue(columnId));
+
+      return filterValue.includes(combinedValue);
     },
   },
   {
