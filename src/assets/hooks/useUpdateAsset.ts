@@ -24,14 +24,30 @@ export const useUpdateAsset = () => {
     products: { updateProduct },
     alerts: { setAlert },
   } = useStore();
-
+  const validConditions = ["Optimal", "Defective", "Unusable"];
   const mutation = useMutation<
     BackendResponse,
     unknown,
     UpdateAssetProps,
     MutationContext
   >({
-    mutationFn: ({ id, data }) => updateAsset(id, data),
+    mutationFn: ({ id, data }) => {
+      const cachedProduct = queryClient.getQueryData<Product>(["assets", id]);
+      if (cachedProduct?.productCondition === "Unusable") {
+        data.status = cachedProduct.status;
+      }
+
+      if (!("productCondition" in data)) {
+        data.productCondition = cachedProduct?.productCondition ?? "Optimal";
+        console.log(
+          "Preserving existing productCondition:",
+          data.productCondition
+        );
+      }
+
+      console.log("Final data being sent:", data);
+      return updateAsset(id, data);
+    },
 
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ["assets", id] });
