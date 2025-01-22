@@ -21,7 +21,8 @@ type EmptyCardType =
   | "registerok"
   | "loginerror"
   | "registererror"
-  | "noStockMember";
+  | "noStockMember"
+  | "actionHistory";
 
 type TConfig = {
   image: string;
@@ -116,6 +117,10 @@ const Config: Record<EmptyCardType, TConfig> = {
     LinkIcon: ExclamationIcon,
     link: "/register",
     linkText: "Try Again",
+  },
+  actionHistory: {
+    image: "/office.svg",
+    paragraph: "You don't have any actions in your history.",
   },
 };
 
