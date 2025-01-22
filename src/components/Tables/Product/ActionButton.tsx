@@ -63,8 +63,8 @@ export function ActionButton({ product }: ActionButtonProps) {
       action: () => {},
     },
     Unavailable: {
-      text: "",
-      action: () => {},
+      text: "Reassign",
+      action: handleReassignAction,
     },
   };
   const { action, text } = ActionConfig[product.status];
