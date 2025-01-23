@@ -30,6 +30,7 @@ export const handleCategoryChange = ({
       assignedEmail: "",
       location: "",
       productCondition: "Optimal",
+      additionalInfo: "",
     });
     setSelectedCategory(category);
     setValue("category", category || undefined);
