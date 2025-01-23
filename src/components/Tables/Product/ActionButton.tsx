@@ -27,6 +27,7 @@ export function ActionButton({ product }: ActionButtonProps) {
   const { prefetchAssignData } = usePrefetchAssignData(product._id);
 
   const handleAssignAction = () => {
+    // await queryClient.invalidateQueries({ queryKey: ["assets", product._id] });
     const cachedProduct = queryClient.getQueryData<Product>([
       "assets",
       product._id,
@@ -39,6 +40,8 @@ export function ActionButton({ product }: ActionButtonProps) {
   };
 
   const handleReassignAction = () => {
+    // await queryClient.invalidateQueries({ queryKey: ["assets", product._id] });
+
     const cachedProduct = queryClient.getQueryData<Product>([
       "assets",
       product._id,
@@ -71,7 +74,10 @@ export function ActionButton({ product }: ActionButtonProps) {
 
   return (
     <div
-      onMouseEnter={() => {
+      onMouseEnter={async () => {
+        await queryClient.invalidateQueries({
+          queryKey: ["assets", product._id],
+        });
         prefetchAssignData();
       }}
     >
