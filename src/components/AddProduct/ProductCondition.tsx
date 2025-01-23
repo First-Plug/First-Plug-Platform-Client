@@ -18,7 +18,11 @@ const ProductCondition = function ({ isUpdate, isDisabled, selectedOption }) {
             placeholder="Select Product Condition"
             title="Product Condition"
             name="productCondition"
-            selectedOption={selectedOption || field.value || ""}
+            selectedOption={
+              isUpdate
+                ? selectedOption || field.value || "Optimal"
+                : selectedOption || field.value || ""
+            }
             onChange={(value) => field.onChange(value)}
             searchable={false}
             className="w-full"
