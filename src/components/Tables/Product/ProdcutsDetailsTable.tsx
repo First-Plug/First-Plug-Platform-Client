@@ -5,6 +5,7 @@ import {
   Location,
   Product,
   PRODUCT_STATUSES,
+  ProductCondition,
   ShipmentStatus,
 } from "@/types";
 import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
@@ -15,6 +16,7 @@ import { ActionButton } from "./ActionButton";
 import EditProduct from "./EditProduct";
 import { DeleteAction } from "@/components/Alerts";
 import { usePrefetchAsset } from "@/assets/hooks";
+import { ProductConditionCard } from "@/common/ProductConditionCard";
 
 interface IProdcutsDetailsTable {
   products: Product[];
@@ -104,20 +106,79 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
     },
   },
   {
-    accessorFn: (row) => row.status,
-    header: "Status",
+    accessorFn: (row) => ({
+      status: row.status,
+      productCondition: row.productCondition as
+        | "Optimal"
+        | "Defective"
+        | "Unusable",
+    }),
+    header: "Status + Product Condition",
     size: 200,
     meta: {
       filterVariant: "select",
-      options: PRODUCT_STATUSES.filter((status) => status !== "Deprecated"),
+      options: (rows) => {
+        const options = new Set<string>();
+
+        rows.forEach((row) => {
+          const product = row.original as {
+            status?: string;
+            productCondition?: string;
+          };
+
+          const status = product.status || "No Data";
+          const productCondition = product.productCondition || "Optimal";
+
+          const combinedOption = `${status} - ${productCondition}`;
+
+          if (status !== "Deprecated") {
+            options.add(combinedOption);
+          }
+        });
+
+        return Array.from(options);
+      },
     },
-    cell: ({ getValue }) => (
-      <ShipmentStatusCard status={getValue<ShipmentStatus>()} />
-    ),
+
+    cell: ({ getValue }) => {
+      const value = getValue<{
+        status: ShipmentStatus;
+        productCondition?: "Optimal" | "Defective" | "Unusable";
+      }>();
+
+      if (!value) {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400">No Data</span>
+            <ProductConditionCard productCondition="Optimal" />
+          </div>
+        );
+      }
+
+      return (
+        <div className="flex items-center gap-2">
+          <ShipmentStatusCard status={value.status} />
+          <ProductConditionCard
+            productCondition={value.productCondition || "Optimal"}
+          />
+        </div>
+      );
+    },
     enableColumnFilter: true,
     filterFn: (row, columnId, filterValue) => {
+      const product = row.original as {
+        status?: string;
+        productCondition?: string;
+      };
+
+      const status = product.status || "No Data";
+      const productCondition = product.productCondition || "Optimal";
+
+      const combinedValue = `${status} - ${productCondition}`;
+
       if (filterValue.length === 0) return true;
-      return filterValue.includes(row.getValue(columnId));
+
+      return filterValue.includes(combinedValue);
     },
   },
   {

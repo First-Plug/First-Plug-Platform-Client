@@ -72,6 +72,8 @@ const BulkCreateForm: React.FC<{
     serialNumber: initialData.serialNumber || "",
     lastAssigned: initialData.lastAssigned || "",
     price: initialData.price,
+    productCondition: initialData.productCondition || "Optimal",
+    additionalInfo: initialData.additionalInfo || "",
   };
 
   const productInstance = ProductModel.create(initialProductData);
@@ -299,6 +301,7 @@ const BulkCreateForm: React.FC<{
         recoverable: productData.recoverable,
         status,
         attributes: productData.attributes,
+        productCondition: "Optimal",
         ...(price ? { price } : {}),
       };
     });

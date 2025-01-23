@@ -341,8 +341,11 @@ export function RootTable<TData, TValue>({
           return productTable.products[0]?.assignedMember || "No Data";
         }
 
-        if (headerId === "status") {
-          return productTable.products[0]?.status || "No Data";
+        if (headerId === "Status + Product Condition") {
+          const status = productTable.status || "No Data";
+          const productCondition = productTable.productCondition || "Optimal";
+
+          return `${status} - ${productCondition}`;
         }
 
         if (headerId === "location") {

@@ -8,22 +8,25 @@ interface DoughnutChartProps {
   data: {
     quantity?: number;
     stock?: number;
+    unavailable?: number;
   };
 }
 
 export function DoughnutChart({ data }: DoughnutChartProps) {
   const stock = data.stock || 0;
   const quantity = data.quantity || 0;
+  const unavailable = data.unavailable || 0;
 
   const assignedColor = "#9747FF";
   const availableColor = "#4FE8B7";
+  const unavailableColor = "#FFC6D3";
 
   const info: ChartData<"doughnut"> = {
-    labels: ["Assigned", "Available"],
+    labels: ["Assigned", "Available", "Unavailable"],
     datasets: [
       {
-        data: [quantity, stock],
-        backgroundColor: [assignedColor, availableColor],
+        data: [quantity, stock, unavailable],
+        backgroundColor: [assignedColor, availableColor, unavailableColor],
         hoverBackgroundColor: ["#fff", "#fff"],
       },
     ],
@@ -55,7 +58,9 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex flex-col items-center">
               <span className="text-dark-grey font-medium">Total</span>
-              <span className="font-bold text-2xl">{quantity + stock}</span>
+              <span className="font-bold text-2xl">
+                {quantity + stock + unavailable}
+              </span>
             </div>
           </div>
         </div>
@@ -78,6 +83,15 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
           ></div>
           <p className="text-md font-semibold">
             Available | <b>{stock}</b>
+          </p>
+        </div>
+        <div className="flex gap-2 items-center">
+          <div
+            className="h-[1rem] w-[1rem] rounded-sm"
+            style={{ backgroundColor: unavailableColor }}
+          ></div>
+          <p className="text-md font-semibold">
+            Unavailable | <b>{unavailable}</b>
           </p>
         </div>
       </figcaption>
