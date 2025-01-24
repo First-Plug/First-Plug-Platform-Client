@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { BirthdayRoot } from "../Tables/BirthdayRoot";
-import { Product, User } from "@/types";
+import { Product } from "@/types";
 
 interface ComputerStatus {
   brandModel: string;
@@ -73,11 +73,14 @@ const computerColumns = (
         Years Since <br /> Acquisition
       </div>
     ),
-    cell: ({ getValue }) => (
-      <span className="font-semibold text-blue-500">
-        {getValue<number>().toFixed(1)}
-      </span>
-    ),
+    cell: ({ getValue }) => {
+      const years = getValue<number>();
+      return (
+        <span className="font-semibold text-blue-500">
+          {years === Infinity ? "N/A" : years.toFixed(1)}
+        </span>
+      );
+    },
   },
   {
     id: "status",
@@ -88,20 +91,24 @@ const computerColumns = (
       const status = getValue<string>();
 
       return (
-        <button
-          className={` p-2 font-semibold ${
-            status === "Upgrade recommended"
-              ? " text-blue hover:bg-hoverBlue rounded-full"
-              : status === "Time for upgrade"
-              ? " text-blue hover:bg-hoverBlue rounded-full"
-              : "bg-green-500"
-          }`}
-          onClick={() =>
-            handleSlackNotification(row.original, email, tenantName)
-          }
-        >
-          {status}
-        </button>
+        <div className="flex justify-center">
+          <button
+            className={`p-2 font-semibold text-center w-full ${
+              [
+                "Upgrade recommended",
+                "Time for upgrade",
+                "Fix recommended",
+              ].some((s) => status.includes(s))
+                ? "text-blue hover:bg-hoverBlue rounded-full"
+                : "bg-green-500"
+            }`}
+            onClick={() =>
+              handleSlackNotification(row.original, email, tenantName)
+            }
+          >
+            {status}
+          </button>
+        </div>
       );
     },
   },
@@ -130,17 +137,49 @@ export const ComputerUpgradeTable = ({
   handleSlackNotification,
 }: ComputerUpgradeTableProps) => {
   const computersWithStatus = useMemo(() => {
-    return products
-      .filter(
-        (product) => product.category === "Computer" && product.acquisitionDate
-      )
+    const realProducts = products
+      .filter((product) => product.category === "Computer")
       .map((product) => {
-        const acquisitionDate = new Date(product.acquisitionDate);
-        const yearsSinceAcquisition =
-          (Date.now() - acquisitionDate.getTime()) /
-          (1000 * 60 * 60 * 24 * 365);
+        const acquisitionDate = product.acquisitionDate
+          ? new Date(product.acquisitionDate)
+          : null;
+        const yearsSinceAcquisition = acquisitionDate
+          ? (Date.now() - acquisitionDate.getTime()) /
+            (1000 * 60 * 60 * 24 * 365)
+          : null;
+
+        const condition = product.productCondition?.toLowerCase() || "optimal";
+
+        let baseStatus;
+        if (condition === "defective") {
+          if (
+            yearsSinceAcquisition === null ||
+            yearsSinceAcquisition < computerExpiration - 0.5
+          ) {
+            baseStatus = "Fix recommended";
+          } else if (yearsSinceAcquisition < computerExpiration) {
+            baseStatus = "Time for upgrade";
+          } else {
+            baseStatus = "Upgrade recommended";
+          }
+        } else if (condition === "unusable") {
+          baseStatus = "Upgrade recommended";
+        } else {
+          baseStatus = getStatus(
+            yearsSinceAcquisition || 0,
+            computerExpiration
+          );
+        }
+
+        const status =
+          condition !== "optimal"
+            ? `${
+                condition.charAt(0).toUpperCase() + condition.slice(1)
+              } - ${baseStatus}`
+            : baseStatus;
 
         return {
+          _id: product._id,
           brandModel: `${
             product.attributes?.find((attr) => attr.key === "brand")?.value ||
             ""
@@ -149,19 +188,38 @@ export const ComputerUpgradeTable = ({
             ""
           }`,
           serial: product.serialNumber || "N/A",
-          yearsSinceAcquisition,
-          status: getStatus(yearsSinceAcquisition, computerExpiration),
+          yearsSinceAcquisition: yearsSinceAcquisition ?? Infinity,
+          status,
           location:
             product.location === "Employee"
               ? product.assignedMember || "Unknown"
               : product.location,
           assignedMember: product.assignedMember,
+          hasDate: !!acquisitionDate,
         };
-      })
-      .filter(
-        (computer) => computer.yearsSinceAcquisition >= computerExpiration - 0.5
-      )
-      .sort((a, b) => b.yearsSinceAcquisition - a.yearsSinceAcquisition);
+      });
+
+    const computersNeedingUpgrade = realProducts.filter((comp) => {
+      return (
+        comp.yearsSinceAcquisition >= computerExpiration - 0.5 ||
+        comp.status.includes("Defective") ||
+        comp.status.includes("Unusable")
+      );
+    });
+
+    const uniqueComputers = computersNeedingUpgrade.reduce((acc, curr) => {
+      if (!acc.some((comp) => comp._id === curr._id)) {
+        acc.push(curr);
+      }
+      return acc;
+    }, []);
+
+    return uniqueComputers.sort((a, b) => {
+      if (a.hasDate && b.hasDate) {
+        return b.yearsSinceAcquisition - a.yearsSinceAcquisition;
+      }
+      return a.hasDate ? -1 : 1;
+    });
   }, [products, computerExpiration]);
 
   return (
