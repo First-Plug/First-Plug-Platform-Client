@@ -57,9 +57,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const [selectedAssignedMember, setSelectedAssignedMember] =
     useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
-  // const [loading, setLoading] = useState(true);
   const [isLocationEnabled, setIsLocationEnabled] = useState(false);
-
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );
@@ -99,6 +97,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       setAssignedEmail(selectedMember?.email || assignedEmail || "");
       setSelectedLocation(formState.location as string);
       setValue("location", formState.location);
+      setValue("productCondition", formState.productCondition || "Optimal");
     }
   }, [isUpdate, fetchedMembers, formState, setValue, setAssignedEmail]);
 
