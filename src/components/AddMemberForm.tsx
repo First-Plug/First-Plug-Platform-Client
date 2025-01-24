@@ -295,11 +295,16 @@ export const AddMemberForm = observer(function ({
       let updatedProduct: Partial<Product> & { actionType: string } = {
         assignedEmail: "",
         assignedMember: "",
-        status: "Available",
+        status:
+          currentProduct.productCondition === "Unusable"
+            ? currentProduct.status
+            : "Available",
+
         location: noneOption || "Our office",
         category: currentProduct.category,
         attributes: currentProduct.attributes,
         name: currentProduct.name,
+        productCondition: currentProduct.productCondition ?? "Optimal",
         actionType: actionType === "ReassignProduct" ? "reassign" : "assign",
       };
 
@@ -308,8 +313,13 @@ export const AddMemberForm = observer(function ({
           ...updatedProduct,
           assignedEmail: selectedMember.email,
           assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
-          status: "Delivered",
+          status:
+            currentProduct.productCondition === "Unusable"
+              ? currentProduct.status
+              : "Delivered",
+
           location: "Employee",
+          productCondition: currentProduct.productCondition ?? "Optimal",
           actionType: actionType === "ReassignProduct" ? "reassign" : "assign",
         };
       }

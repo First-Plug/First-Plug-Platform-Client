@@ -6,12 +6,13 @@ import { useStore } from "@/models";
 import { observer } from "mobx-react-lite";
 import { Location, CATEGORIES, Category } from "@/types";
 import { FieldValues, useFormContext } from "react-hook-form";
-import { setAuthInterceptor } from "@/config/axios.config";
 import { Skeleton } from "../ui/skeleton";
 import QuantityCounter from "./QuantityCounter";
 import RecoverableSwitch from "./RecoverableSwitch";
 import { useFetchMembers } from "@/members/hooks";
 import PriceInput from "./PriceInput";
+import ProductCondition from "@/components/AddProduct/ProductCondition";
+import AdditionalInfo from "@/components/AddProduct/AdditionalInfo";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -56,9 +57,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   const [selectedAssignedMember, setSelectedAssignedMember] =
     useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
-  // const [loading, setLoading] = useState(true);
   const [isLocationEnabled, setIsLocationEnabled] = useState(false);
-
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );
@@ -98,6 +97,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       setAssignedEmail(selectedMember?.email || assignedEmail || "");
       setSelectedLocation(formState.location as string);
       setValue("location", formState.location);
+      setValue("productCondition", formState.productCondition || "Optimal");
     }
   }, [isUpdate, fetchedMembers, formState, setValue, setAssignedEmail]);
 
@@ -146,7 +146,15 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
       setSelectedAssignedMember("");
       setValue("location", "");
       setSelectedLocation("");
-      clearErrors(["assignedEmail", "assignedMember", "location"]);
+      setValue("productCondition", "Optimal");
+      setValue("additionalInfo", "");
+      clearErrors([
+        "assignedEmail",
+        "assignedMember",
+        "location",
+        "productCondition",
+        "additionalInfo",
+      ]);
     }
   }, [quantity, clearErrors, setValue]);
 
@@ -323,20 +331,17 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               formValues={formValues}
             />
           </div>
-          <div className="w-full col-span-2 mt-4">
-            <RecoverableSwitch
-              selectedCategory={selectedCategory}
-              onRecoverableChange={handleRecoverableChange}
+
+          <div>
+            <ProductCondition
               isUpdate={isUpdate}
-              formValues={formValues}
-              setFormValues={setFormValues}
-              setManualChange={setManualChange}
-              manualChange={manualChange}
+              isDisabled={false}
+              selectedOption={watch("productCondition")}
             />
           </div>
 
           {shouldShowProductNameInput() && (
-            <div className="w-full">
+            <div>
               <InputProductForm
                 placeholder="Product Name"
                 title="Product Name*"
@@ -352,6 +357,24 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               </div>
             </div>
           )}
+          <div className="lg:col-span-2">
+            <div className="grid grid-cols-5 gap-4 items-start">
+              <div className="col-span-1">
+                <RecoverableSwitch
+                  selectedCategory={selectedCategory}
+                  onRecoverableChange={handleRecoverableChange}
+                  isUpdate={isUpdate}
+                  formValues={formValues}
+                  setFormValues={setFormValues}
+                  setManualChange={setManualChange}
+                  manualChange={manualChange}
+                />
+              </div>
+              <div className="col-span-4">
+                <AdditionalInfo isUpdate={isUpdate} initialData={formValues} />
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <>
@@ -441,7 +464,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               />
               <div className="min-h-[24px]">
                 {errors.assignedEmail && (
-                  <p className="text-red-500">
+                  <p className="text-red-500 bg-green">
                     {(errors.assignedEmail as any).message}
                   </p>
                 )}
@@ -521,6 +544,23 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 }
                 className="w-full"
                 disabled={quantity > 1 && !isUpdate}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-4 items-start mt-2">
+            <div className="col-span-1">
+              <ProductCondition
+                isUpdate={isUpdate}
+                isDisabled={quantity > 1}
+                selectedOption={watch("productCondition")}
+              />
+            </div>
+
+            <div className="col-span-3">
+              <AdditionalInfo
+                isUpdate={isUpdate}
+                initialData={formValues}
+                disabled={quantity > 1}
               />
             </div>
           </div>

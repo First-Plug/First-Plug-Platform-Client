@@ -4,8 +4,11 @@ export const PRODUCT_STATUSES = [
   "Available",
   "Delivered",
   "Deprecated",
+  "Unavailable",
 ] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
+export const PRODUCT_CONDITIONS = ["Optimal", "Defective", "Unusable"] as const;
+export type ProductCondition = (typeof PRODUCT_CONDITIONS)[number];
 export const CURRENCY_CODES = [
   "USD",
   "ARS",
@@ -100,6 +103,11 @@ export const ProductModel = types.model({
       currencyCode: types.optional(types.enumeration(CURRENCY_CODES), "USD"),
     })
   ),
+  productCondition: types.optional(
+    types.enumeration(["Optimal", "Defective", "Unusable"]),
+    "Optimal"
+  ),
+  additionalInfo: types.optional(types.string, ""),
 });
 export type Product = Instance<typeof ProductModel>;
 
@@ -108,6 +116,8 @@ export type ProductFormData = Omit<Product, "price"> & {
     amount?: number;
     currencyCode?: (typeof CURRENCY_CODES)[number];
   };
+  productCondition: ProductCondition;
+  additionalInfo?: string;
 };
 
 export const emptyProduct: Omit<Product, "category"> & { category: string } = {
@@ -116,6 +126,7 @@ export const emptyProduct: Omit<Product, "category"> & { category: string } = {
   category: undefined,
   attributes: cast([]),
   status: "Available",
+  productCondition: "Optimal",
   deleted: false,
   recoverable: true,
   acquisitionDate: "",
@@ -128,6 +139,7 @@ export const emptyProduct: Omit<Product, "category"> & { category: string } = {
   assignedMember: undefined,
   lastAssigned: "",
   price: undefined,
+  additionalInfo: "",
 };
 
 export const ProductTableModel = types.model({
@@ -157,6 +169,8 @@ export const zodProductModel = z.object({
   assignedEmail: z.string().optional(),
   serialNumber: z.string().optional(),
   status: z.string().optional(),
+  productCondition: z.string().optional(),
+  additionalInfo: z.string().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
   deletedAt: z.string().optional(),
@@ -220,6 +234,8 @@ export const zodCreateProductModel = z
       invalid_type_error: "Invalid location",
     }),
     status: z.string().optional(),
+    productCondition: z.string().optional(),
+    additionalInfo: z.string().optional(),
     price: z
       .object({
         amount: z.number().nonnegative().optional(),
