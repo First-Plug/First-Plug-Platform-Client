@@ -273,7 +273,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
       status,
       category: selectedCategory || "Other",
       assignedEmail: finalAssignedEmail,
-      productCondition: data.productCondition || "Optimal",
+      productCondition:
+        data.productCondition ?? initialData?.productCondition ?? "Optimal",
       additionalInfo: data.additionalInfo || "",
       attributes: cast(
         attributes.map((attr) => {
@@ -403,7 +404,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
       if (isUpdate && initialData) {
         const changes: Partial<Product> = {};
-        const requiredFields = ["name", "category", "location", "status"];
+        const requiredFields = [
+          "name",
+          "category",
+          "location",
+          "status",
+          "productCondition",
+        ];
         requiredFields.forEach((field) => {
           changes[field] = formatData[field];
         });
