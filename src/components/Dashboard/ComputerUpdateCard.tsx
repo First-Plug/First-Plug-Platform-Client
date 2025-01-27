@@ -45,12 +45,21 @@ export const ComputerUpdateCard = ({
     setProductsWithoutDate(totalWithoutDate);
 
     const computersNeedingUpgrade = realProducts.filter((product) => {
-      const acquisitionDate = new Date(product.acquisitionDate);
-      const yearsSinceAcquisition =
-        (Date.now() - acquisitionDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+      const acquisitionDate = product.acquisitionDate
+        ? new Date(product.acquisitionDate)
+        : null;
+      const yearsSinceAcquisition = acquisitionDate
+        ? (Date.now() - acquisitionDate.getTime()) / (1000 * 60 * 60 * 24 * 365)
+        : null;
 
-      const threshold = computerExpiration ? computerExpiration - 0.5 : 0;
-      return yearsSinceAcquisition >= threshold;
+      const condition = product.productCondition?.toLowerCase() || "optimal";
+
+      return (
+        yearsSinceAcquisition >=
+          (computerExpiration ? computerExpiration - 0.5 : 0) ||
+        condition === "defective" ||
+        condition === "unusable"
+      );
     });
 
     setComputersToUpgrade(computersNeedingUpgrade);
