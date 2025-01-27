@@ -81,7 +81,7 @@ const Config: Record<EmptyCardType, TConfig> = {
   },
   opsByCountry: {
     title: "Ops By Country",
-    image: "/world.svg",
+    image: "/svg/folder.svg",
     paragraph: "No computers or members have been assigned to any country yet.",
   },
 };
