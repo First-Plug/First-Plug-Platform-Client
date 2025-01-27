@@ -167,13 +167,13 @@ export default observer(function Dashboard() {
             <EmptyDashboardCard type="members" />
           )}
           {/* <EmptyDashboardCard type="recentActivity" /> */}
-          <Card Title="Members By Country">
-            {Array.isArray(membersData) && membersData.length > 0 ? (
+          {Array.isArray(membersData) && membersData.length > 0 ? (
+            <Card Title="Members By Country">
               <OpsByCountryChart members={membersData} />
-            ) : (
-              <EmptyDashboardCard type="opsByCountry" />
-            )}
-          </Card>
+            </Card>
+          ) : (
+            <EmptyDashboardCard type="opsByCountry" />
+          )}
         </section>
       </div>
     </PageLayout>
