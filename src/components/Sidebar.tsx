@@ -113,9 +113,9 @@ export const Sidebar = function () {
         <SidebarLink
           isSmall={isSidebarSmall}
           icon={<ClockIcon />}
-          title="Action History"
-          href="/home/action-history"
-          isActive={pathArray.includes("action-history")}
+          title="Activity"
+          href="/home/activity"
+          isActive={pathArray.includes("activity")}
           onMouseEnter={() => {
             // prefetchAssets();
           }}

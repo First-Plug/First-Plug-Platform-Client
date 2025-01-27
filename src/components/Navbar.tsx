@@ -24,7 +24,7 @@ type NavbarProps = {
 const Titles = {
   "my-stock": "My Assets",
   "my-team": "My Team",
-  "action-history": "Action History",
+  activity: "Activity",
   orders: "Orders",
   shipments: "Shipments",
 } as const;
