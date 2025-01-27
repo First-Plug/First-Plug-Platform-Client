@@ -18,6 +18,7 @@ import { AuthServices } from "@/services";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchUserSettings } from "@/components/settings/hooks/useFetchUserSettings";
+import OpsByCountryChart from "@/common/OpsByCountryChart";
 
 export default observer(function Dashboard() {
   const {
@@ -165,7 +166,14 @@ export default observer(function Dashboard() {
           ) : (
             <EmptyDashboardCard type="members" />
           )}
-          <EmptyDashboardCard type="recentActivity" />
+          {/* <EmptyDashboardCard type="recentActivity" /> */}
+          <Card Title="Members By Country">
+            {Array.isArray(membersData) && membersData.length > 0 ? (
+              <OpsByCountryChart members={membersData} />
+            ) : (
+              <EmptyDashboardCard type="opsByCountry" />
+            )}
+          </Card>
         </section>
       </div>
     </PageLayout>
