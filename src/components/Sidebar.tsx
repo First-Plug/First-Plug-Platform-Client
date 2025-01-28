@@ -9,6 +9,7 @@ import {
   ArrowLeft,
   ArrowRight,
   DashboardIcon,
+  ClockIcon,
 } from "@/common/Icons";
 import { usePathname } from "next/navigation";
 // import { usePrefetchAssets } from "@/assets/hooks";
@@ -104,6 +105,17 @@ export const Sidebar = function () {
           title="My Assets"
           href="/home/my-stock"
           isActive={pathArray.includes("my-stock")}
+          onMouseEnter={() => {
+            // prefetchAssets();
+          }}
+        />
+
+        <SidebarLink
+          isSmall={isSidebarSmall}
+          icon={<ClockIcon />}
+          title="Activity"
+          href="/home/activity"
+          isActive={pathArray.includes("activity")}
           onMouseEnter={() => {
             // prefetchAssets();
           }}
