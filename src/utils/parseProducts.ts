@@ -59,6 +59,8 @@ export function parseProduct(product: CsvProduct): PrdouctModelZod {
     assignedEmail: product.assignedEmail,
     serialNumber: product.serialNumber,
     status: product.assignedEmail ? "Delivered" : "Available",
+    productCondition: product.productCondition || "Optimal",
+    additionalInfo: product.additionalInfo || "",
     // recoverable: false,
   };
 
