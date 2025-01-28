@@ -44,6 +44,8 @@ export const csvProductModel = z
       }
     }),
     assignedEmail: z.string().optional(),
+    productCondition: z.string().optional(),
+    additionalInfo: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data["category*"] === "Merchandising") {
