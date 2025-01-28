@@ -41,7 +41,10 @@ const HistoryTable = () => {
     try {
       const result = await HistorialServices.getAll(pageIndex + 1, pageSize);
 
-      if (result.data.length === 0 && pageIndex >= result.totalPages) {
+      if (result.totalPages === 0) {
+        setData([]);
+        setPageCount(0);
+      } else if (result.data.length === 0 && pageIndex >= result.totalPages) {
         const lastValidPage = Math.max(result.totalPages - 1, 0);
         router.push(`?page=${lastValidPage + 1}`);
         setPagination((prev) => ({
