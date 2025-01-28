@@ -34,15 +34,19 @@ const OpsByCountryChart = ({ members }: OpsByCountryChartProps) => {
   );
 
   const countryData = members.reduce((acc, member) => {
-    const countryName = member.country?.trim() || "Incomplete Data";
-    const countryCode = countryCodes[countryName] || "Incomplete Data";
+    const countryName = member.country?.trim() || "Incomplete\nData";
+    const countryCode = countryCodes[countryName] || "Incomplete\nData";
+
+    const computerProducts = (member.products || []).filter(
+      (product) => product.category === "Computer"
+    );
 
     acc[countryCode] = acc[countryCode] || {
       membersCount: 0,
       computersCount: 0,
     };
     acc[countryCode].membersCount++;
-    acc[countryCode].computersCount += member.products?.length || 0;
+    acc[countryCode].computersCount += computerProducts.length;
 
     return acc;
   }, {});
@@ -54,6 +58,7 @@ const OpsByCountryChart = ({ members }: OpsByCountryChartProps) => {
   const computersCounts = countries.map(
     (country) => countryData[country].computersCount
   );
+  console.log("computer counts", computersCounts);
 
   const data = {
     labels: countries,
@@ -97,17 +102,28 @@ const OpsByCountryChart = ({ members }: OpsByCountryChartProps) => {
             },
           },
           scales: {
+            x: {
+              ticks: {
+                callback: function (value, index) {
+                  const label =
+                    typeof value === "string"
+                      ? value
+                      : this.getLabelForValue(value);
+                  return label.includes("\n") ? label.split("\n") : label;
+                },
+                align: "center",
+                padding: 10,
+              },
+              title: {
+                display: true,
+                text: "Countries",
+              },
+            },
             y: {
               beginAtZero: true,
               title: {
                 display: true,
                 text: "Quantity",
-              },
-            },
-            x: {
-              title: {
-                display: true,
-                text: "Countries",
               },
             },
           },
