@@ -27,11 +27,11 @@ const HistoryTable = () => {
   const [pageCount, setPageCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  const pageIndexFromUrl = parseInt(searchParams.get("page") || "1", 10) - 1;
+  const pageIndexFromUrl = parseInt(searchParams.get("page") || "1", 15) - 1;
 
   const [pagination, setPagination] = useState({
     pageIndex: pageIndexFromUrl >= 0 ? pageIndexFromUrl : 0,
-    pageSize: 10,
+    pageSize: 15,
   });
 
   const fetchData = async () => {
@@ -239,9 +239,10 @@ const HistoryTable = () => {
                     onClick={() => handlePageChange(i)}
                     className={`border rounded-full grid place-items-center transition-all duration-300 ${
                       table.getState().pagination.pageIndex === i
-                        ? "bg-blue/80 text-white"
+                        ? "bg-blue/80 text-white disabled:bg-blue disabled:text-white"
                         : ""
                     }`}
+                    disabled={table.getState().pagination.pageIndex === i}
                   >
                     {i + 1}
                   </Button>
