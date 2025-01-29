@@ -18,14 +18,20 @@ export default function useActions() {
     currentMember: TeamMember;
     product: Product;
   }) => {
+    const isUnusable = product.productCondition === "Unusable";
+    const newStatus = isUnusable ? "Unavailable" : "Delivered";
+    const newLocation = isUnusable ? product.location : "Employee";
+
     const updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
       name: product.name,
-      assignedEmail: selectedMember.email,
-      assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
-      status: product.status,
-      location: product.location,
+      assignedEmail: isUnusable ? product.assignedEmail : selectedMember.email,
+      assignedMember: isUnusable
+        ? product.assignedMember
+        : `${selectedMember.firstName} ${selectedMember.lastName}`,
+      status: newStatus,
+      location: newLocation,
       actionType: "relocate",
       productCondition: product.productCondition || "Optimal",
     };
@@ -51,14 +57,17 @@ export default function useActions() {
     product: Product;
     currentMember?: TeamMember;
   }) => {
+    const isUnusable = product.productCondition === "Unusable";
+    const newStatus = isUnusable ? "Unavailable" : "Available";
+    const newLocation = isUnusable ? product.location : location;
     let updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
       name: product.name,
       assignedEmail: "",
       assignedMember: "",
-      status: product.status,
-      location,
+      status: newStatus,
+      location: newLocation,
       actionType: "return",
       productCondition: product.productCondition || "Optimal",
     };
