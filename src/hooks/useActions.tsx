@@ -27,6 +27,7 @@ export default function useActions() {
       status: "Delivered",
       location: "Employee",
       actionType: "relocate",
+      productCondition: product.productCondition || "Optimal",
     };
     if (product.assignedMember) {
       updatedProduct.lastAssigned =
@@ -59,6 +60,7 @@ export default function useActions() {
       status: "Available",
       location,
       actionType: "return",
+      productCondition: product.productCondition || "Optimal",
     };
     if (product.assignedMember) {
       updatedProduct.lastAssigned =
