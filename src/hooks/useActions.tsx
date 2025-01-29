@@ -25,7 +25,7 @@ export default function useActions() {
       assignedEmail: selectedMember.email,
       assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
       status: product.status,
-      location: "Employee",
+      location: product.location,
       actionType: "relocate",
       productCondition: product.productCondition || "Optimal",
     };
