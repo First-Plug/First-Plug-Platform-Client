@@ -18,20 +18,16 @@ export default function useActions() {
     currentMember: TeamMember;
     product: Product;
   }) => {
-    const isUnusable = product.productCondition === "Unusable";
-    const newStatus = isUnusable ? "Unavailable" : "Delivered";
-    const newLocation = isUnusable ? product.location : "Employee";
-
+    const status =
+      product.productCondition === "Unusable" ? "Unavailable" : "Delivered";
     const updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
       name: product.name,
-      assignedEmail: isUnusable ? product.assignedEmail : selectedMember.email,
-      assignedMember: isUnusable
-        ? product.assignedMember
-        : `${selectedMember.firstName} ${selectedMember.lastName}`,
-      status: newStatus,
-      location: newLocation,
+      assignedEmail: selectedMember.email,
+      assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
+      status,
+      location: "Employee",
       actionType: "relocate",
       productCondition: product.productCondition || "Optimal",
     };
@@ -57,17 +53,16 @@ export default function useActions() {
     product: Product;
     currentMember?: TeamMember;
   }) => {
-    const isUnusable = product.productCondition === "Unusable";
-    const newStatus = isUnusable ? "Unavailable" : "Available";
-    const newLocation = isUnusable ? product.location : location;
+    const status =
+      product.productCondition === "Unusable" ? "Unavailable" : "Available";
     let updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
       name: product.name,
       assignedEmail: "",
       assignedMember: "",
-      status: newStatus,
-      location: newLocation,
+      status,
+      location,
       actionType: "return",
       productCondition: product.productCondition || "Optimal",
     };

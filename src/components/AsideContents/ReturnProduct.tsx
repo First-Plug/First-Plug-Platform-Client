@@ -210,9 +210,12 @@ export function ReturnProduct({
 
     setIsRemoving(true);
     try {
+      const status =
+        product.productCondition === "unusable" ? "Unavailable" : "Available";
+
       await unassignProduct({
         location,
-        product,
+        product: { ...product, status },
         currentMember: selectedMember,
       });
 
