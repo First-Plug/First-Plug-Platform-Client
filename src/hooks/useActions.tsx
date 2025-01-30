@@ -18,15 +18,18 @@ export default function useActions() {
     currentMember: TeamMember;
     product: Product;
   }) => {
+    const status =
+      product.productCondition === "Unusable" ? "Unavailable" : "Delivered";
     const updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
       name: product.name,
       assignedEmail: selectedMember.email,
       assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
-      status: "Delivered",
+      status,
       location: "Employee",
       actionType: "relocate",
+      productCondition: product.productCondition || "Optimal",
     };
     if (product.assignedMember) {
       updatedProduct.lastAssigned =
@@ -50,15 +53,18 @@ export default function useActions() {
     product: Product;
     currentMember?: TeamMember;
   }) => {
+    const status =
+      product.productCondition === "Unusable" ? "Unavailable" : "Available";
     let updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
       name: product.name,
       assignedEmail: "",
       assignedMember: "",
-      status: "Available",
+      status,
       location,
       actionType: "return",
+      productCondition: product.productCondition || "Optimal",
     };
     if (product.assignedMember) {
       updatedProduct.lastAssigned =

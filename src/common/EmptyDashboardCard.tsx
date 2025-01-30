@@ -7,7 +7,12 @@ import { useStore } from "@/models";
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { useSession } from "next-auth/react";
 import { UserServices } from "@/services/user.services";
-type EmptyCardType = "stock" | "members" | "computer" | "recentActivity";
+type EmptyCardType =
+  | "stock"
+  | "members"
+  | "computer"
+  | "recentActivity"
+  | "opsByCountry";
 type TConfig = {
   title: string;
   image: string;
@@ -73,6 +78,11 @@ const Config: Record<EmptyCardType, TConfig> = {
     // additionalOnClick: () => {
     //   window.location.href = "/home/recent-activity";
     // },
+  },
+  opsByCountry: {
+    title: "Members By Country",
+    image: "/world.svg",
+    paragraph: "No computers or members have been assigned to any country yet.",
   },
 };
 

@@ -15,7 +15,6 @@ import { useStore } from "@/models";
 import { observer } from "mobx-react-lite";
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { UserServices } from "@/services/user.services";
- 
 
 type NavbarProps = {
   title?: string;
@@ -25,6 +24,7 @@ type NavbarProps = {
 const Titles = {
   "my-stock": "My Assets",
   "my-team": "My Team",
+  activity: "Activity",
   orders: "Orders",
   shipments: "Shipments",
 } as const;
