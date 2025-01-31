@@ -15,74 +15,43 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { ArrowLeft, ArrowRight } from "@/common";
-import { Button } from "@/components/ui/button";
+
 import { BarLoader } from "@/components/Loader/BarLoader";
+import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
+
+const fetchData = async (pageIndex: number, pageSize: number) => {
+  try {
+    return await HistorialServices.getAll(pageIndex, pageSize);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
 
 const HistoryTable = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [data, setData] = useState([]);
-  const [pageCount, setPageCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  const pageIndexFromUrl = parseInt(searchParams.get("page") || "1", 15) - 1;
+  const currentPage = parseInt((searchParams.get("page") as string) || "1");
+  const activityPerPage = parseInt(
+    (searchParams.get("pageSize") as string) || "10"
+  );
 
   const [pagination, setPagination] = useState({
-    pageIndex: pageIndexFromUrl >= 0 ? pageIndexFromUrl : 0,
+    pageIndex: activityPerPage >= 0 ? activityPerPage : 0,
     pageSize: 15,
   });
 
-  const fetchData = async () => {
+  useEffect(() => {
     setIsLoading(true);
-
-    const { pageIndex, pageSize } = pagination;
-    try {
-      const result = await HistorialServices.getAll(pageIndex + 1, pageSize);
-
-      if (result.totalPages === 0) {
-        setData([]);
-        setPageCount(0);
-      } else if (result.data.length === 0 && pageIndex >= result.totalPages) {
-        const lastValidPage = Math.max(result.totalPages - 1, 0);
-        router.push(`?page=${lastValidPage + 1}`);
-        setPagination((prev) => ({
-          ...prev,
-          pageIndex: lastValidPage,
-        }));
-      } else {
-        setData(result.data);
-        setPageCount(result.totalPages);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
+    fetchData(currentPage, activityPerPage).then((result) => {
+      setData(result.data);
+      setTotalCount(result.totalCount);
       setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [pagination]);
-
-  useEffect(() => {
-    const page = searchParams.get("page");
-    if (page) {
-      setPagination((prev) => ({
-        ...prev,
-        pageIndex: parseInt(page, 10) - 1,
-      }));
-    }
-  }, [searchParams]);
-
-  const handlePageChange = (pageIndex) => {
-    router.push(`?page=${pageIndex + 1}`);
-    setPagination((prev) => ({
-      ...prev,
-      pageIndex,
-    }));
-  };
+    });
+  }, [currentPage, activityPerPage]);
 
   const columns = useMemo(
     () => [
@@ -152,7 +121,7 @@ const HistoryTable = () => {
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
-    pageCount,
+    pageCount: totalCount,
   });
 
   return (
@@ -226,40 +195,14 @@ const HistoryTable = () => {
 
         {!isLoading && (
           <div className="flex justify-center absolute w-full bottom-0 z-30">
-            <div className="flex items-center gap-10">
-              <Button
-                onClick={() =>
-                  handlePageChange(table.getState().pagination.pageIndex - 1)
-                }
-                disabled={!table.getCanPreviousPage()}
-              >
-                <ArrowLeft className="w-5" />
-              </Button>
-              <span className="flex items-center gap-4">
-                {new Array(pageCount).fill("1").map((_, i) => (
-                  <Button
-                    key={i}
-                    onClick={() => handlePageChange(i)}
-                    className={`border rounded-full grid place-items-center transition-all duration-300 ${
-                      table.getState().pagination.pageIndex === i
-                        ? "bg-blue/80 text-white disabled:bg-blue disabled:text-white"
-                        : ""
-                    }`}
-                    disabled={table.getState().pagination.pageIndex === i}
-                  >
-                    {i + 1}
-                  </Button>
-                ))}
-              </span>
-              <Button
-                onClick={() =>
-                  handlePageChange(table.getState().pagination.pageIndex + 1)
-                }
-                disabled={!table.getCanNextPage()}
-              >
-                <ArrowRight className="w-5" />
-              </Button>
-            </div>
+            <PaginationWithLinks
+              page={currentPage}
+              pageSize={activityPerPage}
+              totalCount={totalCount}
+              pageSizeSelectOptions={{
+                pageSizeOptions: [10, 25, 50],
+              }}
+            />
           </div>
         )}
       </div>
