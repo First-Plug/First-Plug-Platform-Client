@@ -19,54 +19,75 @@ import {
 import { BarLoader } from "@/components/Loader/BarLoader";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
 
+const DEFAULT_PAGE_SIZE = 10;
+const VALID_PAGE_SIZES = [10, 25, 50];
+
 const fetchData = async (pageIndex: number, pageSize: number) => {
   try {
     return await HistorialServices.getAll(pageIndex, pageSize);
   } catch (error) {
     console.error("Error fetching data:", error);
+    return { data: [], totalCount: 0 };
   }
 };
 
 const HistoryTable = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const rawPage = parseInt(searchParams.get("page") || "1", 10);
+  const rawPageSize = parseInt(
+    searchParams.get("pageSize") || `${DEFAULT_PAGE_SIZE}`,
+    10
+  );
+
+  let pageSize = VALID_PAGE_SIZES.includes(rawPageSize)
+    ? rawPageSize
+    : DEFAULT_PAGE_SIZE;
+  let currentPage = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    let needsUpdate = false;
+
+    if (!VALID_PAGE_SIZES.includes(rawPageSize)) {
+      params.set("pageSize", DEFAULT_PAGE_SIZE.toString());
+      needsUpdate = true;
+    }
+
+    if (isNaN(rawPage) || rawPage < 1) {
+      params.set("page", "1");
+      needsUpdate = true;
+    }
+
+    if (needsUpdate) {
+      router.replace(`?${params.toString()}`);
+    }
+  }, [rawPage, rawPageSize, router]);
 
   const [data, setData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  const currentPage = parseInt((searchParams.get("page") as string) || "1");
-  const activityPerPage = parseInt(
-    (searchParams.get("pageSize") as string) || "10"
-  );
-
-  const [pagination, setPagination] = useState({
-    pageIndex: activityPerPage >= 0 ? activityPerPage : 0,
-    pageSize: 15,
-  });
-
   useEffect(() => {
     setIsLoading(true);
-    fetchData(currentPage, activityPerPage).then((result) => {
+    fetchData(currentPage, pageSize).then((result) => {
       setData(result.data);
       setTotalCount(result.totalCount);
       setIsLoading(false);
+
+      const maxPage = Math.ceil(result.totalCount / pageSize);
+      if (currentPage > maxPage && maxPage > 0) {
+        router.replace(`?page=1&pageSize=${pageSize}`);
+      }
     });
-  }, [currentPage, activityPerPage]);
+  }, [currentPage, pageSize]);
 
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "_id",
-        header: "Id Action",
-      },
-      {
-        accessorKey: "itemType",
-        header: "Item Type",
-      },
-      {
-        accessorKey: "actionType",
-        header: "Action",
-      },
+      { accessorKey: "_id", header: "Id Action" },
+      { accessorKey: "itemType", header: "Item Type" },
+      { accessorKey: "actionType", header: "Action" },
       {
         accessorKey: "quantity",
         header: "Quantity",
@@ -89,10 +110,7 @@ const HistoryTable = () => {
           return <span>{quantity}</span>;
         },
       },
-      {
-        accessorKey: "userId",
-        header: "User",
-      },
+      { accessorKey: "userId", header: "User" },
       {
         accessorKey: "createdAt",
         header: "Date and time",
@@ -115,10 +133,6 @@ const HistoryTable = () => {
   const table = useReactTable({
     data,
     columns,
-    state: {
-      pagination,
-    },
-    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     pageCount: totalCount,
@@ -139,7 +153,6 @@ const HistoryTable = () => {
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      style={{ width: `${header.getSize()}px` }}
                       className="py-3 px-4 border-r text-start text-black font-semibold"
                     >
                       {flexRender(
@@ -197,11 +210,9 @@ const HistoryTable = () => {
           <div className="flex justify-center absolute w-full bottom-0 z-30">
             <PaginationWithLinks
               page={currentPage}
-              pageSize={activityPerPage}
+              pageSize={pageSize}
               totalCount={totalCount}
-              pageSizeSelectOptions={{
-                pageSizeOptions: [10, 25, 50],
-              }}
+              pageSizeSelectOptions={{ pageSizeOptions: VALID_PAGE_SIZES }}
             />
           </div>
         )}
