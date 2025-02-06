@@ -18,6 +18,8 @@ import {
 
 import { BarLoader } from "@/components/Loader/BarLoader";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
+import DateRangeDropdown from "../date-range-calendar/DateRangeCalendar";
+import { endOfDay, startOfDay, subDays } from "date-fns";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -138,10 +140,27 @@ const HistoryTable = () => {
     pageCount: totalCount,
   });
 
+  const [selectedDates, setSelectedDates] = useState<{
+    startDate: Date;
+    endDate: Date;
+  }>({
+    startDate: startOfDay(subDays(new Date(), 7)),
+    endDate: endOfDay(new Date()),
+  });
+
+  const handleDateSelection = (dates: { startDate: Date; endDate: Date }) => {
+    setSelectedDates(dates);
+  };
+
+  console.log(selectedDates);
+
   return (
     <>
       {isLoading && <BarLoader />}
       <div className="relative h-full flex-grow flex flex-col gap-1">
+        <div className="flex justify-end">
+          <DateRangeDropdown onDateSelect={handleDateSelection} />
+        </div>
         <div className="max-h-[85%] overflow-y-auto scrollbar-custom rounded-md border w-full mx-auto">
           <Table className="w-full">
             <TableHeader>
