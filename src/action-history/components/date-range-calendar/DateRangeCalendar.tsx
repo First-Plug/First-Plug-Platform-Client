@@ -144,9 +144,9 @@ const DateRangeDropdown = ({ onDateSelect, selectedDates }: any) => {
             {option.value === "custom" &&
             customRange.startDate &&
             customRange.endDate
-              ? `(${format(customRange.startDate, "dd MMM")} - ${format(
+              ? `(${format(customRange.startDate, "dd MMM yyyy")} - ${format(
                   customRange.endDate,
-                  "dd MMM"
+                  "dd MMM yyyy"
                 )})`
               : ""}
           </option>
