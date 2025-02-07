@@ -179,7 +179,7 @@ const DateRangeDropdown = ({ onDateSelect, selectedDates }: any) => {
               onClick={handleAccept}
               className="bg-blue text-white px-4 py-2 rounded text-sm"
             >
-              Aceptar
+              Accept
             </button>
           </div>
         </div>
