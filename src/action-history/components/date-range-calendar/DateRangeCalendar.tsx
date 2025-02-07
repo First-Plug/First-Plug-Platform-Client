@@ -35,8 +35,8 @@ const predefinedRanges = [
     label: "Last week",
     value: "lastWeek",
     range: [
-      startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 0 }),
-      endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 0 }),
+      startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 }),
+      endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 }),
     ],
   },
   {
