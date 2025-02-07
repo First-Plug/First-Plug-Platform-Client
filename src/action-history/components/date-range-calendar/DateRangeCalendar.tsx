@@ -1,5 +1,16 @@
 import { useState, useEffect } from "react";
-import { endOfDay, format, startOfDay, subDays, subMonths } from "date-fns";
+import {
+  endOfDay,
+  endOfMonth,
+  endOfWeek,
+  format,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+  subMonths,
+  subWeeks,
+} from "date-fns";
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
@@ -8,30 +19,33 @@ const predefinedRanges = [
   {
     label: "Last 7 days",
     value: "last7",
-    range: [startOfDay(subDays(new Date(), 7)), endOfDay(new Date())],
+    range: [subDays(new Date(), 7), new Date()],
   },
   {
     label: "Last 30 days",
     value: "last30",
-    range: [startOfDay(subDays(new Date(), 30)), endOfDay(new Date())],
+    range: [subDays(new Date(), 30), new Date()],
   },
   {
     label: "Last 90 days",
     value: "last90",
-    range: [startOfDay(subDays(new Date(), 90)), endOfDay(new Date())],
+    range: [subDays(new Date(), 90), new Date()],
   },
   {
     label: "Last week",
     value: "lastWeek",
     range: [
-      startOfDay(subDays(new Date(), 7)),
-      endOfDay(subDays(new Date(), 1)),
+      startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 0 }),
+      endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 0 }),
     ],
   },
   {
     label: "Last month",
     value: "lastMonth",
-    range: [startOfDay(subMonths(new Date(), 1)), endOfDay(new Date())],
+    range: [
+      startOfMonth(subMonths(new Date(), 1)),
+      endOfMonth(subMonths(new Date(), 1)),
+    ],
   },
   { label: "Custom", value: "custom", range: [null, null] },
 ];
@@ -105,17 +119,22 @@ const DateRangeDropdown = ({ onDateSelect, selectedDates }: any) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const leftPosition = windowWidth < 768 ? 0 : "-5rem";
+  const leftPosition = windowWidth < 768 ? 0 : "-10rem";
 
   return (
-    <div className="relative w-80">
+    <div className="relative ">
       <select
-        className="border rounded p-2 w-full bg-white"
+        className="border rounded p-2 w-full bg-white text-sm"
         onChange={(e) => handleSelect(e.target.value)}
+        onClick={() => {
+          if (selectedOption.value === "custom") {
+            setOpen(true);
+          }
+        }}
         value={selectedOption.value}
       >
         {predefinedRanges.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} className="text-sm">
             {option.label}{" "}
             {option.value !== "custom" &&
               `(${format(option.range[0], "dd MMM")} - ${format(
@@ -157,7 +176,7 @@ const DateRangeDropdown = ({ onDateSelect, selectedDates }: any) => {
           <div className="flex justify-end mt-2">
             <button
               onClick={handleAccept}
-              className="bg-blue text-white px-4 py-2 rounded"
+              className="bg-blue text-white px-4 py-2 rounded text-sm"
             >
               Aceptar
             </button>
