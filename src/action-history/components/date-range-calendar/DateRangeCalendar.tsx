@@ -122,7 +122,7 @@ const DateRangeDropdown = ({ onDateSelect, selectedDates }: any) => {
   const leftPosition = windowWidth < 768 ? 0 : "-10rem";
 
   return (
-    <div className="relative ">
+    <div className="relative">
       <select
         className="border rounded p-2 w-full bg-white text-sm"
         onChange={(e) => handleSelect(e.target.value)}
@@ -142,6 +142,7 @@ const DateRangeDropdown = ({ onDateSelect, selectedDates }: any) => {
                 "dd MMM"
               )})`}
             {option.value === "custom" &&
+            selectedOption.value === "custom" &&
             customRange.startDate &&
             customRange.endDate
               ? `(${format(customRange.startDate, "dd MMM yyyy")} - ${format(
