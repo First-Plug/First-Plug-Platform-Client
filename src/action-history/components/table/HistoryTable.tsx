@@ -24,9 +24,22 @@ import { endOfDay, startOfDay, subDays } from "date-fns";
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
 
-const fetchData = async (pageIndex: number, pageSize: number) => {
+const fetchData = async (
+  pageIndex: number,
+  pageSize: number,
+  startDate: Date,
+  endDate: Date
+) => {
   try {
-    return await HistorialServices.getAll(pageIndex, pageSize);
+    const startDateISO = startDate.toISOString();
+    const endDateISO = endDate.toISOString();
+
+    return await HistorialServices.getAll(
+      pageIndex,
+      pageSize,
+      startDateISO,
+      endDateISO
+    );
   } catch (error) {
     console.error("Error fetching data:", error);
     return { data: [], totalCount: 0 };
@@ -36,6 +49,17 @@ const fetchData = async (pageIndex: number, pageSize: number) => {
 const HistoryTable = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [data, setData] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [selectedDates, setSelectedDates] = useState<{
+    startDate: Date;
+    endDate: Date;
+  }>({
+    startDate: startOfDay(subDays(new Date(), 7)),
+    endDate: endOfDay(new Date()),
+  });
 
   const rawPage = parseInt(searchParams.get("page") || "1", 10);
   const rawPageSize = parseInt(
@@ -67,13 +91,15 @@ const HistoryTable = () => {
     }
   }, [rawPage, rawPageSize, router]);
 
-  const [data, setData] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-
   useEffect(() => {
     setIsLoading(true);
-    fetchData(currentPage, pageSize).then((result) => {
+
+    fetchData(
+      currentPage,
+      pageSize,
+      selectedDates.startDate,
+      selectedDates.endDate
+    ).then((result) => {
       setData(result.data);
       setTotalCount(result.totalCount);
       setIsLoading(false);
@@ -83,7 +109,7 @@ const HistoryTable = () => {
         router.replace(`?page=1&pageSize=${pageSize}`);
       }
     });
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, selectedDates]);
 
   const columns = useMemo(
     () => [
@@ -140,26 +166,15 @@ const HistoryTable = () => {
     pageCount: totalCount,
   });
 
-  const [selectedDates, setSelectedDates] = useState<{
-    startDate: Date;
-    endDate: Date;
-  }>({
-    startDate: startOfDay(subDays(new Date(), 7)),
-    endDate: endOfDay(new Date()),
-  });
-
-  const handleDateSelection = (dates: { startDate: Date; endDate: Date }) => {
-    setSelectedDates(dates);
-  };
-
-  console.log(selectedDates);
-
   return (
     <>
       {isLoading && <BarLoader />}
       <div className="relative h-full flex-grow flex flex-col gap-1">
         <div className="flex justify-end">
-          <DateRangeDropdown onDateSelect={handleDateSelection} />
+          <DateRangeDropdown
+            setSelectedDates={setSelectedDates}
+            selectedDates={selectedDates}
+          />
         </div>
         <div className="max-h-[85%] overflow-y-auto scrollbar-custom rounded-md border w-full mx-auto">
           <Table className="w-full">

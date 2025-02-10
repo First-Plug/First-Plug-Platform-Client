@@ -50,34 +50,26 @@ const predefinedRanges = [
   { label: "Custom", value: "custom", range: [null, null] },
 ];
 
-const DateRangeDropdown = ({ onDateSelect, selectedDates }: any) => {
+const DateRangeDropdown = ({ selectedDates, setSelectedDates }: any) => {
   const [selectedOption, setSelectedOption] = useState(predefinedRanges[0]);
-  const [customRange, setCustomRange] = useState<{
-    startDate: Date | undefined;
-    endDate: Date | undefined;
-  }>({
-    startDate: selectedDates?.startDate
-      ? startOfDay(selectedDates.startDate)
-      : undefined,
-    endDate: selectedDates?.endDate
-      ? endOfDay(selectedDates.endDate)
-      : undefined,
-  });
-
   const [open, setOpen] = useState(false);
+
+  const [internalRange, setInternalRange] = useState<{
+    startDate: Date;
+    endDate: Date;
+  }>({
+    startDate: startOfDay(subDays(new Date(), 7)),
+    endDate: endOfDay(new Date()),
+  });
 
   const handleSelect = (value: string) => {
     const option = predefinedRanges.find((o) => o.value === value);
     if (option) {
       setSelectedOption(option);
       if (option.value === "custom") {
-        setCustomRange({
-          startDate: undefined,
-          endDate: undefined,
-        });
         setOpen(true);
       } else {
-        setCustomRange({
+        setSelectedDates({
           startDate: option.range[0],
           endDate: option.range[1],
         });
@@ -87,24 +79,30 @@ const DateRangeDropdown = ({ onDateSelect, selectedDates }: any) => {
   };
 
   const handleDateChange = (range: any) => {
-    setCustomRange({
-      startDate: startOfDay(range.selection.startDate),
-      endDate: endOfDay(range.selection.endDate),
-    });
+    if (selectedOption.value === "custom") {
+      setInternalRange({
+        startDate: range.selection.startDate,
+        endDate: range.selection.endDate,
+      });
+    }
   };
 
   const handleAccept = () => {
-    if (customRange.startDate && customRange.endDate) {
+    if (selectedDates.startDate && selectedDates.endDate) {
       setSelectedOption({
-        label: `(${format(customRange.startDate, "dd MMM")} - ${format(
-          customRange.endDate,
+        label: `(${format(selectedDates.startDate, "dd MMM")} - ${format(
+          selectedDates.endDate,
           "dd MMM"
         )})`,
         value: "custom",
-        range: [customRange.startDate, customRange.endDate],
+        range: [selectedDates.startDate, selectedDates.endDate],
       });
       setOpen(false);
-      onDateSelect(customRange);
+
+      setSelectedDates({
+        startDate: internalRange.startDate,
+        endDate: internalRange.endDate,
+      });
     }
   };
 
@@ -143,10 +141,10 @@ const DateRangeDropdown = ({ onDateSelect, selectedDates }: any) => {
               )})`}
             {option.value === "custom" &&
             selectedOption.value === "custom" &&
-            customRange.startDate &&
-            customRange.endDate
-              ? `(${format(customRange.startDate, "dd MMM yyyy")} - ${format(
-                  customRange.endDate,
+            selectedDates.startDate &&
+            selectedDates.endDate
+              ? `(${format(selectedDates.startDate, "dd MMM yyyy")} - ${format(
+                  selectedDates.endDate,
                   "dd MMM yyyy"
                 )})`
               : ""}
@@ -166,8 +164,8 @@ const DateRangeDropdown = ({ onDateSelect, selectedDates }: any) => {
           <DateRange
             ranges={[
               {
-                startDate: customRange.startDate || new Date(),
-                endDate: customRange.endDate || endOfDay(new Date()),
+                startDate: internalRange.startDate || new Date(),
+                endDate: internalRange.endDate || endOfDay(new Date()),
                 key: "selection",
               },
             ]}
