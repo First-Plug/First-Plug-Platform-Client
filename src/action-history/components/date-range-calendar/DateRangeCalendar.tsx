@@ -19,7 +19,7 @@ const predefinedRanges = [
   {
     label: "Last 7 days",
     value: "last7",
-    range: [subDays(new Date(), 7), new Date()],
+    range: [subDays(new Date(), 6), new Date()],
   },
   {
     label: "Last 30 days",
