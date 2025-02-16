@@ -214,7 +214,7 @@ const HistoryTable = () => {
                     <TableRow
                       className={`text-black border-b text-md border-gray-200 text-left ${
                         expandedRow === row.original._id
-                          ? "border-l-2 border-l-blue"
+                          ? "border-l-2 border-l-blue bg-blue/10"
                           : ""
                       }`}
                     >

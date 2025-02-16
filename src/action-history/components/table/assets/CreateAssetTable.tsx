@@ -1,3 +1,4 @@
+import MemberName from "@/components/Tables/helpers/MemberName";
 import {
   Table,
   TableHeader,
@@ -6,6 +7,8 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import { Product } from "@/types";
+import MemberNameAndLocation from "../../member-name/MemberNameAndLocation";
 
 interface AssetAttribute {
   key: string;
@@ -72,7 +75,7 @@ const CreateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
                 {asset.serialNumber || "N/A"}
               </TableCell>
               <TableCell className="text-xs py-2 px-4">
-                {asset.assignedMember || asset.location || "N/A"}
+                <MemberNameAndLocation product={asset as Product} />
               </TableCell>
             </TableRow>
           ))
