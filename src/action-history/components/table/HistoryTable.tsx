@@ -24,6 +24,9 @@ import CreateAssetsTable from "./assets/CreateAssetTable";
 import { ArrowRight, Button } from "@/common";
 import CreateMembersTable from "./members/CreateMemberTable";
 import CreateTeamsTable from "./teams/CreateTeamTable";
+import DeleteAssetsTable from "./assets/DeleteAssetTable";
+import DeleteTeamsTable from "./teams/DeleteTeamTable";
+import DeleteMembersTable from "./members/DeleteMemberTable";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -119,7 +122,11 @@ const HistoryTable = () => {
       {
         header: "Quantity",
         cell: ({ row }) => {
-          return row.original.changes.newData.length || 1;
+          return (
+            row.original.changes?.newData?.length ||
+            row.original.changes?.oldData?.length ||
+            1
+          );
         },
       },
       { accessorKey: "userId", header: "User" },
@@ -255,17 +262,33 @@ const HistoryTable = () => {
                             <CreateAssetsTable
                               data={row.original.changes.newData || []}
                             />
+                          ) : row.original.itemType === "assets" &&
+                            row.original.actionType === "delete" ? (
+                            <DeleteAssetsTable
+                              data={row.original.changes.oldData || []}
+                            />
                           ) : row.original.itemType === "members" &&
                             (row.original.actionType === "create" ||
                               row.original.actionType === "bulk-create") ? (
                             <CreateMembersTable
                               data={row.original.changes.newData || []}
                             />
+                          ) : row.original.itemType === "members" &&
+                            row.original.actionType === "delete" ? (
+                            <DeleteMembersTable
+                              data={row.original.changes.oldData || []}
+                            />
                           ) : row.original.itemType === "teams" &&
                             (row.original.actionType === "create" ||
                               row.original.actionType === "bulk-create") ? (
                             <CreateTeamsTable
                               data={row.original.changes.newData || []}
+                            />
+                          ) : (row.original.itemType === "teams" &&
+                              row.original.actionType === "bulk-delete") ||
+                            row.original.actionType === "delete" ? (
+                            <DeleteTeamsTable
+                              data={row.original.changes.oldData || []}
                             />
                           ) : row.original.actionType === "TYPE_A" ? (
                             <TableA data={row.original} />

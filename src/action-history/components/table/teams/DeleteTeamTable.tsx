@@ -12,7 +12,7 @@ interface TeamsTableProps {
   data: Team | Team[];
 }
 
-const CreateTeamsTable: React.FC<TeamsTableProps> = ({ data }) => {
+const DeleteTeamsTable: React.FC<TeamsTableProps> = ({ data }) => {
   const normalizedData: Team[] = Array.isArray(data) ? data : [data];
 
   return (
@@ -45,4 +45,4 @@ const CreateTeamsTable: React.FC<TeamsTableProps> = ({ data }) => {
   );
 };
 
-export default CreateTeamsTable;
+export default DeleteTeamsTable;
