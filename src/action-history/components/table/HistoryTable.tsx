@@ -22,6 +22,7 @@ import DateRangeDropdown from "../date-range-calendar/DateRangeCalendar";
 import { endOfDay, startOfDay, subDays } from "date-fns";
 import CreateAssetsTable from "./assets/CreateAssetTable";
 import { ArrowRight, Button } from "@/common";
+import CreateMembersTable from "./members/CreateMemberTable";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -214,7 +215,7 @@ const HistoryTable = () => {
                     <TableRow
                       className={`text-black border-b text-md border-gray-200 text-left ${
                         expandedRow === row.original._id
-                          ? "border-l-2 border-l-blue bg-blue/10"
+                          ? "border-l-2 border-l-blue bg-blue/10 transition-colors"
                           : ""
                       }`}
                     >
@@ -245,6 +246,12 @@ const HistoryTable = () => {
                           (row.original.actionType === "create" ||
                             row.original.actionType === "bulk-create") ? (
                             <CreateAssetsTable
+                              data={row.original.changes.newData || []}
+                            />
+                          ) : row.original.itemType === "members" &&
+                            (row.original.actionType === "create" ||
+                              row.original.actionType === "bulk-create") ? (
+                            <CreateMembersTable
                               data={row.original.changes.newData || []}
                             />
                           ) : row.original.actionType === "TYPE_A" ? (

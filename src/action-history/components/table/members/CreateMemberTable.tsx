@@ -6,45 +6,30 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { Product } from "@/types";
-import MemberNameAndLocation from "../../member-name/MemberNameAndLocation";
+import { TeamMember } from "@/types";
 
-interface AssetAttribute {
-  key: string;
-  value: string;
+interface MembersTableProps {
+  data: TeamMember | TeamMember[];
 }
 
-interface Asset {
-  category: string;
-  name: string;
-  serialNumber: string;
-  location?: string;
-  assignedMember?: string;
-  attributes?: AssetAttribute[];
-}
-
-interface AssetsTableProps {
-  data: Asset | Asset[];
-}
-
-const CreateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
-  const normalizedData: Asset[] = Array.isArray(data) ? data : [data];
+const CreateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
+  const normalizedData: TeamMember[] = Array.isArray(data) ? data : [data];
 
   return (
     <Table>
       <TableHeader>
         <TableRow className="border-gray-200 bg-light-grey rounded-md">
           <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
-            Category
+            Name
           </TableHead>
           <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
-            Brand + Model + Name
+            Assigned email
           </TableHead>
           <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
-            Serial
+            Team
           </TableHead>
           <TableHead className="py-3 px-4 text-start text-black font-semibold">
-            Location / Assigned Member
+            Country
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -52,29 +37,23 @@ const CreateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
         {normalizedData.length === 0 ? (
           <TableRow>
             <TableCell colSpan={4} className="h-24 text-center">
-              No assets found.
+              No members found.
             </TableCell>
           </TableRow>
         ) : (
-          normalizedData.map((asset, index) => (
+          normalizedData.map((member, index) => (
             <TableRow key={index}>
               <TableCell className="text-xs py-2 px-4 border-r">
-                {asset.category}
+                {member.firstName + " " + member.lastName}
               </TableCell>
               <TableCell className="text-xs py-2 px-4 border-r">
-                {[
-                  asset.attributes?.find((attr) => attr.key === "brand")?.value,
-                  asset.attributes?.find((attr) => attr.key === "model")?.value,
-                  asset.name,
-                ]
-                  .filter(Boolean)
-                  .join(" ")}{" "}
+                {member.email}
               </TableCell>
               <TableCell className="text-xs py-2 px-4 border-r">
-                {asset.serialNumber || "N/A"}
+                {(member.team as string) || "-"}
               </TableCell>
               <TableCell className="text-xs py-2 px-4">
-                <MemberNameAndLocation product={asset as Product} />
+                {member.country || "-"}
               </TableCell>
             </TableRow>
           ))
@@ -84,4 +63,4 @@ const CreateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
   );
 };
 
-export default CreateAssetsTable;
+export default CreateMembersTable;
