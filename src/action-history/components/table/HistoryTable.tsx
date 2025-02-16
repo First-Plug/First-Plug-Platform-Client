@@ -23,6 +23,7 @@ import { endOfDay, startOfDay, subDays } from "date-fns";
 import CreateAssetsTable from "./assets/CreateAssetTable";
 import { ArrowRight, Button } from "@/common";
 import CreateMembersTable from "./members/CreateMemberTable";
+import CreateTeamsTable from "./teams/CreateTeamTable";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -115,6 +116,12 @@ const HistoryTable = () => {
       { accessorKey: "_id", header: "Id Action" },
       { accessorKey: "itemType", header: "Item Type" },
       { accessorKey: "actionType", header: "Action" },
+      {
+        header: "Quantity",
+        cell: ({ row }) => {
+          return row.original.changes.newData.length || 1;
+        },
+      },
       { accessorKey: "userId", header: "User" },
       {
         accessorKey: "createdAt",
@@ -252,6 +259,12 @@ const HistoryTable = () => {
                             (row.original.actionType === "create" ||
                               row.original.actionType === "bulk-create") ? (
                             <CreateMembersTable
+                              data={row.original.changes.newData || []}
+                            />
+                          ) : row.original.itemType === "teams" &&
+                            (row.original.actionType === "create" ||
+                              row.original.actionType === "bulk-create") ? (
+                            <CreateTeamsTable
                               data={row.original.changes.newData || []}
                             />
                           ) : row.original.actionType === "TYPE_A" ? (
