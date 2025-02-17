@@ -6,7 +6,18 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { TeamMember } from "@/types";
+
+// Modifica la interfaz de TeamMember para reflejar la posible estructura de `team`
+interface Team {
+  name: string;
+}
+
+interface TeamMember {
+  firstName: string;
+  lastName: string;
+  email: string;
+  team: Team | string; // Aquí puede ser un objeto o un string
+}
 
 interface TeamsTableProps {
   data: {
@@ -65,8 +76,8 @@ const ActionTeamsTable: React.FC<TeamsTableProps> = ({ data }) => {
 
               <TableCell className="text-xs py-2 px-4 border-r">
                 {typeof newData[index].team === "object" &&
-                newData[index].team?.name
-                  ? newData[index].team.name
+                newData[index].team !== null
+                  ? (newData[index].team as Team).name
                   : "-"}
               </TableCell>
             </TableRow>
