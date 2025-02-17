@@ -27,6 +27,9 @@ import CreateTeamsTable from "./teams/CreateTeamTable";
 import DeleteAssetsTable from "./assets/DeleteAssetTable";
 import DeleteTeamsTable from "./teams/DeleteTeamTable";
 import DeleteMembersTable from "./members/DeleteMemberTable";
+import ActionAssetTable from "./assets/ActionAssetTable";
+import ActionTeamsTable from "./teams/ActionTeamTable";
+import OffboardingMembersTable from "./members/OffboardingMemberTable";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -256,40 +259,59 @@ const HistoryTable = () => {
                           colSpan={columns.length}
                           className="text-black border-b text-md text-left border-l-2 border-l-blue w-full p-0 rounded-none transition-colors"
                         >
-                          {row.original.itemType === "assets" &&
-                          (row.original.actionType === "create" ||
-                            row.original.actionType === "bulk-create") ? (
-                            <CreateAssetsTable
-                              data={row.original.changes.newData || []}
-                            />
-                          ) : row.original.itemType === "assets" &&
-                            row.original.actionType === "delete" ? (
-                            <DeleteAssetsTable
-                              data={row.original.changes.oldData || []}
-                            />
-                          ) : row.original.itemType === "members" &&
-                            (row.original.actionType === "create" ||
-                              row.original.actionType === "bulk-create") ? (
-                            <CreateMembersTable
-                              data={row.original.changes.newData || []}
-                            />
-                          ) : row.original.itemType === "members" &&
-                            row.original.actionType === "delete" ? (
-                            <DeleteMembersTable
-                              data={row.original.changes.oldData || []}
-                            />
-                          ) : row.original.itemType === "teams" &&
-                            (row.original.actionType === "create" ||
-                              row.original.actionType === "bulk-create") ? (
-                            <CreateTeamsTable
-                              data={row.original.changes.newData || []}
-                            />
-                          ) : (row.original.itemType === "teams" &&
-                              row.original.actionType === "bulk-delete") ||
-                            row.original.actionType === "delete" ? (
-                            <DeleteTeamsTable
-                              data={row.original.changes.oldData || []}
-                            />
+                          {row.original.itemType === "assets" ? (
+                            row.original.actionType === "create" ||
+                            row.original.actionType === "bulk-create" ? (
+                              <CreateAssetsTable
+                                data={row.original.changes.newData || []}
+                              />
+                            ) : row.original.actionType === "delete" ? (
+                              <DeleteAssetsTable
+                                data={row.original.changes.oldData || []}
+                              />
+                            ) : [
+                                "return",
+                                "reassign",
+                                "relocate",
+                                "assign",
+                              ].includes(row.original.actionType) ? (
+                              <ActionAssetTable
+                                data={row.original.changes || []}
+                              />
+                            ) : null
+                          ) : row.original.itemType === "members" ? (
+                            row.original.actionType === "create" ||
+                            row.original.actionType === "bulk-create" ? (
+                              <CreateMembersTable
+                                data={row.original.changes.newData || []}
+                              />
+                            ) : row.original.actionType === "delete" ? (
+                              <DeleteMembersTable
+                                data={row.original.changes.oldData || []}
+                              />
+                            ) : row.original.actionType === "offboarding" ? (
+                              <OffboardingMembersTable
+                                data={row.original.changes || []}
+                              />
+                            ) : null
+                          ) : row.original.itemType === "teams" ? (
+                            row.original.actionType === "create" ||
+                            row.original.actionType === "bulk-create" ? (
+                              <CreateTeamsTable
+                                data={row.original.changes.newData || []}
+                              />
+                            ) : row.original.actionType === "bulk-delete" ||
+                              row.original.actionType === "delete" ? (
+                              <DeleteTeamsTable
+                                data={row.original.changes.oldData || []}
+                              />
+                            ) : ["reassign", "assign"].includes(
+                                row.original.actionType
+                              ) ? (
+                              <ActionTeamsTable
+                                data={row.original.changes || []}
+                              />
+                            ) : null
                           ) : row.original.actionType === "TYPE_A" ? (
                             <TableA data={row.original} />
                           ) : (

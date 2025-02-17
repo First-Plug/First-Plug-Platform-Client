@@ -192,7 +192,7 @@ function SelectRowsPerPage({
         <SelectTrigger>
           <SelectValue>{`Table size: ${String(pageSize)}`}</SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-white">
           {options.map((option) => (
             <SelectItem key={option} value={String(option)}>
               Show {option}

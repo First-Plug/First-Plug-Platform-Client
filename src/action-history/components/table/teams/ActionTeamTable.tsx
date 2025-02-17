@@ -8,12 +8,20 @@ import {
 } from "@/components/ui/table";
 import { TeamMember } from "@/types";
 
-interface MembersTableProps {
-  data: TeamMember | TeamMember[];
+interface TeamsTableProps {
+  data: {
+    oldData: TeamMember[];
+    newData: TeamMember[];
+  };
 }
 
-const DeleteMembersTable: React.FC<MembersTableProps> = ({ data }) => {
-  const normalizedData: TeamMember[] = Array.isArray(data) ? data : [data];
+const ActionTeamsTable: React.FC<TeamsTableProps> = ({ data }) => {
+  const oldData: TeamMember[] = Array.isArray(data.oldData)
+    ? data.oldData
+    : [data.oldData];
+  const newData: TeamMember[] = Array.isArray(data.newData)
+    ? data.newData
+    : [data.newData];
 
   return (
     <Table>
@@ -26,25 +34,22 @@ const DeleteMembersTable: React.FC<MembersTableProps> = ({ data }) => {
             Assigned email
           </TableHead>
           <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
-            Team
+            Old Team
           </TableHead>
           <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
-            Country
-          </TableHead>
-          <TableHead className="py-3 px-4 text-start text-black font-semibold">
-            Non recoverable products
+            New Team
           </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {normalizedData.length === 0 ? (
+        {oldData.length === 0 ? (
           <TableRow>
             <TableCell colSpan={4} className="h-24 text-center">
-              No members found.
+              No teams found.
             </TableCell>
           </TableRow>
         ) : (
-          normalizedData.map((member, index) => (
+          oldData.map((member, index) => (
             <TableRow key={index}>
               <TableCell className="text-xs py-2 px-4 border-r">
                 {member.firstName + " " + member.lastName}
@@ -53,29 +58,15 @@ const DeleteMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                 {member.email}
               </TableCell>
               <TableCell className="text-xs py-2 px-4 border-r">
-                {(member.team as string) || "-"}
+                {typeof member.team === "object" && member.team !== null
+                  ? member.team.name
+                  : "-"}
               </TableCell>
+
               <TableCell className="text-xs py-2 px-4 border-r">
-                {member.country || "-"}
-              </TableCell>
-              <TableCell className="text-xs py-2 px-4 flex flex-col">
-                {member.products.length > 0
-                  ? member.products.map((product) => (
-                      <span key={product._id}>
-                        {[
-                          product.attributes?.find(
-                            (attr) => attr.key === "brand"
-                          )?.value,
-                          product.attributes?.find(
-                            (attr) => attr.key === "model"
-                          )?.value,
-                          product.name,
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}{" "}
-                        <br />
-                      </span>
-                    ))
+                {typeof newData[index].team === "object" &&
+                newData[index].team?.name
+                  ? newData[index].team.name
                   : "-"}
               </TableCell>
             </TableRow>
@@ -86,4 +77,4 @@ const DeleteMembersTable: React.FC<MembersTableProps> = ({ data }) => {
   );
 };
 
-export default DeleteMembersTable;
+export default ActionTeamsTable;
