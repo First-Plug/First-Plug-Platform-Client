@@ -24,6 +24,18 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
   const changes: { field: string; oldValue: any; newValue: any }[] = [];
 
   Object.keys({ ...oldData, ...newData }).forEach((key) => {
+    if (
+      [
+        "updatedAt",
+        "createdAt",
+        "acquisitionDate",
+        "deletedAt",
+        "status",
+      ].includes(key)
+    ) {
+      return;
+    }
+
     if (key === "attributes") {
       const oldAttributes = oldData.attributes || [];
       const newAttributes = newData.attributes || [];
@@ -46,28 +58,29 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
       const newValue = newData[key as keyof Product] || "";
 
       if (!oldExists && !newExists) return;
-
       if (oldValue === "" && !newExists) return;
 
-      if (oldValue !== newValue) {
-        let formattedOldValue = oldValue || "-";
-        let formattedNewValue = newValue || "-";
-
+      // Comparar precios correctamente si es un objeto con `amount` y `currencyCode`
+      if (
+        key === "price" &&
+        typeof oldValue === "object" &&
+        typeof newValue === "object"
+      ) {
         if (
-          ["updatedAt", "createdAt", "acquisitionDate", "deletedAt"].includes(
-            key
-          )
+          oldValue.amount !== newValue.amount ||
+          oldValue.currencyCode !== newValue.currencyCode
         ) {
-          if (typeof formattedOldValue === "string" && formattedOldValue)
-            formattedOldValue = new Date(formattedOldValue).toLocaleString();
-          if (typeof formattedNewValue === "string" && formattedNewValue)
-            formattedNewValue = new Date(formattedNewValue).toLocaleString();
+          changes.push({
+            field: key,
+            oldValue: `${oldValue.amount} ${oldValue.currencyCode}`,
+            newValue: `${newValue.amount} ${newValue.currencyCode}`,
+          });
         }
-
+      } else if (oldValue !== newValue) {
         changes.push({
           field: key,
-          oldValue: formattedOldValue,
-          newValue: formattedNewValue,
+          oldValue: oldValue || "-",
+          newValue: newValue || "-",
         });
       }
     }
@@ -76,10 +89,11 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
   return changes;
 };
 
-// Función para formatear valores antes de renderizarlos
-const formatValue = (value: any) => {
+const formatValue = (value: any, field?: string) => {
+  if (field === "recoverable") {
+    return value === true ? "Yes" : "No";
+  }
   if (typeof value === "object" && value !== null) {
-    // Si es un objeto, muestra sus claves principales como ejemplo
     return `${value.amount} ${value.currencyCode}`;
   }
   return value || "-";
@@ -113,15 +127,15 @@ const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
         {updatedFields.map((change, index) => (
           <TableRow key={index}>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {data.newData.category}
+              {data.oldData.category}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
               {[
-                data.newData.attributes?.find((attr) => attr.key === "brand")
+                data.oldData.attributes?.find((attr) => attr.key === "brand")
                   ?.value,
-                data.newData.attributes?.find((attr) => attr.key === "model")
+                data.oldData.attributes?.find((attr) => attr.key === "model")
                   ?.value,
-                data.newData.name,
+                data.oldData.name,
               ]
                 .filter(Boolean)
                 .join(" ")}
@@ -130,10 +144,10 @@ const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
               {change.field}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {formatValue(change.oldValue)}
+              {formatValue(change.oldValue, change.field)}
             </TableCell>
             <TableCell className="text-xs py-2 px-4">
-              {formatValue(change.newValue)}
+              {formatValue(change.newValue, change.field)}
             </TableCell>
           </TableRow>
         ))}

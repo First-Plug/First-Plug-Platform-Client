@@ -20,16 +20,17 @@ const getUpdatedFields = (oldData: TeamMember, newData: TeamMember) => {
 
   Object.keys(newData).forEach((key) => {
     if (
+      ["updatedAt", "createdAt", "acquisitionDate", "deletedAt"].includes(key)
+    ) {
+      return; // Ignorar estos campos
+    }
+
+    if (
       key !== "products" &&
       newData[key as keyof TeamMember] !== oldData[key as keyof TeamMember]
     ) {
       let oldValue = oldData[key as keyof TeamMember] || "-";
       let newValue = newData[key as keyof TeamMember] || "-";
-
-      if (key === "updatedAt") {
-        oldValue = new Date(oldValue).toLocaleString();
-        newValue = new Date(newValue).toLocaleString();
-      }
 
       changes.push({ field: key, oldValue, newValue });
     }
@@ -66,10 +67,10 @@ const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
         {updatedFields.map((change, index) => (
           <TableRow key={index}>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {data.newData.firstName + " " + data.newData.lastName}
+              {data.oldData.firstName + " " + data.oldData.lastName}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {data.newData.email}
+              {data.oldData.email}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
               {change.field}
