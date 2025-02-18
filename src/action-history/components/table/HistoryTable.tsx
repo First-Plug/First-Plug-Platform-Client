@@ -20,6 +20,19 @@ import { BarLoader } from "@/components/Loader/BarLoader";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
 import DateRangeDropdown from "../date-range-calendar/DateRangeCalendar";
 import { endOfDay, startOfDay, subDays } from "date-fns";
+import CreateAssetsTable from "./assets/CreateAssetTable";
+import { ArrowRight, Button } from "@/common";
+import CreateMembersTable from "./members/CreateMemberTable";
+import CreateTeamsTable from "./teams/CreateTeamTable";
+import DeleteAssetsTable from "./assets/DeleteAssetTable";
+import DeleteTeamsTable from "./teams/DeleteTeamTable";
+import DeleteMembersTable from "./members/DeleteMemberTable";
+import ActionAssetTable from "./assets/ActionAssetTable";
+import ActionTeamsTable from "./teams/ActionTeamTable";
+import OffboardingMembersTable from "./members/OffboardingMemberTable";
+import UpdateTeamsTable from "./teams/UpdateTeamTable";
+import UpdateMembersTable from "./members/UpdateMemberTable";
+import UpdateAssetsTable from "./assets/UpdateAssetTable";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -46,12 +59,27 @@ const fetchData = async (
   }
 };
 
+const TableA = ({ data }: { data: any }) => (
+  <div className="p-3 border rounded-md bg-gray-50">
+    <p className="text-sm font-semibold">Table A (Example)</p>
+    <pre className="text-xs">{JSON.stringify(data, null, 2)}</pre>
+  </div>
+);
+
+const TableB = ({ data }: { data: any }) => (
+  <div className="p-3 border rounded-md bg-gray-50">
+    <p className="text-sm font-semibold">Table B (Example)</p>
+    <pre className="text-xs">{JSON.stringify(data, null, 2)}</pre>
+  </div>
+);
+
 const HistoryTable = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [data, setData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const [selectedDates, setSelectedDates] = useState<{
     startDate: Date;
@@ -71,25 +99,6 @@ const HistoryTable = () => {
     ? rawPageSize
     : DEFAULT_PAGE_SIZE;
   let currentPage = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    let needsUpdate = false;
-
-    if (!VALID_PAGE_SIZES.includes(rawPageSize)) {
-      params.set("pageSize", DEFAULT_PAGE_SIZE.toString());
-      needsUpdate = true;
-    }
-
-    if (isNaN(rawPage) || rawPage < 1) {
-      params.set("page", "1");
-      needsUpdate = true;
-    }
-
-    if (needsUpdate) {
-      router.replace(`?${params.toString()}`);
-    }
-  }, [rawPage, rawPageSize, router]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -117,25 +126,13 @@ const HistoryTable = () => {
       { accessorKey: "itemType", header: "Item Type" },
       { accessorKey: "actionType", header: "Action" },
       {
-        accessorKey: "quantity",
         header: "Quantity",
-        cell: (info) => {
-          const {
-            changes: { oldData, newData },
-          } = info.row.original;
-
-          const quantity =
-            oldData !== null && oldData !== undefined
-              ? Array.isArray(oldData)
-                ? oldData.length
-                : 1
-              : newData !== null && newData !== undefined
-              ? Array.isArray(newData)
-                ? newData.length
-                : 1
-              : 1;
-
-          return <span>{quantity}</span>;
+        cell: ({ row }) => {
+          return (
+            row.original.changes?.newData?.length ||
+            row.original.changes?.oldData?.length ||
+            1
+          );
         },
       },
       { accessorKey: "userId", header: "User" },
@@ -154,8 +151,41 @@ const HistoryTable = () => {
           });
         },
       },
+      {
+        id: "expander",
+        header: () => null,
+        size: 20,
+        cell: ({ row }) => {
+          const rowId = row.original._id;
+          const { actionType, itemType } = row.original;
+
+          if (
+            (actionType === "unassign" && itemType === "teams") ||
+            (actionType === "offboarding" && itemType === "members")
+          ) {
+            return null;
+          }
+
+          return (
+            <Button
+              variant="text"
+              className="relative"
+              onClick={() =>
+                setExpandedRow(expandedRow === rowId ? null : rowId)
+              }
+            >
+              <span>Details</span>
+              <ArrowRight
+                className={`transition-all duration-200 transform ${
+                  expandedRow === rowId ? "rotate-90" : "rotate-0"
+                }`}
+              />
+            </Button>
+          );
+        },
+      },
     ],
-    []
+    [expandedRow]
   );
 
   const table = useReactTable({
@@ -177,7 +207,7 @@ const HistoryTable = () => {
           />
         </div>
         <div className="max-h-[85%] overflow-y-auto scrollbar-custom rounded-md border w-full mx-auto">
-          <Table className="w-full">
+          <Table className="w-full border-collapse m-0">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
@@ -199,18 +229,7 @@ const HistoryTable = () => {
               ))}
             </TableHeader>
             <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    <div className="flex justify-center items-center">
-                      <div className="w-8 h-8 border-4 border-blue border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : data.length === 0 ? (
+              {data.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
@@ -221,19 +240,107 @@ const HistoryTable = () => {
                 </TableRow>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="text-black border-b text-md border-gray-200 text-left"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="text-xs ">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
+                  <React.Fragment key={row.id}>
+                    <TableRow
+                      className={`text-black border-b text-md border-gray-200 text-left ${
+                        expandedRow === row.original._id
+                          ? "border-l-2 border-l-blue bg-blue/10 transition-colors"
+                          : ""
+                      }`}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="text-xs">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                    {expandedRow === row.original._id && (
+                      <TableRow
+                        key={row.id}
+                        className={`text-black border-b text-md border-gray-200 text-left 
+                        ${
+                          expandedRow === row.original._id
+                            ? "border-l-2 border-l-blue"
+                            : ""
+                        }`}
+                      >
+                        <TableCell
+                          colSpan={columns.length}
+                          className="text-black border-b text-md text-left border-l-2 border-l-blue w-full p-0 rounded-none transition-colors"
+                        >
+                          {row.original.itemType === "assets" ? (
+                            row.original.actionType === "create" ||
+                            row.original.actionType === "bulk-create" ? (
+                              <CreateAssetsTable
+                                data={row.original.changes.newData || []}
+                              />
+                            ) : row.original.actionType === "delete" ? (
+                              <DeleteAssetsTable
+                                data={row.original.changes.oldData || []}
+                              />
+                            ) : row.original.actionType === "update" ? (
+                              <UpdateAssetsTable
+                                data={row.original.changes || []}
+                              />
+                            ) : [
+                                "return",
+                                "reassign",
+                                "relocate",
+                                "assign",
+                              ].includes(row.original.actionType) ? (
+                              <ActionAssetTable
+                                data={row.original.changes || []}
+                              />
+                            ) : null
+                          ) : row.original.itemType === "members" ? (
+                            row.original.actionType === "create" ||
+                            row.original.actionType === "bulk-create" ? (
+                              <CreateMembersTable
+                                data={row.original.changes.newData || []}
+                              />
+                            ) : row.original.actionType === "delete" ? (
+                              <DeleteMembersTable
+                                data={row.original.changes.oldData || []}
+                              />
+                            ) : row.original.actionType === "update" ? (
+                              <UpdateMembersTable
+                                data={row.original.changes || []}
+                              />
+                            ) : row.original.actionType === "offboarding" ? (
+                              <OffboardingMembersTable
+                                data={row.original.changes || []}
+                              />
+                            ) : null
+                          ) : row.original.itemType === "teams" ? (
+                            row.original.actionType === "create" ||
+                            row.original.actionType === "bulk-create" ? (
+                              <CreateTeamsTable
+                                data={row.original.changes.newData || []}
+                              />
+                            ) : row.original.actionType === "bulk-delete" ||
+                              row.original.actionType === "delete" ? (
+                              <DeleteTeamsTable
+                                data={row.original.changes.oldData || []}
+                              />
+                            ) : row.original.actionType === "update" ? (
+                              <UpdateTeamsTable
+                                data={row.original.changes || []}
+                              />
+                            ) : ["reassign", "assign", "unassign"].includes(
+                                row.original.actionType
+                              ) ? (
+                              <ActionTeamsTable
+                                data={row.original.changes || []}
+                              />
+                            ) : null
+                          ) : null}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
                 ))
               )}
             </TableBody>
