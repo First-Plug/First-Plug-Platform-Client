@@ -32,7 +32,7 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
         const oldAttr = oldAttributes.find((attr) => attr.key === newAttr.key);
         if (!oldAttr || oldAttr.value !== newAttr.value) {
           changes.push({
-            field: `Attribute: ${newAttr.key}`,
+            field: `${newAttr.key}`,
             oldValue: oldAttr ? oldAttr.value : "-",
             newValue: newAttr.value,
           });
@@ -74,6 +74,15 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
   });
 
   return changes;
+};
+
+// Función para formatear valores antes de renderizarlos
+const formatValue = (value: any) => {
+  if (typeof value === "object" && value !== null) {
+    // Si es un objeto, muestra sus claves principales como ejemplo
+    return `${value.amount} ${value.currencyCode}`;
+  }
+  return value || "-";
 };
 
 const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
@@ -121,10 +130,10 @@ const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
               {change.field}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {change.oldValue}
+              {formatValue(change.oldValue)}
             </TableCell>
             <TableCell className="text-xs py-2 px-4">
-              {change.newValue}
+              {formatValue(change.newValue)}
             </TableCell>
           </TableRow>
         ))}
