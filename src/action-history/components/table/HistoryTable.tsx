@@ -157,6 +157,15 @@ const HistoryTable = () => {
         size: 20,
         cell: ({ row }) => {
           const rowId = row.original._id;
+          const { actionType, itemType } = row.original;
+
+          if (
+            (actionType === "unassign" && itemType === "teams") ||
+            (actionType === "offboarding" && itemType === "members")
+          ) {
+            return null;
+          }
+
           return (
             <Button
               variant="text"
@@ -327,11 +336,7 @@ const HistoryTable = () => {
                                 data={row.original.changes || []}
                               />
                             ) : null
-                          ) : row.original.actionType === "TYPE_A" ? (
-                            <TableA data={row.original} />
-                          ) : (
-                            <TableB data={row.original} />
-                          )}
+                          ) : null}
                         </TableCell>
                       </TableRow>
                     )}
