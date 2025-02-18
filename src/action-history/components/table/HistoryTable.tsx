@@ -30,6 +30,9 @@ import DeleteMembersTable from "./members/DeleteMemberTable";
 import ActionAssetTable from "./assets/ActionAssetTable";
 import ActionTeamsTable from "./teams/ActionTeamTable";
 import OffboardingMembersTable from "./members/OffboardingMemberTable";
+import UpdateTeamsTable from "./teams/UpdateTeamTable";
+import UpdateMembersTable from "./members/UpdateMemberTable";
+import UpdateAssetsTable from "./assets/UpdateAssetTable";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -269,6 +272,10 @@ const HistoryTable = () => {
                               <DeleteAssetsTable
                                 data={row.original.changes.oldData || []}
                               />
+                            ) : row.original.actionType === "update" ? (
+                              <UpdateAssetsTable
+                                data={row.original.changes || []}
+                              />
                             ) : [
                                 "return",
                                 "reassign",
@@ -289,6 +296,10 @@ const HistoryTable = () => {
                               <DeleteMembersTable
                                 data={row.original.changes.oldData || []}
                               />
+                            ) : row.original.actionType === "update" ? (
+                              <UpdateMembersTable
+                                data={row.original.changes || []}
+                              />
                             ) : row.original.actionType === "offboarding" ? (
                               <OffboardingMembersTable
                                 data={row.original.changes || []}
@@ -305,7 +316,11 @@ const HistoryTable = () => {
                               <DeleteTeamsTable
                                 data={row.original.changes.oldData || []}
                               />
-                            ) : ["reassign", "assign"].includes(
+                            ) : row.original.actionType === "update" ? (
+                              <UpdateTeamsTable
+                                data={row.original.changes || []}
+                              />
+                            ) : ["reassign", "assign", "unassign"].includes(
                                 row.original.actionType
                               ) ? (
                               <ActionTeamsTable
