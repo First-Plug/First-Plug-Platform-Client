@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DropdownInputProductForm } from "./DropDownProductForm";
 import { InputProductForm } from "./InputProductForm";
 import { useStore } from "@/models";
@@ -105,6 +105,24 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     setValue(name, value);
     clearErrors(name);
   };
+
+  const prevCategoryRef = useRef<Category | "">(selectedCategory);
+
+  useEffect(() => {
+    if (!isUpdate && prevCategoryRef.current !== selectedCategory) {
+      // Solo resetea si la categoría realmente cambió
+      setSelectedAssignedMember("");
+      setAssignedEmail("");
+      setValue("assignedEmail", "");
+      setValue("assignedMember", "");
+      setSelectedLocation("");
+      setValue("location", "");
+      clearErrors(["assignedEmail", "assignedMember", "location"]);
+
+      // Actualiza la referencia
+      prevCategoryRef.current = selectedCategory;
+    }
+  }, [selectedCategory, isUpdate, setValue, setAssignedEmail, clearErrors]);
 
   const handleAssignedMemberChange = (selectedFullName: string) => {
     setSelectedAssignedMember(selectedFullName);
@@ -460,7 +478,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 onChange={handleAssignedMemberChange}
                 searchable={true}
                 className="w-full"
-                disabled={quantity > 1}
+                disabled={!selectedCategory || quantity > 1}
               />
               <div className="min-h-[24px]">
                 {errors.assignedEmail && (

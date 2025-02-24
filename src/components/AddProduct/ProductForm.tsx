@@ -138,6 +138,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
         setValue("category", category || undefined);
         setManualChange(false);
 
+        // Resetear assigned member y location
+        setAssignedEmail(undefined);
+        setSelectedMember(null);
+        setValue("assignedEmail", "");
+        setValue("assignedMember", "");
+        setValue("location", undefined);
+        clearErrors(["assignedEmail", "assignedMember", "location"]);
+
         const isRecoverable =
           sessionUser?.isRecoverableConfig?.get(category || "") ??
           category !== "Merchandising";
@@ -152,6 +160,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       methods,
       sessionUser?.isRecoverableConfig,
       setFormValues,
+      clearErrors,
     ]
   );
 
@@ -222,6 +231,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
     if (!isProductNameValid) return;
 
     const finalAssignedEmail = watch("assignedEmail");
+    if (finalAssignedEmail === undefined || finalAssignedEmail === null) {
+      methods.setError("assignedEmail", {
+        type: "manual",
+        message: "Assigned Member is required.",
+      });
+      return;
+    }
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
     const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
     const selectedMember =
