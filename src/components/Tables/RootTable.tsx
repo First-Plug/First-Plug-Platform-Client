@@ -40,14 +40,7 @@ declare module "@tanstack/react-table" {
     options?: string[] | ((rows: Row<TData>[]) => string[]);
   }
 }
-import {
-  Fragment,
-  ReactNode,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
 import { ProductTable, TableType, TeamMember } from "@/types";
 import { TableActions } from "./TableActions";
 import { Button } from "../ui/button";
@@ -62,8 +55,6 @@ import {
 } from "../ui/select";
 import FilterComponent from "./Filters/FilterComponent";
 import { getSnapshot, isStateTreeNode } from "mobx-state-tree";
-import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const MONTHS = [
   "January",
@@ -105,27 +96,15 @@ export function RootTable<TData, TValue>({
   onColumnFiltersChange,
   columnFilters: externalColumnFilters,
 }: DataTableProps<TData, TValue>) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // Obtener parámetros de la URL
-
-  const currentPage = parseInt(searchParams.get("page") || "1", 10);
-  const currentPageSize = parseInt(
-    searchParams.get("pageSize") || `${pageSize}`,
-    10
-  );
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
-  const pagination = useMemo(
-    () => ({
-      pageIndex: currentPage - 1,
-      pageSize: currentPageSize,
-    }),
-    [currentPage, currentPageSize]
-  );
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize:
+      tableType === "subRow"
+        ? 1000
+        : parseInt(localStorage.getItem(tableNameRef)) || pageSize,
+  });
 
   const [filterMenuOpen, setFilterMenuOpen] = useState<string | null>(null);
   const [filterOptions, setFilterOptions] = useState<string[]>([]);
@@ -193,15 +172,7 @@ export function RootTable<TData, TValue>({
     autoResetPageIndex: true,
     debugTable: false,
     columnResizeMode: "onChange",
-    onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function" ? updater(pagination) : updater;
-
-      const newSearchParams = new URLSearchParams(searchParams.toString());
-      newSearchParams.set("page", `${newPagination.pageIndex + 1}`);
-      newSearchParams.set("pageSize", `${newPagination.pageSize}`);
-      router.push(`${pathname}?${newSearchParams.toString()}`);
-    },
+    onPaginationChange: setPagination,
     getRowCanExpand,
     getExpandedRowModel: getExpandedRowModel(),
     getCoreRowModel: getCoreRowModel(),
@@ -209,9 +180,6 @@ export function RootTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
-
-  const totalRows = data.length;
-  const totalPageCount = Math.ceil(totalRows / currentPageSize);
 
   const handleFilterChange = (columnId: string, selectedOptions: string[]) => {
     setSelectedFilterOptions((prev) => ({
@@ -649,18 +617,68 @@ export function RootTable<TData, TValue>({
       </div>
 
       {tableType !== "subRow" && (
-        <div className="flex justify-center absolute w-full bottom-0 z-30">
-          <PaginationWithLinks
-            totalCount={totalRows}
-            page={currentPage}
-            pageSize={currentPageSize}
-            pageSearchParam="page"
-            pageSizeSelectOptions={{
-              pageSizeSearchParam: "pageSize",
-              pageSizeOptions: [5, 10, 20, 50],
-            }}
-          />
-        </div>
+        <section className="flex justify-center absolute w-full bottom-0 z-30">
+          <div className="flex items-center gap-10">
+            <Button
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <ArrowLeft className="w-5" />
+            </Button>
+            <span className="flex items-center gap-4">
+              {new Array(parseInt(table.getPageCount().toLocaleString()))
+                .fill("1")
+                .map((pos, i) => (
+                  <Button
+                    key={i}
+                    onClick={() =>
+                      table.setPagination({
+                        pageIndex: i,
+                        pageSize: table.getState().pagination.pageSize,
+                      })
+                    }
+                    className={`border rounded-full grid place-items-center transition-all duration-300 ${
+                      table.getState().pagination.pageIndex === i
+                        ? "bg-blue/80 text-white"
+                        : ""
+                    }`}
+                  >
+                    {i + 1}
+                  </Button>
+                ))}
+            </span>
+            <Button
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <ArrowRight className="w-5" />
+            </Button>
+          </div>
+          <div className="absolute right-0">
+            <Select
+              value={table.getState().pagination.pageSize.toString()}
+              onValueChange={(value) => {
+                if (tableNameRef) {
+                  localStorage.setItem(tableNameRef, value);
+                }
+                table.setPageSize(Number(value));
+              }}
+            >
+              <SelectTrigger>
+                <span>Table size: {table.getState().pagination.pageSize}</span>
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                <SelectGroup>
+                  {[5, 10, 20].map((pageSize) => (
+                    <SelectItem key={pageSize} value={pageSize.toString()}>
+                      Show {pageSize}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </section>
       )}
     </div>
   );
