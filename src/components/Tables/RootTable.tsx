@@ -55,6 +55,7 @@ import {
 } from "../ui/select";
 import FilterComponent from "./Filters/FilterComponent";
 import { getSnapshot, isStateTreeNode } from "mobx-state-tree";
+import { PaginationAdvanced } from "@/components/ui/pagination-advanced";
 
 const MONTHS = [
   "January",
@@ -617,68 +618,15 @@ export function RootTable<TData, TValue>({
       </div>
 
       {tableType !== "subRow" && (
-        <section className="flex justify-center absolute w-full bottom-0 z-30">
-          <div className="flex items-center gap-10">
-            <Button
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <ArrowLeft className="w-5" />
-            </Button>
-            <span className="flex items-center gap-4">
-              {new Array(parseInt(table.getPageCount().toLocaleString()))
-                .fill("1")
-                .map((pos, i) => (
-                  <Button
-                    key={i}
-                    onClick={() =>
-                      table.setPagination({
-                        pageIndex: i,
-                        pageSize: table.getState().pagination.pageSize,
-                      })
-                    }
-                    className={`border rounded-full grid place-items-center transition-all duration-300 ${
-                      table.getState().pagination.pageIndex === i
-                        ? "bg-blue/80 text-white"
-                        : ""
-                    }`}
-                  >
-                    {i + 1}
-                  </Button>
-                ))}
-            </span>
-            <Button
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <ArrowRight className="w-5" />
-            </Button>
-          </div>
-          <div className="absolute right-0">
-            <Select
-              value={table.getState().pagination.pageSize.toString()}
-              onValueChange={(value) => {
-                if (tableNameRef) {
-                  localStorage.setItem(tableNameRef, value);
-                }
-                table.setPageSize(Number(value));
-              }}
-            >
-              <SelectTrigger>
-                <span>Table size: {table.getState().pagination.pageSize}</span>
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectGroup>
-                  {[5, 10, 20].map((pageSize) => (
-                    <SelectItem key={pageSize} value={pageSize.toString()}>
-                      Show {pageSize}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-        </section>
+        <div className="flex justify-center absolute w-full bottom-0 z-30">
+          <PaginationAdvanced
+            pageIndex={table.getState().pagination.pageIndex}
+            pageCount={table.getPageCount()}
+            setPageIndex={(index) => table.setPageIndex(index)}
+            pageSize={table.getState().pagination.pageSize}
+            setPageSize={(size) => table.setPageSize(size)}
+          />
+        </div>
       )}
     </div>
   );
