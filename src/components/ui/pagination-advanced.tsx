@@ -71,8 +71,7 @@ export function PaginationAdvanced({
   };
 
   return (
-    <div className="flex justify-between items-center w-full">
-      {/* Pagination Controls */}
+    <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
       <div className="flex items-center gap-4 justify-center w-full">
         <Button
           onClick={() => setPageIndex(pageIndex - 1)}
@@ -92,13 +91,13 @@ export function PaginationAdvanced({
       </div>
 
       {/* Page Size Selector */}
-      <div className="flex items-center gap-2 ml-4">
+      <div className="flex items-center gap-4">
         <Select
           value={String(pageSize)}
           onValueChange={(value) => setPageSize(Number(value))}
         >
           <SelectTrigger className="w-32">
-            <SelectValue placeholder={`Show ${pageSize}`} />
+            <SelectValue>{`Table size: ${String(pageSize)}`}</SelectValue>
           </SelectTrigger>
           <SelectContent className="bg-white">
             {[5, 10, 20, 50].map((size) => (
@@ -116,7 +115,7 @@ export function PaginationAdvanced({
 const PageButton = ({ page, isActive, setPageIndex }) => (
   <Button
     onClick={() => setPageIndex(page - 1)}
-    className={`border rounded-full w-8 h-8 grid place-items-center transition-all duration-300 ${
+    className={`border rounded-full w-10 h-10 grid place-items-center transition-all duration-300 ${
       isActive ? "bg-blue/80 text-white" : "bg-white text-black"
     }`}
   >
