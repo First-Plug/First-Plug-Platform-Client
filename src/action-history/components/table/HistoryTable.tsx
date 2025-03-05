@@ -34,7 +34,6 @@ import UpdateTeamsTable from "./teams/UpdateTeamTable";
 import UpdateMembersTable from "./members/UpdateMemberTable";
 import UpdateAssetsTable from "./assets/UpdateAssetTable";
 import { Loader } from "@/components/Loader";
-import { products } from "../../../components/Tables/TableActions/TableStockActions";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
