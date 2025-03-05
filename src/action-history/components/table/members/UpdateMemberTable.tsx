@@ -19,10 +19,8 @@ const getUpdatedFields = (oldData: TeamMember, newData: TeamMember) => {
   const changes: { field: string; oldValue: any; newValue: any }[] = [];
 
   Object.keys(newData).forEach((key) => {
-    if (
-      ["updatedAt", "createdAt", "acquisitionDate", "deletedAt"].includes(key)
-    ) {
-      return; // Ignorar estos campos
+    if (["updatedAt", "createdAt", "deletedAt"].includes(key)) {
+      return;
     }
 
     if (
@@ -37,6 +35,28 @@ const getUpdatedFields = (oldData: TeamMember, newData: TeamMember) => {
   });
 
   return changes;
+};
+
+const fieldTranslations: { [key: string]: string } = {
+  firstName: "First Name",
+  lastName: "Last Name",
+  email: "Email",
+  personalEmail: "Personal Email",
+  position: "Position",
+  phone: "Phone",
+  city: "City",
+  zipCode: "Zip Code",
+  address: "Address",
+  apartment: "Apartment",
+  startDate: "Start Date",
+  additionalInfo: "Additional Info",
+  birthDate: "Birthdate",
+  team: "Team",
+  dni: "DNI",
+};
+
+const translateField = (field: string) => {
+  return fieldTranslations[field] || field;
 };
 
 const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
@@ -73,7 +93,7 @@ const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
               {data.oldData.email}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {change.field}
+              {translateField(change.field)}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
               {change.oldValue}

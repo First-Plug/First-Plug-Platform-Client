@@ -7,7 +7,7 @@ export function LoaderSpinner({ size = "sm" }: { size?: LoderSizes }) {
   };
   return (
     <div
-      className={` ${loaderSize[size]}   animate-spin rounded-full border-2 border-dark-grey  border-l-transparent    `}
+      className={`${loaderSize[size]} animate-spin rounded-full border-2 border-black border-l-transparent`}
       role="status"
     ></div>
   );

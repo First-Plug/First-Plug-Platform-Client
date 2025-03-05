@@ -24,15 +24,7 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
   const changes: { field: string; oldValue: any; newValue: any }[] = [];
 
   Object.keys({ ...oldData, ...newData }).forEach((key) => {
-    if (
-      [
-        "updatedAt",
-        "createdAt",
-        "acquisitionDate",
-        "deletedAt",
-        "status",
-      ].includes(key)
-    ) {
+    if (["updatedAt", "createdAt", "deletedAt", "status"].includes(key)) {
       return;
     }
 
@@ -60,7 +52,6 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
       if (!oldExists && !newExists) return;
       if (oldValue === "" && !newExists) return;
 
-      // Comparar precios correctamente si es un objeto con `amount` y `currencyCode`
       if (
         key === "price" &&
         typeof oldValue === "object" &&
@@ -96,7 +87,41 @@ const formatValue = (value: any, field?: string) => {
   if (typeof value === "object" && value !== null) {
     return `${value.amount} ${value.currencyCode}`;
   }
+  if (field === "acquisitionDate") {
+    return value
+      ? new Date(value).toLocaleString(undefined, {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "-";
+  }
   return value || "-";
+};
+
+const fieldTranslations: { [key: string]: string } = {
+  brand: "Brand",
+  model: "Model",
+  name: "Name",
+  price: "Price",
+  processor: "Processor",
+  ram: "RAM",
+  storage: "Storage",
+  recoverable: "Recoverable",
+  acquisitionDate: "Acquisition Date",
+  color: "Color",
+  gpu: "GPU",
+  keyboardLanguage: "Keyboard Language",
+  additionalInfo: "Additional Info",
+  productCondition: "Product Condition",
+  serialNumber: "Serial Number",
+  screen: "Screen",
+};
+
+const translateField = (field: string) => {
+  return fieldTranslations[field] || field;
 };
 
 const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
@@ -141,7 +166,7 @@ const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
                 .join(" ")}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {change.field}
+              {translateField(change.field)}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
               {formatValue(change.oldValue, change.field)}
