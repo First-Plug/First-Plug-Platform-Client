@@ -138,6 +138,9 @@ const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
             Original Brand + Model + Name
           </TableHead>
           <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+            Original Serial
+          </TableHead>
+          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
             Updated Field
           </TableHead>
           <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
@@ -164,6 +167,9 @@ const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
               ]
                 .filter(Boolean)
                 .join(" ")}
+            </TableCell>
+            <TableCell className="text-xs py-2 px-4 border-r">
+              {data.oldData.serialNumber || "-"}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
               {translateField(change.field)}

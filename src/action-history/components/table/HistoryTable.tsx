@@ -149,14 +149,6 @@ const HistoryTable = () => {
         size: 20,
         cell: ({ row }) => {
           const rowId = row.original._id;
-          const { actionType, itemType } = row.original;
-
-          // if (
-          //   (actionType === "unassign" && itemType === "teams") ||
-          //   (actionType === "offboarding" && itemType === "members")
-          // ) {
-          //   return null;
-          // }
 
           return (
             <Button
