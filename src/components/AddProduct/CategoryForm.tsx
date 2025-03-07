@@ -214,6 +214,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     );
   }
 
+  console.log((errors.location as any)?.message);
+
   return (
     <div className="w-full">
       {isUpdate ? (
@@ -283,7 +285,10 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                 <div className="min-h-[24px]">
                   {errors.location && (
                     <p className="text-red-500">
-                      {(errors.location as any).message}
+                      {(errors.location as any).message ===
+                      "Invalid enum value. Expected 'Our office' | 'FP warehouse' | 'Employee', received ''"
+                        ? "Location is required"
+                        : (errors.location as any).message}
                     </p>
                   )}
                 </div>
@@ -510,7 +515,10 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
                   <div className="min-h-[24px]">
                     {errors.location && (
                       <p className="text-red-500">
-                        {(errors.location as any).message}
+                        {(errors.location as any).message ===
+                        "Invalid enum value. Expected 'Our office' | 'FP warehouse' | 'Employee', received ''"
+                          ? "Location is required"
+                          : (errors.location as any).message}
                       </p>
                     )}
                   </div>
