@@ -1,15 +1,16 @@
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import type React from "react";
+import { useState, useCallback, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { Button, PageLayout, SectionTitle } from "@/common";
 import { useStore } from "@/models/root.store";
 import {
-  Category,
-  Product,
+  type Category,
+  type Product,
   AttributeModel,
   emptyProduct,
   zodCreateProductModel,
-  TeamMember,
+  type TeamMember,
 } from "@/types";
 import CategoryForm from "@/components/AddProduct/CategoryForm";
 import { cast } from "mobx-state-tree";
@@ -20,21 +21,16 @@ import peripheralsData from "@/components/AddProduct/JSON/peripheralsform.json";
 import othersData from "@/components/AddProduct/JSON/othersform.json";
 import merchandisingData from "@/components/AddProduct/JSON/merchandisingform.json";
 import DynamicForm from "@/components/AddProduct/DynamicForm";
-import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
 import BulkCreateForm from "./BulkCreateForm";
-import {
-  useBulkCreateAssets,
-  useCreateAsset,
-  useUpdateEntityAsset,
-} from "@/assets/hooks";
+import { useCreateAsset, useUpdateEntityAsset } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { validateOnCreate } from "@/lib/validateAfterAction";
 import {
   prepareSlackNotificationPayload,
-  ValidationEntity,
+  type ValidationEntity,
 } from "@/components/AddProduct/PrepareSlackNotificationPayload";
 import { sendSlackNotification } from "@/services/slackNotifications.services";
 
@@ -200,17 +196,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const productName = watch("name");
 
     if (
-      (model === "Other" && selectedCategory !== "Merchandising") ||
-      selectedCategory === "Merchandising"
+      ((model === "Other" &&
+        selectedCategory !== "Merchandising" &&
+        selectedCategory !== "Other") ||
+        selectedCategory === "Merchandising") &&
+      (!productName || productName.trim() === "")
     ) {
-      if (!productName || productName.trim() === "") {
-        methods.setError("name", {
-          type: "manual",
-          message: "Product Name is required.",
-        });
-        console.log("Model in validateProductName:", model);
-        return false;
-      }
+      methods.setError("name", {
+        type: "manual",
+        message: "Product Name is required.",
+      });
+      console.log("Model in validateProductName:", model);
+      return false;
     } else {
       clearErrors("name");
     }
@@ -238,6 +235,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       });
       return;
     }
+
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
     const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
     const selectedMember =
@@ -320,6 +318,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
       (attr) => attr.key === "model"
     )?.value;
 
+    // Si es un "update" y el "model" no es "Other", establecemos "name" como vacío
+    if (isUpdate && initialData) {
+      if (model !== "Other") {
+        formatData.name = ""; // Seteamos name como string vacío
+      }
+    }
+
     const isAttributesValid = validateAttributes(
       formatData.attributes,
       selectedCategory
@@ -364,6 +369,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     if (
       formatData.category !== "Merchandising" &&
+      formatData.category !== "Other" &&
       model === "Other" &&
       !formatData.name
     ) {
@@ -608,6 +614,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
     if (
       formattedData.category !== "Merchandising" &&
+      formattedData.category !== "Other" &&
       model === "Other" &&
       !formattedData.name
     ) {
