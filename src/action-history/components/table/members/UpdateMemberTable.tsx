@@ -22,15 +22,28 @@ const getUpdatedFields = (oldData: TeamMember, newData: TeamMember) => {
     if (["updatedAt", "createdAt", "deletedAt"].includes(key)) {
       return;
     }
+    if (key === "team") {
+      const oldTeamName = oldData[key as keyof TeamMember]?.name || "-";
+      const newTeamName = newData[key as keyof TeamMember]?.name || "-";
 
-    if (
-      key !== "products" &&
-      newData[key as keyof TeamMember] !== oldData[key as keyof TeamMember]
-    ) {
-      let oldValue = oldData[key as keyof TeamMember] || "-";
-      let newValue = newData[key as keyof TeamMember] || "-";
+      if (oldTeamName !== newTeamName) {
+        changes.push({
+          field: key,
+          oldValue: oldTeamName,
+          newValue: newTeamName,
+        });
+      }
+    } else {
+      if (key !== "products") {
+        if (
+          newData[key as keyof TeamMember] !== oldData[key as keyof TeamMember]
+        ) {
+          let oldValue = oldData[key as keyof TeamMember] || "-";
+          let newValue = newData[key as keyof TeamMember] || "-";
 
-      changes.push({ field: key, oldValue, newValue });
+          changes.push({ field: key, oldValue, newValue });
+        }
+      }
     }
   });
 
@@ -61,6 +74,8 @@ const translateField = (field: string) => {
 
 const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
   const updatedFields = getUpdatedFields(data.oldData, data.newData);
+
+  console.log(updatedFields);
 
   return (
     <Table>
