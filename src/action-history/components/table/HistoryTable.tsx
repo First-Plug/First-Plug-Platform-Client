@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { HistorialServices } from "@/action-history/services";
@@ -33,6 +34,8 @@ import OffboardingMembersTable from "./members/OffboardingMemberTable";
 import UpdateTeamsTable from "./teams/UpdateTeamTable";
 import UpdateMembersTable from "./members/UpdateMemberTable";
 import UpdateAssetsTable from "./assets/UpdateAssetTable";
+import { HistorialResponse } from "@/action-history/interfaces";
+import { setAuthInterceptor } from "@/config/axios.config";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -46,6 +49,9 @@ const fetchData = async (
   try {
     const startDateISO = startDate.toISOString();
     const endDateISO = endDate.toISOString();
+
+    const token = sessionStorage.getItem("accessToken");
+    if (token) setAuthInterceptor(token);
 
     return await HistorialServices.getAll(
       pageIndex,
@@ -73,10 +79,14 @@ const TableB = ({ data }: { data: any }) => (
   </div>
 );
 
-const HistoryTable = () => {
+interface Props {
+  initialData: HistorialResponse;
+}
+
+const HistoryTable = ({ initialData }: Props) => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(initialData.data || []);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
