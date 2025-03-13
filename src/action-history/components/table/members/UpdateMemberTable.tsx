@@ -75,8 +75,6 @@ const translateField = (field: string) => {
 const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
   const updatedFields = getUpdatedFields(data.oldData, data.newData);
 
-  console.log(updatedFields);
-
   return (
     <Table>
       <TableHeader>
