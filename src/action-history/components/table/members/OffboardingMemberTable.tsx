@@ -75,13 +75,13 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                     .filter(Boolean)
                     .join(" ")}
                 </TableCell>
-                <TableCell className="text-xs py-2 px-4">
+                <TableCell className="text-xs py-2 px-4 border-r">
                   {product.recoverable ? "Yes" : "No"}
                 </TableCell>
-                <TableCell className="text-xs py-2 px-4">
+                <TableCell className="text-xs py-2 px-4 border-r">
                   {product.serialNumber || "-"}
                 </TableCell>
-                <TableCell className="text-xs py-2 px-4">
+                <TableCell className="text-xs py-2 px-4 border-r">
                   {newData[memberIndex]?.products[productIndex]?.location ||
                     "-"}
                 </TableCell>
