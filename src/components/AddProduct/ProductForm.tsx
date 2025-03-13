@@ -311,17 +311,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
         : {}),
     };
 
-    console.log("Final formatted data:", formatData);
-    console.log("Final status:", status);
-
     const model = formatData.attributes.find(
       (attr) => attr.key === "model"
     )?.value;
 
-    // Si es un "update" y el "model" no es "Other", establecemos "name" como vacío
     if (isUpdate && initialData) {
-      if (model !== "Other") {
-        formatData.name = ""; // Seteamos name como string vacío
+      if (!model) {
+      } else if (model !== "Other") {
+        formatData.name = "";
       }
     }
 

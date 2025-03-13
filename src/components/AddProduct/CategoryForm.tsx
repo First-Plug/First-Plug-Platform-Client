@@ -214,8 +214,6 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
     );
   }
 
-  console.log((errors.location as any)?.message);
-
   return (
     <div className="w-full">
       {isUpdate ? (
