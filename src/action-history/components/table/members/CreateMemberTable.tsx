@@ -50,7 +50,9 @@ const CreateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                 {member.email}
               </TableCell>
               <TableCell className="text-xs py-2 px-4 border-r">
-                {(member.team as string) || "-"}
+                {typeof member.team === "object" && member.team !== null
+                  ? (member.team.name as string)
+                  : "-"}
               </TableCell>
               <TableCell className="text-xs py-2 px-4">
                 {member.country || "-"}

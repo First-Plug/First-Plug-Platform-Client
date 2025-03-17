@@ -19,24 +19,81 @@ const getUpdatedFields = (oldData: TeamMember, newData: TeamMember) => {
   const changes: { field: string; oldValue: any; newValue: any }[] = [];
 
   Object.keys(newData).forEach((key) => {
-    if (
-      ["updatedAt", "createdAt", "acquisitionDate", "deletedAt"].includes(key)
-    ) {
-      return; // Ignorar estos campos
+    if (["updatedAt", "createdAt", "deletedAt"].includes(key)) {
+      return;
     }
+    if (key === "team") {
+      const oldTeamName = oldData[key as keyof TeamMember]?.name || "-";
+      const newTeamName = newData[key as keyof TeamMember]?.name || "-";
 
-    if (
-      key !== "products" &&
-      newData[key as keyof TeamMember] !== oldData[key as keyof TeamMember]
-    ) {
-      let oldValue = oldData[key as keyof TeamMember] || "-";
-      let newValue = newData[key as keyof TeamMember] || "-";
+      if (oldTeamName !== newTeamName) {
+        changes.push({
+          field: key,
+          oldValue: oldTeamName,
+          newValue: newTeamName,
+        });
+      }
+    } else {
+      if (key !== "products") {
+        if (
+          newData[key as keyof TeamMember] !== oldData[key as keyof TeamMember]
+        ) {
+          let oldValue = oldData[key as keyof TeamMember] || "-";
+          let newValue = newData[key as keyof TeamMember] || "-";
 
-      changes.push({ field: key, oldValue, newValue });
+          changes.push({ field: key, oldValue, newValue });
+        }
+      }
     }
   });
 
   return changes;
+};
+
+const fieldTranslations: { [key: string]: string } = {
+  firstName: "First Name",
+  lastName: "Last Name",
+  email: "Email",
+  personalEmail: "Personal Email",
+  position: "Position",
+  phone: "Phone",
+  city: "City",
+  zipCode: "Zip Code",
+  address: "Address",
+  apartment: "Apartment",
+  startDate: "Start Date",
+  additionalInfo: "Additional Info",
+  birthDate: "Birthdate",
+  team: "Team",
+  dni: "DNI",
+};
+
+const translateField = (field: string) => {
+  return fieldTranslations[field] || field;
+};
+
+const formatValue = (value: any, field?: string) => {
+  if (field === "birthDate" || field === "startDate") {
+    if (typeof value === "string") {
+      const parts = value.split("-");
+      if (parts.length === 3) {
+        const [year, month, day] = parts;
+        if (year && month && day) {
+          return `${day}/${month}/${year}`;
+        }
+      }
+      return "-";
+    }
+
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    }
+  }
+  return value || "-";
 };
 
 const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
@@ -73,13 +130,13 @@ const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
               {data.oldData.email}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {change.field}
+              {translateField(change.field)}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {change.oldValue}
+              {formatValue(change.oldValue, change.field)}
             </TableCell>
             <TableCell className="text-xs py-2 px-4">
-              {change.newValue}
+              {formatValue(change.newValue, change.field)}
             </TableCell>
           </TableRow>
         ))}
