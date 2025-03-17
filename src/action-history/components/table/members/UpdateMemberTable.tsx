@@ -75,11 +75,17 @@ const translateField = (field: string) => {
 const formatValue = (value: any, field?: string) => {
   if (field === "birthDate" || field === "startDate") {
     if (typeof value === "string") {
-      const [year, month, day] = value.split("-");
-      return `${day}/${month}/${year}`;
+      const parts = value.split("-");
+      if (parts.length === 3) {
+        const [year, month, day] = parts;
+        if (year && month && day) {
+          return `${day}/${month}/${year}`;
+        }
+      }
+      return "-";
     }
 
-    if (value instanceof Date) {
+    if (value instanceof Date && !isNaN(value.getTime())) {
       return value.toLocaleDateString("es-ES", {
         day: "2-digit",
         month: "2-digit",
