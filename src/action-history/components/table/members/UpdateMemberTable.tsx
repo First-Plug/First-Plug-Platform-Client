@@ -72,6 +72,24 @@ const translateField = (field: string) => {
   return fieldTranslations[field] || field;
 };
 
+const formatValue = (value: any, field?: string) => {
+  if (field === "birthDate" || field === "startDate") {
+    if (typeof value === "string") {
+      const [year, month, day] = value.split("-");
+      return `${day}/${month}/${year}`;
+    }
+
+    if (value instanceof Date) {
+      return value.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    }
+  }
+  return value || "-";
+};
+
 const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
   const updatedFields = getUpdatedFields(data.oldData, data.newData);
 
@@ -109,10 +127,10 @@ const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
               {translateField(change.field)}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {change.oldValue}
+              {formatValue(change.oldValue, change.field)}
             </TableCell>
             <TableCell className="text-xs py-2 px-4">
-              {change.newValue}
+              {formatValue(change.newValue, change.field)}
             </TableCell>
           </TableRow>
         ))}
