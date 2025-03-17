@@ -84,18 +84,30 @@ const formatValue = (value: any, field?: string) => {
   if (field === "recoverable") {
     return value === true ? "Yes" : "No";
   }
+
   if (typeof value === "object" && value !== null) {
     return `${value.amount} ${value.currencyCode}`;
   }
+
   if (field === "acquisitionDate") {
-    return value
-      ? new Date(value).toLocaleString(undefined, {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        })
-      : "-";
+    if (typeof value === "string") {
+      const dateMatch = value.match(/\d{4}-\d{2}-\d{2}/);
+      if (dateMatch) {
+        const [year, month, day] = dateMatch[0].split("-");
+        return `${day}/${month}/${year}`;
+      }
+      return "-";
+    }
+
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    }
   }
+
   return value || "-";
 };
 
