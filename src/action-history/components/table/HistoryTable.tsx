@@ -278,7 +278,7 @@ const HistoryTable = ({ initialData }: Props) => {
                               />
                             ) : row.original.actionType === "update" ? (
                               <UpdateAssetsTable
-                                data={row.original.changes || []}
+                                data={(row.original.changes as any) || []}
                               />
                             ) : [
                                 "return",
@@ -287,7 +287,7 @@ const HistoryTable = ({ initialData }: Props) => {
                                 "assign",
                               ].includes(row.original.actionType) ? (
                               <ActionAssetTable
-                                data={row.original.changes || []}
+                                data={(row.original.changes as any) || []}
                               />
                             ) : null
                           ) : row.original.itemType === "members" ? (
@@ -302,11 +302,11 @@ const HistoryTable = ({ initialData }: Props) => {
                               />
                             ) : row.original.actionType === "update" ? (
                               <UpdateMembersTable
-                                data={row.original.changes || []}
+                                data={(row.original.changes as any) || []}
                               />
                             ) : row.original.actionType === "offboarding" ? (
                               <OffboardingMembersTable
-                                data={row.original.changes || []}
+                                data={(row.original.changes as any) || []}
                               />
                             ) : null
                           ) : row.original.itemType === "teams" ? (
@@ -322,13 +322,13 @@ const HistoryTable = ({ initialData }: Props) => {
                               />
                             ) : row.original.actionType === "update" ? (
                               <UpdateTeamsTable
-                                data={row.original.changes || []}
+                                data={(row.original.changes as any) || []}
                               />
                             ) : ["reassign", "assign", "unassign"].includes(
                                 row.original.actionType
                               ) ? (
                               <ActionTeamsTable
-                                data={row.original.changes || []}
+                                data={(row.original.changes as any) || []}
                               />
                             ) : null
                           ) : null}
