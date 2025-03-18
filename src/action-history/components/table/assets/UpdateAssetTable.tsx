@@ -24,15 +24,7 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
   const changes: { field: string; oldValue: any; newValue: any }[] = [];
 
   Object.keys({ ...oldData, ...newData }).forEach((key) => {
-    if (
-      [
-        "updatedAt",
-        "createdAt",
-        "acquisitionDate",
-        "deletedAt",
-        "status",
-      ].includes(key)
-    ) {
+    if (["updatedAt", "createdAt", "deletedAt", "status"].includes(key)) {
       return;
     }
 
@@ -60,7 +52,6 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
       if (!oldExists && !newExists) return;
       if (oldValue === "" && !newExists) return;
 
-      // Comparar precios correctamente si es un objeto con `amount` y `currencyCode`
       if (
         key === "price" &&
         typeof oldValue === "object" &&
@@ -93,10 +84,54 @@ const formatValue = (value: any, field?: string) => {
   if (field === "recoverable") {
     return value === true ? "Yes" : "No";
   }
+
   if (typeof value === "object" && value !== null) {
     return `${value.amount} ${value.currencyCode}`;
   }
+
+  if (field === "acquisitionDate") {
+    if (typeof value === "string") {
+      const dateMatch = value.match(/\d{4}-\d{2}-\d{2}/);
+      if (dateMatch) {
+        const [year, month, day] = dateMatch[0].split("-");
+        return `${day}/${month}/${year}`;
+      }
+      return "-";
+    }
+
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    }
+  }
+
   return value || "-";
+};
+
+const fieldTranslations: { [key: string]: string } = {
+  brand: "Brand",
+  model: "Model",
+  name: "Name",
+  price: "Price",
+  processor: "Processor",
+  ram: "RAM",
+  storage: "Storage",
+  recoverable: "Recoverable",
+  acquisitionDate: "Acquisition Date",
+  color: "Color",
+  gpu: "GPU",
+  keyboardLanguage: "Keyboard Language",
+  additionalInfo: "Additional Info",
+  productCondition: "Product Condition",
+  serialNumber: "Serial Number",
+  screen: "Screen",
+};
+
+const translateField = (field: string) => {
+  return fieldTranslations[field] || field;
 };
 
 const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
@@ -111,6 +146,9 @@ const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
           </TableHead>
           <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
             Original Brand + Model + Name
+          </TableHead>
+          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+            Original Serial
           </TableHead>
           <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
             Updated Field
@@ -141,7 +179,10 @@ const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
                 .join(" ")}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
-              {change.field}
+              {data.oldData.serialNumber || "-"}
+            </TableCell>
+            <TableCell className="text-xs py-2 px-4 border-r">
+              {translateField(change.field)}
             </TableCell>
             <TableCell className="text-xs py-2 px-4 border-r">
               {formatValue(change.oldValue, change.field)}
