@@ -33,6 +33,7 @@ import OffboardingMembersTable from "./members/OffboardingMemberTable";
 import UpdateTeamsTable from "./teams/UpdateTeamTable";
 import UpdateMembersTable from "./members/UpdateMemberTable";
 import UpdateAssetsTable from "./assets/UpdateAssetTable";
+import { Loader } from "@/components/Loader";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -58,20 +59,6 @@ const fetchData = async (
     return { data: [], totalCount: 0 };
   }
 };
-
-const TableA = ({ data }: { data: any }) => (
-  <div className="p-3 border rounded-md bg-gray-50">
-    <p className="text-sm font-semibold">Table A (Example)</p>
-    <pre className="text-xs">{JSON.stringify(data, null, 2)}</pre>
-  </div>
-);
-
-const TableB = ({ data }: { data: any }) => (
-  <div className="p-3 border rounded-md bg-gray-50">
-    <p className="text-sm font-semibold">Table B (Example)</p>
-    <pre className="text-xs">{JSON.stringify(data, null, 2)}</pre>
-  </div>
-);
 
 const HistoryTable = () => {
   const searchParams = useSearchParams();
@@ -128,6 +115,11 @@ const HistoryTable = () => {
       {
         header: "Quantity",
         cell: ({ row }) => {
+          const { actionType, itemType } = row.original;
+          if (actionType === "offboarding" && itemType === "members") {
+            return row.original.changes.oldData.products.length;
+          }
+
           return (
             row.original.changes?.newData?.length ||
             row.original.changes?.oldData?.length ||
@@ -157,14 +149,6 @@ const HistoryTable = () => {
         size: 20,
         cell: ({ row }) => {
           const rowId = row.original._id;
-          const { actionType, itemType } = row.original;
-
-          if (
-            (actionType === "unassign" && itemType === "teams") ||
-            (actionType === "offboarding" && itemType === "members")
-          ) {
-            return null;
-          }
 
           return (
             <Button
@@ -229,7 +213,16 @@ const HistoryTable = () => {
               ))}
             </TableHeader>
             <TableBody>
-              {data.length === 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center py-8"
+                  >
+                    <Loader />
+                  </TableCell>
+                </TableRow>
+              ) : data.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
@@ -347,16 +340,16 @@ const HistoryTable = () => {
           </Table>
         </div>
 
-        {!isLoading && (
-          <div className="flex justify-center absolute w-full bottom-0 z-30">
+        <div className="flex justify-center absolute w-full bottom-0 z-30">
+          {data.length > 0 && !isLoading && (
             <PaginationWithLinks
               page={currentPage}
               pageSize={pageSize}
               totalCount={totalCount}
               pageSizeSelectOptions={{ pageSizeOptions: VALID_PAGE_SIZES }}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </>
   );
