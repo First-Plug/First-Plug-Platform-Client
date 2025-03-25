@@ -1,6 +1,25 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 interface OpsByCountryChartProps {
   members: any[];
 }
@@ -232,7 +251,6 @@ const OpsByCountryChart = ({ members }: OpsByCountryChartProps) => {
   const computersCounts = countries.map(
     (country) => countryData[country].computersCount
   );
-  console.log("computer counts", computersCounts);
 
   const data = {
     labels: countries,
