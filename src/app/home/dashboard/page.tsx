@@ -102,7 +102,7 @@ export default observer(function Dashboard() {
     return () => {
       swapyRef.current?.destroy();
     };
-  }, [user]);
+  }, [user, isSwapping]);
 
   if (
     loading ||
