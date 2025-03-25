@@ -23,7 +23,7 @@ import { useFetchUserSettings } from "@/components/settings/hooks/useFetchUserSe
 
 export default observer(function Dashboard() {
   const swapyRef = useRef<Swapy | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const { data: sessionData } = useSession();
   const [loading, setLoading] = useState(true);
   const [isSwapping, setIsSwapping] = useState(false);
@@ -68,22 +68,28 @@ export default observer(function Dashboard() {
   }, [queryClient]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    setTimeout(() => {
-      if (containerRef.current && !swapyRef.current) {
+    const observer = new MutationObserver(() => {
+      if (containerRef.current) {
+        observer.disconnect();
         swapyRef.current = createSwapy(containerRef.current, {
           animation: "dynamic",
           swapMode: "hover",
           enabled: false,
         });
+
+        swapyRef.current.onSwap((event) => {
+          console.log("swap", event);
+        });
       }
-    }, 0);
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
+      observer.disconnect();
       swapyRef.current?.destroy();
     };
-  }, [containerRef.current]);
+  }, []);
 
   if (
     loading ||
