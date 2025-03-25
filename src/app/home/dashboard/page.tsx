@@ -27,7 +27,6 @@ export default observer(function Dashboard() {
   const { data: sessionData } = useSession();
   const [loading, setLoading] = useState(true);
   const [isSwapping, setIsSwapping] = useState(false);
-  const [isReady, setIsReady] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -69,43 +68,29 @@ export default observer(function Dashboard() {
   }, [queryClient]);
 
   useEffect(() => {
-    if (!user || !containerRef.current) return;
+    if (!containerRef.current) return;
 
-    swapyRef.current = createSwapy(containerRef.current, {
-      animation: "dynamic",
-      swapMode: "hover",
-      enabled: false,
-    });
-
-    swapyRef.current.onBeforeSwap((event) => {
-      console.log("beforeSwap", event);
-      return true;
-    });
-
-    swapyRef.current.onSwapStart((event) => {
-      console.log("start", event);
-    });
-    swapyRef.current.onSwap((event) => {
-      console.log("swap", event);
-    });
-    swapyRef.current.onSwapEnd((event) => {
-      console.log("end", event);
-    });
-
-    setIsReady(true);
+    setTimeout(() => {
+      if (containerRef.current && !swapyRef.current) {
+        swapyRef.current = createSwapy(containerRef.current, {
+          animation: "dynamic",
+          swapMode: "hover",
+          enabled: false,
+        });
+      }
+    }, 0);
 
     return () => {
       swapyRef.current?.destroy();
     };
-  }, [user]);
+  }, [containerRef.current]);
 
   if (
     loading ||
     isFetchingSettings ||
     isLoadingTeams ||
     isLoadingMembers ||
-    isLoadingAssets ||
-    !isReady
+    isLoadingAssets
   ) {
     return <Loader />;
   }
