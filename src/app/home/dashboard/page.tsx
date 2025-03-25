@@ -27,6 +27,7 @@ export default observer(function Dashboard() {
   const { data: sessionData } = useSession();
   const [loading, setLoading] = useState(true);
   const [isSwapping, setIsSwapping] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -91,17 +92,20 @@ export default observer(function Dashboard() {
       console.log("end", event);
     });
 
+    setIsReady(true);
+
     return () => {
       swapyRef.current?.destroy();
     };
-  }, [user, containerRef.current]);
+  }, [user]);
 
   if (
     loading ||
     isFetchingSettings ||
     isLoadingTeams ||
     isLoadingMembers ||
-    isLoadingAssets
+    isLoadingAssets ||
+    !isReady
   ) {
     return <Loader />;
   }
