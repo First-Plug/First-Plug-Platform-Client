@@ -68,41 +68,33 @@ export default observer(function Dashboard() {
   }, [queryClient]);
 
   useEffect(() => {
-    if (user && containerRef.current) {
-      swapyRef.current = createSwapy(containerRef.current, {
-        animation: "dynamic",
-        swapMode: "hover",
-        enabled: false,
-        // autoScrollOnDrag: true,
-        // dragAxis: 'x',
-        // dragOnHold: true
-      });
+    if (!user || !containerRef.current) return;
 
-      // swapyRef.current.enable(false)
-      // swapyRef.current.destroy()
-      // console.log(swapyRef.current.slotItemMap())
+    swapyRef.current = createSwapy(containerRef.current, {
+      animation: "dynamic",
+      swapMode: "hover",
+      enabled: false,
+    });
 
-      swapyRef.current.onBeforeSwap((event) => {
-        console.log("beforeSwap", event);
-        // This is for dynamically enabling and disabling swapping.
-        // Return true to allow swapping, and return false to prevent swapping.
-        return true;
-      });
+    swapyRef.current.onBeforeSwap((event) => {
+      console.log("beforeSwap", event);
+      return true;
+    });
 
-      swapyRef.current.onSwapStart((event) => {
-        console.log("start", event);
-      });
-      swapyRef.current.onSwap((event) => {
-        console.log("swap", event);
-      });
-      swapyRef.current.onSwapEnd((event) => {
-        console.log("end", event);
-      });
-    }
+    swapyRef.current.onSwapStart((event) => {
+      console.log("start", event);
+    });
+    swapyRef.current.onSwap((event) => {
+      console.log("swap", event);
+    });
+    swapyRef.current.onSwapEnd((event) => {
+      console.log("end", event);
+    });
+
     return () => {
       swapyRef.current?.destroy();
     };
-  }, [user, isSwapping]);
+  }, [user, containerRef.current]);
 
   if (
     loading ||
