@@ -15,6 +15,7 @@ export const ComputerUpdates = ({ assets, user }) => {
     <Card
       className="h-full bg-white"
       Title="Computer Updates"
+      handleSwapy
       RightContent={
         <ComputerAgeChart
           products={assets}

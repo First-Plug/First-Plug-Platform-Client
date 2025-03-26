@@ -14,6 +14,7 @@ import { useGetTableAssets } from "@/assets/hooks";
 import { EmptyDashboardCard, PageLayout } from "@/common";
 import { Loader } from "@/components/Loader";
 
+import DashboardLayout from "@/dashboard/DashboardLayout";
 import { ItemDashboard } from "@/dashboard/ItemDashboard";
 import { MyAssets } from "@/dashboard/MyAssets";
 import { ComputerUpdates } from "@/dashboard/ComputerUpdates";
@@ -22,11 +23,8 @@ import { MembersByCountry } from "@/dashboard/MembersByCountry";
 import { useFetchUserSettings } from "@/components/settings/hooks/useFetchUserSettings";
 
 export default observer(function Dashboard() {
-  const swapyRef = useRef<Swapy | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const { data: sessionData } = useSession();
   const [loading, setLoading] = useState(true);
-  const [isSwapping, setIsSwapping] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -67,30 +65,6 @@ export default observer(function Dashboard() {
     queryClient.getQueryData(["assets"]);
   }, [queryClient]);
 
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      if (containerRef.current) {
-        observer.disconnect();
-        swapyRef.current = createSwapy(containerRef.current, {
-          animation: "dynamic",
-          swapMode: "hover",
-          enabled: false,
-        });
-
-        swapyRef.current.onSwap((event) => {
-          console.log("swap", event);
-        });
-      }
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    return () => {
-      observer.disconnect();
-      swapyRef.current?.destroy();
-    };
-  }, []);
-
   if (
     loading ||
     isFetchingSettings ||
@@ -103,21 +77,7 @@ export default observer(function Dashboard() {
 
   return (
     <PageLayout>
-      <div className="flex flex-end">
-        <button
-          className="flex gap-2"
-          onClick={() => {
-            isSwapping
-              ? swapyRef.current?.enable(false)
-              : swapyRef.current?.enable(true);
-            setIsSwapping(!isSwapping);
-          }}
-        >
-          <input type="checkbox" checked={isSwapping} />
-          Edit Dashboard
-        </button>
-      </div>
-      <div className="flex flex-col gap-4 w-full h-full" ref={containerRef}>
+      <DashboardLayout>
         <section className="grid grid-cols-2 gap-4 h-1/2">
           <ItemDashboard id="my-assets">
             {assets.length > 0 ? (
@@ -157,7 +117,7 @@ export default observer(function Dashboard() {
             )}
           </ItemDashboard>
         </section>
-      </div>
+      </DashboardLayout>
     </PageLayout>
   );
 });

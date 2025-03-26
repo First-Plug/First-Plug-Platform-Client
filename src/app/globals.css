@@ -113,3 +113,13 @@
   background: rgb(24 72 154 / var(--tw-text-opacity, 0.2));
   border-radius: 10px;
 }
+
+.handle {
+  cursor: grab;
+  width: 24px;
+  height: 24px;
+  background-image: url(../../public/handle.svg);
+  opacity: 0.5;
+  top: 14px;
+  left: 10px;
+}

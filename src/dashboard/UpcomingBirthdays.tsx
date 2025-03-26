@@ -20,6 +20,7 @@ export const UpcomingBirthdays = ({ membersData, user, setAlert }) => {
       className="h-full bg-white"
       Title="Upcoming Birthdays"
       titleButton="Birthday Gifts"
+      handleSwapy
       icon={<ShopIcon />}
       onClick={handleBirthdayGiftClick}
     >

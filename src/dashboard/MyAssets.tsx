@@ -7,6 +7,7 @@ export const MyAssets = ({ assets, sessionData }) => (
   <Card
     className="h-full bg-white"
     Title="My Assets"
+    handleSwapy
     titleButton="Shop Now"
     icon={<ShopIcon />}
     onClick={() => {
