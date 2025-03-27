@@ -196,17 +196,21 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const productName = watch("name");
 
     if (
-      ((model === "Other" &&
-        selectedCategory !== "Merchandising" &&
-        selectedCategory !== "Other") ||
-        selectedCategory === "Merchandising") &&
+      selectedCategory === "Merchandising" &&
       (!productName || productName.trim() === "")
     ) {
       methods.setError("name", {
         type: "manual",
-        message: "Product Name is required.",
+        message: "Product Name is required for Merchandising.",
       });
-      console.log("Model in validateProductName:", model);
+      return false;
+    }
+
+    if (model === "Other" && (!productName || productName.trim() === "")) {
+      methods.setError("name", {
+        type: "manual",
+        message: "Product Name is required when model is Other.",
+      });
       return false;
     } else {
       clearErrors("name");
