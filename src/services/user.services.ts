@@ -1,4 +1,5 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
+import type { Widget } from "@/dashboard/interfaces/widget.interface";
 import { UserZod } from "@/types";
 import axios from "axios";
 
@@ -124,6 +125,21 @@ export class UserServices {
       return response.data;
     } catch (error) {
       console.error("Error notifying Slack for computer upgrade", error);
+      throw error;
+    }
+  }
+
+  static async updateDashboard(widgets: Widget[]) {
+    try {
+      const response = await HTTPRequests.patch(
+        `${BASE_URL}/api/user/update-dashboard`,
+        {
+          widgets,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error updating dashboard", error);
       throw error;
     }
   }

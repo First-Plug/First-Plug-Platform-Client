@@ -17,6 +17,15 @@ export const LoggedInUserModel = types.model({
   accountProvider: types.enumeration(["credentials", "google", "azure-ad"]),
   isRecoverableConfig: types.map(types.boolean),
   computerExpiration: types.maybe(types.number),
+  widgets: types.optional(
+    types.array(
+      types.model({
+        id: types.string,
+        order: types.number,
+      })
+    ),
+    []
+  ),
 });
 export const UserModel = types.compose(
   LoggedInUserModel,

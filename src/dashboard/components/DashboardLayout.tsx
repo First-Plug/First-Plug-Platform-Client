@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createSwapy, Swapy } from "swapy";
+import { updateDashboard } from "../action/updateDashboard";
 
 export default function DashboardLayout({ children }) {
   const swapyRef = useRef<Swapy | null>(null);
@@ -9,15 +10,27 @@ export default function DashboardLayout({ children }) {
     const observer = new MutationObserver(() => {
       if (containerRef.current) {
         observer.disconnect();
+
         swapyRef.current = createSwapy(containerRef.current, {
           animation: "dynamic",
           swapMode: "hover",
           enabled: true,
         });
 
-        swapyRef.current.onSwap((event) => {
-          console.log("swap", event);
-        });
+        const saveOrderToDatabase = async () => {
+          if (containerRef.current) {
+            const newOrder = Array.from(
+              containerRef.current.querySelectorAll("[data-swapy-item]")
+            ).map((el, index) => ({
+              id: el.getAttribute("data-swapy-item") || "",
+              order: index,
+            }));
+
+            await updateDashboard(newOrder);
+          }
+        };
+
+        swapyRef.current.onSwap(saveOrderToDatabase);
       }
     });
 
