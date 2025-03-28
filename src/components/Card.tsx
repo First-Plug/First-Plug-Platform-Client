@@ -22,6 +22,7 @@ interface CardProps {
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
   RightContent?: ReactNode;
   FooterContent?: ReactNode;
+  handleSwapy?: boolean;
 }
 
 export const Card = function ({
@@ -36,14 +37,18 @@ export const Card = function ({
   onClick,
   RightContent,
   FooterContent,
+  handleSwapy = false,
 }: CardProps) {
   return (
     <article
-      className={` flex flex-col  rounded-xl p-4  border border-border   relative ${className}`}
+      className={`flex flex-col  rounded-xl p-4  border border-border   relative ${className}`}
     >
       <div className={`${Title ? "h-[14%] " : "h-0"}`}>
         {Title && (
           <header className="  flex justify-between  items-center h-full  text-white   ">
+            {handleSwapy && (
+              <div className="handle mr-2" data-swapy-handle></div>
+            )}
             <h2 className="text-[20px]  text-black font-montserrat font-bold flex-1 md:text-sm lg:text-xl">
               {Title}
               {Title === "Upcoming Birthdays" && (
