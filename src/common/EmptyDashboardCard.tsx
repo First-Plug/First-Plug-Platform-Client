@@ -88,9 +88,10 @@ const Config: Record<EmptyCardType, TConfig> = {
 
 interface EmptyCardProps {
   type: EmptyCardType;
+  handleSwapy?: boolean;
 }
 
-export function EmptyDashboardCard({ type }: EmptyCardProps) {
+export function EmptyDashboardCard({ type, handleSwapy }: EmptyCardProps) {
   const {
     title,
     LinkIcon,
@@ -122,9 +123,12 @@ export function EmptyDashboardCard({ type }: EmptyCardProps) {
   return (
     <div className="flex flex-col items-center gap-3 h-full w-full rounded-xl p-4  border border-border overflow-hidden ">
       <div className="flex gap-2 w-full  items-center justify-between">
-        <h2 className="text-[20px]  text-black font-montserrat font-bold flex-1 md:text-sm lg:text-xl truncate">
-          {title}
-        </h2>
+        <div className="flex">
+          {handleSwapy && <div className="handle mr-2" data-swapy-handle></div>}
+          <h2 className="text-[20px]  text-black font-montserrat font-bold flex-1 md:text-sm lg:text-xl truncate">
+            {title}
+          </h2>
+        </div>
         {LinkIcon && (
           <CustomLink
             variant="secondary"

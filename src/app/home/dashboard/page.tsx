@@ -92,7 +92,7 @@ export default observer(function Dashboard() {
         {assets.length > 0 ? (
           <MyAssets assets={assets} sessionData={sessionData} />
         ) : (
-          <EmptyDashboardCard type="stock" />
+          <EmptyDashboardCard type="stock" handleSwapy />
         )}
       </ItemDashboard>
     ),
@@ -101,7 +101,7 @@ export default observer(function Dashboard() {
         {assets.length > 0 ? (
           <ComputerUpdates assets={assets} user={user} />
         ) : (
-          <EmptyDashboardCard type="computer" />
+          <EmptyDashboardCard type="computer" handleSwapy />
         )}
       </ItemDashboard>
     ),
@@ -114,7 +114,7 @@ export default observer(function Dashboard() {
             setAlert={setAlert}
           />
         ) : (
-          <EmptyDashboardCard type="members" />
+          <EmptyDashboardCard type="members" handleSwapy />
         )}
       </ItemDashboard>
     ),
@@ -123,7 +123,7 @@ export default observer(function Dashboard() {
         {membersData.length > 0 ? (
           <MembersByCountry membersData={membersData} />
         ) : (
-          <EmptyDashboardCard type="opsByCountry" />
+          <EmptyDashboardCard type="opsByCountry" handleSwapy />
         )}
       </ItemDashboard>
     ),
