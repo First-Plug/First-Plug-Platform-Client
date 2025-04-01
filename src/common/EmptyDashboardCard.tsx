@@ -12,7 +12,8 @@ type EmptyCardType =
   | "members"
   | "computer"
   | "recentActivity"
-  | "opsByCountry";
+  | "opsByCountry"
+  | "latestActivity";
 type TConfig = {
   title: string;
   image: string;
@@ -83,6 +84,11 @@ const Config: Record<EmptyCardType, TConfig> = {
     title: "Members By Country",
     image: "/world.svg",
     paragraph: "No computers or members have been assigned to any country yet.",
+  },
+  latestActivity: {
+    title: "Latest Activity",
+    image: "/svg/magnifyingGlass.svg",
+    paragraph: "There is no recent activity yet.",
   },
 };
 

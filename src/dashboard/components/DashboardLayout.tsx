@@ -15,6 +15,7 @@ export default function DashboardLayout({ children }) {
           animation: "dynamic",
           swapMode: "hover",
           enabled: true,
+          autoScrollOnDrag: true,
         });
 
         const saveOrderToDatabase = async () => {

@@ -15,13 +15,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowRight, Button } from "@/common";
+import { Button } from "@/common";
+import { useRouter } from "next/navigation";
 
 interface Props {
   history: Datum[];
 }
 
 export const LatestActivity = ({ history }: Props) => {
+  const router = useRouter();
+
   const columns = useMemo(
     () => [
       {
@@ -44,9 +47,15 @@ export const LatestActivity = ({ history }: Props) => {
       { accessorKey: "actionType", header: "Action" },
       {
         id: "details",
-        header: "Details",
+        header: "",
         cell: ({ row }) => (
-          <Button variant="text" className="relative">
+          <Button
+            variant="text"
+            className="relative"
+            onClick={() => {
+              router.push(`/home/activity?activityId=${row.original._id}`);
+            }}
+          >
             <span>Details</span>
           </Button>
         ),

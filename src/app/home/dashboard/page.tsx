@@ -137,7 +137,7 @@ export default observer(function Dashboard() {
         {activityLatest.length > 0 ? (
           <LatestActivity history={activityLatest} />
         ) : (
-          <EmptyDashboardCard type="opsByCountry" handleSwapy />
+          <EmptyDashboardCard type="latestActivity" handleSwapy />
         )}
       </ItemDashboard>
     ),
@@ -151,7 +151,7 @@ export default observer(function Dashboard() {
             ...itemsOrder,
             ...Object.keys(widgetsMap).filter((id) => !itemsOrder.includes(id)),
           ].map((id) => (
-            <div key={id} className="min-h-[400px]">
+            <div key={id} className="min-h-[410px]">
               {widgetsMap[id]}
             </div>
           ))}
