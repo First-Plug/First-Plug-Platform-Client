@@ -42,7 +42,7 @@ export function BirthdayRoot<TData>({
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="py-2 px-4 border-r text-start text-black font-semibold "
+                  className="px-4 border-r text-start text-black font-semibold "
                 >
                   <div className="flex w-full justify-between items-center">
                     <div>

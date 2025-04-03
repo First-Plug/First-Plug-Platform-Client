@@ -11,7 +11,9 @@ export const useActivityLatest = () => {
   return useQuery({
     queryKey: ["activityLatest"],
     queryFn: fetchActivityLatest,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     retry: 2,
   });
 };

@@ -123,6 +123,21 @@ export const LatestActivity = ({ history }: Props) => {
             )}
           </TableBody>
         </Table>
+
+        <div className="border-t border-gray-200 mt-2"></div>
+
+        <div className="flex justify-center w-full gap-4">
+          <Button
+            variant="text"
+            size="default"
+            className="mt-1"
+            onClick={() => {
+              router.push(`/home/activity`);
+            }}
+          >
+            <span className="text-md">View More</span>
+          </Button>
+        </div>
       </div>
     </Card>
   );

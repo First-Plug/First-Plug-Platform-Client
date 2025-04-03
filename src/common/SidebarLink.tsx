@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MouseEventHandler, ReactNode } from "react";
 
 interface SidebarLinkProps {
@@ -20,6 +21,8 @@ export function SidebarLink({
   href,
   onMouseEnter,
 }: SidebarLinkProps) {
+  const router = useRouter();
+
   return (
     <Link
       href={`${href}`}
@@ -27,6 +30,7 @@ export function SidebarLink({
         isActive ? "text-blue" : undefined
       } ${className}`}
       onMouseEnter={onMouseEnter}
+      onClick={() => router.refresh()}
     >
       {isActive && <div className="h-full w-1 bg-blue rounded-lg"></div>}
 
