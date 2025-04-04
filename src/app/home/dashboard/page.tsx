@@ -146,9 +146,9 @@ export default observer(function Dashboard() {
   return (
     <PageLayout>
       <DashboardLayout>
-        <section className="grid grid-cols-2 gap-4">
+        <section className="grid grid-cols-2 gap-4 mb-6">
           {itemsOrder.map((id) => (
-            <div key={id} className="min-h-[340px] xl:min-h-[400px]">
+            <div key={id} className="h-[42vh]">
               {widgetsMap[id]}
             </div>
           ))}

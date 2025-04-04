@@ -124,8 +124,6 @@ export const LatestActivity = ({ history }: Props) => {
           </TableBody>
         </Table>
 
-        <div className="border-t border-gray-200 mt-2"></div>
-
         <div className="flex justify-center w-full gap-4">
           <Button
             variant="text"
