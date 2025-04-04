@@ -121,21 +121,19 @@ export const LatestActivity = ({ history }: Props) => {
                 </TableRow>
               ))
             )}
+            <TableRow
+              className="text-black border-b text-md border-gray-200 text-left cursor-pointer hover:bg-hoverBlue"
+              onClick={() => router.push(`/home/activity`)}
+            >
+              <TableCell
+                colSpan={columns.length}
+                className="text-center py-4 font-semibold"
+              >
+                View More
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
-
-        <div className="flex justify-center w-full gap-4">
-          <Button
-            variant="text"
-            size="default"
-            className="mt-1"
-            onClick={() => {
-              router.push(`/home/activity`);
-            }}
-          >
-            <span className="text-md">View More</span>
-          </Button>
-        </div>
       </div>
     </Card>
   );
