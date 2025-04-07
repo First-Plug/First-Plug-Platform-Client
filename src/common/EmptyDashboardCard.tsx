@@ -127,9 +127,9 @@ export function EmptyDashboardCard({ type, handleSwapy }: EmptyCardProps) {
   const { data } = useSession();
 
   return (
-    <div className="flex flex-col items-center gap-3 h-full w-full rounded-xl p-4  border border-border overflow-hidden ">
+    <div className="flex flex-col items-center gap-3 h-full w-full rounded-xl p-4  border border-border overflow-hidden bg-white">
       <div className="flex gap-2 w-full  items-center justify-between">
-        <div className="flex">
+        <div className="flex mt-4">
           {handleSwapy && <div className="handle mr-2" data-swapy-handle></div>}
           <h2 className="text-[20px]  text-black font-montserrat font-bold flex-1 md:text-sm lg:text-xl truncate">
             {title}

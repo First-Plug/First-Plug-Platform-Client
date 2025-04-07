@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/common";
 import { useRouter } from "next/navigation";
+import { endOfDay, startOfDay, subDays } from "date-fns";
 
 interface Props {
   history: Datum[];
@@ -48,17 +49,27 @@ export const LatestActivity = ({ history }: Props) => {
       {
         id: "details",
         header: "",
-        cell: ({ row }) => (
-          <Button
-            variant="text"
-            className="relative"
-            onClick={() => {
-              router.push(`/home/activity?activityId=${row.original._id}`);
-            }}
-          >
-            <span>Details</span>
-          </Button>
-        ),
+        cell: ({ row }) => {
+          const startDate = startOfDay(subDays(new Date(), 7));
+          const endDate = endOfDay(new Date());
+          const createdAt = new Date(row.original.createdAt);
+
+          if (createdAt >= startDate && createdAt <= endDate) {
+            return (
+              <Button
+                variant="text"
+                className="relative"
+                onClick={() => {
+                  router.push(`/home/activity?activityId=${row.original._id}`);
+                }}
+              >
+                <span>Details</span>
+              </Button>
+            );
+          }
+
+          return null;
+        },
       },
     ],
     []
