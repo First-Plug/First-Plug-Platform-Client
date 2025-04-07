@@ -183,7 +183,6 @@ const HistoryTable = () => {
 
   return (
     <>
-      {isLoading && <BarLoader />}
       <div className="relative h-full flex-grow flex flex-col gap-1">
         <div className="flex justify-end">
           <DateRangeDropdown
