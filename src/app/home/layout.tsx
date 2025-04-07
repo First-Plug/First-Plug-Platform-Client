@@ -14,7 +14,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <DataProvider>
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
-        <section className="flex flex-col w-[90%] flex-grow   h-[100vh] max-h-[100vh]  ">
+        <section className="flex flex-col w-[90%] flex-grow   h-[100vh] max-h-[100vh] overflow-y-auto  ">
           <Navbar />
           <Layout>{children}</Layout>
           <Aside />

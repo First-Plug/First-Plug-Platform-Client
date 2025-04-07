@@ -93,7 +93,7 @@ const computerColumns = (
       return (
         <div className="flex justify-center">
           <button
-            className={`p-2 font-semibold text-center w-full ${
+            className={`py-2 font-semibold text-center w-full ${
               [
                 "Upgrade recommended",
                 "Time for upgrade",

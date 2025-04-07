@@ -38,6 +38,7 @@ export default function Login() {
         throw new Error(res.error);
       }
       router.push("/home/dashboard");
+      router.refresh();
     } catch (error) {
       toast({
         variant: "destructive",

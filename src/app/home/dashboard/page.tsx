@@ -20,6 +20,8 @@ import { ComputerUpdates } from "@/dashboard/components/ComputerUpdates";
 import { UpcomingBirthdays } from "@/dashboard/components/UpcomingBirthdays";
 import { MembersByCountry } from "@/dashboard/components/MembersByCountry";
 import { useFetchUserSettings } from "@/components/settings/hooks/useFetchUserSettings";
+import { useActivityLatest } from "@/dashboard/action/findLatest";
+import { LatestActivity } from "@/dashboard/components/LatestActivity";
 
 export default observer(function Dashboard() {
   const { data: sessionData } = useSession();
@@ -39,6 +41,8 @@ export default observer(function Dashboard() {
   const { isLoading: isLoadingMembers } = useFetchTeams();
   const { data: membersData, isLoading: isLoadingTeams } = useFetchMembers();
   const { data: assets, isLoading: isLoadingAssets } = useGetTableAssets();
+  const { data: activityLatest, isLoading: isLoadingActivity } =
+    useActivityLatest();
 
   useEffect(() => {
     if (sessionStorage.getItem("accessToken")) {
@@ -81,7 +85,8 @@ export default observer(function Dashboard() {
     isFetchingSettings ||
     isLoadingTeams ||
     isLoadingMembers ||
-    isLoadingAssets
+    isLoadingAssets ||
+    isLoadingActivity
   ) {
     return <Loader />;
   }
@@ -92,7 +97,7 @@ export default observer(function Dashboard() {
         {assets.length > 0 ? (
           <MyAssets assets={assets} sessionData={sessionData} />
         ) : (
-          <EmptyDashboardCard type="stock" />
+          <EmptyDashboardCard type="stock" handleSwapy />
         )}
       </ItemDashboard>
     ),
@@ -101,7 +106,7 @@ export default observer(function Dashboard() {
         {assets.length > 0 ? (
           <ComputerUpdates assets={assets} user={user} />
         ) : (
-          <EmptyDashboardCard type="computer" />
+          <EmptyDashboardCard type="computer" handleSwapy />
         )}
       </ItemDashboard>
     ),
@@ -114,7 +119,7 @@ export default observer(function Dashboard() {
             setAlert={setAlert}
           />
         ) : (
-          <EmptyDashboardCard type="members" />
+          <EmptyDashboardCard type="members" handleSwapy />
         )}
       </ItemDashboard>
     ),
@@ -123,7 +128,16 @@ export default observer(function Dashboard() {
         {membersData.length > 0 ? (
           <MembersByCountry membersData={membersData} />
         ) : (
-          <EmptyDashboardCard type="opsByCountry" />
+          <EmptyDashboardCard type="opsByCountry" handleSwapy />
+        )}
+      </ItemDashboard>
+    ),
+    "latest-activity": (
+      <ItemDashboard id="latest-activity">
+        {activityLatest.length > 0 ? (
+          <LatestActivity history={activityLatest} />
+        ) : (
+          <EmptyDashboardCard type="latestActivity" handleSwapy />
         )}
       </ItemDashboard>
     ),
@@ -132,9 +146,9 @@ export default observer(function Dashboard() {
   return (
     <PageLayout>
       <DashboardLayout>
-        <section className="grid grid-cols-2 gap-4 h-full">
+        <section className="grid grid-cols-2 gap-4 mb-6">
           {itemsOrder.map((id) => (
-            <div key={id} className="min-h-[200px]">
+            <div key={id} className="h-[42vh]">
               {widgetsMap[id]}
             </div>
           ))}
