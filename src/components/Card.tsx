@@ -41,7 +41,7 @@ export const Card = function ({
 }: CardProps) {
   return (
     <article
-      className={`flex flex-col  rounded-xl p-4  border border-border   relative ${className}`}
+      className={`flex flex-col rounded-xl p-4 border border-border relative ${className}`}
     >
       <div className={`${Title ? "h-[14%] " : "h-0"}`}>
         {Title && (
@@ -72,6 +72,27 @@ export const Card = function ({
                   </Tooltip>
                 </TooltipProvider>
               )}
+              {Title === "Latest Activity" && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="ml-4 p-1 text-blue/80">
+                        <InfoCircle />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="bottom"
+                      align="center"
+                      className="bg-blue/80 text-white p-2 rounded-md text-xs font-normal z-50"
+                    >
+                      The &apos;Details&apos; button is available only for
+                      activity from the past 7 days. To view details of earlier
+                      actions, please visit the Activity section.
+                      <TooltipArrow className="fill-blue/80" />
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </h2>
             <div className="flex flex-col justify-center items-center ">
               {RightContent && <div>{RightContent}</div>}
@@ -95,14 +116,14 @@ export const Card = function ({
           </header>
         )}
       </div>
-      <div className=" max-h-[85%] h-[85%] flex-grow  relative">
+      <div className=" max-h-[85%] h-[85%] flex-grow relative">
         {children ? (
-          <div className={`absolute    w-full   h-full     `}>{children}</div>
+          <div className={`absolute w-full h-full`}>{children}</div>
         ) : (
           imageBottom && (
-            <div className="absolute top-0 right-0 h-full w-full -z-10  grid place-items-center">
-              <div className="flex flex-col ">
-                <div className="h-52  relative">
+            <div className="absolute top-0 right-0 h-full w-full -z-10 grid place-items-center">
+              <div className="flex flex-col">
+                <div className="h-52 relative">
                   <Image
                     src={imageBottom}
                     alt={altImage}

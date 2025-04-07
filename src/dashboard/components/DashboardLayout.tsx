@@ -15,6 +15,7 @@ export default function DashboardLayout({ children }) {
           animation: "dynamic",
           swapMode: "hover",
           enabled: true,
+          autoScrollOnDrag: true,
         });
 
         const saveOrderToDatabase = async () => {
@@ -43,7 +44,7 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full" ref={containerRef}>
+    <div className="flex flex-col gap-4 w-full" ref={containerRef}>
       {children}
     </div>
   );

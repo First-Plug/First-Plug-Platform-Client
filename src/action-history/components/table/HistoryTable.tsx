@@ -62,11 +62,12 @@ const fetchData = async (
 
 const HistoryTable = () => {
   const searchParams = useSearchParams();
+  const activityId = searchParams.get("activityId");
   const router = useRouter();
   const [data, setData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [expandedRow, setExpandedRow] = useState<string | null>(activityId);
 
   const [selectedDates, setSelectedDates] = useState<{
     startDate: Date;
@@ -182,7 +183,6 @@ const HistoryTable = () => {
 
   return (
     <>
-      {isLoading && <BarLoader />}
       <div className="relative h-full flex-grow flex flex-col gap-1">
         <div className="flex justify-end">
           <DateRangeDropdown
