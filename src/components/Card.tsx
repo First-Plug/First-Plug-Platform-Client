@@ -72,6 +72,27 @@ export const Card = function ({
                   </Tooltip>
                 </TooltipProvider>
               )}
+              {Title === "Latest Activity" && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="ml-4 p-1 text-blue/80">
+                        <InfoCircle />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="bottom"
+                      align="center"
+                      className="bg-blue/80 text-white p-2 rounded-md text-xs font-normal z-50"
+                    >
+                      The &apos;Details&apos; button is available only for
+                      activity from the past 7 days. To view details of earlier
+                      actions, please visit the Activity section.
+                      <TooltipArrow className="fill-blue/80" />
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </h2>
             <div className="flex flex-col justify-center items-center ">
               {RightContent && <div>{RightContent}</div>}
