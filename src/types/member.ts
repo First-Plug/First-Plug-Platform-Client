@@ -9,6 +9,7 @@ export const TeamMemberModel = types.model({
   lastName: types.string,
   fullName: types.string,
   email: types.string,
+  activeShipment: types.boolean,
   picture: types.optional(types.string, ""),
   position: types.optional(types.string, ""),
   personalEmail: types.maybeNull(types.string),

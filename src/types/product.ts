@@ -5,6 +5,8 @@ export const PRODUCT_STATUSES = [
   "Delivered",
   "Deprecated",
   "Unavailable",
+  "In Transit",
+  "In Transit - Missing Data",
 ] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
 export const PRODUCT_CONDITIONS = ["Optimal", "Defective", "Unusable"] as const;

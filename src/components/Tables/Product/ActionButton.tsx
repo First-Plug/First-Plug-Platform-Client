@@ -69,6 +69,14 @@ export function ActionButton({ product }: ActionButtonProps) {
       text: "Reassign",
       action: handleReassignAction,
     },
+    "In Transit": {
+      text: "In Transit",
+      action: () => {},
+    },
+    "In Transit - Missing Data": {
+      text: "In Transit - Missing Data",
+      action: () => {},
+    },
   };
   const { action, text } = ActionConfig[product.status];
 
