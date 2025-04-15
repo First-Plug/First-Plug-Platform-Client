@@ -9,6 +9,8 @@ export const SHIPMENT_STATUS = [
   "Shipped",
   "Complete",
   "Unavailable",
+  "In Transit",
+  "In Transit - Missing Data",
 ] as const;
 
 export type ShipmentStatus = (typeof SHIPMENT_STATUS)[number];

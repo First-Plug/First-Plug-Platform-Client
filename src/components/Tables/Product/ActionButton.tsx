@@ -70,11 +70,11 @@ export function ActionButton({ product }: ActionButtonProps) {
       action: handleReassignAction,
     },
     "In Transit": {
-      text: "In Transit",
+      text: "View Tracking",
       action: () => {},
     },
     "In Transit - Missing Data": {
-      text: "In Transit - Missing Data",
+      text: "Review Shipment",
       action: () => {},
     },
   };
