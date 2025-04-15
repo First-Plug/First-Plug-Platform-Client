@@ -47,6 +47,7 @@ export const useCreateMember = () => {
         teamId: newMember.teamId || "",
         dni: newMember.dni || 0,
         isDeleted: false,
+        activeShipment: false,
       };
 
       // Agregar el miembro optimista a la lista de miembros
