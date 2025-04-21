@@ -30,7 +30,10 @@ export function Dropdown({
 
   const options = useMemo(() => {
     const optionsContainer = React.Children.toArray(children).filter(
-      (child: any) => child.type.name === "DropdownOptions"
+      (child: any) =>
+        React.isValidElement(child) &&
+        typeof child.type !== "string" &&
+        (child.type as any).displayName === "DropdownOptions"
     );
 
     if (!optionsContainer[0]) return [];

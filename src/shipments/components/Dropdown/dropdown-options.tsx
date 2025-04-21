@@ -16,7 +16,7 @@ export function DropdownOptions({
   className = "",
   maxHeight = "12rem",
   renderOption,
-  emptyMessage = "No hay opciones disponibles",
+  emptyMessage = "No options available",
 }: DropdownOptionsProps) {
   const { isOpen, filteredOptions } = useDropdown();
   const optionsRef = useRef<HTMLUListElement>(null);
@@ -43,3 +43,5 @@ export function DropdownOptions({
     </ul>
   );
 }
+
+DropdownOptions.displayName = "DropdownOptions";
