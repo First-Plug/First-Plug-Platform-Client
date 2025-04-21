@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Button, LoaderSpinner, SearchInput } from "@/common";
+import { Button, ChevronDown, LoaderSpinner, SearchInput } from "@/common";
 import { observer } from "mobx-react-lite";
 import { TeamMember, Product, LOCATION, Location, User } from "@/types";
 import { useStore } from "@/models";
@@ -23,6 +23,7 @@ import { validateAfterAction } from "@/lib/validateAfterAction";
 import { useFetchMembers } from "@/members/hooks";
 import { sendSlackNotification } from "@/services/slackNotifications.services";
 import { SlackNotificationPayload } from "@/types/slack";
+import { Dropdown } from "@/shipments/components";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -400,6 +401,8 @@ export const AddMemberForm = observer(function ({
   const [missingMemberData, setMissingMemberData] = useState("");
   const [missingOfficeData, setMissingOfficeData] = useState("");
 
+  const [selectedValue, setSelectedValue] = useState("yes");
+
   return (
     <section className="flex flex-col gap-6 h-full ">
       <GenericAlertDialog
@@ -505,6 +508,30 @@ export const AddMemberForm = observer(function ({
               </div>
             ))}
           </div>
+        </div>
+        <div className="w-80 mt-2">
+          <Dropdown
+            value={selectedValue}
+            onChange={setSelectedValue}
+            searchable={true}
+            color={selectedValue === "yes" ? "success" : "error"}
+            errorMessage={
+              selectedValue === "yes" ? "" : "Please select an option"
+            }
+            className="w-full max-w-md"
+          >
+            <Dropdown.Label>Ship with FP?</Dropdown.Label>
+            <Dropdown.Trigger placeholder="Select an option" />
+            <Dropdown.Options emptyMessage="No se encontraron resultados">
+              <Dropdown.Option value="yes">Yes</Dropdown.Option>
+              <Dropdown.Option value="no">No</Dropdown.Option>
+            </Dropdown.Options>
+
+            <Dropdown.ErrorMessage />
+          </Dropdown>
+
+          <p>Selected value: {selectedValue}</p>
+          <button onClick={() => setSelectedValue("")}>Reset</button>
         </div>
       </div>
 
