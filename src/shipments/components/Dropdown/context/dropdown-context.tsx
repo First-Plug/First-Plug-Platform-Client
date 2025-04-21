@@ -22,7 +22,7 @@ export type DropdownContextType = {
     React.SetStateAction<DropdownOptionType[]>
   >;
   errorMessage: string;
-  color: "error" | "success" | "normal";
+  color: "error" | "success" | "normal" | "grey";
   getSelectedLabel: () => string;
 };
 

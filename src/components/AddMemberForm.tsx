@@ -23,7 +23,7 @@ import { validateAfterAction } from "@/lib/validateAfterAction";
 import { useFetchMembers } from "@/members/hooks";
 import { sendSlackNotification } from "@/services/slackNotifications.services";
 import { SlackNotificationPayload } from "@/types/slack";
-import { Dropdown } from "@/shipments/components";
+import { ShipmentWithFp } from "@/shipments/components";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -48,6 +48,11 @@ export const AddMemberForm = observer(function ({
   showNoneOption,
   actionType,
 }: AddMemberFormProps) {
+  const [shipmentValue, setShipmentValue] = useState<ShipmentWithFpData>(null);
+
+  const onSubmitDropdown = (data: ShipmentWithFpData) => {
+    setShipmentValue(data);
+  };
   const { data: allMembers, isLoading: loadingMembers } = useFetchMembers();
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
@@ -307,6 +312,11 @@ export const AddMemberForm = observer(function ({
         name: currentProduct.name,
         productCondition: currentProduct.productCondition ?? "Optimal",
         actionType: actionType === "ReassignProduct" ? "reassign" : "assign",
+        fp_shipment: shipmentValue.shipment === "yes" ? true : false,
+        desirableDate: {
+          origin: shipmentValue.pickupDate,
+          destination: shipmentValue.deliveredDate,
+        },
       };
 
       if (selectedMember) {
@@ -400,8 +410,11 @@ export const AddMemberForm = observer(function ({
     useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
   const [missingOfficeData, setMissingOfficeData] = useState("");
-
-  const [selectedValue, setSelectedValue] = useState("yes");
+  interface ShipmentWithFpData {
+    shipment: string;
+    pickupDate?: string;
+    deliveredDate?: string;
+  }
 
   return (
     <section className="flex flex-col gap-6 h-full ">
@@ -467,7 +480,7 @@ export const AddMemberForm = observer(function ({
         {validationError && (
           <p className="text-red-500 text-md">{validationError}</p>
         )}
-        <div className="flex flex-col gap-4 items-start h-[92%]  ">
+        <div className="flex flex-col gap-4 items-start h-[80%]">
           {showNoneOption && (
             <p className="text-dark-grey font-medium">
               If you want to <strong>relocate</strong> this product, please
@@ -483,7 +496,7 @@ export const AddMemberForm = observer(function ({
               className="w-full"
             />
           </div>
-          <div className="flex flex-col gap-2 w-full h-[95%] max-h-[95%] overflow-y-auto scrollbar-custom pt-4 ">
+          <div className="flex flex-col gap-2 w-full h-full overflow-y-auto scrollbar-custom pt-4 ">
             {displayedMembers.map((member) => (
               <div
                 className={`flex gap-2 items-center py-2 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue `}
@@ -509,29 +522,8 @@ export const AddMemberForm = observer(function ({
             ))}
           </div>
         </div>
-        <div className="w-80 mt-2">
-          <Dropdown
-            value={selectedValue}
-            onChange={setSelectedValue}
-            searchable={true}
-            color={selectedValue === "yes" ? "success" : "error"}
-            errorMessage={
-              selectedValue === "yes" ? "" : "Please select an option"
-            }
-            className="w-full max-w-md"
-          >
-            <Dropdown.Label>Ship with FP?</Dropdown.Label>
-            <Dropdown.Trigger placeholder="Select an option" />
-            <Dropdown.Options emptyMessage="No se encontraron resultados">
-              <Dropdown.Option value="yes">Yes</Dropdown.Option>
-              <Dropdown.Option value="no">No</Dropdown.Option>
-            </Dropdown.Options>
-
-            <Dropdown.ErrorMessage />
-          </Dropdown>
-
-          <p>Selected value: {selectedValue}</p>
-          <button onClick={() => setSelectedValue("")}>Reset</button>
+        <div className="w-80">
+          <ShipmentWithFp onSubmit={onSubmitDropdown} />
         </div>
       </div>
 
@@ -548,7 +540,16 @@ export const AddMemberForm = observer(function ({
             variant="primary"
             className="px-8"
             onClick={handleSaveClick}
-            disabled={(!selectedMember && !noneOption) || isAssigning}
+            disabled={
+              (!selectedMember && !noneOption) ||
+              isAssigning ||
+              !shipmentValue ||
+              (shipmentValue &&
+                !(
+                  shipmentValue.shipment === "yes" ||
+                  shipmentValue.shipment === "no"
+                ))
+            }
           >
             {isAssigning ? <LoaderSpinner /> : "Save"}
           </Button>

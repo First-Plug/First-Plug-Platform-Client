@@ -14,7 +14,6 @@ export function useDropdownState({ value, options }: UseDropdownStateProps) {
     ...options,
   ]);
 
-  // Obtener el label correspondiente al value seleccionado
   const getSelectedLabel = (): string => {
     const selectedOption = options.find((option) => option.value === value);
     return selectedOption ? selectedOption.label : "";

@@ -1,7 +1,7 @@
 "use client";
 import React, { useMemo } from "react";
 import { useRef } from "react";
-import { DropdownContext, useDropdown } from "./context/dropdown-context";
+import { DropdownContext } from "./context/dropdown-context";
 import { useDropdownState } from "./hooks/use-dropdown-state";
 import { useOutsideClick } from "./hooks/use-outside-click";
 
@@ -12,7 +12,7 @@ interface DropdownProps {
   disabled?: boolean;
   searchable?: boolean;
   errorMessage?: string;
-  color?: "error" | "success" | "normal";
+  color?: "error" | "success" | "normal" | "grey";
   className?: string;
 }
 

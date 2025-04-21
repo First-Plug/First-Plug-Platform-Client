@@ -1,9 +1,8 @@
-"use client";
-import type React from "react";
 import { useRef, useEffect } from "react";
 import { useDropdown } from "./context/dropdown-context";
 import { useDropdownFilter } from "./hooks/use-dropdown-filter";
 import { ChevronDown } from "@/common";
+import clsx from "clsx"; // Importar clsx
 
 interface DropdownTriggerProps {
   children?: React.ReactNode;
@@ -74,9 +73,15 @@ export function DropdownTrigger({
         readOnly={!searchable}
         onClick={toggleDropdown}
         onChange={handleSearch}
-        className={`w-full h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border text-black p-4 font-sans focus:outline-none ${className} ${
-          color !== "normal" && `border-${color}`
-        }`}
+        className={clsx(
+          "w-full h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border text-black p-4 font-sans focus:outline-none",
+          className,
+          {
+            "border-gray-300": color === "grey" || color === "normal",
+            "border-error": color === "error",
+            "border-success": color === "success",
+          }
+        )}
         name={name}
         disabled={disabled}
         autoComplete="off"

@@ -74,6 +74,8 @@ const BulkCreateForm: React.FC<{
     price: initialData.price,
     productCondition: initialData.productCondition || "Optimal",
     additionalInfo: initialData.additionalInfo || "",
+    fp_shipment: undefined,
+    desirableDate: undefined,
   };
 
   const productInstance = ProductModel.create(initialProductData);
