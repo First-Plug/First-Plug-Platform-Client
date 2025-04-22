@@ -18,6 +18,11 @@ export const AsapOrDate = ({ label, value, onChange }: AsapOrDateProps) => {
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isoString = e.target.value;
+
+    if (isoString === "") {
+      onChange("");
+      return;
+    }
     const parsed = parseISO(isoString);
 
     if (isValid(parsed)) {

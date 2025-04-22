@@ -3,6 +3,14 @@ import { Dropdown } from "../index";
 import { DialogShipmentWithFp } from "./dialog-shipment-with-fp";
 import { useForm, Controller } from "react-hook-form"; // Importamos react-hook-form
 import { AsapOrDateValue } from "./asap-or-date";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { InfoCircle } from "@/common";
+import { TooltipArrow } from "@radix-ui/react-tooltip";
 
 interface Props {
   onSubmit: (data: any) => void;
@@ -16,9 +24,6 @@ export const ShipmentWithFp = ({ onSubmit }: Props) => {
 
   // Obtener el valor del dropdown
   const shipmentValue = watch("shipment");
-
-  // Verificar si ambas fechas son válidas
-  const isPickupAndDeliveredValid = pickupDate !== "" && deliveredDate !== "";
 
   const handleDropdownChange = (value: string) => {
     // Si el valor del dropdown es 'yes', abrir el diálogo
@@ -49,36 +54,36 @@ export const ShipmentWithFp = ({ onSubmit }: Props) => {
     onSubmit(null);
   };
 
-  const getDropdownColor = () => {
-    if (shipmentValue === "yes" && !isPickupAndDeliveredValid) {
-      return "error"; // Error si "yes" pero las fechas no están completas
-    }
-    if (shipmentValue === "yes" && isPickupAndDeliveredValid) {
-      return "success"; // Success si "yes" y las fechas están completas
-    }
-
-    if (shipmentValue === "no") {
-      return "success";
-    }
-
-    return "grey";
-  };
-
   return (
     <>
       <form className="py-4">
         <Dropdown
           value={shipmentValue || ""}
           onChange={handleDropdownChange}
-          color={getDropdownColor()}
-          errorMessage={
-            shipmentValue === "yes" && !isPickupAndDeliveredValid
-              ? "Please select both dates"
-              : ""
-          }
+          color={"grey"}
           className="w-full max-w-md"
         >
-          <Dropdown.Label>Ship with FP?</Dropdown.Label>
+          <Dropdown.Label className="flex items-center gap-2">
+            <span>Ship with FP?</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className=" text-blue/80">
+                    <InfoCircle />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  align="center"
+                  className="bg-blue/80 text-white p-2 rounded-md text-xs font-normal z-50"
+                >
+                  Select &apos;Yes&apos; to let First Plug handle the shipment.
+                  Pickup and delivery dates will be required.
+                  <TooltipArrow className="fill-blue/80" />
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </Dropdown.Label>
           <Dropdown.Trigger
             className="flex mt-2"
             placeholder="Select an option"
@@ -98,7 +103,6 @@ export const ShipmentWithFp = ({ onSubmit }: Props) => {
             <Dropdown.Option value="yes">Yes</Dropdown.Option>
             <Dropdown.Option value="no">No</Dropdown.Option>
           </Dropdown.Options>
-          <Dropdown.ErrorMessage />
         </Dropdown>
       </form>
     </>

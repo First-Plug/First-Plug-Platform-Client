@@ -301,11 +301,12 @@ export const AddMemberForm = observer(function ({
       let updatedProduct: Partial<Product> & { actionType: string } = {
         assignedEmail: "",
         assignedMember: "",
-        status:
-          currentProduct.productCondition === "Unusable"
-            ? currentProduct.status
-            : "Available",
-
+        status: (() => {
+          if (shipmentValue.shipment === "yes") return "In Transit";
+          if (currentProduct.productCondition === "Unusable")
+            return currentProduct.status;
+          return "Available";
+        })(),
         location: noneOption || "Our office",
         category: currentProduct.category,
         attributes: currentProduct.attributes,
@@ -324,11 +325,12 @@ export const AddMemberForm = observer(function ({
           ...updatedProduct,
           assignedEmail: selectedMember.email,
           assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
-          status:
-            currentProduct.productCondition === "Unusable"
-              ? currentProduct.status
-              : "Delivered",
-
+          status: (() => {
+            if (shipmentValue.shipment === "yes") return "In Transit";
+            if (currentProduct.productCondition === "Unusable")
+              return currentProduct.status;
+            return "Delivered";
+          })(),
           location: "Employee",
           productCondition: currentProduct.productCondition ?? "Optimal",
           actionType: actionType === "ReassignProduct" ? "reassign" : "assign",
@@ -480,7 +482,11 @@ export const AddMemberForm = observer(function ({
         {validationError && (
           <p className="text-red-500 text-md">{validationError}</p>
         )}
-        <div className="flex flex-col gap-4 items-start h-[80%]">
+        <div
+          className={`flex flex-col gap-4 items-start ${
+            actionType === "AssignProduct" ? "h-[80%]" : "h-[70%]"
+          }`}
+        >
           {showNoneOption && (
             <p className="text-dark-grey font-medium">
               If you want to <strong>relocate</strong> this product, please

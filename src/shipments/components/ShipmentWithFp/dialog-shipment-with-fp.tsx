@@ -97,13 +97,14 @@ export const DialogShipmentWithFp = ({
         <DialogFooter>
           <div className="flex flex-col w-full gap-4">
             {isInvalidDateRange && (
-              <div className="bg-red-50 text-red-600 border border-red-200 rounded-xl p-3 flex items-start gap-2 text-sm">
+              <div className="bg-red-50 text-red-600 border border-red-200 rounded-xl p-3 flex items-center gap-2 text-sm">
                 <AlertCircle className="w-4 h-4 mt-0.5" />
                 <span>Pickup date must be before delivery date.</span>
               </div>
             )}
             <div className="flex justify-between">
               <Button
+                className="px-6 rounded-md"
                 variant="secondary"
                 onClick={() => {
                   onCancel(); // Llamar a la función onCancel
@@ -113,6 +114,7 @@ export const DialogShipmentWithFp = ({
                 Cancel
               </Button>
               <Button
+                className="px-8 rounded-md"
                 disabled={isEmptyField || isInvalidDateRange}
                 onClick={() => {
                   onSave();
