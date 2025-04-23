@@ -24,6 +24,7 @@ import { useFetchMembers } from "@/members/hooks";
 import { sendSlackNotification } from "@/services/slackNotifications.services";
 import { SlackNotificationPayload } from "@/types/slack";
 import { ShipmentWithFp } from "@/shipments/components";
+import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -48,11 +49,8 @@ export const AddMemberForm = observer(function ({
   showNoneOption,
   actionType,
 }: AddMemberFormProps) {
-  const [shipmentValue, setShipmentValue] = useState<ShipmentWithFpData>(null);
+  const { shipmentValue, onSubmitDropdown } = useShipmentValues();
 
-  const onSubmitDropdown = (data: ShipmentWithFpData) => {
-    setShipmentValue(data);
-  };
   const { data: allMembers, isLoading: loadingMembers } = useFetchMembers();
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
@@ -412,11 +410,6 @@ export const AddMemberForm = observer(function ({
     useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
   const [missingOfficeData, setMissingOfficeData] = useState("");
-  interface ShipmentWithFpData {
-    shipment: string;
-    pickupDate?: string;
-    deliveredDate?: string;
-  }
 
   return (
     <section className="flex flex-col gap-6 h-full ">

@@ -18,8 +18,11 @@ export default function useActions() {
     currentMember: TeamMember;
     product: Product;
   }) => {
-    const status =
-      product.productCondition === "Unusable" ? "Unavailable" : "Delivered";
+    const status = (() => {
+      if (product.fp_shipment) return "In Transit";
+      if (product.productCondition === "unusable") return "Unavailable";
+      return "Available";
+    })();
     const updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
@@ -29,6 +32,8 @@ export default function useActions() {
       status,
       location: "Employee",
       actionType: "relocate",
+      fp_shipment: product.fp_shipment,
+      desirableDate: product.desirableDate,
       productCondition: product.productCondition || "Optimal",
     };
     if (product.assignedMember) {
@@ -53,8 +58,12 @@ export default function useActions() {
     product: Product;
     currentMember?: TeamMember;
   }) => {
-    const status =
-      product.productCondition === "Unusable" ? "Unavailable" : "Available";
+    const status = (() => {
+      if (product.fp_shipment) return "In Transit";
+      if (product.productCondition === "unusable") return "Unavailable";
+      return "Available";
+    })();
+
     let updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
@@ -64,6 +73,8 @@ export default function useActions() {
       status,
       location,
       actionType: "return",
+      fp_shipment: product.fp_shipment,
+      desirableDate: product.desirableDate,
       productCondition: product.productCondition || "Optimal",
     };
     if (product.assignedMember) {

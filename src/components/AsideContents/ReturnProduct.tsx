@@ -24,6 +24,8 @@ import {
 } from "@/lib/validateAfterAction";
 import { sendSlackNotification } from "@/services/slackNotifications.services";
 import { useQueryClient } from "@tanstack/react-query";
+import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
+import { ShipmentWithFp } from "@/shipments/components";
 
 interface IRemoveItems {
   product: Product;
@@ -44,6 +46,8 @@ export function ReturnProduct({
     aside: { closeAside },
     members: { selectedMember },
   } = useStore();
+  const { shipmentValue, onSubmitDropdown, isShipmentValueValid } =
+    useShipmentValues();
   const queryClient = useQueryClient();
   const [isRemoving, setIsRemoving] = useState(false);
   const [newLocation, setNewLocation] = useState<Location>(null);
@@ -210,12 +214,31 @@ export function ReturnProduct({
 
     setIsRemoving(true);
     try {
-      const status =
-        product.productCondition === "unusable" ? "Unavailable" : "Available";
+      const status = (() => {
+        if (shipmentValue.shipment === "yes") return "In Transit";
+        if (product.productCondition === "unusable") return "Unavailable";
+        return "Available";
+      })() as
+        | "Available"
+        | "Delivered"
+        | "Deprecated"
+        | "Unavailable"
+        | "In Transit"
+        | "In Transit - Missing Data";
+
+      const productToSend = {
+        ...product,
+        status,
+        fp_shipment: shipmentValue.shipment === "yes",
+        desirableDate: {
+          origin: shipmentValue.pickupDate,
+          destination: shipmentValue.deliveredDate,
+        },
+      };
 
       await unassignProduct({
         location,
-        product: { ...product, status },
+        product: productToSend,
         currentMember: selectedMember,
       });
 
@@ -275,26 +298,33 @@ export function ReturnProduct({
         <ProductDetail product={product} selectedProducts={selectedProducts} />
       </div>
 
-      <section className="flex justify-between  items-center w-full gap-10 ">
-        <Select onValueChange={(value) => setNewLocation(value as Location)}>
-          <SelectTrigger
-            className="font-semibold text-md w-1/2"
-            disabled={returnStatus === "success" || isRemoving}
-          >
-            <SelectValue placeholder="Please select the new location" />
-          </SelectTrigger>
-          <SelectContent className="bg-white">
-            <SelectGroup>
-              <SelectLabel>Location</SelectLabel>
-              {LOCATION.filter((e) => e !== "Employee").map((location) => (
-                <SelectItem value={location} key={location}>
-                  {location}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-        <div>
+      <section className="flex items-end w-full gap-4">
+        <div className="flex-1 py-4">
+          <Select onValueChange={(value) => setNewLocation(value as Location)}>
+            <SelectTrigger
+              className="font-semibold text-md h-10"
+              disabled={returnStatus === "success" || isRemoving}
+            >
+              <SelectValue placeholder="Please select the new location" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              <SelectGroup>
+                <SelectLabel>Location</SelectLabel>
+                {LOCATION.filter((e) => e !== "Employee").map((location) => (
+                  <SelectItem value={location} key={location}>
+                    {location}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex-1">
+          <ShipmentWithFp onSubmit={onSubmitDropdown} />
+        </div>
+
+        <div className="flex-none py-4">
           {returnStatus === "success" ? (
             <Badge className={badgeVariants({ variant: returnStatus })}>
               Returned Succesfully ✅
@@ -304,7 +334,12 @@ export function ReturnProduct({
               onClick={() => handleRemoveItems(newLocation)}
               variant="delete"
               size="small"
-              disabled={isRemoving || !newLocation || !isEnabled}
+              disabled={
+                isRemoving ||
+                !newLocation ||
+                !isEnabled ||
+                !isShipmentValueValid()
+              }
             >
               {!isRemoving ? <span>Return</span> : <LoaderSpinner />}
             </Button>

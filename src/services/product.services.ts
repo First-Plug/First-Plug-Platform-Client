@@ -36,7 +36,6 @@ export class ProductServices {
         `${BASE_URL}/api/products/${id}`,
         data
       );
-      console.log("se llama el  update");
       return response.data;
     } catch (error) {
       throw error;
