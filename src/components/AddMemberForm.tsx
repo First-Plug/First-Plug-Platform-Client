@@ -484,7 +484,7 @@ export const AddMemberForm = observer(function ({
         )}
         <div
           className={`flex flex-col gap-4 items-start ${
-            actionType === "AssignProduct" ? "h-[80%]" : "h-[70%]"
+            actionType === "AssignProduct" ? "h-[80%]" : "h-[65%]"
           }`}
         >
           {showNoneOption && (
