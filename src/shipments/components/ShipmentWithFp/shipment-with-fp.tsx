@@ -11,6 +11,13 @@ import {
 } from "@/components/ui/tooltip";
 import { InfoCircle } from "@/common";
 import { TooltipArrow } from "@radix-ui/react-tooltip";
+import {
+  Select,
+  SelectOption,
+  SelectOptions,
+  SelectTrigger,
+} from "@/firstplug/ui/Select";
+import { SelectLabel } from "../../../firstplug/ui/Select/select-label";
 
 interface Props {
   onSubmit: (data: any) => void;
@@ -57,13 +64,13 @@ export const ShipmentWithFp = ({ onSubmit }: Props) => {
   return (
     <>
       <form className="py-4">
-        <Dropdown
+        <Select
           value={shipmentValue || ""}
           onChange={handleDropdownChange}
           color={"grey"}
           className="w-full max-w-md"
         >
-          <Dropdown.Label className="flex items-center gap-2">
+          <SelectLabel className="flex items-center gap-2">
             <span>Ship with FP?</span>
             <TooltipProvider>
               <Tooltip>
@@ -83,27 +90,28 @@ export const ShipmentWithFp = ({ onSubmit }: Props) => {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          </Dropdown.Label>
-          <Dropdown.Trigger
+          </SelectLabel>
+          <SelectTrigger
             className="flex mt-2"
             placeholder="Select an option"
-          >
-            <DialogShipmentWithFp
-              isOpen={isDialogOpen}
-              onOpenChange={setIsDialogOpen}
-              pickupDate={pickupDate}
-              onPickupDateChange={setPickupDate}
-              deliveredDate={deliveredDate}
-              onDeliveredDateChange={setDeliveredDate}
-              onSave={handleDialogSave}
-              onCancel={handleDialogCancel}
-            />
-          </Dropdown.Trigger>
-          <Dropdown.Options>
-            <Dropdown.Option value="yes">Yes</Dropdown.Option>
-            <Dropdown.Option value="no">No</Dropdown.Option>
-          </Dropdown.Options>
-        </Dropdown>
+            icon={
+              <DialogShipmentWithFp
+                isOpen={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                pickupDate={pickupDate}
+                onPickupDateChange={setPickupDate}
+                deliveredDate={deliveredDate}
+                onDeliveredDateChange={setDeliveredDate}
+                onSave={handleDialogSave}
+                onCancel={handleDialogCancel}
+              />
+            }
+          />
+          <SelectOptions>
+            <SelectOption value="yes">Yes</SelectOption>
+            <SelectOption value="no">No</SelectOption>
+          </SelectOptions>
+        </Select>
       </form>
     </>
   );

@@ -5,15 +5,7 @@ import ProductDetail, { RelocateStatus } from "@/common/ProductDetail";
 import { Button, LoaderSpinner } from "@/common";
 import useActions from "@/hooks/useActions";
 import { useStore } from "@/models";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Badge, badgeVariants } from "../ui/badge";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -26,6 +18,13 @@ import { sendSlackNotification } from "@/services/slackNotifications.services";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
 import { ShipmentWithFp } from "@/shipments/components";
+import {
+  Select,
+  SelectLabel,
+  SelectOption,
+  SelectOptions,
+  SelectTrigger,
+} from "@/firstplug/ui/Select";
 
 interface IRemoveItems {
   product: Product;
@@ -40,7 +39,8 @@ export function ReturnProduct({
   setSelectedProducts,
   isEnabled,
   onRemoveSuccess,
-}: IRemoveItems) {
+  className = "",
+}: IRemoveItems & { className?: string }) {
   const {
     alerts: { setAlert },
     aside: { closeAside },
@@ -265,7 +265,9 @@ export function ReturnProduct({
   };
 
   return (
-    <div className="flex flex-col border-b pb-2 mb-2 rounded-sm items-start gap-1">
+    <div
+      className={`flex flex-col rounded-md pt-[12px] mb-2 px-4 items-start mr-2 gap-1 ${className}`}
+    >
       {genericAlertData.isOpen && (
         <GenericAlertDialog
           open={genericAlertData.isOpen}
@@ -300,23 +302,22 @@ export function ReturnProduct({
 
       <section className="flex items-end w-full gap-4">
         <div className="flex-1 py-4">
-          <Select onValueChange={(value) => setNewLocation(value as Location)}>
-            <SelectTrigger
-              className="font-semibold text-md h-10"
-              disabled={returnStatus === "success" || isRemoving}
-            >
-              <SelectValue placeholder="Please select the new location" />
-            </SelectTrigger>
-            <SelectContent className="bg-white">
-              <SelectGroup>
-                <SelectLabel>Location</SelectLabel>
-                {LOCATION.filter((e) => e !== "Employee").map((location) => (
-                  <SelectItem value={location} key={location}>
-                    {location}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
+          <Select
+            value={newLocation || ""}
+            onChange={(value) => setNewLocation(value as Location)}
+            className="w-full max-w-md"
+          >
+            <SelectLabel className="flex items-center gap-2">
+              <span>Please select the new location</span>
+            </SelectLabel>
+            <SelectTrigger className="flex mt-2" placeholder="Location" />
+            <SelectOptions>
+              {LOCATION.filter((e) => e !== "Employee").map((location) => (
+                <SelectOption value={location} key={location}>
+                  {location}
+                </SelectOption>
+              ))}
+            </SelectOptions>
           </Select>
         </div>
 
@@ -334,6 +335,7 @@ export function ReturnProduct({
               onClick={() => handleRemoveItems(newLocation)}
               variant="delete"
               size="small"
+              className="py-[14px]"
               disabled={
                 isRemoving ||
                 !newLocation ||

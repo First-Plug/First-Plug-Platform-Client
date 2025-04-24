@@ -72,7 +72,7 @@ export const DialogShipmentWithFp = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogTrigger asChild>
-        <Calendar className="w-5 h-5" />
+        <Calendar className="w-5 h-5 text-gray-500" />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
