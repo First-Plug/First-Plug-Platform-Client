@@ -63,7 +63,7 @@ export const ShipmentWithFp = ({ onSubmit }: Props) => {
 
   return (
     <>
-      <form className="py-4">
+      <form>
         <Select
           value={shipmentValue || ""}
           onChange={handleDropdownChange}
@@ -71,7 +71,7 @@ export const ShipmentWithFp = ({ onSubmit }: Props) => {
           className="w-full max-w-md"
         >
           <SelectLabel className="flex items-center gap-2">
-            <span>Ship with FP?</span>
+            <span className="text-dark-grey font-semibold">Ship with FP?</span>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

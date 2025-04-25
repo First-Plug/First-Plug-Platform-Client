@@ -521,7 +521,7 @@ export const AddMemberForm = observer(function ({
             ))}
           </div>
         </div>
-        <div className="w-80">
+        <div className="w-80 mt-4">
           <ShipmentWithFp onSubmit={onSubmitDropdown} />
         </div>
       </div>

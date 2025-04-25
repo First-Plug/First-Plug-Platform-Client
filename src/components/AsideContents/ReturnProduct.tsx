@@ -308,7 +308,9 @@ export function ReturnProduct({
             className="w-full max-w-md"
           >
             <SelectLabel className="flex items-center gap-2">
-              <span>Please select the new location</span>
+              <span className="text-dark-grey font-semibold">
+                Please select the new location
+              </span>
             </SelectLabel>
             <SelectTrigger className="flex mt-2" placeholder="Location" />
             <SelectOptions>
@@ -321,7 +323,7 @@ export function ReturnProduct({
           </Select>
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 mb-4">
           <ShipmentWithFp onSubmit={onSubmitDropdown} />
         </div>
 
