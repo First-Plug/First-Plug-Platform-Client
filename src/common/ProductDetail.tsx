@@ -212,8 +212,7 @@ const MembersList = observer(function MembersList({
           origin: shipmentValue.pickupDate,
           destination: shipmentValue.deliveredDate,
         },
-        status:
-          shipmentValue.shipment === "yes" ? "In Transit" : product.status,
+        status: product.status,
       };
 
       await handleReassignProduct({

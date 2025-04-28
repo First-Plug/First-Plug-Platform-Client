@@ -215,7 +215,6 @@ export function ReturnProduct({
     setIsRemoving(true);
     try {
       const status = (() => {
-        if (shipmentValue.shipment === "yes") return "In Transit";
         if (product.productCondition === "unusable") return "Unavailable";
         return "Available";
       })() as

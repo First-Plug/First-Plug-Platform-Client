@@ -300,7 +300,6 @@ export const AddMemberForm = observer(function ({
         assignedEmail: "",
         assignedMember: "",
         status: (() => {
-          if (shipmentValue.shipment === "yes") return "In Transit";
           if (currentProduct.productCondition === "Unusable")
             return currentProduct.status;
           return "Available";
@@ -324,7 +323,6 @@ export const AddMemberForm = observer(function ({
           assignedEmail: selectedMember.email,
           assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
           status: (() => {
-            if (shipmentValue.shipment === "yes") return "In Transit";
             if (currentProduct.productCondition === "Unusable")
               return currentProduct.status;
             return "Delivered";

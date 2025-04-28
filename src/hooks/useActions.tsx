@@ -18,11 +18,8 @@ export default function useActions() {
     currentMember: TeamMember;
     product: Product;
   }) => {
-    const status = (() => {
-      if (product.fp_shipment) return "In Transit";
-      if (product.productCondition === "unusable") return "Unavailable";
-      return "Available";
-    })();
+    const status =
+      product.productCondition === "Unusable" ? "Unavailable" : "Delivered";
     const updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
@@ -58,11 +55,8 @@ export default function useActions() {
     product: Product;
     currentMember?: TeamMember;
   }) => {
-    const status = (() => {
-      if (product.fp_shipment) return "In Transit";
-      if (product.productCondition === "unusable") return "Unavailable";
-      return "Available";
-    })();
+    const status =
+      product.productCondition === "Unusable" ? "Unavailable" : "Available";
 
     let updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
