@@ -21,6 +21,8 @@ import {
   validateAfterAction,
 } from "@/lib/validateAfterAction";
 import { sendSlackNotification } from "@/services/slackNotifications.services";
+import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
+import { ShipmentWithFp } from "@/shipments/components";
 
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
@@ -61,6 +63,9 @@ const MembersList = observer(function MembersList({
     isOpen: false,
   });
   const router = useRouter();
+
+  const { isShipmentValueValid, onSubmitDropdown, shipmentValue } =
+    useShipmentValues();
 
   const handleSelectMember = (member: TeamMember) => {
     setSelectedMember(member);
@@ -200,10 +205,20 @@ const MembersList = observer(function MembersList({
 
     setRelocating(true);
     try {
+      const productToSend = {
+        ...product,
+        fp_shipment: shipmentValue.shipment === "yes",
+        desirableDate: {
+          origin: shipmentValue.pickupDate,
+          destination: shipmentValue.deliveredDate,
+        },
+        status: product.status,
+      };
+
       await handleReassignProduct({
         currentMember,
         selectedMember,
-        product: product,
+        product: productToSend,
       });
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
@@ -258,7 +273,7 @@ const MembersList = observer(function MembersList({
         }}
       />
       {selectedMember ? (
-        <section className="flex justify-between w-full py-2">
+        <section className="flex justify-between items-end w-full gap-6 pb-2">
           <div className="flex items-center gap-2">
             <span className="font-extralight">Relocate To:</span>
             <button
@@ -278,6 +293,10 @@ const MembersList = observer(function MembersList({
             </button>
           </div>
 
+          <div className="flex-1">
+            <ShipmentWithFp onSubmit={onSubmitDropdown} />
+          </div>
+
           {relocateResult === "success" ? (
             <Badge className={badgeVariants({ variant: relocateResult })}>
               Successfully relocated ✅
@@ -290,7 +309,8 @@ const MembersList = observer(function MembersList({
                 isRelocating ||
                 relocateResult !== undefined ||
                 !selectedMember ||
-                disabled
+                disabled ||
+                !isShipmentValueValid()
               }
             >
               {isRelocating ? <LoaderSpinner /> : <span>Confirm ✔️</span>}

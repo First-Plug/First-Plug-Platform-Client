@@ -95,7 +95,7 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
         return Array.from(options).sort();
       },
     },
-    size: 200,
+    size: 150,
     header: "Currently with",
     cell: ({ getValue, row }) => <MemberName product={row.original} />,
     enableColumnFilter: true,
@@ -114,7 +114,7 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
         | "Unusable",
     }),
     header: "Status + Product Condition",
-    size: 200,
+    size: 180,
     meta: {
       filterVariant: "select",
       options: (rows) => {
@@ -204,9 +204,8 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
   {
     accessorFn: (row) => row.status,
     header: "Actions",
-    size: 85,
+    size: 100,
     cell: ({ row }) => {
-      const assignedMemberEmail = row.original.assignedEmail || "";
       return <ActionButton product={row.original} />;
     },
     enableColumnFilter: false,

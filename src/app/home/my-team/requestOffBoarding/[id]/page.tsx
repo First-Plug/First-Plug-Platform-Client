@@ -12,6 +12,8 @@ import { useRouter } from "next/navigation";
 import { useFetchMembers } from "@/members/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { validateMemberBillingInfo } from "../../../../../components/RequestOffBoarding/Request-off-boarding-form";
+import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
+import { ShipmentWithFp } from "@/shipments/components";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
@@ -30,6 +32,9 @@ const Page = ({ params }: { params: { id: string } }) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  const { shipmentValue, onSubmitDropdown, isShipmentValueValid } =
+    useShipmentValues();
 
   const { data: members = [] } = useFetchMembers();
 
@@ -125,6 +130,13 @@ const Page = ({ params }: { params: { id: string } }) => {
           (member) => member.fullName === productToSend.newMember
         );
       }
+
+      productToSend.fp_shipment = shipmentValue.shipment === "yes";
+      productToSend.desirableDate = {
+        origin: shipmentValue.pickupDate,
+        destination: shipmentValue.deliveredDate,
+      };
+
       return productToSend;
     });
 
@@ -149,21 +161,23 @@ const Page = ({ params }: { params: { id: string } }) => {
 
   return (
     <PageLayout>
+      <div className="flex flex-col gap-2">
+        <div>
+          <h2>
+            All recoverable assets will be requested and the member will be
+            removed from your team.
+          </h2>
+
+          <span>Please confirm the relocation of each product.</span>
+        </div>
+      </div>
+      <div className="w-80 mt-4">
+        <ShipmentWithFp onSubmit={onSubmitDropdown} />
+      </div>
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="w-full h-screen overflow-y-auto scrollbar-custom">
             <div className="pr-4">
-              <div className="flex flex-col gap-2">
-                <div>
-                  <h2>
-                    All recoverable assets will be requested and the member will
-                    be removed from your team.
-                  </h2>
-
-                  <span>Please confirm the relocation of each product.</span>
-                </div>
-              </div>
-
               <div className="flex-1">
                 {selectedMember?.products
                   ?.filter((product) => product.recoverable === true)
@@ -199,7 +213,7 @@ const Page = ({ params }: { params: { id: string } }) => {
                 variant="primary"
                 className="mr-[39px] w-[200px] h-[40px] rounded-lg"
                 type="submit"
-                disabled={isButtonDisabled}
+                disabled={isButtonDisabled || !isShipmentValueValid()}
               >
                 {isLoading ? <LoaderSpinner /> : "Confirm offboard"}
               </Button>

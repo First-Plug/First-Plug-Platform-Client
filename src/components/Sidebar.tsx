@@ -10,6 +10,7 @@ import {
   ArrowRight,
   DashboardIcon,
   ClockIcon,
+  TruckIcon,
 } from "@/common/Icons";
 import { usePathname } from "next/navigation";
 // import { usePrefetchAssets } from "@/assets/hooks";
@@ -121,20 +122,20 @@ export const Sidebar = function () {
           }}
         />
 
-        {/* <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<NotebookOrdersIcon />}
-          title="Orders"
-          href="/home/orders"
-          isActive={pathArray.includes("orders")}
-        />
-
         <SidebarLink
           isSmall={isSidebarSmall}
           icon={<TruckIcon />}
           title="Shipments"
           href="/home/shipments"
           isActive={pathArray.includes("shipments")}
+        />
+
+        {/* <SidebarLink
+          isSmall={isSidebarSmall}
+          icon={<NotebookOrdersIcon />}
+          title="Orders"
+          href="/home/orders"
+          isActive={pathArray.includes("orders")}
         /> */}
       </section>
 

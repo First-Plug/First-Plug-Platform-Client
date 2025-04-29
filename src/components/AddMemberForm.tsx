@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Button, LoaderSpinner, SearchInput } from "@/common";
+import { Button, ChevronDown, LoaderSpinner, SearchInput } from "@/common";
 import { observer } from "mobx-react-lite";
 import { TeamMember, Product, LOCATION, Location, User } from "@/types";
 import { useStore } from "@/models";
@@ -23,6 +23,8 @@ import { validateAfterAction } from "@/lib/validateAfterAction";
 import { useFetchMembers } from "@/members/hooks";
 import { sendSlackNotification } from "@/services/slackNotifications.services";
 import { SlackNotificationPayload } from "@/types/slack";
+import { ShipmentWithFp } from "@/shipments/components";
+import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
 
 interface AddMemberFormProps {
   members: TeamMember[];
@@ -47,6 +49,8 @@ export const AddMemberForm = observer(function ({
   showNoneOption,
   actionType,
 }: AddMemberFormProps) {
+  const { shipmentValue, onSubmitDropdown } = useShipmentValues();
+
   const { data: allMembers, isLoading: loadingMembers } = useFetchMembers();
   const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
@@ -295,17 +299,22 @@ export const AddMemberForm = observer(function ({
       let updatedProduct: Partial<Product> & { actionType: string } = {
         assignedEmail: "",
         assignedMember: "",
-        status:
-          currentProduct.productCondition === "Unusable"
-            ? currentProduct.status
-            : "Available",
-
+        status: (() => {
+          if (currentProduct.productCondition === "Unusable")
+            return currentProduct.status;
+          return "Available";
+        })(),
         location: noneOption || "Our office",
         category: currentProduct.category,
         attributes: currentProduct.attributes,
         name: currentProduct.name,
         productCondition: currentProduct.productCondition ?? "Optimal",
         actionType: actionType === "ReassignProduct" ? "reassign" : "assign",
+        fp_shipment: shipmentValue.shipment === "yes" ? true : false,
+        desirableDate: {
+          origin: shipmentValue.pickupDate,
+          destination: shipmentValue.deliveredDate,
+        },
       };
 
       if (selectedMember) {
@@ -313,11 +322,11 @@ export const AddMemberForm = observer(function ({
           ...updatedProduct,
           assignedEmail: selectedMember.email,
           assignedMember: `${selectedMember.firstName} ${selectedMember.lastName}`,
-          status:
-            currentProduct.productCondition === "Unusable"
-              ? currentProduct.status
-              : "Delivered",
-
+          status: (() => {
+            if (currentProduct.productCondition === "Unusable")
+              return currentProduct.status;
+            return "Delivered";
+          })(),
           location: "Employee",
           productCondition: currentProduct.productCondition ?? "Optimal",
           actionType: actionType === "ReassignProduct" ? "reassign" : "assign",
@@ -464,7 +473,11 @@ export const AddMemberForm = observer(function ({
         {validationError && (
           <p className="text-red-500 text-md">{validationError}</p>
         )}
-        <div className="flex flex-col gap-4 items-start h-[92%]  ">
+        <div
+          className={`flex flex-col gap-4 items-start ${
+            actionType === "AssignProduct" ? "h-[80%]" : "h-[65%]"
+          }`}
+        >
           {showNoneOption && (
             <p className="text-dark-grey font-medium">
               If you want to <strong>relocate</strong> this product, please
@@ -480,7 +493,7 @@ export const AddMemberForm = observer(function ({
               className="w-full"
             />
           </div>
-          <div className="flex flex-col gap-2 w-full h-[95%] max-h-[95%] overflow-y-auto scrollbar-custom pt-4 ">
+          <div className="flex flex-col gap-2 w-full h-full overflow-y-auto scrollbar-custom pt-4 ">
             {displayedMembers.map((member) => (
               <div
                 className={`flex gap-2 items-center py-2 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue `}
@@ -506,6 +519,9 @@ export const AddMemberForm = observer(function ({
             ))}
           </div>
         </div>
+        <div className="w-80 mt-4">
+          <ShipmentWithFp onSubmit={onSubmitDropdown} />
+        </div>
       </div>
 
       <aside className=" absolute  bg-white  py-2    bottom-0   left-0 w-full border-t ">
@@ -521,7 +537,16 @@ export const AddMemberForm = observer(function ({
             variant="primary"
             className="px-8"
             onClick={handleSaveClick}
-            disabled={(!selectedMember && !noneOption) || isAssigning}
+            disabled={
+              (!selectedMember && !noneOption) ||
+              isAssigning ||
+              !shipmentValue ||
+              (shipmentValue &&
+                !(
+                  shipmentValue.shipment === "yes" ||
+                  shipmentValue.shipment === "no"
+                ))
+            }
           >
             {isAssigning ? <LoaderSpinner /> : "Save"}
           </Button>

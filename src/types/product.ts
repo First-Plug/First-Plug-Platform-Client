@@ -5,6 +5,8 @@ export const PRODUCT_STATUSES = [
   "Delivered",
   "Deprecated",
   "Unavailable",
+  "In Transit",
+  "In Transit - Missing Data",
 ] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
 export const PRODUCT_CONDITIONS = ["Optimal", "Defective", "Unusable"] as const;
@@ -80,6 +82,11 @@ export const AttributeModel = types.model({
 });
 export type Atrribute = Instance<typeof AttributeModel>;
 
+const DesirableDate = types.model({
+  origin: types.maybe(types.string),
+  destination: types.maybe(types.string),
+});
+
 export const ProductModel = types.model({
   _id: types.string,
   name: types.maybeNull(types.string),
@@ -97,6 +104,8 @@ export const ProductModel = types.model({
   assignedMember: types.optional(types.string, ""),
   serialNumber: types.maybeNull(types.string),
   lastAssigned: types.maybeNull(types.string),
+  fp_shipment: types.maybe(types.boolean),
+  desirableDate: types.maybe(DesirableDate),
   price: types.maybe(
     types.model({
       amount: types.maybe(types.number),
@@ -140,6 +149,11 @@ export const emptyProduct: Omit<Product, "category"> & { category: string } = {
   lastAssigned: "",
   price: undefined,
   additionalInfo: "",
+  fp_shipment: false,
+  desirableDate: {
+    origin: "",
+    destination: "",
+  },
 };
 
 export const ProductTableModel = types.model({
