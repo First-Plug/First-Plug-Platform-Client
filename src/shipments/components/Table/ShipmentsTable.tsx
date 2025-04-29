@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 
 import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
-import { ArrowRight, Button, PenIcon } from "@/common";
+import { ArrowRight, Button, PenIcon, TrashIcon } from "@/common";
 import { Loader } from "@/components/Loader";
 import { ShipmentServices } from "@/shipments/services/shipments.services";
 import { DeleteAction } from "@/components/Alerts";
@@ -122,7 +122,12 @@ const ShipmentsTable = () => {
                 className="mr-1 hover:text-blue w-[1.2rem] h-[1.2rem]"
               />
             </button>
-            <DeleteAction type="member" id={row.original._id} />
+            <button>
+              <TrashIcon
+                className="text-dark-grey w-[1.2rem] h-[1.2rem] hover:text-error"
+                strokeWidth={2}
+              />
+            </button>
           </div>
         ),
       },
