@@ -1,18 +1,13 @@
 "use client";
-import { useStore } from "@/models";
-import { observer } from "mobx-react-lite";
-import EmptyShipments from "./EmptyShipments";
-import DataShipments from "./DataShipments";
+
+import ShipmentsTable from "@/shipments/components/Table/ShipmentsTable";
+
 import { PageLayout } from "@/common";
 
-export default observer(function Shipments() {
-  const {
-    shipments: { shipments },
-  } = useStore();
-
+export default function Shipments() {
   return (
     <PageLayout>
-      {shipments.length ? <DataShipments /> : <EmptyShipments />}
+      <ShipmentsTable />
     </PageLayout>
   );
-});
+}
