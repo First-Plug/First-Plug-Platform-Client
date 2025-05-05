@@ -15,6 +15,7 @@ import {
 import { usePathname } from "next/navigation";
 // import { usePrefetchAssets } from "@/assets/hooks";
 import { usePrefetchMembers } from "@/members/hooks";
+import { usePrefetchLatestActivity } from "@/action-history/hooks/usePrefetchLatestActivity";
 
 export const Sidebar = function () {
   const path = usePathname();
@@ -24,6 +25,7 @@ export const Sidebar = function () {
 
   // const { prefetchAssets } = usePrefetchAssets();
   const prefetchMembers = usePrefetchMembers();
+  const prefetchLatestActivity = usePrefetchLatestActivity();
 
   const toggleSidebarSize = () => {
     setIsSidebarSmall(!isSidebarSmall);
@@ -126,7 +128,7 @@ export const Sidebar = function () {
           href="/home/activity"
           isActive={pathArray.includes("activity")}
           onMouseEnter={() => {
-            // prefetchAssets();
+            prefetchLatestActivity();
           }}
         />
 
