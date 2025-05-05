@@ -263,7 +263,12 @@ const HistoryTable = () => {
                               />
                             ) : row.original.actionType === "update" ? (
                               <UpdateAssetsTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : [
                                 "return",
@@ -272,7 +277,12 @@ const HistoryTable = () => {
                                 "assign",
                               ].includes(row.original.actionType) ? (
                               <ActionAssetTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : null
                           ) : row.original.itemType === "members" ? (
@@ -287,11 +297,21 @@ const HistoryTable = () => {
                               />
                             ) : row.original.actionType === "update" ? (
                               <UpdateMembersTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : row.original.actionType === "offboarding" ? (
                               <OffboardingMembersTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : null
                           ) : row.original.itemType === "teams" ? (
@@ -307,13 +327,23 @@ const HistoryTable = () => {
                               />
                             ) : row.original.actionType === "update" ? (
                               <UpdateTeamsTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : ["reassign", "assign", "unassign"].includes(
                                 row.original.actionType
                               ) ? (
                               <ActionTeamsTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : null
                           ) : null}

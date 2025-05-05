@@ -29,14 +29,8 @@ const ShipmentDetailsTable = ({ data }: Props) => {
       category: asset.category,
       name: asset.name,
       serial: asset.serialNumber,
-      origin: asset.origin?.location
-        ? `${asset.origin.location} / ${formatDate(asset.origin.date)}`
-        : "-",
-      destination: asset.destination?.location
-        ? `${asset.destination.location} / ${formatDate(
-            asset.destination.date
-          )}`
-        : "-",
+      origin: "",
+      destination: "",
     }));
   }, [assets]);
 
