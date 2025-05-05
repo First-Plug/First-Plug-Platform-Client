@@ -20,26 +20,17 @@ import { ArrowRight, Button, PenIcon, TrashIcon } from "@/common";
 import { Loader } from "@/components/Loader";
 import { ShipmentServices } from "@/shipments/services/shipments.services";
 import { DeleteAction } from "@/components/Alerts";
+import ShipmentDetailsTable from "./ShipmentDetailsTable";
+import { useFetchShipments } from "@/shipments/hooks/useFetchShipments";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
-
-const fetchData = async (pageIndex: number, pageSize: number) => {
-  try {
-    return await ShipmentServices.getAll(pageIndex, pageSize);
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    return { data: [], totalCount: 0 };
-  }
-};
 
 const ShipmentsTable = () => {
   const searchParams = useSearchParams();
   const activityId = searchParams.get("activityId");
   const router = useRouter();
-  const [data, setData] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+
   const [expandedRow, setExpandedRow] = useState<string | null>(activityId);
 
   const rawPage = parseInt(searchParams.get("page") || "1", 10);
@@ -53,20 +44,10 @@ const ShipmentsTable = () => {
     : DEFAULT_PAGE_SIZE;
   let currentPage = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
 
-  useEffect(() => {
-    setIsLoading(true);
+  const { data, isLoading } = useFetchShipments(currentPage, pageSize);
 
-    fetchData(currentPage, pageSize).then((result) => {
-      setData(result.data);
-      setTotalCount(result.totalCount);
-      setIsLoading(false);
-
-      const maxPage = Math.ceil(result.totalCount / pageSize);
-      if (currentPage > maxPage && maxPage > 0) {
-        router.replace(`?page=1&pageSize=${pageSize}`);
-      }
-    });
-  }, [currentPage, pageSize, router]);
+  const shipments = data?.data ?? [];
+  const totalCount = data?.totalCount ?? 0;
 
   const columns = useMemo(
     () => [
@@ -118,22 +99,25 @@ const ShipmentsTable = () => {
         header: "Actions",
         size: 80,
         style: { width: "80px", minWidth: "80px", maxWidth: "80px" },
-        cell: ({ row }) => (
-          <div className="flex gap-1">
-            <button>
-              <PenIcon
-                strokeWidth={2}
-                className="mr-1 hover:text-blue w-[1.2rem] h-[1.2rem]"
+        cell: ({ row }) => {
+          const isCancelled = row.original.shipment_status === "Cancelled";
+
+          return (
+            <div className="flex gap-1">
+              <button disabled={isCancelled}>
+                <PenIcon
+                  strokeWidth={2}
+                  className="mr-1 hover:text-blue w-[1.2rem] h-[1.2rem]"
+                />
+              </button>
+              <DeleteAction
+                type="shipment"
+                id={row.original._id}
+                disabled={isCancelled}
               />
-            </button>
-            <button>
-              <TrashIcon
-                className="text-dark-grey w-[1.2rem] h-[1.2rem] hover:text-error"
-                strokeWidth={2}
-              />
-            </button>
-          </div>
-        ),
+            </div>
+          );
+        },
       },
       {
         id: "expander",
@@ -165,7 +149,7 @@ const ShipmentsTable = () => {
   );
 
   const table = useReactTable({
-    data,
+    data: shipments,
     columns,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
@@ -207,7 +191,7 @@ const ShipmentsTable = () => {
                     <Loader />
                   </TableCell>
                 </TableRow>
-              ) : data.length === 0 ? (
+              ) : shipments.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
@@ -248,7 +232,9 @@ const ShipmentsTable = () => {
                         <TableCell
                           colSpan={columns.length}
                           className="text-black border-b text-md text-left border-l-2 border-l-blue w-full p-0 rounded-none transition-colors"
-                        ></TableCell>
+                        >
+                          <ShipmentDetailsTable data={row.original} />
+                        </TableCell>
                       </TableRow>
                     )}
                   </React.Fragment>
@@ -259,7 +245,7 @@ const ShipmentsTable = () => {
         </div>
 
         <div className="flex justify-center absolute w-full bottom-0 z-30">
-          {data.length > 0 && !isLoading && (
+          {shipments.length > 0 && !isLoading && (
             <PaginationWithLinks
               page={currentPage}
               pageSize={pageSize}

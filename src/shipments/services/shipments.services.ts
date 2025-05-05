@@ -9,4 +9,12 @@ export class ShipmentServices {
 
     return response.data as ShipmentsResponse;
   }
+
+  static async cancel(shipmentId: string) {
+    const response = await HTTPRequests.patch(
+      `${BASE_URL}/api/shipments/${shipmentId}/cancel`
+    );
+
+    return response.data;
+  }
 }

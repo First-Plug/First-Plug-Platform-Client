@@ -113,6 +113,14 @@ export const Sidebar = function () {
 
         <SidebarLink
           isSmall={isSidebarSmall}
+          icon={<TruckIcon />}
+          title="Shipments"
+          href="/home/shipments"
+          isActive={pathArray.includes("shipments")}
+        />
+
+        <SidebarLink
+          isSmall={isSidebarSmall}
           icon={<ClockIcon />}
           title="Activity"
           href="/home/activity"
@@ -120,14 +128,6 @@ export const Sidebar = function () {
           onMouseEnter={() => {
             // prefetchAssets();
           }}
-        />
-
-        <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<TruckIcon />}
-          title="Shipments"
-          href="/home/shipments"
-          isActive={pathArray.includes("shipments")}
         />
 
         {/* <SidebarLink
