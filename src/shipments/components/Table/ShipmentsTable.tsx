@@ -93,20 +93,24 @@ const ShipmentsTable = () => {
       {
         accessorKey: "quantity_products",
         header: "Quantity Products",
-        size: 140,
-        style: { width: "140px", minWidth: "140px", maxWidth: "140px" },
       },
       {
         accessorKey: "shipment_type",
         header: "Type",
-        size: 100,
-        style: { width: "100px", minWidth: "100px", maxWidth: "100px" },
       },
       {
         accessorKey: "shipment_status",
         header: "Status",
+      },
+      {
+        accessorKey: "price",
+        header: "Price",
         size: 100,
         style: { width: "100px", minWidth: "100px", maxWidth: "100px" },
+        cell: ({ row }) => {
+          const amount = row.original.price.amount;
+          return <span>{amount ? `$${amount}` : "-"}</span>;
+        },
       },
       {
         accessorKey: "",
