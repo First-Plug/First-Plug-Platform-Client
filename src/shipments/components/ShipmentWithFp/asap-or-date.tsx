@@ -42,7 +42,7 @@ export const AsapOrDate = ({ label, value, onChange }: AsapOrDateProps) => {
 
   return (
     <div className="flex flex-col">
-      <h2 className="font-bold text-lg">{label}</h2>
+      <h2 className="text-black font-semibold">{label}</h2>
       <div className="flex justify-between items-center gap-4">
         <div className="flex items-center gap-2 flex-1">
           <Checkbox

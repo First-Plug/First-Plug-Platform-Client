@@ -31,5 +31,7 @@ export const AsideTitle = observer(function AsideTitle() {
       return `Edit Product `;
     case "ChangePassword":
       return `Change Password `;
+    case "UpdateShipment":
+      return `Update Shipment`;
   }
 });

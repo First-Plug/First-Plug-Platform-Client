@@ -14,10 +14,10 @@ import {
 } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import type { Shipments } from "@/shipments/interfaces/shipments-response.interface";
+import type { Shipment } from "@/shipments/interfaces/shipments-response.interface";
 
 interface Props {
-  data: Shipments;
+  data: Shipment;
 }
 
 // TODO: Seguir cuando me pueda traer datos

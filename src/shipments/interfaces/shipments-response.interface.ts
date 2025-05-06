@@ -1,10 +1,10 @@
 export interface ShipmentsResponse {
-  data: Shipments[];
+  data: Shipment[];
   totalCount: number;
   totalPages: number;
 }
 
-export interface Shipments {
+export interface Shipment {
   _id: string;
   order_id: string;
   tenant: String;

@@ -62,12 +62,14 @@ export function SelectTrigger({
         onClick={toggleDropdown}
         onChange={handleSearch}
         className={clsx(
-          "w-full cursor-pointer pl-4 pr-12 rounded-md border text-black py-3 font-sans focus:outline-none",
+          "w-full pl-4 pr-12 rounded-md border text-black py-3 font-sans focus:outline-none",
           className,
           {
             "border-gray-300": color === "grey" || color === "normal",
             "border-error": color === "error",
             "border-success": color === "success",
+            "cursor-default": disabled,
+            "cursor-pointer": !disabled,
           }
         )}
         name={name}
@@ -75,7 +77,12 @@ export function SelectTrigger({
         aria-disabled={disabled}
         autoComplete="off"
       />
-      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer">
+      <div
+        className={clsx("absolute right-3 top-1/2 transform -translate-y-1/2", {
+          "cursor-default": disabled,
+          "cursor-pointer": !disabled,
+        })}
+      >
         {icon}
       </div>
     </div>

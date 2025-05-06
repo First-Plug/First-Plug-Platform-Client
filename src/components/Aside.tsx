@@ -4,6 +4,7 @@ import { AsideContent } from "./";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
 import { AsideTitle } from "@/common";
+import { useQueryClient } from "@tanstack/react-query";
 
 export var Aside = observer(function Aside() {
   const {
@@ -11,7 +12,10 @@ export var Aside = observer(function Aside() {
     members,
   } = useStore();
 
+  const queryClient = useQueryClient();
+
   const handleCloseAside = () => {
+    queryClient.removeQueries({ queryKey: ["shipment"] });
     closeAside();
   };
 
@@ -29,7 +33,7 @@ export var Aside = observer(function Aside() {
         } `}
       >
         <header className="flex justify-between items-center">
-          <h2 className="text-2xl font-sans text-black font-semibold">
+          <h2 className="text-2xl font-sans text-black font-bold">
             <AsideTitle />
           </h2>
           <button

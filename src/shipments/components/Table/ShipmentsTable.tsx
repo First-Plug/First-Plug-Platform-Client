@@ -22,6 +22,7 @@ import { ShipmentServices } from "@/shipments/services/shipments.services";
 import { DeleteAction } from "@/components/Alerts";
 import ShipmentDetailsTable from "./ShipmentDetailsTable";
 import { useFetchShipments } from "@/shipments/hooks/useFetchShipments";
+import { EditShipment } from "../EditShipment";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -100,20 +101,15 @@ const ShipmentsTable = () => {
         size: 80,
         style: { width: "80px", minWidth: "80px", maxWidth: "80px" },
         cell: ({ row }) => {
-          const isCancelled = row.original.shipment_status === "Cancelled";
+          const isDisabled = row.original.shipment_status !== "In Preparation";
 
           return (
             <div className="flex gap-1">
-              <button disabled={isCancelled}>
-                <PenIcon
-                  strokeWidth={2}
-                  className="mr-1 hover:text-blue w-[1.2rem] h-[1.2rem]"
-                />
-              </button>
+              <EditShipment shipment={row.original} isDisabled={isDisabled} />
               <DeleteAction
                 type="shipment"
                 id={row.original._id}
-                disabled={isCancelled}
+                disabled={isDisabled}
               />
             </div>
           );

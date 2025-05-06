@@ -10,7 +10,7 @@ export const SelectLabel = ({
   required = false,
 }: SelectLabelProps) => {
   return (
-    <div className={`block text-dark-grey ml-2 font-sans ${className}`}>
+    <div className={`block text-dark-grey font-sans ${className}`}>
       {children}
       {required && "*"}
     </div>
