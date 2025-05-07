@@ -55,13 +55,13 @@ const ShipmentsTable = () => {
       {
         accessorKey: "order_id",
         header: "Order ID",
-        size: 150,
+        size: 100,
         style: { width: "150px", minWidth: "150px", maxWidth: "150px" },
       },
       {
         accessorKey: "order_date",
         header: "Order Date",
-        size: 120,
+        size: 100,
         style: { width: "120px", minWidth: "120px", maxWidth: "120px" },
         cell: (info) => {
           const date = new Date(info.getValue());
@@ -75,10 +75,12 @@ const ShipmentsTable = () => {
       {
         accessorKey: "quantity_products",
         header: "Quantity Products",
+        size: 100,
       },
       {
         accessorKey: "shipment_type",
         header: "Type",
+        size: 100,
       },
       {
         accessorKey: "shipment_status",
@@ -167,6 +169,9 @@ const ShipmentsTable = () => {
                     <TableHead
                       key={header.id}
                       className="py-3 px-4 border-r text-start text-black font-semibold"
+                      style={{
+                        width: header.getSize() ? header.getSize() : undefined,
+                      }}
                     >
                       {flexRender(
                         header.column.columnDef.header,

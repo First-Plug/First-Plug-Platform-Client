@@ -260,7 +260,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
             ) : (
               <TrashIcon
                 className={`w-[1.2rem] h-[1.2rem] ${
-                  disabled ? "text-dark-grey" : "text-error hover:text-error/70"
+                  disabled ? "text-disabled" : "text-error hover:text-error/70"
                 }`}
                 strokeWidth={2}
               />

@@ -15,51 +15,79 @@ import {
 import { useMemo } from "react";
 
 import type { Shipment } from "@/shipments/interfaces/shipments-response.interface";
+import { ProductImage } from "@/common";
+import PrdouctModelDetail from "@/common/PrdouctModelDetail";
 
 interface Props {
   data: Shipment;
 }
 
-// TODO: Seguir cuando me pueda traer datos
 const ShipmentDetailsTable = ({ data }: Props) => {
-  const assets = data.snapshots ?? [];
-
   const tableData = useMemo(() => {
-    return assets.map((asset) => ({
-      category: asset.category,
-      name: asset.name,
-      serial: asset.serialNumber,
-      origin: "",
-      destination: "",
-    }));
-  }, [assets]);
+    return data.snapshots ?? [];
+  }, [data.snapshots]);
 
   const columns = useMemo<ColumnDef<any>[]>(
     () => [
       {
         accessorKey: "category",
         header: "Category",
-        cell: (info) => info.getValue(),
+        cell: ({ getValue }) => (
+          <div className="flex gap-2 text-lg items-center w-[150px]">
+            <ProductImage category={getValue<string>()} />
+            <p>{getValue<string>()}</p>
+          </div>
+        ),
       },
       {
         accessorKey: "name",
         header: "Name",
-        cell: (info) => info.getValue(),
+        size: 50,
+        cell: ({ row }) => {
+          return <PrdouctModelDetail product={row.original} />;
+        },
       },
       {
-        accessorKey: "serial",
+        accessorKey: "serialNumber",
         header: "Serial",
-        cell: (info) => info.getValue(),
+        size: 200,
+        cell: ({ getValue }) => (
+          <span className="font-semibold">#{getValue<string>()}</span>
+        ),
       },
       {
         accessorKey: "origin",
         header: "Origin / Pickup Date",
-        cell: (info) => info.getValue(),
+        cell: () => {
+          return (
+            <div className="flex flex-col">
+              <span className="font-medium">{data.origin ?? "—"}</span>
+              <span className="text-gray-700">
+                Pickup Date:{" "}
+                {data.originDetails?.desirableDate
+                  ? data.originDetails?.desirableDate
+                  : "—"}
+              </span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: "destination",
         header: "Destination / Delivery Date",
-        cell: (info) => info.getValue(),
+        cell: () => {
+          return (
+            <div className="flex flex-col">
+              <span className="font-medium">{data.destination}</span>
+              <span className="text-gray-700">
+                Delivery Date:{" "}
+                {data.destinationDetails?.desirableDate
+                  ? formatDate(data.destinationDetails.desirableDate)
+                  : "—"}
+              </span>
+            </div>
+          );
+        },
       },
     ],
     []
@@ -83,6 +111,9 @@ const ShipmentDetailsTable = ({ data }: Props) => {
               <TableHead
                 key={header.id}
                 className="py-3 px-4 border-r text-start text-black font-semibold"
+                style={{
+                  width: header.getSize(),
+                }}
               >
                 {flexRender(
                   header.column.columnDef.header,
@@ -104,7 +135,7 @@ const ShipmentDetailsTable = ({ data }: Props) => {
           table.getRowModel().rows.map((row) => (
             <TableRow key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} className="text-xs py-2 px-4 border-r">
+                <TableCell key={cell.id} className="text-xs py-4 px-4 border-r">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
@@ -118,11 +149,16 @@ const ShipmentDetailsTable = ({ data }: Props) => {
 
 export default ShipmentDetailsTable;
 
-// Utilidad opcional para formatear fechas
 function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en-US", {
+  const parsedDate = new Date(date);
+
+  if (isNaN(parsedDate.getTime())) {
+    return date;
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
     year: "numeric",
-    month: "short",
+    month: "numeric",
     day: "numeric",
-  }).format(new Date(date));
+  }).format(parsedDate);
 }

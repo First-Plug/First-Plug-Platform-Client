@@ -25,7 +25,7 @@ export const EditShipment = ({ isDisabled, shipment }: Props) => {
       <PenIcon
         strokeWidth={2}
         className={`mr-1 w-[1.2rem] h-[1.2rem] ${
-          isDisabled ? "text-dark-grey" : "text-blue hover:text-blue/70"
+          isDisabled ? "text-disabled" : "text-blue hover:text-blue/70"
         }`}
       />
     </button>
