@@ -10,6 +10,6 @@ export const useGetTableAssets = () => {
     // cacheTime: 1000 * 60 * 60,
     // refetchOnWindowFocus: true,
     // refetchOnReconnect: true,
-    // refetchOnMount: false,
+    refetchOnMount: true,
   });
 };

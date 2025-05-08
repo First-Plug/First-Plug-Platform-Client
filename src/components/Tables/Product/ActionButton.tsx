@@ -4,6 +4,9 @@ import { useStore } from "@/models";
 import { Product } from "@/types";
 import { usePrefetchAssignData } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
+import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type ActionType = {
   text: string;
@@ -39,8 +42,16 @@ export function ActionButton({ product }: ActionButtonProps) {
     setProductToAssing(cachedProduct || product);
   };
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const handleReassignAction = () => {
     // await queryClient.invalidateQueries({ queryKey: ["assets", product._id] });
+
+    if (product.assignedEmail && !product.assignedMember) {
+      // Open modal
+      setIsModalOpen(true);
+      return;
+    }
 
     const cachedProduct = queryClient.getQueryData<Product>([
       "assets",
@@ -80,6 +91,16 @@ export function ActionButton({ product }: ActionButtonProps) {
   };
   const { action, text } = ActionConfig[product.status];
 
+  const router = useRouter();
+
+  const handleButtonClick = () => {
+    const assignedEmail = product.assignedEmail;
+
+    router.push(
+      `/home/my-team/addTeam?&email=${encodeURIComponent(assignedEmail)}`
+    );
+  };
+
   return (
     <div
       onMouseEnter={async () => {
@@ -89,6 +110,18 @@ export function ActionButton({ product }: ActionButtonProps) {
         prefetchAssignData();
       }}
     >
+      <GenericAlertDialog
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={"⚠️ Warning"}
+        description={
+          "Before reassigning this product, please add the current holder as a member."
+        }
+        buttonText="Add Member"
+        onButtonClick={handleButtonClick}
+        showCancelButton
+      />
+
       <Button onClick={action} className="rounded-md" variant="text">
         {text}
       </Button>

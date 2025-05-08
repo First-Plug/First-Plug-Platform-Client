@@ -40,11 +40,11 @@ export default observer(function EditProduct({
 
   return (
     <Button
-      variant="text"
+      variant="outline"
       onClick={handleEditProduct}
       // onMouseEnter={() => prefetchAsset(product._id)}
     >
-      <PenIcon className="text-dark-grey w-4" strokeWidth={2} />
+      <PenIcon className="text-blue hover:text-blue/70 w-4" strokeWidth={2} />
     </Button>
   );
 });

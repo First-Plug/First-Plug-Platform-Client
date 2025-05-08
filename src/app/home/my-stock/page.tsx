@@ -12,6 +12,7 @@ import { useGetTableAssets } from "@/assets/hooks";
 
 export default observer(function MyStock() {
   const { data: assets = [], isLoading, isFetching } = useGetTableAssets();
+
   const [loading, setLoading] = useState(true);
 
   const {

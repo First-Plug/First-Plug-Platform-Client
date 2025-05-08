@@ -9,6 +9,9 @@ interface GenericAlertDialogProps {
   onButtonClick: () => void;
   isHtml?: boolean;
   additionalMessage?: string;
+  cancelButtonText?: string;
+  onCancel?: () => void;
+  showCancelButton?: boolean;
 }
 
 const GenericAlertDialog: React.FC<GenericAlertDialogProps> = ({
@@ -20,6 +23,9 @@ const GenericAlertDialog: React.FC<GenericAlertDialogProps> = ({
   onButtonClick,
   isHtml = false,
   additionalMessage,
+  cancelButtonText = "Cancel",
+  onCancel,
+  showCancelButton = false,
 }) => {
   return (
     <Dialog.Root open={open} onOpenChange={onClose}>
@@ -36,17 +42,34 @@ const GenericAlertDialog: React.FC<GenericAlertDialogProps> = ({
           </Dialog.Close>
 
           <Dialog.Title className="text-lg font-medium">{title}</Dialog.Title>
-          <Dialog.Description className="text-base  mt-2 text-gray-600">
+          <Dialog.Description className="text-base mt-2 text-gray-600">
             {isHtml ? (
               <div dangerouslySetInnerHTML={{ __html: description }} />
             ) : (
               description
             )}
           </Dialog.Description>
+
           {additionalMessage && (
             <p className="mt-4 text-base text-gray-600">{additionalMessage}</p>
           )}
-          <div className="mt-4 flex justify-end">
+
+          <div
+            className={`mt-6 flex ${
+              showCancelButton ? "justify-between" : "justify-end"
+            }`}
+          >
+            {showCancelButton && (
+              <Dialog.Close asChild>
+                <button
+                  className="px-4 py-2 bg-blue text-white rounded"
+                  onClick={onCancel}
+                >
+                  {cancelButtonText}
+                </button>
+              </Dialog.Close>
+            )}
+
             <Dialog.Close asChild>
               <button
                 className="px-4 py-2 bg-blue text-white rounded"
