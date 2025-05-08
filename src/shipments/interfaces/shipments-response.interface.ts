@@ -36,6 +36,7 @@ export interface Details {
   phone: string;
   personalEmail?: string;
   dni?: string;
+  assignedEmail: string;
   desirableDate?: "ASAP" | string;
   _id: string;
   state?: string;

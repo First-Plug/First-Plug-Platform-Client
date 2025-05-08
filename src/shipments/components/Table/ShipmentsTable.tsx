@@ -103,7 +103,9 @@ const ShipmentsTable = () => {
         size: 80,
         style: { width: "80px", minWidth: "80px", maxWidth: "80px" },
         cell: ({ row }) => {
-          const isDisabled = row.original.shipment_status !== "In Preparation";
+          const isDisabled =
+            row.original.shipment_status !== "In Preparation" &&
+            row.original.shipment_status !== "On Hold - Missing Data";
 
           return (
             <div className="flex gap-1">
