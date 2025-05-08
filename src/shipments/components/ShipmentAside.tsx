@@ -91,27 +91,40 @@ export const ShipmentAside = () => {
     shipment.destinationDetails?.desirableDate
   );
 
-  const isDestinationChanged =
-    JSON.stringify(destination) !== JSON.stringify(originalDestination);
+  const isFormValid = () => {
+    const isPickupValid = pickupDate !== "";
+    const isDeliveredValid = deliveredDate !== "";
+    const isDestinationValid =
+      (destination.type === "employee" && destination.assignedEmail) ||
+      (destination.type === "location" && destination.location);
 
-  const isPickupChanged =
-    (pickupDate === "ASAP" && originalPickupDate !== "ASAP") ||
-    (pickupDate instanceof Date &&
+    const allFieldsComplete =
+      isPickupValid && isDeliveredValid && isDestinationValid;
+
+    const isDestinationChanged =
+      JSON.stringify(destination) !== JSON.stringify(originalDestination);
+
+    const isPickupChanged =
+      pickupDate !== originalPickupDate &&
       !(
+        pickupDate instanceof Date &&
         originalPickupDate instanceof Date &&
         pickupDate.getTime() === originalPickupDate.getTime()
-      ));
+      );
 
-  const isDeliveredChanged =
-    (deliveredDate === "ASAP" && originalDeliveredDate !== "ASAP") ||
-    (deliveredDate instanceof Date &&
+    const isDeliveredChanged =
+      deliveredDate !== originalDeliveredDate &&
       !(
+        deliveredDate instanceof Date &&
         originalDeliveredDate instanceof Date &&
         deliveredDate.getTime() === originalDeliveredDate.getTime()
-      ));
+      );
 
-  const isSomethingChanged =
-    isDestinationChanged || isPickupChanged || isDeliveredChanged;
+    const anyFieldChanged =
+      isDestinationChanged || isPickupChanged || isDeliveredChanged;
+
+    return allFieldsComplete && anyFieldChanged;
+  };
 
   const contentRef = useRef(null);
   const [needsPadding, setNeedsPadding] = useState(false);
@@ -200,7 +213,7 @@ export const ShipmentAside = () => {
               className="w-full"
             />
           </div>
-          <div className="flex flex-col gap-2 w-full overflow-y-auto scrollbar-custom mt-4 2xl:h-[120px]">
+          <div className="flex flex-col gap-2 w-full overflow-y-auto scrollbar-custom mt-4 h-[120px]">
             {filteredMembers.map((member) => (
               <div
                 className={`flex gap-2 items-center py-2 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue`}
@@ -277,7 +290,7 @@ export const ShipmentAside = () => {
               variant="primary"
               className="px-8"
               onClick={handleSave}
-              disabled={!isSomethingChanged}
+              disabled={!isFormValid()}
             >
               Save
             </Button>
