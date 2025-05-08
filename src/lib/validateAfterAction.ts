@@ -46,6 +46,7 @@ const validateBillingInfo = (
     "state",
     "zipCode",
     "address",
+    "phone",
   ] as const;
 
   const missingFieldsArray = requiredFields.filter((field) => {

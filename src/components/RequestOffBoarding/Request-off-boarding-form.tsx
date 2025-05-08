@@ -36,6 +36,7 @@ const validateBillingInfo = (user: User): boolean => {
     "state",
     "zipCode",
     "address",
+    "phone",
   ] as const;
 
   return requiredFields.every((field) => user[field]?.trim() !== "");
