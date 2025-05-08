@@ -37,6 +37,12 @@ export const ShipmentAside = () => {
     aside: { setAside },
   } = useStore();
 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value.toLowerCase());
+  };
+
   const handleSelectMember = (member: any) => {
     setDestination({ type: "employee", assignedEmail: member.email });
   };
@@ -65,23 +71,47 @@ export const ShipmentAside = () => {
 
   const { data: members } = useFetchMembers();
 
-  const handleSearch = () => {};
-
   const closeAside = () => {
     setAside(undefined);
     queryClient.removeQueries({ queryKey: ["shipment"] });
   };
 
-  const isDestinationValid =
-    (destination.type === "employee" && destination.assignedEmail !== "") ||
-    (destination.type === "location" && destination.location !== "");
+  const originalDestination: DestinationState = shipment.destinationDetails
+    ?.assignedEmail
+    ? {
+        type: "employee",
+        assignedEmail: shipment.destinationDetails.assignedEmail,
+      }
+    : { type: "location", location: shipment.destination || "" };
 
-  const isPickupValid = pickupDate === "ASAP" || pickupDate instanceof Date;
+  const originalPickupDate = parseDesirableDate(
+    shipment.originDetails?.desirableDate
+  );
+  const originalDeliveredDate = parseDesirableDate(
+    shipment.destinationDetails?.desirableDate
+  );
 
-  const isDeliveredValid =
-    deliveredDate === "ASAP" || deliveredDate instanceof Date;
+  const isDestinationChanged =
+    JSON.stringify(destination) !== JSON.stringify(originalDestination);
 
-  const isFormValid = isDestinationValid && isPickupValid && isDeliveredValid;
+  const isPickupChanged =
+    (pickupDate === "ASAP" && originalPickupDate !== "ASAP") ||
+    (pickupDate instanceof Date &&
+      !(
+        originalPickupDate instanceof Date &&
+        pickupDate.getTime() === originalPickupDate.getTime()
+      ));
+
+  const isDeliveredChanged =
+    (deliveredDate === "ASAP" && originalDeliveredDate !== "ASAP") ||
+    (deliveredDate instanceof Date &&
+      !(
+        originalDeliveredDate instanceof Date &&
+        deliveredDate.getTime() === originalDeliveredDate.getTime()
+      ));
+
+  const isSomethingChanged =
+    isDestinationChanged || isPickupChanged || isDeliveredChanged;
 
   const contentRef = useRef(null);
   const [needsPadding, setNeedsPadding] = useState(false);
@@ -113,6 +143,23 @@ export const ShipmentAside = () => {
 
     closeAside();
   };
+
+  const filteredMembers = members.filter((member) => {
+    if (
+      shipment.originDetails?.assignedEmail &&
+      shipment.originDetails.assignedEmail === member.email
+    ) {
+      return false;
+    }
+
+    const fullName = `${member.firstName} ${member.lastName}`.toLowerCase();
+    const email = member.email?.toLowerCase() || "";
+    return fullName.includes(searchTerm) || email.includes(searchTerm);
+  });
+
+  const filteredLocations = LOCATION.filter(
+    (location) => location !== shipment.origin && location !== "Employee"
+  );
 
   return (
     <div
@@ -154,7 +201,7 @@ export const ShipmentAside = () => {
             />
           </div>
           <div className="flex flex-col gap-2 w-full overflow-y-auto scrollbar-custom mt-4 2xl:h-[120px]">
-            {members.map((member) => (
+            {filteredMembers.map((member) => (
               <div
                 className={`flex gap-2 items-center py-2 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue`}
                 key={member._id}
@@ -193,7 +240,7 @@ export const ShipmentAside = () => {
               placeholder="Select Location"
             />
             <SelectOptions>
-              {LOCATION.filter((e) => e !== "Employee").map((location) => (
+              {filteredLocations.map((location) => (
                 <SelectOption key={location} value={location}>
                   {location}
                 </SelectOption>
@@ -230,7 +277,7 @@ export const ShipmentAside = () => {
               variant="primary"
               className="px-8"
               onClick={handleSave}
-              disabled={!isFormValid}
+              disabled={!isSomethingChanged}
             >
               Save
             </Button>
