@@ -20,7 +20,7 @@ import { useStore } from "@/models";
 import { LOCATION } from "@/types";
 import { isValid, parseISO } from "date-fns";
 import { useUpdateShipment } from "../hooks/useUpdateShipment";
-import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
+import { useShipmentStore } from "../store/useShipmentStore";
 type DestinationState =
   | { type: "employee"; assignedEmail: string }
   | { type: "location"; location: string };
@@ -150,6 +150,10 @@ export const ShipmentAside = () => {
     return () => window.removeEventListener("resize", checkForScroll);
   }, [shipment, members]);
 
+  const setExpandedShipmentId = useShipmentStore(
+    (state) => state.setExpandedShipmentId
+  );
+
   const handleSave = async () => {
     const updatedShipment = {
       desirableDateOrigin: pickupDate,
@@ -162,6 +166,7 @@ export const ShipmentAside = () => {
     });
 
     setAlert("updateShipment", response.message);
+    setExpandedShipmentId(null);
     closeAside();
   };
 

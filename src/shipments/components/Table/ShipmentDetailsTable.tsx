@@ -65,7 +65,7 @@ const ShipmentDetailsTable = ({ data }: Props) => {
               <span className="text-gray-700">
                 Pickup Date:{" "}
                 {data.originDetails?.desirableDate
-                  ? data.originDetails?.desirableDate
+                  ? formatDate(data.originDetails.desirableDate)
                   : "—"}
               </span>
             </div>

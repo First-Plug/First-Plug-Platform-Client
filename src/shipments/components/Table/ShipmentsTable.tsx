@@ -23,6 +23,7 @@ import { DeleteAction } from "@/components/Alerts";
 import ShipmentDetailsTable from "./ShipmentDetailsTable";
 import { useFetchShipments } from "@/shipments/hooks/useFetchShipments";
 import { EditShipment } from "../EditShipment";
+import { useShipmentStore } from "@/shipments/store/useShipmentStore";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -30,9 +31,18 @@ const VALID_PAGE_SIZES = [10, 25, 50];
 const ShipmentsTable = () => {
   const searchParams = useSearchParams();
   const activityId = searchParams.get("activityId");
-  const router = useRouter();
 
-  const [expandedRow, setExpandedRow] = useState<string | null>(activityId);
+  const expandedShipmentId = useShipmentStore(
+    (state) => state.expandedShipmentId
+  );
+
+  const setExpandedShipmentId = useShipmentStore(
+    (state) => state.setExpandedShipmentId
+  );
+
+  useEffect(() => {
+    setExpandedShipmentId(activityId);
+  }, [activityId, setExpandedShipmentId]);
 
   const rawPage = parseInt(searchParams.get("page") || "1", 10);
   const rawPageSize = parseInt(
@@ -131,13 +141,15 @@ const ShipmentsTable = () => {
               variant="text"
               className="relative"
               onClick={() =>
-                setExpandedRow(expandedRow === rowId ? null : rowId)
+                setExpandedShipmentId(
+                  expandedShipmentId === rowId ? null : rowId
+                )
               }
             >
               <span>Details</span>
               <ArrowRight
                 className={`transition-all duration-200 transform ${
-                  expandedRow === rowId ? "rotate-90" : "rotate-0"
+                  expandedShipmentId === rowId ? "rotate-90" : "rotate-0"
                 }`}
               />
             </Button>
@@ -145,7 +157,7 @@ const ShipmentsTable = () => {
         },
       },
     ],
-    [expandedRow]
+    [expandedShipmentId]
   );
 
   const table = useReactTable({
@@ -208,7 +220,7 @@ const ShipmentsTable = () => {
                   <React.Fragment key={row.id}>
                     <TableRow
                       className={`text-black border-b text-md border-gray-200 text-left ${
-                        expandedRow === row.original._id
+                        expandedShipmentId === row.original._id
                           ? "border-l-2 border-l-blue bg-blue/10 transition-colors"
                           : ""
                       }`}
@@ -222,12 +234,12 @@ const ShipmentsTable = () => {
                         </TableCell>
                       ))}
                     </TableRow>
-                    {expandedRow === row.original._id && (
+                    {expandedShipmentId === row.original._id && (
                       <TableRow
                         key={row.id}
                         className={`text-black border-b text-md border-gray-200 text-left 
                         ${
-                          expandedRow === row.original._id
+                          expandedShipmentId === row.original._id
                             ? "border-l-2 border-l-blue"
                             : ""
                         }`}
