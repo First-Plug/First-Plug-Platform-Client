@@ -143,9 +143,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       await queryClient.refetchQueries({ queryKey: ["members"] });
       await queryClient.invalidateQueries({ queryKey: ["teams"] });
-      await queryClient.invalidateQueries({ queryKey: ["assets"] });
-
-      await queryClient.refetchQueries({ queryKey: ["assets"] });
 
       closeAside();
 

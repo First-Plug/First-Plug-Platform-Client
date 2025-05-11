@@ -60,6 +60,7 @@ export const useUpdateMember = () => {
       queryClient.invalidateQueries({ queryKey: ["members", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
   });
 

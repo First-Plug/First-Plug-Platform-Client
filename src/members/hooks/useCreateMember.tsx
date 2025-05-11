@@ -81,8 +81,19 @@ export const useCreateMember = () => {
       queryClient.setQueryData(["members"], context?.previousMembers);
     },
     // finalizada la operacion se invalida la query para que tenga obtenga los datos mas recientes del backend
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+    onSettled: async () => {
+      await queryClient.refetchQueries({
+        queryKey: ["members"],
+        refetchInactive: true,
+      });
+      await queryClient.refetchQueries({
+        queryKey: ["teams"],
+        refetchInactive: true,
+      });
+      await queryClient.refetchQueries({
+        queryKey: ["assets"],
+        refetchInactive: true,
+      });
     },
   });
   return mutation;
