@@ -143,6 +143,7 @@ export function ReturnProduct({
       state: session?.user?.state,
       zipCode: session?.user?.zipCode,
       address: session?.user?.address,
+      phone: session?.user?.phone,
     };
     const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
 

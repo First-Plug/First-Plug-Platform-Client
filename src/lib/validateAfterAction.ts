@@ -49,6 +49,8 @@ const validateBillingInfo = (
     "phone",
   ] as const;
 
+  console.log(user);
+
   const missingFieldsArray = requiredFields.filter((field) => {
     const value = user[field];
     return typeof value !== "string" || value.trim() === "";
@@ -85,6 +87,8 @@ export const validateAfterAction = (
     }
 
     if (entity.type === "office" && entity.data.location === "Our office") {
+      console.log(entity.data);
+
       const billingValidation = validateBillingInfo(
         entity.data as Partial<User>
       );
