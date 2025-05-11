@@ -1,3 +1,5 @@
+import type { AsapOrDateValue } from "../components/ShipmentWithFp/asap-or-date";
+
 export interface ShipmentsResponse {
   data: Shipment[];
   totalCount: number;
@@ -75,4 +77,9 @@ export interface Attribute {
   key: string;
   value: string;
   _id: string;
+}
+
+export interface UpdateShipment {
+  desirableDateOrigin: AsapOrDateValue;
+  desirableDateDestination: AsapOrDateValue;
 }

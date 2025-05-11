@@ -1,4 +1,7 @@
-import { ShipmentsResponse } from "../interfaces/shipments-response.interface";
+import {
+  ShipmentsResponse,
+  UpdateShipment,
+} from "../interfaces/shipments-response.interface";
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 
 export class ShipmentServices {
@@ -13,6 +16,15 @@ export class ShipmentServices {
   static async cancel(shipmentId: string) {
     const response = await HTTPRequests.patch(
       `${BASE_URL}/api/shipments/${shipmentId}/cancel`
+    );
+
+    return response.data;
+  }
+
+  static async update(shipmentId: string, body: UpdateShipment) {
+    const response = await HTTPRequests.patch(
+      `${BASE_URL}/api/shipments/${shipmentId}`,
+      body
     );
 
     return response.data;

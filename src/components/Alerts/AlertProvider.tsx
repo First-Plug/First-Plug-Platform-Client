@@ -387,6 +387,14 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    updateShipment: {
+      title: alertData,
+      type: "succes",
+      description: "",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;

@@ -19,6 +19,8 @@ import { AsapOrDateValue } from "./ShipmentWithFp/asap-or-date";
 import { useStore } from "@/models";
 import { LOCATION } from "@/types";
 import { isValid, parseISO } from "date-fns";
+import { useUpdateShipment } from "../hooks/useUpdateShipment";
+import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
 type DestinationState =
   | { type: "employee"; assignedEmail: string }
   | { type: "location"; location: string };
@@ -35,7 +37,10 @@ const parseDesirableDate = (
 export const ShipmentAside = () => {
   const {
     aside: { setAside },
+    alerts: { setAlert },
   } = useStore();
+
+  const updateShipmentMutation = useUpdateShipment();
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -145,15 +150,18 @@ export const ShipmentAside = () => {
     return () => window.removeEventListener("resize", checkForScroll);
   }, [shipment, members]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const updatedShipment = {
-      pickupDate,
-      deliveredDate,
-      destination,
+      desirableDateOrigin: pickupDate,
+      desirableDateDestination: deliveredDate,
     };
 
-    console.log("Shipment data to save:", updatedShipment);
+    const response = await updateShipmentMutation.mutateAsync({
+      id: shipment._id,
+      body: updatedShipment,
+    });
 
+    setAlert("updateShipment", response.message);
     closeAside();
   };
 
@@ -169,6 +177,11 @@ export const ShipmentAside = () => {
     const email = member.email?.toLowerCase() || "";
     return fullName.includes(searchTerm) || email.includes(searchTerm);
   });
+
+  const selectedMember =
+    destination.type === "employee"
+      ? members.find((m) => m.email === destination.assignedEmail)
+      : null;
 
   const filteredLocations = LOCATION.filter(
     (location) => location !== shipment.origin && location !== "Employee"
@@ -205,59 +218,34 @@ export const ShipmentAside = () => {
         </Select>
 
         <div>
-          <div className="w-full flex flex-col gap-2">
-            <span className="text-black font-semibold">Destination</span>
-            <SearchInput
-              placeholder="Search Member"
-              onSearch={handleSearch}
-              className="w-full"
-            />
-          </div>
-          <div className="flex flex-col gap-2 w-full overflow-y-auto scrollbar-custom mt-4 h-[120px]">
-            {filteredMembers.map((member) => (
-              <div
-                className={`flex gap-2 items-center py-2 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue`}
-                key={member._id}
-                onClick={() => handleSelectMember(member)}
-              >
-                <input
-                  type="checkbox"
-                  checked={
-                    destination.type === "employee" &&
-                    member.email === destination.assignedEmail
-                  }
-                />
-                <div className="flex gap-2">
-                  <p className="text-black font-bold">
-                    {member.firstName} {member.lastName}
-                  </p>
-                  <span className="text-dark-grey">
-                    {typeof member.team === "string"
-                      ? member.team
-                      : member.team?.name}
-                  </span>
-                  {/* <CategoryIcons products={member.products} /> */}
-                </div>
-              </div>
-            ))}
-          </div>
+          <span className="text-black font-semibold">Destination</span>
 
           <Select
-            value={destination.type === "location" ? destination.location : ""}
-            onChange={handleSelectLocation}
+            value={
+              destination.type === "employee"
+                ? destination.assignedEmail
+                : destination.location
+            }
+            onChange={() => {}}
             color={"grey"}
-            className="w-full"
+            className="w-full mt-2"
+            disabled
           >
-            <SelectTrigger
-              className="flex mt-4"
-              placeholder="Select Location"
-            />
+            <SelectTrigger placeholder="Destination" />
             <SelectOptions>
-              {filteredLocations.map((location) => (
-                <SelectOption key={location} value={location}>
-                  {location}
+              {destination.type === "employee" ? (
+                <SelectOption value={destination.assignedEmail}>
+                  {selectedMember
+                    ? `${selectedMember.firstName} ${selectedMember.lastName}`
+                    : destination.assignedEmail}
                 </SelectOption>
-              ))}
+              ) : (
+                filteredLocations.map((location) => (
+                  <SelectOption key={location} value={location}>
+                    {location}
+                  </SelectOption>
+                ))
+              )}
             </SelectOptions>
           </Select>
         </div>
