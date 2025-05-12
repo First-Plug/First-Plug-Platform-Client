@@ -70,7 +70,7 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
 
   return (
     <figure className="flex w-full h-full overflow-hidden">
-      <div className="w-[40%] h-[40%] 2xl:w-[45%] 2xl:h-[45%] flex flex-col gap-4">
+      <div className="w-[40%] h-[40%] flex flex-col gap-4">
         <div className="relative cursor-pointer">
           <Doughnut data={info} options={options} className="object-contain" />
 
