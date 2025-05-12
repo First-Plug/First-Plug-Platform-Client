@@ -211,6 +211,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         onSuccess: () => {
           setOpen(false);
           setLoading(false);
+          setAlert("deleteShipment");
         },
         onError: (error) => {
           console.error("Error deleting shipment:", error);
@@ -224,7 +225,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
 
     const DeleteConfig: Record<DeleteTypes, ConfigType> = {
       product: {
-        title: " Are you sure you want to delete this product? 🗑️",
+        title: "Are you sure you want to delete this product? 🗑️",
         description: "This product will be permanently deleted",
         deleteAction: () => handleDeleteProduct(id),
       },

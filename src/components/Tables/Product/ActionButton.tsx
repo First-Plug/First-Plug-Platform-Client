@@ -113,7 +113,7 @@ export function ActionButton({ product }: ActionButtonProps) {
       <GenericAlertDialog
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={"⚠️ Warning"}
+        title={"Warning"}
         description={
           "Before reassigning this product, please add the current holder as a member."
         }

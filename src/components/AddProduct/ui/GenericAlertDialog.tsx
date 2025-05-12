@@ -1,3 +1,4 @@
+import { Button } from "@/common";
 import * as Dialog from "@radix-ui/react-dialog";
 
 interface GenericAlertDialogProps {
@@ -61,22 +62,16 @@ const GenericAlertDialog: React.FC<GenericAlertDialogProps> = ({
           >
             {showCancelButton && (
               <Dialog.Close asChild>
-                <button
-                  className="px-4 py-2 bg-blue text-white rounded"
-                  onClick={onCancel}
-                >
+                <Button variant="secondary" className="px-7" onClick={onCancel}>
                   {cancelButtonText}
-                </button>
+                </Button>
               </Dialog.Close>
             )}
 
             <Dialog.Close asChild>
-              <button
-                className="px-4 py-2 bg-blue text-white rounded"
-                onClick={onButtonClick}
-              >
+              <Button variant="primary" onClick={onButtonClick}>
                 {buttonText}
-              </button>
+              </Button>
             </Dialog.Close>
           </div>
         </Dialog.Content>

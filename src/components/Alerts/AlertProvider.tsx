@@ -388,9 +388,18 @@ export default observer(function AlertProvider() {
       },
     },
     updateShipment: {
-      title: alertData,
+      title: "Desirable Dates Updated",
       type: "succes",
-      description: "",
+      description: alertData,
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    deleteShipment: {
+      title: "Shipment Canceled",
+      type: "succes",
+      description:
+        "The shipment has been successfully canceled. No pickup or delivery will take place, and the product(s) will remain assigned to the original location.",
       closeAction: () => {
         setAlert(undefined);
       },
