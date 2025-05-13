@@ -30,7 +30,8 @@ const VALID_PAGE_SIZES = [10, 25, 50];
 
 const ShipmentsTable = () => {
   const searchParams = useSearchParams();
-  const activityId = searchParams.get("activityId");
+  const router = useRouter();
+  const shipmentId = searchParams.get("id");
 
   const expandedShipmentId = useShipmentStore(
     (state) => state.expandedShipmentId
@@ -39,10 +40,6 @@ const ShipmentsTable = () => {
   const setExpandedShipmentId = useShipmentStore(
     (state) => state.setExpandedShipmentId
   );
-
-  useEffect(() => {
-    setExpandedShipmentId(activityId);
-  }, [activityId, setExpandedShipmentId]);
 
   const rawPage = parseInt(searchParams.get("page") || "1", 10);
   const rawPageSize = parseInt(
@@ -56,6 +53,42 @@ const ShipmentsTable = () => {
   let currentPage = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
 
   const { data, isLoading } = useFetchShipments(currentPage, pageSize);
+
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  useEffect(() => {
+    if (shipmentId) {
+      setExpandedShipmentId(shipmentId);
+    }
+  }, [shipmentId, setExpandedShipmentId]);
+
+  useEffect(() => {
+    if (!initialLoadDone && shipmentId && data?.data) {
+      const shipmentIndex = data.data.findIndex((s) => s._id === shipmentId);
+      if (shipmentIndex === -1 && !isLoading) {
+        ShipmentServices.findShipmentPage(shipmentId, pageSize)
+          .then((response) => {
+            if (response.page) {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("page", response.page.toString());
+              router.push(`/home/shipments?${params.toString()}`);
+              setInitialLoadDone(true);
+            }
+          })
+          .catch(console.error);
+      } else {
+        setInitialLoadDone(true);
+      }
+    }
+  }, [
+    shipmentId,
+    data,
+    isLoading,
+    pageSize,
+    router,
+    searchParams,
+    initialLoadDone,
+  ]);
 
   const shipments = data?.data ?? [];
   const totalCount = data?.totalCount ?? 0;

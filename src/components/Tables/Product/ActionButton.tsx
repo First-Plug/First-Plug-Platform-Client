@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/common";
 import { useStore } from "@/models";
-import { Product } from "@/types";
+import type { Product } from "@/types";
 import { usePrefetchAssignData } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
@@ -63,6 +63,14 @@ export function ActionButton({ product }: ActionButtonProps) {
     setProductToAssing(cachedProduct || product);
   };
 
+  const handleShipmentAction = () => {
+    if (product.shipmentId) {
+      router.push(`/home/shipments?id=${product.shipmentId}`);
+    } else {
+      console.log("No shipment ID");
+    }
+  };
+
   const ActionConfig: Record<Product["status"], ActionType> = {
     Available: {
       text: "Assign To",
@@ -82,11 +90,11 @@ export function ActionButton({ product }: ActionButtonProps) {
     },
     "In Transit": {
       text: "View Tracking",
-      action: () => {},
+      action: handleShipmentAction,
     },
     "In Transit - Missing Data": {
       text: "Review Shipment",
-      action: () => {},
+      action: handleShipmentAction,
     },
   };
   const { action, text } = ActionConfig[product.status];

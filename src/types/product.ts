@@ -108,6 +108,7 @@ export const ProductModel = types.model({
   desirableDate: types.maybe(DesirableDate),
   shipmentOrigin: types.maybeNull(types.string),
   shipmentDestination: types.maybeNull(types.string),
+  shipmentId: types.maybeNull(types.string),
   price: types.maybe(
     types.model({
       amount: types.maybe(types.number),

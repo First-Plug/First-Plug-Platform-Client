@@ -29,4 +29,11 @@ export class ShipmentServices {
 
     return response.data;
   }
+
+  static async findShipmentPage(shipmentId: string, pageSize: number) {
+    const response = await HTTPRequests.get(
+      `${BASE_URL}/api/shipments/find-page/${shipmentId}?size=${pageSize}`
+    );
+    return response.data as { page: number };
+  }
 }
