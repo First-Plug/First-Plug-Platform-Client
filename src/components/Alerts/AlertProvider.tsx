@@ -396,10 +396,10 @@ export default observer(function AlertProvider() {
       },
     },
     deleteShipment: {
-      title: "Shipment Canceled",
+      title: "Shipment Cancelled",
       type: "succes",
       description:
-        "The shipment has been successfully canceled. No pickup or delivery will take place, and the product(s) will remain assigned to the original location.",
+        "The shipment has been successfully cancelled. No pickup or delivery will take place by First Plug, and the product(s) will remain assigned to the selected destination.",
       closeAction: () => {
         setAlert(undefined);
       },
