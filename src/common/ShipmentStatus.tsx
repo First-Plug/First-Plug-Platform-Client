@@ -1,4 +1,4 @@
-import { ShipmentStatus } from "@/types";
+import type { ShipmentStatus } from "@/types";
 import { ShipmentStateColors, StatusColors } from "./StatusColors";
 
 interface ShipmentStatusProps {

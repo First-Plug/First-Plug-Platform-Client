@@ -1,6 +1,6 @@
 "use client";
-import React, { useRef, useState } from "react";
-import { Product, Team, TeamMember } from "@/types";
+import React, { useState } from "react";
+import type { Product, Team, TeamMember } from "@/types";
 import { ProductImage } from "./ProductImage";
 import PrdouctModelDetail from "./PrdouctModelDetail";
 import { useStore } from "@/models";
@@ -23,6 +23,7 @@ import {
 import { sendSlackNotification } from "@/services/slackNotifications.services";
 import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
 import { ShipmentWithFp } from "@/shipments/components";
+import { ShipmentStateColors, StatusColors } from "./StatusColors";
 
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
@@ -391,6 +392,8 @@ export default function ProductDetail({
 
   const toggleList = () => setShowList(!showList);
 
+  const colorClass = `${StatusColors[ShipmentStateColors[product.status]]}`;
+
   return (
     <div
       className={`relative flex flex-col gap-2 border rounded-md p-2 mr-2 text-black mb-2 transition-all duration-300  ${className} ${
@@ -432,6 +435,15 @@ export default function ProductDetail({
           )}
         </section>
       </div>
+      {product.origin && (
+        <div
+          className={`text-md font-semibold italic mt-2 ${colorClass} py-2 px-4 rounded-sm flex justify-center items-center`}
+        >
+          <span>
+            {product.status} from {product.origin}
+          </span>
+        </div>
+      )}
       {isRelocating && showList && <hr />}
 
       {isRelocating && showList && (
