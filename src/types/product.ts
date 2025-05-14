@@ -161,6 +161,7 @@ export const emptyProduct: Omit<Product, "category"> & { category: string } = {
   shipmentOrigin: "",
   shipmentDestination: "",
   shipmentId: "",
+  origin: "",
 };
 
 export const ProductTableModel = types.model({

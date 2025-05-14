@@ -79,6 +79,7 @@ const BulkCreateForm: React.FC<{
     shipmentOrigin: undefined,
     shipmentDestination: undefined,
     shipmentId: undefined,
+    origin: undefined,
   };
 
   const productInstance = ProductModel.create(initialProductData);
