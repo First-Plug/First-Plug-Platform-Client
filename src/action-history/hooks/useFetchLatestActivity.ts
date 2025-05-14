@@ -22,6 +22,5 @@ export const useFetchLatestActivity = (
         selectedDates.endDate.toISOString()
       ),
     placeholderData: keepPreviousData,
-    staleTime: 1000 * 60 * 2,
   });
 };

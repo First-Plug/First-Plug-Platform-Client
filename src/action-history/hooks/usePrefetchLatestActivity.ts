@@ -28,7 +28,7 @@ export const usePrefetchLatestActivity = () => {
             defaultStart.toISOString(),
             defaultEnd.toISOString()
           ),
-        staleTime: 1000 * 60 * 10,
+        staleTime: 5000,
       });
     } catch (error) {
       console.error("Error al prefetch de actividad más reciente:", error);

@@ -262,6 +262,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           state: sessionUser?.state,
           zipCode: sessionUser?.zipCode,
           address: sessionUser?.address,
+          phone: sessionUser?.phone,
         },
         adjustedNoneOption
       );

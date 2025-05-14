@@ -15,5 +15,8 @@ export const useCancelShipment = () => {
     onError: (error: any) => {
       console.error("Error cancelling shipment:", error);
     },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+    },
   });
 };
