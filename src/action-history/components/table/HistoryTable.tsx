@@ -35,6 +35,8 @@ import UpdateMembersTable from "./members/UpdateMemberTable";
 import UpdateAssetsTable from "./assets/UpdateAssetTable";
 import { Loader } from "@/components/Loader";
 import { useFetchLatestActivity } from "@/action-history/hooks/useFetchLatestActivity";
+import UpdateShipmentsTable from "./shipments/UpdateShipmentsTable";
+import CancelShipmentsTable from "./shipments/CancelShipmentsTable";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -346,6 +348,25 @@ const HistoryTable = () => {
                                 }
                               />
                             ) : null
+                          ) : row.original.itemType === "shipments" ? (
+                            row.original.actionType === "create" ||
+                            row.original.actionType ===
+                              "bulk-create" ? null : row.original.actionType ===
+                              "update" ? (
+                              <UpdateShipmentsTable
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
+                              />
+                            ) : row.original.actionType === "cancel" ? (
+                              <CancelShipmentsTable
+                                data={row.original.changes.oldData || []}
+                              />
+                            ) : row.original.actionType ===
+                              "consolidate" ? null : null
                           ) : null}
                         </TableCell>
                       </TableRow>

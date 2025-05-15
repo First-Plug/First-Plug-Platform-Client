@@ -9,7 +9,7 @@ export interface ShipmentsResponse {
 export interface Shipment {
   _id: string;
   order_id: string;
-  tenant: String;
+  tenant: string;
   quantity_products: number;
   order_date: Date;
   shipment_type: string;
