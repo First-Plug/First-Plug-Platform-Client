@@ -32,7 +32,6 @@ import {
   prepareSlackNotificationPayload,
   type ValidationEntity,
 } from "@/components/AddProduct/PrepareSlackNotificationPayload";
-import { sendSlackNotification } from "@/services/slackNotifications.services";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -476,18 +475,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowBulkCreate(true);
         } else {
           await createAsset.mutateAsync(formatData, {
-            onSuccess: async () => {
-              const slackPayload = prepareSlackNotificationPayload(
-                formatData,
-                selectedMember,
-                "Create Product",
-                source,
-                adjustedNoneOption,
-                sessionUser.tenantName,
-                sessionUser
-              );
-              await sendSlackNotification(slackPayload);
-            },
             onError: (error) => handleMutationError(error, true),
           });
           if (missingMessages.length > 0) {

@@ -26,7 +26,6 @@ import BulkCreateValidator, {
 } from "@/components/AddProduct/utils/BulkCreateValidator";
 import { useSession } from "next-auth/react";
 import { prepareBulkCreateSlackPayload } from "@/components/AddProduct/PrepareBulkCreateSlackPayload";
-import { sendSlackNotificationBulk } from "@/services/slackNotifications.services";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -324,53 +323,6 @@ const BulkCreateForm: React.FC<{
         onSuccess: async (createdProducts) => {
           setProducts(createdProducts);
           queryClient.invalidateQueries({ queryKey: ["assets"] });
-
-          // Solo si la creación es exitosa, se envían las notificaciones a Slack
-          const slackPayloads = prepareBulkCreateSlackPayload(
-            productsData.map((product) => {
-              const memberData = updatedMembers.find(
-                (m) => m.email === product.assignedEmail
-              );
-
-              return {
-                assignedMember: memberData
-                  ? {
-                      firstName: memberData.firstName,
-                      lastName: memberData.lastName,
-                      email: memberData.email,
-                    }
-                  : null,
-                assignedEmail: product.assignedEmail || "",
-                location: product.location,
-                serialNumber: product.serialNumber,
-              };
-            }),
-            {
-              name: initialProductData.name,
-              category: initialProductData.category,
-              attributes: attributesArray,
-            },
-            sessionUser.tenantName,
-            sessionUser,
-            updatedMembers,
-            queryClient
-          );
-
-          await Promise.allSettled(
-            slackPayloads.map((payload) =>
-              sendSlackNotificationBulk(payload)
-                .then(() => {
-                  console.log("✅ Notificación enviada exitosamente:", payload);
-                })
-                .catch((error) => {
-                  console.error(
-                    "❌ Error al enviar el payload a Slack:",
-                    payload,
-                    error.message
-                  );
-                })
-            )
-          );
 
           setIsProcessing(false);
           setAlert("bulkCreateProductSuccess");

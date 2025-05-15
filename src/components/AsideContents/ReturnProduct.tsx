@@ -74,12 +74,18 @@ export function ReturnProduct({
     product: Product,
     location: "Our office" | "FP Warehouse",
     action: string,
-    sessionUser: User
+    sessionUser: User,
+    shipment: {
+      orderId: string;
+      pickup: string;
+      delivery: string;
+    }
   ) => {
     const isOurOffice = location === "Our office";
 
     return {
       tenantName,
+      shipment,
       from: {
         name: `${currentHolder?.firstName || "Unknown"} ${
           currentHolder?.lastName || "Unknown"
@@ -236,22 +242,33 @@ export function ReturnProduct({
         },
       };
 
-      await unassignProduct({
+      const response = await unassignProduct({
         location,
         product: productToSend,
         currentMember: selectedMember,
       });
 
-      const slackPayload = buildReturnSlackPayload(
-        session?.user?.tenantName || "Unknown Tenant",
-        currentHolder,
-        product,
-        location as "Our office" | "FP Warehouse",
-        "Return Product",
-        session?.user
-      );
+      // TODO: If the shipment is in preparation, send a slack notification
+      if (
+        shipmentValue.shipment === "yes" &&
+        response?.shipment?.shipment_status === "In Preparation"
+      ) {
+        const slackPayload = buildReturnSlackPayload(
+          session?.user?.tenantName || "Unknown Tenant",
+          currentHolder,
+          product,
+          location as "Our office" | "FP Warehouse",
+          "Return Product",
+          session?.user,
+          {
+            orderId: response.shipment?.order_id,
+            pickup: response.shipment?.originDetails?.desirableDate,
+            delivery: response.shipment?.destinationDetails?.desirableDate,
+          }
+        );
 
-      await sendSlackNotification(slackPayload);
+        await sendSlackNotification(slackPayload);
+      }
 
       setReturnStatus("success");
 

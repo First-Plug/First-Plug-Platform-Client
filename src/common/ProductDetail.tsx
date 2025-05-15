@@ -92,10 +92,16 @@ const MembersList = observer(function MembersList({
     currentHolder: TeamMember | null,
     selectedMember: TeamMember,
     product: Product,
-    action: string
+    action: string,
+    shipment: {
+      orderId: string;
+      pickup: string;
+      delivery: string;
+    }
   ) => {
     return {
       tenantName,
+      shipment,
       from: {
         name: `${currentHolder?.firstName || "Unknown"} ${
           currentHolder?.lastName || "Unknown"
@@ -216,7 +222,7 @@ const MembersList = observer(function MembersList({
         status: product.status,
       };
 
-      await handleReassignProduct({
+      const response = await handleReassignProduct({
         currentMember,
         selectedMember,
         product: productToSend,
@@ -224,15 +230,26 @@ const MembersList = observer(function MembersList({
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
 
-      const slackPayload = buildSlackPayload(
-        sessionUser?.tenantName || "Unknown Tenant",
-        flattenedCurrentHolder,
-        flattenedSelectedMember,
-        product,
-        "Relocate Product"
-      );
+      // TODO: Check if this is the correct way to get the shipment status
+      if (
+        shipmentValue.shipment === "yes" &&
+        response?.shipment?.shipment_status === "In Preparation"
+      ) {
+        const slackPayload = buildSlackPayload(
+          sessionUser?.tenantName || "Unknown Tenant",
+          flattenedCurrentHolder,
+          flattenedSelectedMember,
+          product,
+          "Relocate Product",
+          {
+            orderId: response?.shipment?.order_id,
+            pickup: response?.shipment?.originDetails?.desirableDate,
+            delivery: response?.shipment?.destinationDetails?.desirableDate,
+          }
+        );
 
-      await sendSlackNotification(slackPayload);
+        await sendSlackNotification(slackPayload);
+      }
 
       setRelocateResult("success");
       setRelocateStauts("success");

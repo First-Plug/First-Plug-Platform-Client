@@ -4,9 +4,23 @@ import { NextResponse } from "next/server";
 const webhookUrl = process.env.SLACK_WEBHOOK_URL_SHIPMENTS;
 console.log("🔍 Webhook URL:", webhookUrl || "No definido");
 
+function formatDate(date: string) {
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return date;
+  }
+  return new Intl.DateTimeFormat("es-AR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(parsedDate);
+}
+
 export async function POST(request: Request) {
   try {
-    const { from, to, products, action, tenantName } = await request.json();
+    const { from, to, products, action, tenantName, shipment } =
+      await request.json();
 
     if (!webhookUrl) {
       throw new Error(
@@ -22,7 +36,13 @@ export async function POST(request: Request) {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Tenant:* ${tenantName}\n:package: *${action}*\n`,
+        text: `*Tenant:* ${tenantName}\n*Order ID:* ${
+          shipment?.orderId || ""
+        }\n*Fecha deseable de pickup:* ${
+          formatDate(shipment?.pickup) || "ASAP"
+        }\n*Fecha deseable de delivery:* ${
+          formatDate(shipment?.delivery) || "ASAP"
+        }\n:package: *${action}*\n`,
       },
     });
 

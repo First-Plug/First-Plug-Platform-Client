@@ -61,4 +61,9 @@ export interface SlackNotificationPayload {
   }[];
   action: string;
   tenantName: string;
+  shipment: {
+    orderId: string;
+    pickup: string;
+    delivery: string;
+  };
 }

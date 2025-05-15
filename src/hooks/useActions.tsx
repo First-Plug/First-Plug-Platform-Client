@@ -39,8 +39,12 @@ export default function useActions() {
     }
 
     try {
-      await ProductServices.updateProduct(product._id, updatedProduct);
+      const response = await ProductServices.updateProduct(
+        product._id,
+        updatedProduct
+      );
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      return response;
     } catch (error) {
       console.error(`Error relocating product ${product._id}:`, error);
     }
@@ -77,9 +81,10 @@ export default function useActions() {
     }
 
     try {
-      await reassignProduct(product._id, updatedProduct);
+      const response = await reassignProduct(product._id, updatedProduct);
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      return response;
     } catch (error) {
       console.error("Error unassigning product:", error);
     }

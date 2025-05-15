@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateAsset } from "../actions";
 import { useStore } from "@/models";
-import { Product } from "@/types";
+import type { Product } from "@/types";
+import type { Shipment } from "@/shipments/interfaces/shipments-response.interface";
 
 interface UpdateAssetProps {
   id: string;
@@ -12,7 +13,10 @@ interface UpdateAssetProps {
 interface MutationContext {
   previousAsset?: Product;
 }
-type BackendResponse = Product | { message: string };
+type BackendResponse =
+  | Product
+  | { message: string }
+  | { shipment: Shipment; message: string };
 
 function isProduct(response: BackendResponse): response is Product {
   return (response as Product)._id !== undefined;
@@ -31,7 +35,7 @@ export const useUpdateAsset = () => {
     UpdateAssetProps,
     MutationContext
   >({
-    mutationFn: ({ id, data }) => {
+    mutationFn: async ({ id, data }) => {
       const cachedProduct = queryClient.getQueryData<Product>(["assets", id]);
       if (cachedProduct?.productCondition === "Unusable") {
         data.status = cachedProduct.status;
@@ -46,7 +50,8 @@ export const useUpdateAsset = () => {
       }
 
       console.log("Final data being sent:", data);
-      return updateAsset(id, data);
+      const response = await updateAsset(id, data);
+      return response;
     },
 
     onMutate: async ({ id, data }) => {
@@ -89,10 +94,8 @@ export const useUpdateAsset = () => {
 
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      // if (showSuccessAlert) {
-      //   console.log("🚀 Asset actualizado con éxito:", response);
-      //   setAlert("updateStock");
-      // }
+
+      return response; // Retornamos directamente la respuesta sin envolverla en un objeto
     },
   });
 
