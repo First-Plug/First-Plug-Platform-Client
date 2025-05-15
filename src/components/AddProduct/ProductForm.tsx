@@ -28,10 +28,6 @@ import BulkCreateForm from "./BulkCreateForm";
 import { useCreateAsset, useUpdateEntityAsset } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { validateOnCreate } from "@/lib/validateAfterAction";
-import {
-  prepareSlackNotificationPayload,
-  type ValidationEntity,
-} from "@/components/AddProduct/PrepareSlackNotificationPayload";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -386,7 +382,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const isCategoryValid = await validateCategory();
     if (!isCategoryValid || hasError) return;
 
-    let source: ValidationEntity | null = null;
+    let source = null;
 
     if (!isUpdate) {
       if (adjustedNoneOption === "Our office") {
