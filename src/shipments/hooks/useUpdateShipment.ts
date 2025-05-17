@@ -11,7 +11,6 @@ export const useUpdateShipment = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["shipments"],
-        refetchInactive: true,
       });
     },
     onError: (error: any) => {

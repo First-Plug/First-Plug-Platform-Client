@@ -24,9 +24,18 @@ import ShipmentDetailsTable from "./ShipmentDetailsTable";
 import { useFetchShipments } from "@/shipments/hooks/useFetchShipments";
 import { EditShipment } from "../EditShipment";
 import { useShipmentStore } from "@/shipments/store/useShipmentStore";
+import { ExternalLinkIcon } from "lucide-react";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
+
+const statusColors = {
+  "In Preparation": "bg-lightPurple",
+  "On The Way": "bg-lightBlue",
+  Received: "bg-lightGreen",
+  Cancelled: "bg-[#FFC6D3]",
+  "On Hold - Missing Data": "bg-[#FF8A80]",
+};
 
 const ShipmentsTable = () => {
   const searchParams = useSearchParams();
@@ -128,6 +137,32 @@ const ShipmentsTable = () => {
       {
         accessorKey: "shipment_status",
         header: "Status",
+        cell: ({ row }) => {
+          const status = row.original.shipment_status;
+          const isClickable = Boolean(
+            row.original.shipment_type === "Courrier" &&
+              (status === "On The Way" || status === "Received") &&
+              row.original.trackingURL
+          );
+
+          return (
+            <div
+              className={`inline-flex items-center ${
+                statusColors[status]
+              } text-black px-2 py-1 rounded-md ${
+                isClickable ? "cursor-pointer hover:bg-opacity-80" : ""
+              }`}
+              onClick={() => {
+                if (isClickable) {
+                  window.open(row.original.trackingURL, "_blank");
+                }
+              }}
+            >
+              <span>{status}</span>
+              {isClickable && <ExternalLinkIcon className="h-3 w-3 ml-1" />}
+            </div>
+          );
+        },
       },
       {
         accessorKey: "price",

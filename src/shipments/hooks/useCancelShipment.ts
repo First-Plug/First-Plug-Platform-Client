@@ -9,7 +9,6 @@ export const useCancelShipment = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["shipments"],
-        refetchInactive: true,
       });
     },
     onError: (error: any) => {

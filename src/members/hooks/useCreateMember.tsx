@@ -84,15 +84,12 @@ export const useCreateMember = () => {
     onSettled: async () => {
       await queryClient.refetchQueries({
         queryKey: ["members"],
-        refetchInactive: true,
       });
       await queryClient.refetchQueries({
         queryKey: ["teams"],
-        refetchInactive: true,
       });
       await queryClient.refetchQueries({
         queryKey: ["assets"],
-        refetchInactive: true,
       });
     },
   });
