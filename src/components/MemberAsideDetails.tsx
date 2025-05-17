@@ -28,6 +28,7 @@ export const MemberAsideDetails = observer(
         setSelectedMember,
       },
       aside: { setAside },
+      alerts: { setAlert },
     } = useStore();
 
     const { data: member, isLoading, isError } = useFetchMember(memberToEdit);
@@ -46,6 +47,8 @@ export const MemberAsideDetails = observer(
     );
 
     const handleSelectProducts = (product: Product) => {
+      if (product.activeShipment) return;
+
       if (selectedProducts.includes(product)) {
         return setSelectedProducts((s) => s.filter((id) => id !== product));
       }
@@ -79,6 +82,15 @@ export const MemberAsideDetails = observer(
     }
 
     const handleRequestOffBoarding = () => {
+      const pendingShipments = member.products.filter(
+        (product) => product.activeShipment
+      );
+
+      if (pendingShipments.length) {
+        setAlert("pendingShipmentsOffboarding");
+        return;
+      }
+
       const allProductsNotRecoverable = member.products.every(
         (product) => !product.recoverable
       );

@@ -14,7 +14,6 @@ import {
   buildValidationEntities,
   validateAfterAction,
 } from "@/lib/validateAfterAction";
-import { sendSlackNotification } from "@/services/slackNotifications.services";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
 import { ShipmentWithFp } from "@/shipments/components";
@@ -67,65 +66,6 @@ export function ReturnProduct({
     useState(false);
 
   const [missingOfficeData, setMissingOfficeData] = useState("");
-
-  const buildReturnSlackPayload = (
-    tenantName: string,
-    currentHolder: TeamMember | null,
-    product: Product,
-    location: "Our office" | "FP Warehouse",
-    action: string,
-    sessionUser: User,
-    shipment: {
-      orderId: string;
-      pickup: string;
-      delivery: string;
-    }
-  ) => {
-    const isOurOffice = location === "Our office";
-
-    return {
-      tenantName,
-      shipment,
-      from: {
-        name: `${currentHolder?.firstName || "Unknown"} ${
-          currentHolder?.lastName || "Unknown"
-        }`,
-        address: currentHolder?.address || "N/A",
-        apartment: currentHolder?.apartment || "N/A",
-        zipCode: currentHolder?.zipCode || "N/A",
-        city: currentHolder?.city || "N/A",
-        country: currentHolder?.country || "N/A",
-        phone: currentHolder?.phone || "N/A",
-        email: currentHolder?.email || "N/A",
-        personalEmail: currentHolder?.personalEmail || "N/A",
-        dni: currentHolder?.dni ? currentHolder?.dni.toString() : "N/A",
-      },
-      to: {
-        name: isOurOffice ? "Oficina del cliente" : "FP Warehouse",
-        address: isOurOffice
-          ? `${sessionUser.address}${
-              sessionUser.apartment ? `, ${sessionUser.apartment}` : ""
-            }`
-          : "N/A",
-        city: isOurOffice ? sessionUser.city : "N/A",
-        state: isOurOffice ? sessionUser.state : "N/A",
-        country: isOurOffice ? sessionUser.country : "N/A",
-        zipCode: isOurOffice ? sessionUser.zipCode : "N/A",
-        phone: isOurOffice ? sessionUser.phone : "N/A",
-        email: isOurOffice ? sessionUser.email : "N/A",
-      },
-      products: [
-        {
-          category: product.category,
-          brand: product.attributes.find((attr) => attr.key === "brand")?.value,
-          model: product.attributes.find((attr) => attr.key === "model")?.value,
-          name: product.name || "N/A",
-          serialNumber: product.serialNumber || "N/A",
-        },
-      ],
-      action,
-    };
-  };
 
   const handleRemoveItems = async (location: Location) => {
     if (!location) {
@@ -242,33 +182,11 @@ export function ReturnProduct({
         },
       };
 
-      const response = await unassignProduct({
+      await unassignProduct({
         location,
         product: productToSend,
         currentMember: selectedMember,
       });
-
-      // TODO: If the shipment is in preparation, send a slack notification
-      if (
-        shipmentValue.shipment === "yes" &&
-        response?.shipment?.shipment_status === "In Preparation"
-      ) {
-        const slackPayload = buildReturnSlackPayload(
-          session?.user?.tenantName || "Unknown Tenant",
-          currentHolder,
-          product,
-          location as "Our office" | "FP Warehouse",
-          "Return Product",
-          session?.user,
-          {
-            orderId: response.shipment?.order_id,
-            pickup: response.shipment?.originDetails?.desirableDate,
-            delivery: response.shipment?.destinationDetails?.desirableDate,
-          }
-        );
-
-        await sendSlackNotification(slackPayload);
-      }
 
       setReturnStatus("success");
 

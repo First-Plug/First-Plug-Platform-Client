@@ -404,6 +404,15 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    pendingShipmentsOffboarding: {
+      title: "Pending Shipments Detected",
+      type: "error",
+      description:
+        "This member has active shipments in progress. Please complete or cancel all shipments before proceeding with the offboarding.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;

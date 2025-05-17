@@ -109,6 +109,7 @@ export const ProductModel = types.model({
   shipmentOrigin: types.maybeNull(types.string),
   shipmentDestination: types.maybeNull(types.string),
   shipmentId: types.maybeNull(types.string),
+  activeShipment: types.maybeNull(types.boolean),
   origin: types.maybeNull(types.string),
   price: types.maybe(
     types.model({
@@ -162,6 +163,7 @@ export const emptyProduct: Omit<Product, "category"> & { category: string } = {
   shipmentDestination: "",
   shipmentId: "",
   origin: "",
+  activeShipment: false,
 };
 
 export const ProductTableModel = types.model({

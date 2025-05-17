@@ -42,5 +42,6 @@ export const ALERTS_TYPES = [
   "errorOffboarding",
   "updateShipment",
   "deleteShipment",
+  "pendingShipmentsOffboarding",
 ] as const;
 export type AlertType = (typeof ALERTS_TYPES)[number];
