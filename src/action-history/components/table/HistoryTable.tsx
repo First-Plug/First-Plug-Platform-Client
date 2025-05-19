@@ -37,6 +37,8 @@ import { Loader } from "@/components/Loader";
 import { useFetchLatestActivity } from "@/action-history/hooks/useFetchLatestActivity";
 import UpdateShipmentsTable from "./shipments/UpdateShipmentsTable";
 import CancelShipmentsTable from "./shipments/CancelShipmentsTable";
+import ConsolidateShipmentsTable from "./shipments/ConsolidateShipmentsTable";
+import CreateShipmentsTable from "./shipments/CreateShipmentsTable";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
@@ -350,9 +352,11 @@ const HistoryTable = () => {
                             ) : null
                           ) : row.original.itemType === "shipments" ? (
                             row.original.actionType === "create" ||
-                            row.original.actionType ===
-                              "bulk-create" ? null : row.original.actionType ===
-                              "update" ? (
+                            row.original.actionType === "bulk-create" ? (
+                              <CreateShipmentsTable
+                                data={row.original.changes.newData || []}
+                              />
+                            ) : row.original.actionType === "update" ? (
                               <UpdateShipmentsTable
                                 data={
                                   row.original.changes || {
@@ -365,8 +369,16 @@ const HistoryTable = () => {
                               <CancelShipmentsTable
                                 data={row.original.changes.oldData || []}
                               />
-                            ) : row.original.actionType ===
-                              "consolidate" ? null : null
+                            ) : row.original.actionType === "consolidate" ? (
+                              <ConsolidateShipmentsTable
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
+                              />
+                            ) : null
                           ) : null}
                         </TableCell>
                       </TableRow>

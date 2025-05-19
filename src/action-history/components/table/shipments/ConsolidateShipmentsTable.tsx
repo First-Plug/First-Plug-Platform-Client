@@ -1,3 +1,4 @@
+import { Changes } from "@/action-history/interfaces";
 import {
   Table,
   TableHeader,
@@ -6,7 +7,6 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import type { Shipment } from "@/shipments/interfaces/shipments-response.interface";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "-";
@@ -21,10 +21,7 @@ const formatDate = (dateString: string) => {
 };
 
 interface ConsolidateShipmentsTableProps {
-  data: {
-    oldData: Shipment[];
-    newData: Shipment;
-  };
+  data: Changes;
 }
 
 const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
@@ -33,7 +30,6 @@ const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
   const originalShipments = Array.isArray(data.oldData)
     ? data.oldData
     : [data.oldData];
-  console.log(originalShipments);
 
   const consolidatedShipment = data.newData;
 
@@ -47,7 +43,6 @@ const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
     }[] = [];
 
     for (const originalShipment of originalShipments) {
-      // Pickup Date comparison
       comparisons.push({
         originalOrderId: originalShipment.order_id,
         consolidatedId: consolidatedShipment.order_id,
@@ -60,7 +55,6 @@ const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
         ),
       });
 
-      // Delivery Date comparison
       comparisons.push({
         originalOrderId: originalShipment.order_id,
         consolidatedId: consolidatedShipment.order_id,

@@ -51,10 +51,10 @@ const CreateShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
             shipment.snapshots.map((snapshot) => (
               <TableRow key={`${shipment.order_id}-${snapshot.serialNumber}`}>
                 <TableCell className="text-xs py-2 px-4 border-r">
-                  {shipment.order_id}
+                  {shipment.order_id || "N/A"}
                 </TableCell>
                 <TableCell className="text-xs py-2 px-4 border-r">
-                  {snapshot.category}
+                  {snapshot.category || "N/A"}
                 </TableCell>
                 <TableCell className="text-xs py-2 px-4 border-r">
                   {[
@@ -68,13 +68,13 @@ const CreateShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
                     .join(" ")}{" "}
                 </TableCell>
                 <TableCell className="text-xs py-2 px-4 border-r">
-                  {snapshot.serialNumber}
+                  {snapshot.serialNumber || "N/A"}
                 </TableCell>
                 <TableCell className="text-xs py-2 px-4 border-r">
-                  {shipment.origin}
+                  {shipment.origin || "N/A"}
                 </TableCell>
                 <TableCell className="text-xs py-2 px-4">
-                  {shipment.destination}
+                  {shipment.destination || "N/A"}
                 </TableCell>
               </TableRow>
             ))

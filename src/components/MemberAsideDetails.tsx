@@ -86,7 +86,7 @@ export const MemberAsideDetails = observer(
         (product) => product.activeShipment
       );
 
-      if (pendingShipments.length) {
+      if (pendingShipments.length || member.activeShipment) {
         setAlert("pendingShipmentsOffboarding");
         return;
       }
