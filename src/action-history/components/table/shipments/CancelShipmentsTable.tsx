@@ -7,6 +7,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import type { Shipment } from "@/shipments/interfaces/shipments-response.interface";
+import { formatDate } from "@/utils/formateDate";
 
 interface ShipmentsTableProps {
   data: Shipment | Shipment[];
@@ -24,10 +25,10 @@ const CancelShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
           </TableHead>
 
           <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
-            Origin
+            Origin / Pickup date
           </TableHead>
           <TableHead className="py-3 px-4 text-start text-black font-semibold">
-            Destination
+            Destination / Delivery date
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -46,9 +47,13 @@ const CancelShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
               </TableCell>
               <TableCell className="text-xs py-2 px-4 border-r">
                 {shipment.origin}
+                {" / "}
+                {formatDate(shipment.originDetails.desirableDate)}
               </TableCell>
               <TableCell className="text-xs py-2 px-4">
                 {shipment.destination}
+                {" / "}
+                {formatDate(shipment.destinationDetails.desirableDate)}
               </TableCell>
             </TableRow>
           ))

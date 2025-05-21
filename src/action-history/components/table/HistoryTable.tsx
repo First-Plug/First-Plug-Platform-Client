@@ -365,7 +365,8 @@ const HistoryTable = () => {
                                   }
                                 }
                               />
-                            ) : row.original.actionType === "cancel" ? (
+                            ) : row.original.actionType === "cancel" ||
+                              row.original.actionType === "delete" ? (
                               <CancelShipmentsTable
                                 data={row.original.changes.oldData || []}
                               />
