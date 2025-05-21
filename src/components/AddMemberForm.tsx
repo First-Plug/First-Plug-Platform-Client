@@ -21,7 +21,6 @@ import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { useSession } from "next-auth/react";
 import { validateAfterAction } from "@/lib/validateAfterAction";
 import { useFetchMembers } from "@/members/hooks";
-import { SlackNotificationPayload } from "@/types/slack";
 import { ShipmentWithFp } from "@/shipments/components";
 import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
 import { Shipment } from "@/shipments/interfaces/shipments-response.interface";

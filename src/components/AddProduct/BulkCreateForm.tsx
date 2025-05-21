@@ -25,7 +25,6 @@ import BulkCreateValidator, {
   validateMemberInfo,
 } from "@/components/AddProduct/utils/BulkCreateValidator";
 import { useSession } from "next-auth/react";
-import { prepareBulkCreateSlackPayload } from "@/components/AddProduct/PrepareBulkCreateSlackPayload";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
