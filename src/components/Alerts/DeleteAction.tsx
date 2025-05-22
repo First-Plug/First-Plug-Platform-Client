@@ -12,7 +12,6 @@ import { useState } from "react";
 import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
 import { Loader } from "../Loader";
-import useFetch from "@/hooks/useFetch";
 import {
   useDeleteMember,
   useFetchMember,
@@ -21,8 +20,8 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromTeam } from "@/teams/hooks";
 import { useDeleteAsset, usePrefetchAsset } from "@/assets/hooks";
-import { ShipmentServices } from "@/shipments/services/shipments.services";
 import { useCancelShipment } from "@/shipments/hooks/useCancelShipment";
+import { TeamMember } from "@/types";
 
 type DeleteTypes =
   | "product"
@@ -84,6 +83,12 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
       try {
         if (!id) throw new Error("Product ID is undefined");
 
+        const product = await prefetchAsset(id);
+        if (product.activeShipment) {
+          setAlert("shipmentCancelAssetError");
+          return;
+        }
+
         setLoading(true);
 
         await deleAssetMutation.mutateAsync(id, {
@@ -113,6 +118,13 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         if (!id) {
           throw new Error("Member ID is undefined");
         }
+
+        const member = queryClient.getQueryData<TeamMember>(["members", id]);
+        if (member.activeShipment) {
+          setAlert("shipmentCancelMemberError");
+          return;
+        }
+
         const canDelete = await checkMemberProducts();
 
         if (!canDelete) {
