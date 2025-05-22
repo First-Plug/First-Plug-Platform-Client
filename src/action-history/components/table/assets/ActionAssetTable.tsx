@@ -85,7 +85,7 @@ const ActionAssetTable: React.FC<AssetsTableProps> = ({ data }) => {
               <TableCell className="text-xs py-2 px-4 border-r">
                 {asset.serialNumber || "N/A"}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4">
+              <TableCell className="text-xs py-2 px-4 border-r">
                 <MemberNameAndLocation product={asset as Product} />
               </TableCell>
               <TableCell className="text-xs py-2 px-4">

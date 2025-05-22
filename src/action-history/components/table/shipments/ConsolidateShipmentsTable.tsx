@@ -107,7 +107,9 @@ const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
               key={`${comparison.originalOrderId}-${comparison.field}-${index}`}
             >
               <TableCell className="text-xs py-2 px-4 border-r">
-                {comparison.originalOrderId}
+                {data.context === "single-product"
+                  ? "-"
+                  : comparison.originalOrderId}
               </TableCell>
               <TableCell className="text-xs py-2 px-4 border-r">
                 {comparison.consolidatedId}
@@ -116,7 +118,7 @@ const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
                 {comparison.field}
               </TableCell>
               <TableCell className="text-xs py-2 px-4 border-r">
-                {comparison.oldValue}
+                {data.context === "single-product" ? "-" : comparison.oldValue}
               </TableCell>
               <TableCell className="text-xs py-2 px-4">
                 {comparison.newValue}

@@ -110,10 +110,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
-      if (changes.personalEmail === "") {
-        delete changes.personalEmail;
-      }
-
       if (!("dni" in changes) && initialData?.dni) {
         changes.dni = initialData.dni;
       }

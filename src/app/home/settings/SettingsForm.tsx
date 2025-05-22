@@ -107,6 +107,8 @@ export default function SettingsForm() {
           });
           setAlert("dataUpdatedSuccessfully");
         }
+
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
       } catch (error) {
         console.error(error);
         setAlert("errorUpdateTeam");
