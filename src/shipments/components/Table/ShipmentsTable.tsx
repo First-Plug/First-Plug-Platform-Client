@@ -170,11 +170,11 @@ const ShipmentsTable = () => {
         size: 100,
         style: { width: "100px", minWidth: "100px", maxWidth: "100px" },
         cell: ({ row }) => {
-          const { amount, currency } = row.original.price;
+          const { amount, currencyCode } = row.original.price;
 
           if (amount === null) return <span>-</span>;
           if (amount === 0) return <span>FREE</span>;
-          return <span>{`${amount} ${currency}`}</span>;
+          return <span>{`${amount} ${currencyCode}`}</span>;
         },
       },
       {
