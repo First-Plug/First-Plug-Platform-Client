@@ -370,7 +370,7 @@ export const RequestOffBoardingForm = observer(
         <section className={`space-y-4 ${className}`}>
           {index === 0 && totalProducts > 1 && (
             <div className="flex items-center mt-2">
-              <input
+              {/* <input
                 type="checkbox"
                 className="mr-2"
                 checked={applyToAll}
@@ -378,7 +378,7 @@ export const RequestOffBoardingForm = observer(
               />
               <p className="text-md font-semibold">
                 Apply &quot;Product 1&quot; settings to all Products
-              </p>
+              </p> */}
             </div>
           )}
 
