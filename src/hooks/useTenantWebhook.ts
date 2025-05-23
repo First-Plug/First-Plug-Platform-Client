@@ -20,6 +20,7 @@ export function useTenantWebSocket(tenantId: string) {
     });
 
     socket.on("data-changed", () => {
+      console.log("data-changed");
       queryClient.invalidateQueries(); // Invalida todas las queries en el cache
       queryClient.refetchQueries(); // Refresca todas las queries en el cache
     });
