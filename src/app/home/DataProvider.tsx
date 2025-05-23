@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { Fragment, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AuthServices } from "@/services";
+import { useTenantWebSocket } from "@/hooks/useTenantWebhook";
+
 interface DataProvidersProps {
   children: ReactNode;
 }
@@ -14,8 +16,10 @@ export default function DataProvider({ children }: DataProvidersProps) {
   const {
     user: { setUser },
   } = useStore();
-
   const router = useRouter();
+
+  useTenantWebSocket(session.data?.user?.tenantName);
+
   if (!session.data) return null;
   if (!session.data.user.tenantName) {
     router.push("/waiting");
