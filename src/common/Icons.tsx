@@ -815,11 +815,18 @@ type ChevronDownProps = {
   className?: string;
   stroke?: number;
   color?: string;
+  onClick?: () => void;
 };
 
-export function ChevronDown({ className, stroke, color }: ChevronDownProps) {
+export function ChevronDown({
+  className,
+  stroke,
+  color,
+  onClick,
+}: ChevronDownProps) {
   return (
     <svg
+      onClick={onClick}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"

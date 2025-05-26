@@ -12,7 +12,6 @@ import { useState } from "react";
 import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
 import { Loader } from "../Loader";
-import useFetch from "@/hooks/useFetch";
 import {
   useDeleteMember,
   useFetchMember,
@@ -21,8 +20,15 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromTeam } from "@/teams/hooks";
 import { useDeleteAsset, usePrefetchAsset } from "@/assets/hooks";
+import { useCancelShipment } from "@/shipments/hooks/useCancelShipment";
+import { TeamMember } from "@/types";
 
-type DeleteTypes = "product" | "member" | "team" | "memberUnassign";
+type DeleteTypes =
+  | "product"
+  | "member"
+  | "team"
+  | "memberUnassign"
+  | "shipment";
 
 type ConfigType = {
   title: string;
@@ -33,18 +39,20 @@ type ConfigType = {
 interface DeleteAlertProps {
   type: DeleteTypes;
   id: string;
+  disabled?: boolean;
   teamId?: string;
   onConfirm?: () => void;
   trigger?: React.ReactNode;
 }
 export const DeleteAction: React.FC<DeleteAlertProps> = observer(
-  ({ type, id, onConfirm, trigger, teamId }) => {
+  ({ type, id, onConfirm, trigger, teamId, disabled }) => {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const deleteMemberMutation = useDeleteMember();
     const removeFromTeamMutation = useRemoveFromTeam();
     const deleAssetMutation = useDeleteAsset();
+    const cancelShipmentMutation = useCancelShipment();
 
     const {
       products: { deleteProduct },
@@ -54,6 +62,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
     const queryClient = useQueryClient();
     const { prefetchAsset } = usePrefetchAsset();
     const { data: membersData } = useFetchMembers();
+
     let memberData;
     if (type === "member") {
       const { data, isLoading: isLoadingMember } = useFetchMember(id);
@@ -73,6 +82,12 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
     const handleDeleteProduct = async (id: string) => {
       try {
         if (!id) throw new Error("Product ID is undefined");
+
+        const product = await prefetchAsset(id);
+        if (product.activeShipment) {
+          setAlert("shipmentCancelAssetError");
+          return;
+        }
 
         setLoading(true);
 
@@ -103,6 +118,13 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         if (!id) {
           throw new Error("Member ID is undefined");
         }
+
+        const member = queryClient.getQueryData<TeamMember>(["members", id]);
+        if (member.activeShipment) {
+          setAlert("shipmentCancelMemberError");
+          return;
+        }
+
         const canDelete = await checkMemberProducts();
 
         if (!canDelete) {
@@ -192,9 +214,30 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
       );
     };
 
+    const handleDeleteShipment = async () => {
+      if (!id) {
+        throw new Error("id is undefined");
+      }
+
+      await cancelShipmentMutation.mutateAsync(id, {
+        onSuccess: () => {
+          setOpen(false);
+          setLoading(false);
+          setAlert("deleteShipment");
+        },
+        onError: (error) => {
+          console.error("Error deleting shipment:", error);
+          setOpen(false);
+          setLoading(false);
+        },
+      });
+
+      setLoading(true);
+    };
+
     const DeleteConfig: Record<DeleteTypes, ConfigType> = {
       product: {
-        title: " Are you sure you want to delete this product? 🗑️",
+        title: "Are you sure you want to delete this product? 🗑️",
         description: "This product will be permanently deleted",
         deleteAction: () => handleDeleteProduct(id),
       },
@@ -214,17 +257,24 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
         description: "This member will be unassigned from the team",
         deleteAction: handleUnassignMember,
       },
+      shipment: {
+        title: "Are you sure you want to delete this shipment? 🗑️",
+        description: "This shipment will be permanently deleted",
+        deleteAction: handleDeleteShipment,
+      },
     };
     const { title, description, deleteAction } = DeleteConfig[type];
     return (
       <>
         <Dialog open={open}>
-          <DialogTrigger onClick={handleTriggerClick}>
+          <DialogTrigger onClick={handleTriggerClick} disabled={disabled}>
             {trigger ? (
               trigger
             ) : (
               <TrashIcon
-                className="text-dark-grey w-[1.2rem] h-[1.2rem] hover:text-error"
+                className={`w-[1.2rem] h-[1.2rem] ${
+                  disabled ? "text-disabled" : "text-error hover:text-error/70"
+                }`}
                 strokeWidth={2}
               />
             )}
@@ -237,25 +287,23 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
                   {description}
                 </DialogDescription>
               </DialogHeader>
-              <DialogDescription className="text-md">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setOpen(false)}
-                    className="w-full"
-                  >
-                    <p>Cancel</p>
-                  </Button>
-                  <Button
-                    disabled={loading}
-                    variant="delete"
-                    onClick={deleteAction}
-                    className="w-full bg-error"
-                  >
-                    <p>Delete</p>
-                  </Button>
-                </div>
-              </DialogDescription>
+              <div className="flex items-center gap-2 mt-4">
+                <Button
+                  variant="secondary"
+                  onClick={() => setOpen(false)}
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={loading}
+                  variant="delete"
+                  onClick={deleteAction}
+                  className="w-full bg-error"
+                >
+                  <p>Delete</p>
+                </Button>
+              </div>
             </DialogContent>
           ) : (
             <DialogContent>

@@ -47,6 +47,7 @@ export const useCreateMember = () => {
         teamId: newMember.teamId || "",
         dni: newMember.dni || 0,
         isDeleted: false,
+        activeShipment: false,
       };
 
       // Agregar el miembro optimista a la lista de miembros
@@ -80,8 +81,16 @@ export const useCreateMember = () => {
       queryClient.setQueryData(["members"], context?.previousMembers);
     },
     // finalizada la operacion se invalida la query para que tenga obtenga los datos mas recientes del backend
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+    onSettled: async () => {
+      await queryClient.refetchQueries({
+        queryKey: ["members"],
+      });
+      await queryClient.refetchQueries({
+        queryKey: ["teams"],
+      });
+      await queryClient.refetchQueries({
+        queryKey: ["assets"],
+      });
     },
   });
   return mutation;

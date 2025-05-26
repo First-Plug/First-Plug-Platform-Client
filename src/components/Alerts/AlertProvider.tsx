@@ -387,6 +387,50 @@ export default observer(function AlertProvider() {
         setAlert(undefined);
       },
     },
+    updateShipment: {
+      title: "Desirable Dates Updated",
+      type: "succes",
+      description: alertData,
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    deleteShipment: {
+      title: "Shipment Cancelled",
+      type: "succes",
+      description:
+        "The shipment has been successfully cancelled. No pickup or delivery will take place by First Plug, and the product(s) will remain assigned to the selected destination.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    pendingShipmentsOffboarding: {
+      title: "Pending Shipments Detected",
+      type: "error",
+      description:
+        "This member has active shipments in progress. Please complete or cancel all shipments before proceeding with the offboarding.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    shipmentCancelAssetError: {
+      title: "Cannot Delete Product",
+      type: "error",
+      description:
+        "This product is part of an active shipment. Please complete or cancel the shipment before deleting it.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    shipmentCancelMemberError: {
+      title: "Cannot Remove Member",
+      type: "error",
+      description:
+        "This member has active shipments in progress. Please complete or cancel all shipments before removing them from your team.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;

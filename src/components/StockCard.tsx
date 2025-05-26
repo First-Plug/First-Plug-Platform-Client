@@ -52,7 +52,13 @@ export const StockCard = observer(function ({ products }: StockCardProps) {
     (product) => product.status === "Unavailable"
   ).length;
 
-  // const assignedCount = categoryProducts.length - availableCount;
+  const inTransitCount = categoryProducts.filter(
+    (product) => product.status === "In Transit"
+  ).length;
+
+  const inTransitMissingDataCount = categoryProducts.filter(
+    (product) => product.status === "In Transit - Missing Data"
+  ).length;
 
   return (
     <div className="flex p-2 justify-between w-full h-full  overflow-hidden ">
@@ -89,6 +95,8 @@ export const StockCard = observer(function ({ products }: StockCardProps) {
               stock: availableCount,
               quantity: assignedCount,
               unavailable: unavailableCount,
+              inTransit: inTransitCount,
+              inTransitMissingData: inTransitMissingDataCount,
             }}
           />
         ) : (

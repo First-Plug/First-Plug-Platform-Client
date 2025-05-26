@@ -46,6 +46,7 @@ const validateBillingInfo = (
     "state",
     "zipCode",
     "address",
+    "phone",
   ] as const;
 
   const missingFieldsArray = requiredFields.filter((field) => {
@@ -84,6 +85,8 @@ export const validateAfterAction = (
     }
 
     if (entity.type === "office" && entity.data.location === "Our office") {
+      console.log(entity.data);
+
       const billingValidation = validateBillingInfo(
         entity.data as Partial<User>
       );

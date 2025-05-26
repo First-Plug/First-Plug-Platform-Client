@@ -7,6 +7,8 @@ import { observer } from "mobx-react-lite";
 import { Skeleton } from "../ui/skeleton";
 import { useFetchAssetById } from "@/assets/hooks";
 import { useFetchMembers } from "@/members/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/common";
 
 export const AssignProduct = observer(() => {
   const {
@@ -14,15 +16,22 @@ export const AssignProduct = observer(() => {
     aside: { type },
   } = useStore();
 
+  const queryClient = useQueryClient();
+
   const {
     data: product,
     isLoading: loadingProduct,
     error: productError,
+    refetch: refetchProduct,
+    isError: isProductError,
   } = useFetchAssetById(currentProductId);
+
   const {
     data: members,
     isLoading: loadingMembers,
     error: membersError,
+    refetch: refetchMembers,
+    isError: isMembersError,
   } = useFetchMembers();
 
   const [member, setMember] = useState<TeamMember | null>(null);
@@ -38,8 +47,40 @@ export const AssignProduct = observer(() => {
     }
   }, [product, members]);
 
+  useEffect(() => {
+    if (!loadingProduct && !productError && !product) {
+      queryClient.invalidateQueries({ queryKey: ["asset", currentProductId] });
+      refetchProduct();
+    }
+
+    if (
+      !loadingMembers &&
+      !membersError &&
+      (!members || members.length === 0)
+    ) {
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      refetchMembers();
+    }
+  }, [
+    loadingProduct,
+    productError,
+    product,
+    loadingMembers,
+    membersError,
+    members,
+    queryClient,
+    currentProductId,
+    refetchProduct,
+    refetchMembers,
+  ]);
+
   const handleSelectedMembers = (selectedMember: TeamMember | null) => {
     setMember(selectedMember);
+  };
+
+  const handleRetry = () => {
+    if (isProductError) refetchProduct();
+    if (isMembersError) refetchMembers();
   };
 
   if (loadingProduct || loadingMembers) {
@@ -53,7 +94,17 @@ export const AssignProduct = observer(() => {
 
   if (productError || membersError) {
     return (
-      <div className="text-red-500">Failed to load data. Please try again.</div>
+      <div className="flex flex-col items-center justify-center h-full">
+        <div className="text-red-500 mb-4">Opps! Something went wrong</div>
+        <Button
+          type="button"
+          onClick={handleRetry}
+          className="px-6 py-4"
+          variant="primary"
+        >
+          Try again
+        </Button>
+      </div>
     );
   }
 

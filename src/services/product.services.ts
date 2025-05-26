@@ -1,5 +1,6 @@
 import { Product, ProductTable } from "@/types";
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
+import { Shipment } from "@/shipments/interfaces/shipments-response.interface";
 
 type CreationProduct = Omit<Omit<Product, "_id">, "__v">;
 
@@ -30,13 +31,12 @@ export class ProductServices {
   static async updateProduct(
     id: Product["_id"],
     data: Partial<Product>
-  ): Promise<Product> {
+  ): Promise<{ message: string; shipment: Shipment }> {
     try {
       const response = await HTTPRequests.patch(
         `${BASE_URL}/api/products/${id}`,
         data
       );
-      console.log("se llama el  update");
       return response.data;
     } catch (error) {
       throw error;

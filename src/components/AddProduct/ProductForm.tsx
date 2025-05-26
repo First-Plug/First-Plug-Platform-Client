@@ -28,11 +28,6 @@ import BulkCreateForm from "./BulkCreateForm";
 import { useCreateAsset, useUpdateEntityAsset } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { validateOnCreate } from "@/lib/validateAfterAction";
-import {
-  prepareSlackNotificationPayload,
-  type ValidationEntity,
-} from "@/components/AddProduct/PrepareSlackNotificationPayload";
-import { sendSlackNotification } from "@/services/slackNotifications.services";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -262,6 +257,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           state: sessionUser?.state,
           zipCode: sessionUser?.zipCode,
           address: sessionUser?.address,
+          phone: sessionUser?.phone,
         },
         adjustedNoneOption
       );
@@ -386,7 +382,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const isCategoryValid = await validateCategory();
     if (!isCategoryValid || hasError) return;
 
-    let source: ValidationEntity | null = null;
+    let source = null;
 
     if (!isUpdate) {
       if (adjustedNoneOption === "Our office") {
@@ -475,18 +471,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
           setShowBulkCreate(true);
         } else {
           await createAsset.mutateAsync(formatData, {
-            onSuccess: async () => {
-              const slackPayload = prepareSlackNotificationPayload(
-                formatData,
-                selectedMember,
-                "Create Product",
-                source,
-                adjustedNoneOption,
-                sessionUser.tenantName,
-                sessionUser
-              );
-              await sendSlackNotification(slackPayload);
-            },
             onError: (error) => handleMutationError(error, true),
           });
           if (missingMessages.length > 0) {

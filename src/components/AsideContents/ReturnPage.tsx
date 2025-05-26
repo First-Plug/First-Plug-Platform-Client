@@ -50,6 +50,7 @@ export function ReturnPage({
             setSelectedProducts={setSelectedProducts}
             isEnabled={enabledProductIndex === index}
             onRemoveSuccess={handleSuccess}
+            className={index === products.length - 1 ? "pb-20" : ""}
           />
         ))}
       </div>

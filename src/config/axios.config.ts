@@ -56,9 +56,9 @@ export class HTTPRequests {
     }
   }
 
-  static async patch<T>(url: string, payload: T) {
+  static async patch<T = unknown>(url: string, payload?: T) {
     try {
-      return await axiosInstance.patch(url, payload);
+      return await axiosInstance.patch(url, payload ?? undefined);
     } catch (error) {
       throw error;
     }

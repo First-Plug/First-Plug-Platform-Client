@@ -23,7 +23,7 @@ export const ProductsStore = types
   .views((store) => ({
     get availableProducts() {
       const snapshot = getSnapshot(store.tableProducts);
-  
+
       const filteredSnapshot = snapshot
         .map((table) => ({
           category: table.category,
@@ -32,11 +32,11 @@ export const ProductsStore = types
           ),
         }))
         .filter((table) => table.products.length);
-  
+
       const result = filteredSnapshot.map((table) =>
         ProductTableModel.create(table)
       );
-    
+
       return result;
     },
     get uniqueProducts() {
@@ -162,6 +162,7 @@ export const ProductsStore = types
         if (index > -1) {
           store.products[index] = response;
         }
+        return response;
       } catch (error) {
         console.error("Failed to reassign product", error);
       }

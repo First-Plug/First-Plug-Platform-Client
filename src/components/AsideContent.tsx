@@ -14,6 +14,7 @@ import {
   EditTeamsAside,
 } from "./AsideContents";
 import EditMemberAside from "./EditMemberAside";
+import { ShipmentAside } from "@/shipments/components/ShipmentAside";
 
 export var AsideContent = observer(function () {
   const { aside } = useStore();
@@ -40,5 +41,7 @@ export var AsideContent = observer(function () {
       return <OrderAsideDetails />;
     case "ChangePassword":
       return <ChangePassword />;
+    case "UpdateShipment":
+      return <ShipmentAside />;
   }
 });

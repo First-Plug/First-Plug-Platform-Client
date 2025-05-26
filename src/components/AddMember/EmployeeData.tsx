@@ -10,7 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCreateTeam, useFetchTeams } from "@/teams/hooks";
 import { BarLoader } from "../Loader/BarLoader";
 
-const EmployeeData = function ({ isUpdate, initialData }) {
+const EmployeeData = ({ isUpdate, initialData }) => {
   const {
     setValue,
     watch,
@@ -23,8 +23,8 @@ const EmployeeData = function ({ isUpdate, initialData }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
 
-  // const [teams, setTeams] = useState<string[]>([]);
   const { data: teams = [], isLoading, isError } = useFetchTeams();
+
   const createTeamMutation = useCreateTeam();
   const queryClient = useQueryClient();
 
@@ -88,7 +88,9 @@ const EmployeeData = function ({ isUpdate, initialData }) {
             <>
               <DropdownInputProductForm
                 name="team"
-                options={teams.map((team) => team.name)}
+                options={
+                  Array.isArray(teams) ? teams.map((team) => team.name) : []
+                }
                 placeholder="Team Name"
                 title="Select a Team"
                 selectedOption={teamValue}

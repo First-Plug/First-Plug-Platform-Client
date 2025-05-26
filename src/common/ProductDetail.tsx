@@ -1,6 +1,6 @@
 "use client";
-import React, { useRef, useState } from "react";
-import { Product, Team, TeamMember } from "@/types";
+import React, { useState } from "react";
+import type { Product, Team, TeamMember } from "@/types";
 import { ProductImage } from "./ProductImage";
 import PrdouctModelDetail from "./PrdouctModelDetail";
 import { useStore } from "@/models";
@@ -20,7 +20,9 @@ import {
   buildValidationEntities,
   validateAfterAction,
 } from "@/lib/validateAfterAction";
-import { sendSlackNotification } from "@/services/slackNotifications.services";
+import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
+import { ShipmentWithFp } from "@/shipments/components";
+import { ShipmentStateColors, StatusColors } from "./StatusColors";
 
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
@@ -62,6 +64,9 @@ const MembersList = observer(function MembersList({
   });
   const router = useRouter();
 
+  const { isShipmentValueValid, onSubmitDropdown, shipmentValue } =
+    useShipmentValues();
+
   const handleSelectMember = (member: TeamMember) => {
     setSelectedMember(member);
   };
@@ -80,54 +85,6 @@ const MembersList = observer(function MembersList({
   const displayedMembers = searchedMembers.filter(
     (member) => member.email !== currentMember?.email
   );
-
-  const buildSlackPayload = (
-    tenantName: string,
-    currentHolder: TeamMember | null,
-    selectedMember: TeamMember,
-    product: Product,
-    action: string
-  ) => {
-    return {
-      tenantName,
-      from: {
-        name: `${currentHolder?.firstName || "Unknown"} ${
-          currentHolder?.lastName || "Unknown"
-        }`,
-        address: currentHolder?.address || "N/A",
-        apartment: currentHolder?.apartment || "N/A",
-        zipCode: currentHolder?.zipCode || "N/A",
-        city: currentHolder?.city || "N/A",
-        country: currentHolder?.country || "N/A",
-        phone: currentHolder?.phone || "N/A",
-        personalEmail: currentHolder?.personalEmail || "N/A",
-        email: currentHolder?.email || "N/A",
-        dni: currentHolder?.dni ? currentHolder.dni.toString() : "N/A",
-      },
-      to: {
-        name: `${selectedMember.firstName} ${selectedMember.lastName}`,
-        address: selectedMember.address || "N/A",
-        apartment: selectedMember.apartment || "N/A",
-        zipCode: selectedMember.zipCode || "N/A",
-        city: selectedMember.city || "N/A",
-        country: selectedMember.country || "N/A",
-        phone: selectedMember.phone || "N/A",
-        personalEmail: selectedMember.personalEmail || "N/A",
-        email: selectedMember.email || "N/A",
-        dni: selectedMember?.dni ? selectedMember.dni.toString() : "N/A",
-      },
-      products: [
-        {
-          category: product.category,
-          brand: product.attributes.find((attr) => attr.key === "brand")?.value,
-          model: product.attributes.find((attr) => attr.key === "model")?.value,
-          name: product.name || "N/A",
-          serialNumber: product.serialNumber || "N/A",
-        },
-      ],
-      action,
-    };
-  };
 
   const handleRelocateProduct = async () => {
     if (!selectedMember) return;
@@ -200,23 +157,24 @@ const MembersList = observer(function MembersList({
 
     setRelocating(true);
     try {
+      const productToSend = {
+        ...product,
+        fp_shipment: shipmentValue.shipment === "yes",
+        desirableDate: {
+          origin: shipmentValue.pickupDate,
+          destination: shipmentValue.deliveredDate,
+        },
+        status: product.status,
+      };
+
       await handleReassignProduct({
         currentMember,
         selectedMember,
-        product: product,
+        product: productToSend,
       });
+
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
-
-      const slackPayload = buildSlackPayload(
-        sessionUser?.tenantName || "Unknown Tenant",
-        flattenedCurrentHolder,
-        flattenedSelectedMember,
-        product,
-        "Relocate Product"
-      );
-
-      await sendSlackNotification(slackPayload);
 
       setRelocateResult("success");
       setRelocateStauts("success");
@@ -258,7 +216,7 @@ const MembersList = observer(function MembersList({
         }}
       />
       {selectedMember ? (
-        <section className="flex justify-between w-full py-2">
+        <section className="flex justify-between items-end w-full gap-6 pb-2">
           <div className="flex items-center gap-2">
             <span className="font-extralight">Relocate To:</span>
             <button
@@ -278,6 +236,10 @@ const MembersList = observer(function MembersList({
             </button>
           </div>
 
+          <div className="flex-1">
+            <ShipmentWithFp onSubmit={onSubmitDropdown} />
+          </div>
+
           {relocateResult === "success" ? (
             <Badge className={badgeVariants({ variant: relocateResult })}>
               Successfully relocated ✅
@@ -290,7 +252,8 @@ const MembersList = observer(function MembersList({
                 isRelocating ||
                 relocateResult !== undefined ||
                 !selectedMember ||
-                disabled
+                disabled ||
+                !isShipmentValueValid()
               }
             >
               {isRelocating ? <LoaderSpinner /> : <span>Confirm ✔️</span>}
@@ -371,10 +334,13 @@ export default function ProductDetail({
 
   const toggleList = () => setShowList(!showList);
 
+  const colorClass = `${StatusColors[ShipmentStateColors[product.status]]}`;
+
   return (
     <div
       className={`relative flex flex-col gap-2 border rounded-md p-2 mr-2 text-black mb-2 transition-all duration-300  ${className} ${
-        handleSelect || isRelocating
+        (handleSelect && !product.activeShipment) ||
+        (isRelocating && !product.activeShipment)
           ? "cursor-pointer hover:border-blue/80 "
           : ""
       }  ${isChecked && "bg-blue/80 text-white"}`}
@@ -412,6 +378,15 @@ export default function ProductDetail({
           )}
         </section>
       </div>
+      {product.origin && (
+        <div
+          className={`text-md font-semibold italic mt-2 ${colorClass} py-2 px-4 rounded-sm flex justify-center items-center`}
+        >
+          <span>
+            {product.status} from {product.origin}
+          </span>
+        </div>
+      )}
       {isRelocating && showList && <hr />}
 
       {isRelocating && showList && (

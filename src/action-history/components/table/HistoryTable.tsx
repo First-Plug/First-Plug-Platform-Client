@@ -19,7 +19,7 @@ import {
 import { BarLoader } from "@/components/Loader/BarLoader";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
 import DateRangeDropdown from "../date-range-calendar/DateRangeCalendar";
-import { endOfDay, startOfDay, subDays } from "date-fns";
+import { endOfDay, format, parseISO, startOfDay, subDays } from "date-fns";
 import CreateAssetsTable from "./assets/CreateAssetTable";
 import { ArrowRight, Button } from "@/common";
 import CreateMembersTable from "./members/CreateMemberTable";
@@ -34,48 +34,51 @@ import UpdateTeamsTable from "./teams/UpdateTeamTable";
 import UpdateMembersTable from "./members/UpdateMemberTable";
 import UpdateAssetsTable from "./assets/UpdateAssetTable";
 import { Loader } from "@/components/Loader";
+import { useFetchLatestActivity } from "@/action-history/hooks/useFetchLatestActivity";
+import UpdateShipmentsTable from "./shipments/UpdateShipmentsTable";
+import CancelShipmentsTable from "./shipments/CancelShipmentsTable";
+import ConsolidateShipmentsTable from "./shipments/ConsolidateShipmentsTable";
+import CreateShipmentsTable from "./shipments/CreateShipmentsTable";
 
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
-
-const fetchData = async (
-  pageIndex: number,
-  pageSize: number,
-  startDate: Date,
-  endDate: Date
-) => {
-  try {
-    const startDateISO = startDate.toISOString();
-    const endDateISO = endDate.toISOString();
-
-    return await HistorialServices.getAll(
-      pageIndex,
-      pageSize,
-      startDateISO,
-      endDateISO
-    );
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    return { data: [], totalCount: 0 };
-  }
-};
 
 const HistoryTable = () => {
   const searchParams = useSearchParams();
   const activityId = searchParams.get("activityId");
   const router = useRouter();
-  const [data, setData] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+
   const [expandedRow, setExpandedRow] = useState<string | null>(activityId);
+
+  const startParam = searchParams.get("startDate");
+  const endParam = searchParams.get("endDate");
 
   const [selectedDates, setSelectedDates] = useState<{
     startDate: Date;
     endDate: Date;
-  }>({
-    startDate: startOfDay(subDays(new Date(), 7)),
-    endDate: endOfDay(new Date()),
+  }>(() => {
+    const defaultStart = startOfDay(subDays(new Date(), 6));
+    const defaultEnd = endOfDay(new Date());
+
+    const parsedStart = startParam
+      ? parseISO(`${startParam}T00:00:00`)
+      : defaultStart;
+    const parsedEnd = endParam ? parseISO(`${endParam}T23:59:59`) : defaultEnd;
+
+    return {
+      startDate: parsedStart,
+      endDate: parsedEnd,
+    };
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("startDate", format(selectedDates.startDate, "yyyy-MM-dd"));
+    params.set("endDate", format(selectedDates.endDate, "yyyy-MM-dd"));
+
+    router.replace(`?${params.toString()}`);
+  }, [selectedDates]);
 
   const rawPage = parseInt(searchParams.get("page") || "1", 10);
   const rawPageSize = parseInt(
@@ -88,25 +91,11 @@ const HistoryTable = () => {
     : DEFAULT_PAGE_SIZE;
   let currentPage = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
 
-  useEffect(() => {
-    setIsLoading(true);
-
-    fetchData(
-      currentPage,
-      pageSize,
-      selectedDates.startDate,
-      selectedDates.endDate
-    ).then((result) => {
-      setData(result.data);
-      setTotalCount(result.totalCount);
-      setIsLoading(false);
-
-      const maxPage = Math.ceil(result.totalCount / pageSize);
-      if (currentPage > maxPage && maxPage > 0) {
-        router.replace(`?page=1&pageSize=${pageSize}`);
-      }
-    });
-  }, [currentPage, pageSize, selectedDates]);
+  const { data, isLoading } = useFetchLatestActivity(
+    currentPage,
+    pageSize,
+    selectedDates
+  );
 
   const columns = useMemo(
     () => [
@@ -173,12 +162,14 @@ const HistoryTable = () => {
     [expandedRow]
   );
 
+  const tableData = data?.data || [];
+
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
-    pageCount: totalCount,
+    pageCount: data ? Math.ceil(data.totalCount / pageSize) : 0,
   });
 
   return (
@@ -222,7 +213,7 @@ const HistoryTable = () => {
                     <Loader />
                   </TableCell>
                 </TableRow>
-              ) : data.length === 0 ? (
+              ) : tableData.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
@@ -276,7 +267,12 @@ const HistoryTable = () => {
                               />
                             ) : row.original.actionType === "update" ? (
                               <UpdateAssetsTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : [
                                 "return",
@@ -285,7 +281,12 @@ const HistoryTable = () => {
                                 "assign",
                               ].includes(row.original.actionType) ? (
                               <ActionAssetTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : null
                           ) : row.original.itemType === "members" ? (
@@ -300,11 +301,21 @@ const HistoryTable = () => {
                               />
                             ) : row.original.actionType === "update" ? (
                               <UpdateMembersTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : row.original.actionType === "offboarding" ? (
                               <OffboardingMembersTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : null
                           ) : row.original.itemType === "teams" ? (
@@ -320,13 +331,53 @@ const HistoryTable = () => {
                               />
                             ) : row.original.actionType === "update" ? (
                               <UpdateTeamsTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : ["reassign", "assign", "unassign"].includes(
                                 row.original.actionType
                               ) ? (
                               <ActionTeamsTable
-                                data={row.original.changes || []}
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
+                              />
+                            ) : null
+                          ) : row.original.itemType === "shipments" ? (
+                            row.original.actionType === "create" ||
+                            row.original.actionType === "bulk-create" ? (
+                              <CreateShipmentsTable
+                                data={row.original.changes.newData || []}
+                              />
+                            ) : row.original.actionType === "update" ? (
+                              <UpdateShipmentsTable
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
+                              />
+                            ) : row.original.actionType === "cancel" ||
+                              row.original.actionType === "delete" ? (
+                              <CancelShipmentsTable
+                                data={row.original.changes.oldData || []}
+                              />
+                            ) : row.original.actionType === "consolidate" ? (
+                              <ConsolidateShipmentsTable
+                                data={
+                                  row.original.changes || {
+                                    oldData: [],
+                                    newData: [],
+                                  }
+                                }
                               />
                             ) : null
                           ) : null}
@@ -341,11 +392,11 @@ const HistoryTable = () => {
         </div>
 
         <div className="flex justify-center absolute w-full bottom-0 z-30">
-          {data.length > 0 && !isLoading && (
+          {tableData.length > 0 && !isLoading && (
             <PaginationWithLinks
               page={currentPage}
               pageSize={pageSize}
-              totalCount={totalCount}
+              totalCount={data?.totalCount ?? 0}
               pageSizeSelectOptions={{ pageSizeOptions: VALID_PAGE_SIZES }}
             />
           )}

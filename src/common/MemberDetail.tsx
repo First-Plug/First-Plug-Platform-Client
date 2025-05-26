@@ -56,6 +56,12 @@ export function MemberDetail({ memberId, className }: MemberDetailProps) {
             <span className="font-semibold">Email: </span>
             <span className="font-normal">{member.email || ""}</span>
           </div>
+          <div className="flex items-center gap-2 ">
+            <span className="font-semibold">Active Shipment: </span>
+            <span className="font-normal">
+              {member.activeShipment ? "Yes" : "No"}
+            </span>
+          </div>
         </div>
       </div>
     </div>

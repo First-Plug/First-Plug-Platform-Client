@@ -29,6 +29,8 @@ export default function useActions() {
       status,
       location: "Employee",
       actionType: "relocate",
+      fp_shipment: product.fp_shipment,
+      desirableDate: product.desirableDate,
       productCondition: product.productCondition || "Optimal",
     };
     if (product.assignedMember) {
@@ -37,8 +39,12 @@ export default function useActions() {
     }
 
     try {
-      await ProductServices.updateProduct(product._id, updatedProduct);
+      const response = await ProductServices.updateProduct(
+        product._id,
+        updatedProduct
+      );
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      return response;
     } catch (error) {
       console.error(`Error relocating product ${product._id}:`, error);
     }
@@ -55,6 +61,7 @@ export default function useActions() {
   }) => {
     const status =
       product.productCondition === "Unusable" ? "Unavailable" : "Available";
+
     let updatedProduct: Partial<Product> & { actionType: string } = {
       category: product.category,
       attributes: product.attributes,
@@ -64,6 +71,8 @@ export default function useActions() {
       status,
       location,
       actionType: "return",
+      fp_shipment: product.fp_shipment,
+      desirableDate: product.desirableDate,
       productCondition: product.productCondition || "Optimal",
     };
     if (product.assignedMember) {
@@ -72,9 +81,10 @@ export default function useActions() {
     }
 
     try {
-      await reassignProduct(product._id, updatedProduct);
+      const response = await reassignProduct(product._id, updatedProduct);
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      return response;
     } catch (error) {
       console.error("Error unassigning product:", error);
     }

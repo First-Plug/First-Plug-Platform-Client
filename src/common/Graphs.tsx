@@ -2,6 +2,7 @@
 import React from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart, ArcElement, ChartOptions, ChartData } from "chart.js";
+import { InventoryStatusLegend } from "@/assets/components/InventaryStatusLegend";
 Chart.register(ArcElement);
 
 interface DoughnutChartProps {
@@ -9,6 +10,8 @@ interface DoughnutChartProps {
     quantity?: number;
     stock?: number;
     unavailable?: number;
+    inTransit?: number;
+    inTransitMissingData?: number;
   };
 }
 
@@ -16,17 +19,33 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
   const stock = data.stock || 0;
   const quantity = data.quantity || 0;
   const unavailable = data.unavailable || 0;
+  const inTransit = data.inTransit || 0;
+  const inTransitMissingData = data.inTransitMissingData || 0;
 
   const assignedColor = "#9747FF";
   const availableColor = "#4FE8B7";
   const unavailableColor = "#FFC6D3";
+  const inTransitColor = "#FFD59E";
+  const inTransitMissingDataColor = "#FF8A80";
 
   const info: ChartData<"doughnut"> = {
-    labels: ["Assigned", "Available", "Unavailable"],
+    labels: [
+      "Assigned",
+      "Available",
+      "Unavailable",
+      "In Transit",
+      "In Transit - Missing Data",
+    ],
     datasets: [
       {
-        data: [quantity, stock, unavailable],
-        backgroundColor: [assignedColor, availableColor, unavailableColor],
+        data: [quantity, stock, unavailable, inTransit, inTransitMissingData],
+        backgroundColor: [
+          assignedColor,
+          availableColor,
+          unavailableColor,
+          inTransitColor,
+          inTransitMissingDataColor,
+        ],
         hoverBackgroundColor: ["#fff", "#fff"],
       },
     ],
@@ -50,8 +69,8 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
   };
 
   return (
-    <figure className=" flex w-full h-full overflow-hidden items-centeroverflow-hidden ">
-      <div className=" w-[45%] h-[45%] flex flex-col gap-4 ">
+    <figure className="flex w-full h-full overflow-hidden">
+      <div className="w-[40%] h-[40%] flex flex-col gap-4">
         <div className="relative cursor-pointer">
           <Doughnut data={info} options={options} className="object-contain" />
 
@@ -59,42 +78,29 @@ export function DoughnutChart({ data }: DoughnutChartProps) {
             <div className="flex flex-col items-center">
               <span className="text-dark-grey font-medium">Total</span>
               <span className="font-bold text-2xl">
-                {quantity + stock + unavailable}
+                {quantity +
+                  stock +
+                  unavailable +
+                  inTransit +
+                  inTransitMissingData}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      <figcaption className="flex flex-col justify-center items-start w-[40%] h-full p-4 gap-4 ">
-        <div className="flex gap-2 items-center">
-          <div
-            className="h-[1rem] w-[1rem] rounded-sm"
-            style={{ backgroundColor: assignedColor }}
-          ></div>
-          <p className="text-md font-semibold">
-            Assigned | <b>{quantity}</b>
-          </p>
-        </div>
-        <div className="flex gap-2 items-center">
-          <div
-            className="h-[1rem] w-[1rem] rounded-sm"
-            style={{ backgroundColor: availableColor }}
-          ></div>
-          <p className="text-md font-semibold">
-            Available | <b>{stock}</b>
-          </p>
-        </div>
-        <div className="flex gap-2 items-center">
-          <div
-            className="h-[1rem] w-[1rem] rounded-sm"
-            style={{ backgroundColor: unavailableColor }}
-          ></div>
-          <p className="text-md font-semibold">
-            Unavailable | <b>{unavailable}</b>
-          </p>
-        </div>
-      </figcaption>
+      <InventoryStatusLegend
+        assigned={quantity}
+        available={stock}
+        inTransit={inTransit}
+        inTransitMissingData={inTransitMissingData}
+        unavailable={unavailable}
+        assignedColor={assignedColor}
+        availableColor={availableColor}
+        unavailableColor={unavailableColor}
+        inTransitColor={inTransitColor}
+        inTransitMissingDataColor={inTransitMissingDataColor}
+      />
     </figure>
   );
 }

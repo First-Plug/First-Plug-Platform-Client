@@ -2,7 +2,13 @@
 import { Button, SectionTitle, PageLayout } from "@/common";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
-import { Team, TeamMember, zodCreateMembertModel } from "@/types";
+import {
+  Product,
+  ProductTable,
+  Team,
+  TeamMember,
+  zodCreateMembertModel,
+} from "@/types";
 import PersonalData from "./PersonalData";
 import memberImage from "../../../public/member.png";
 import EmployeeData from "./EmployeeData";
@@ -14,7 +20,8 @@ import { transformData } from "@/utils/dataTransformUtil";
 import { useCreateMember, useUpdateMember } from "@/members/hooks";
 import { useGetOrCreateTeam } from "@/teams/hooks";
 import { QueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 interface MemberFormProps {
   initialData?: TeamMember;
@@ -48,7 +55,14 @@ const MemberForm: React.FC<MemberFormProps> = ({
     formState: { isSubmitting },
   } = methods;
 
-  // const [isProcessing, setIsProcessing] = useState(false);
+  const searchParams = useSearchParams();
+  const assignerEmail = searchParams.get("email");
+
+  useEffect(() => {
+    if (assignerEmail) {
+      methods.setValue("email", assignerEmail);
+    }
+  }, [assignerEmail, methods]);
 
   const formatAcquisitionDate = (date: string) => {
     if (!date) return "";
@@ -96,10 +110,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
-      if (changes.personalEmail === "") {
-        delete changes.personalEmail;
-      }
-
       if (!("dni" in changes) && initialData?.dni) {
         changes.dni = initialData.dni;
       }
@@ -127,7 +137,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
         });
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["members"] });
+      await queryClient.refetchQueries({ queryKey: ["members"] });
       await queryClient.invalidateQueries({ queryKey: ["teams"] });
 
       closeAside();
@@ -142,6 +152,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
       setMembers(transformedMembers);
       setTeams(updatedTeams);
+
       closeAside();
     } catch (error: any) {
       console.error("Error al guardar miembro:", error);

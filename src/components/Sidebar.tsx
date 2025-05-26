@@ -10,10 +10,12 @@ import {
   ArrowRight,
   DashboardIcon,
   ClockIcon,
+  TruckIcon,
 } from "@/common/Icons";
 import { usePathname } from "next/navigation";
 // import { usePrefetchAssets } from "@/assets/hooks";
 import { usePrefetchMembers } from "@/members/hooks";
+import { usePrefetchLatestActivity } from "@/action-history/hooks/usePrefetchLatestActivity";
 
 export const Sidebar = function () {
   const path = usePathname();
@@ -23,6 +25,7 @@ export const Sidebar = function () {
 
   // const { prefetchAssets } = usePrefetchAssets();
   const prefetchMembers = usePrefetchMembers();
+  const prefetchLatestActivity = usePrefetchLatestActivity();
 
   const toggleSidebarSize = () => {
     setIsSidebarSmall(!isSidebarSmall);
@@ -112,12 +115,20 @@ export const Sidebar = function () {
 
         <SidebarLink
           isSmall={isSidebarSmall}
+          icon={<TruckIcon />}
+          title="Shipments"
+          href="/home/shipments"
+          isActive={pathArray.includes("shipments")}
+        />
+
+        <SidebarLink
+          isSmall={isSidebarSmall}
           icon={<ClockIcon />}
           title="Activity"
           href="/home/activity"
           isActive={pathArray.includes("activity")}
           onMouseEnter={() => {
-            // prefetchAssets();
+            prefetchLatestActivity();
           }}
         />
 
@@ -127,14 +138,6 @@ export const Sidebar = function () {
           title="Orders"
           href="/home/orders"
           isActive={pathArray.includes("orders")}
-        />
-
-        <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<TruckIcon />}
-          title="Shipments"
-          href="/home/shipments"
-          isActive={pathArray.includes("shipments")}
         /> */}
       </section>
 

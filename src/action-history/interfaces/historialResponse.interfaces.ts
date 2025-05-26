@@ -10,6 +10,7 @@ export interface Datum {
   userId: string;
   itemType: string;
   changes: Changes;
+  context: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,4 +18,5 @@ export interface Datum {
 export interface Changes {
   oldData: any;
   newData: any;
+  context?: string;
 }
