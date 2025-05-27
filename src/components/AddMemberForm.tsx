@@ -400,7 +400,10 @@ export const AddMemberForm = observer(
             </div>
           </div>
           <div className="w-80 mt-4">
-            <ShipmentWithFp onSubmit={onSubmitDropdown} />
+            <ShipmentWithFp
+              onSubmit={onSubmitDropdown}
+              destinationMember={selectedMember}
+            />
           </div>
         </div>
 

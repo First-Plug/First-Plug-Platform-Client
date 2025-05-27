@@ -237,7 +237,10 @@ const MembersList = observer(function MembersList({
           </div>
 
           <div className="flex-1">
-            <ShipmentWithFp onSubmit={onSubmitDropdown} />
+            <ShipmentWithFp
+              onSubmit={onSubmitDropdown}
+              destinationMember={selectedMember}
+            />
           </div>
 
           {relocateResult === "success" ? (
