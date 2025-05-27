@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dropdown } from "../index";
 import { DialogShipmentWithFp } from "./dialog-shipment-with-fp";
-import { useForm, Controller } from "react-hook-form"; // Importamos react-hook-form
+import { useForm, Controller } from "react-hook-form";
 import { AsapOrDateValue } from "./asap-or-date";
 import {
   Tooltip,
@@ -18,12 +18,14 @@ import {
   SelectTrigger,
 } from "@/firstplug/ui/Select";
 import { SelectLabel } from "../../../firstplug/ui/Select/select-label";
+import { TeamMember } from "@/types";
 
 interface Props {
   onSubmit: (data: any) => void;
+  destinationMember?: TeamMember | null;
 }
 
-export const ShipmentWithFp = ({ onSubmit }: Props) => {
+export const ShipmentWithFp = ({ onSubmit, destinationMember }: Props) => {
   const { setValue, watch } = useForm();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [pickupDate, setPickupDate] = useState<AsapOrDateValue>("");
@@ -60,6 +62,8 @@ export const ShipmentWithFp = ({ onSubmit }: Props) => {
     setValue("shipment", ""); // Limpiar el valor del dropdown
     onSubmit(null);
   };
+
+  console.log("Destination member in ShipmentWithFp:", destinationMember);
 
   return (
     <>
@@ -104,6 +108,7 @@ export const ShipmentWithFp = ({ onSubmit }: Props) => {
                 onDeliveredDateChange={setDeliveredDate}
                 onSave={handleDialogSave}
                 onCancel={handleDialogCancel}
+                destinationMember={destinationMember}
               />
             }
           />

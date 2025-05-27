@@ -1,5 +1,5 @@
 import { Button } from "@/common";
-import { Calendar } from "lucide-react";
+import { Calendar, InfoIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,9 @@ import { AsapOrDateValue } from "./asap-or-date";
 import { useMemo } from "react";
 import { Label } from "@/components/ui/label"; // o cualquier componente de texto
 import { AlertCircle } from "lucide-react"; // opcional, para ícono de error
-import { isBefore, isValid, parseISO, isEqual } from "date-fns"; // Importa isEqual
+import { isBefore, isValid, parseISO, isEqual, format } from "date-fns"; // Importa isEqual
+import { checkMemberJoinDate } from "@/shipments/utils/memberDateValidation";
+import { TeamMember } from "@/types";
 
 interface Props {
   isOpen: boolean;
@@ -25,6 +27,7 @@ interface Props {
   onDeliveredDateChange: (val: AsapOrDateValue) => void;
   onSave: () => void;
   onCancel: () => void; // Agregar un prop para manejar el cancel
+  destinationMember: TeamMember | null;
 }
 
 export const DialogShipmentWithFp = ({
@@ -36,7 +39,13 @@ export const DialogShipmentWithFp = ({
   onDeliveredDateChange,
   onSave,
   onCancel, // Recibir el método de cancelación
+  destinationMember,
 }: Props) => {
+  console.log("Dialog opened with destination member:", destinationMember);
+  const { shouldShowWarning, joinDate } = useMemo(
+    () => checkMemberJoinDate(destinationMember),
+    [destinationMember]
+  );
   // Manejar el cierre del diálogo cuando se hace clic fuera
   const handleClose = (open: boolean) => {
     if (!open) {
@@ -69,6 +78,8 @@ export const DialogShipmentWithFp = ({
 
   const isEmptyField = pickupDate === "" || deliveredDate === "";
 
+  console.log("Dialog opened with destination member:", destinationMember);
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogTrigger asChild>
@@ -77,12 +88,29 @@ export const DialogShipmentWithFp = ({
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <DialogTitle className="text-lg">Ship With First Plug</DialogTitle>
-          <DialogDescription className="text-base">
-            Select when you&apos;d like the shipment to be picked up and
-            delivered.
+          <DialogDescription className="text-[15px] leading-relaxed">
+            Warning:
+            <br />
+            <strong>Dates Are Preferred, Not Guaranteed</strong>
+            <br />
+            The selected pickup and delivery dates are your preferred choices.
+            We’ll do our best to meet them, but exact scheduling may vary due to
+            logistics constraints.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4 h-[200px]">
+        <div className="grid gap-2 min-h-[200px]">
+          {shouldShowWarning && joinDate && (
+            <div className="bg-amber-50 text-amber-700 border border-amber-200 rounded-xl px-4 py-2 flex items-center text-[15px]">
+              <span>
+                {destinationMember?.firstName +
+                  " " +
+                  destinationMember?.lastName}{" "}
+                will join on {format(joinDate, "MMM dd, yyyy")}. We recommend
+                setting the delivery date on or before the joining date so the
+                member receives the products before their first day.
+              </span>
+            </div>
+          )}
           <AsapOrDate
             label="Pickup Date"
             value={pickupDate}
