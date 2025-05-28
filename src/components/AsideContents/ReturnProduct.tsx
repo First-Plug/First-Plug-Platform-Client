@@ -259,7 +259,10 @@ export function ReturnProduct({
         </div>
 
         <div className="flex-1 mb-4">
-          <ShipmentWithFp onSubmit={onSubmitDropdown} />
+          <ShipmentWithFp
+            onSubmit={onSubmitDropdown}
+            destinationMember={null}
+          />
         </div>
 
         <div className="flex-none py-4">
