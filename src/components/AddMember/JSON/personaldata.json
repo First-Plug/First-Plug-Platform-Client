@@ -31,7 +31,8 @@
       "name": "personalEmail",
       "title": "Personal Email",
       "type": "email",
-      "placeholder": "Personal Email"
+      "placeholder": "Personal Email",
+      "errorMessage": "Please enter a valid email address"
     },
     {
       "name": "phone",
@@ -41,9 +42,10 @@
     },
     {
       "name": "dni",
-      "title": "DNI/CI",
+      "title": "DNI/CI/Passport",
       "type": "text",
-      "placeholder": "DNI"
+      "placeholder": "DNI",
+      "errorMessage": "DNI cannot be longer than 20 characters"
     }
   ]
 }

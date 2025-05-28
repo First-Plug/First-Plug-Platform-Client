@@ -92,14 +92,11 @@ const MemberForm: React.FC<MemberFormProps> = ({
       Object.keys(data).forEach((key) => {
         if (key === "dni") {
           const initialDni =
-            initialData?.[key] !== undefined
-              ? Number(initialData[key])
-              : undefined;
-          const newDni =
-            data[key] !== undefined ? Number(data[key]) : undefined;
+            initialData?.[key] !== undefined ? initialData[key] : undefined;
+          const newDni = data[key] !== undefined ? data[key] : undefined;
 
           if (newDni !== initialDni) {
-            changes[key] = newDni;
+            changes[key] = String(newDni);
           }
         } else if (data[key] !== initialData?.[key]) {
           if (key === "acquisitionDate" || key === "birthDate") {
@@ -110,31 +107,29 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
-      if (!("dni" in changes) && initialData?.dni) {
-        changes.dni = initialData.dni;
-      }
-
       if (changes.products) {
         delete changes.products;
       }
+
+      console.log(changes);
 
       if (isUpdate && initialData) {
         await updateMemberMutation.mutateAsync({
           id: initialData._id,
           data: { ...changes, ...(teamId && { team: teamId }) },
         });
-
-        if (changes.dni === undefined && initialData.dni !== undefined) {
-          initialData.dni = initialData.dni;
-        }
       } else {
         if (data.personalEmail === "") {
           delete data.personalEmail;
         }
-        await createMemberMutation.mutateAsync({
+        const processedData = {
           ...data,
           ...(teamId && { team: teamId }),
-        });
+        };
+        if (processedData.dni !== undefined) {
+          processedData.dni = String(processedData.dni);
+        }
+        await createMemberMutation.mutateAsync(processedData);
       }
 
       await queryClient.refetchQueries({ queryKey: ["members"] });

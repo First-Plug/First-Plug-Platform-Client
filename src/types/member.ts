@@ -25,7 +25,7 @@ export const TeamMemberModel = types.model({
   teamId: types.optional(types.string, ""),
   products: types.optional(types.array(ProductModel), []),
   team: types.optional(types.union(types.string, TeamModel), "Not Assigned"),
-  dni: types.optional(types.number, 0),
+  dni: types.optional(types.union(types.string, types.number), ""),
   isDeleted: types.optional(types.boolean, false),
 });
 
@@ -69,8 +69,12 @@ export const zodCreateMembertModel = z.object({
     .min(1, { message: "Email is required" }),
   picture: z.string().optional(),
   position: z.string().trim().optional(),
-  personalEmail: z.string().optional(),
-  // personalEmail: z.string().email().trim().toLowerCase().optional(),
+  personalEmail: z
+    .string()
+    .email({ message: "Please enter a valid email address" })
+    .trim()
+    .toLowerCase()
+    .optional(),
   phone: z
     .string()
     .trim()
@@ -91,10 +95,10 @@ export const zodCreateMembertModel = z.object({
   dni: z
     .preprocess((value) => {
       if (typeof value === "string") {
-        return value.trim() === "" ? undefined : parseInt(value, 10);
+        return value.trim() === "" ? undefined : value;
       }
-      return value;
-    }, z.union([z.number().int().positive().or(z.literal(0)), z.undefined()]))
+      return value ? String(value) : undefined;
+    }, z.union([z.string().min(1).max(20, { message: "DNI cannot be longer than 20 characters" }), z.undefined()]))
     .optional(),
 });
 

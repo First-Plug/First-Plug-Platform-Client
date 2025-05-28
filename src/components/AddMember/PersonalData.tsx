@@ -63,16 +63,7 @@ const PersonalData = function ({ memberImage, isUpdate, initialData }) {
                       title={field.title}
                       value={controllerField.value || ""}
                       onChange={(e) => {
-                        if (field.name === "dni") {
-                          const newDniValue =
-                            e.target.value.trim() === ""
-                              ? ""
-                              : parseInt(e.target.value, 10);
-
-                          controllerField.onChange(newDniValue);
-                        } else {
-                          controllerField.onChange(e.target.value);
-                        }
+                        controllerField.onChange(e.target.value);
                       }}
                       allowFutureDates={false}
                     />
