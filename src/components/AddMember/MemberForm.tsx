@@ -47,7 +47,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
   const methods = useForm({
     resolver: zodResolver(zodCreateMembertModel),
-    defaultValues: initialData || {},
+    defaultValues: {
+      ...initialData,
+      dni: initialData?.dni === undefined ? "" : initialData.dni,
+    },
   });
 
   const {
@@ -93,10 +96,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
         if (key === "dni") {
           const initialDni =
             initialData?.[key] !== undefined ? initialData[key] : undefined;
-          const newDni = data[key] !== undefined ? data[key] : undefined;
+          const newDni = data[key] === "" ? undefined : data[key];
 
           if (newDni !== initialDni) {
-            changes[key] = String(newDni);
+            changes[key] = newDni;
           }
         } else if (data[key] !== initialData?.[key]) {
           if (key === "acquisitionDate" || key === "birthDate") {
@@ -126,6 +129,8 @@ const MemberForm: React.FC<MemberFormProps> = ({
         };
         if (processedData.dni !== undefined) {
           processedData.dni = String(processedData.dni);
+        } else {
+          processedData.dni = "";
         }
         await createMemberMutation.mutateAsync(processedData);
       }
