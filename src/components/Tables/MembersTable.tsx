@@ -10,6 +10,13 @@ import {
   useFetchMembers,
   usePrefetchMember,
 } from "@/members/hooks";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { TooltipArrow } from "@radix-ui/react-tooltip";
 
 const MONTHS = [
   "January",
@@ -236,47 +243,98 @@ const membersColumns: (
     id: "actions",
     size: 80,
     header: () => null,
-    cell: ({ row }) => (
-      <div className="flex gap-1">
-        <div
-          onMouseEnter={() => {
-            prefetchMember(row.original._id);
-          }}
-        >
-          <Button
-            variant="text"
-            onMouseEnter={() => {
-              prefetchMember(row.original._id);
-            }}
-            onClick={() => handleEdit(row.original._id)}
-            icon={
-              <PenIcon
-                strokeWidth={2}
-                className="text-dark-grey w-[1.2rem] h-[1.2rem]"
-              />
-            }
-          />
-        </div>
+    cell: ({ row }) => {
+      const member = row.original;
+      const isEditDisabled = (member as any).hasOnTheWayShipment === true;
+      const isDeleteDisabled = member.activeShipment === true;
 
-        <DeleteAction type="member" id={row.original._id} />
-        <div
-          onMouseEnter={() => {
-            prefetchMember(row.original._id);
-          }}
-        >
-          <Button
-            variant="text"
-            onClick={() => handleViewDetail(row.original._id)}
-            icon={
-              <ElipsisVertical
-                strokeWidth={2}
-                className="text-dark-grey w-[1.2rem] h-[1.2rem]"
-              />
-            }
-          />
+      return (
+        <div className="flex gap-1 items-center justify-end">
+          <div
+            onMouseEnter={() => {
+              prefetchMember(member._id);
+            }}
+          >
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button
+                      variant="text"
+                      onMouseEnter={() => {
+                        prefetchMember(member._id);
+                      }}
+                      onClick={() => handleEdit(member._id)}
+                      disabled={isEditDisabled}
+                      icon={
+                        <PenIcon
+                          strokeWidth={2}
+                          className={`w-[1.2rem] h-[1.2rem] ${
+                            isEditDisabled ? "text-disabled" : "text-dark-grey"
+                          }`}
+                        />
+                      }
+                    />
+                  </div>
+                </TooltipTrigger>
+                {isEditDisabled && (
+                  <TooltipContent
+                    side="bottom"
+                    align="end"
+                    className="bg-blue/80 text-white p-2 rounded-md text-xs font-normal z-50"
+                  >
+                    Members involved in a shipment that&apos;s &quot;On the
+                    way&quot; cannot be edited.
+                    <TooltipArrow className="fill-blue/80" />
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <DeleteAction
+                    type="member"
+                    id={member._id}
+                    disabled={isDeleteDisabled}
+                  />
+                </div>
+              </TooltipTrigger>
+              {isDeleteDisabled && (
+                <TooltipContent
+                  side="bottom"
+                  align="end"
+                  className="bg-blue/80 text-white p-2 rounded-md text-xs font-normal z-50"
+                >
+                  Members with active shipments cannot be deleted.
+                  <TooltipArrow className="fill-blue/80" />
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+
+          <div
+            onMouseEnter={() => {
+              prefetchMember(member._id);
+            }}
+          >
+            <Button
+              variant="text"
+              onClick={() => handleViewDetail(member._id)}
+              icon={
+                <ElipsisVertical
+                  strokeWidth={2}
+                  className="text-dark-grey w-[1.2rem] h-[1.2rem]"
+                />
+              }
+            />
+          </div>
         </div>
-      </div>
-    ),
+      );
+    },
   },
 ];
 interface TableMembersProps {
