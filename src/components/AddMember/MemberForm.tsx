@@ -111,8 +111,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
         delete changes.products;
       }
 
-      console.log(changes);
-
       if (isUpdate && initialData) {
         await updateMemberMutation.mutateAsync({
           id: initialData._id,

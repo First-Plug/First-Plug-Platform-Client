@@ -71,9 +71,12 @@ export const zodCreateMembertModel = z.object({
   position: z.string().trim().optional(),
   personalEmail: z
     .string()
-    .email({ message: "Please enter a valid email address" })
     .trim()
     .toLowerCase()
+    .refine(
+      (value) => value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+      { message: "Please enter a valid email address" }
+    )
     .optional(),
   phone: z
     .string()
