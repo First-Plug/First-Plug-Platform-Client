@@ -94,12 +94,11 @@ const MemberForm: React.FC<MemberFormProps> = ({
       let changes: Partial<TeamMember> = {};
       Object.keys(data).forEach((key) => {
         if (key === "dni") {
-          const initialDni =
-            initialData?.[key] !== undefined ? initialData[key] : undefined;
-          const newDni = data[key] === "" ? undefined : data[key];
+          const initialDni = initialData?.dni ?? "";
+          const newDni = data.dni ?? "";
 
           if (newDni !== initialDni) {
-            changes[key] = newDni;
+            changes.dni = newDni;
           }
         } else if (data[key] !== initialData?.[key]) {
           if (key === "acquisitionDate" || key === "birthDate") {
