@@ -47,7 +47,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
   const methods = useForm({
     resolver: zodResolver(zodCreateMembertModel),
-    defaultValues: initialData || {},
+    defaultValues: {
+      ...initialData,
+      dni: initialData?.dni === undefined ? "" : initialData.dni,
+    },
   });
 
   const {
@@ -91,15 +94,11 @@ const MemberForm: React.FC<MemberFormProps> = ({
       let changes: Partial<TeamMember> = {};
       Object.keys(data).forEach((key) => {
         if (key === "dni") {
-          const initialDni =
-            initialData?.[key] !== undefined
-              ? Number(initialData[key])
-              : undefined;
-          const newDni =
-            data[key] !== undefined ? Number(data[key]) : undefined;
+          const initialDni = initialData?.dni ?? "";
+          const newDni = data.dni ?? "";
 
           if (newDni !== initialDni) {
-            changes[key] = newDni;
+            changes.dni = newDni;
           }
         } else if (data[key] !== initialData?.[key]) {
           if (key === "acquisitionDate" || key === "birthDate") {
@@ -110,10 +109,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
         }
       });
 
-      if (!("dni" in changes) && initialData?.dni) {
-        changes.dni = initialData.dni;
-      }
-
       if (changes.products) {
         delete changes.products;
       }
@@ -123,18 +118,20 @@ const MemberForm: React.FC<MemberFormProps> = ({
           id: initialData._id,
           data: { ...changes, ...(teamId && { team: teamId }) },
         });
-
-        if (changes.dni === undefined && initialData.dni !== undefined) {
-          initialData.dni = initialData.dni;
-        }
       } else {
         if (data.personalEmail === "") {
           delete data.personalEmail;
         }
-        await createMemberMutation.mutateAsync({
+        const processedData = {
           ...data,
           ...(teamId && { team: teamId }),
-        });
+        };
+        if (processedData.dni !== undefined) {
+          processedData.dni = String(processedData.dni);
+        } else {
+          processedData.dni = "";
+        }
+        await createMemberMutation.mutateAsync(processedData);
       }
 
       await queryClient.refetchQueries({ queryKey: ["members"] });

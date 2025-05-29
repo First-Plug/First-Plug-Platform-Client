@@ -28,6 +28,7 @@ export default function UserRegister() {
     isDeleted: false,
     dni: 0,
     activeShipment: false,
+    hasOnTheWayShipment: false,
   });
   const handleInput = useCallback((key: string, value: unknown) => {
     setState((prev) => ({

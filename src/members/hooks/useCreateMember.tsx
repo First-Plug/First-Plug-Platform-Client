@@ -48,6 +48,7 @@ export const useCreateMember = () => {
         dni: newMember.dni || 0,
         isDeleted: false,
         activeShipment: false,
+        hasOnTheWayShipment: false,
       };
 
       // Agregar el miembro optimista a la lista de miembros
