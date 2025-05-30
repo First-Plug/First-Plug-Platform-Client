@@ -1,158 +1,38 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { useQueryClient } from "@tanstack/react-query";
+
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
-import { setAuthInterceptor } from "@/config/axios.config";
-import { AuthServices } from "@/services";
 
-import { useFetchTeams } from "@/teams/hooks";
-import { useFetchMembers } from "@/members/hooks";
-import { useGetTableAssets } from "@/assets/hooks";
-import { EmptyDashboardCard, PageLayout } from "@/common";
-import { Loader } from "@/components/Loader";
+import { PageLayout, PageLoader } from "@/shared";
 
-import DashboardLayout from "@/dashboard/components/DashboardLayout";
-import { ItemDashboard } from "@/dashboard/components/ItemDashboard";
-import { MyAssets } from "@/dashboard/components/MyAssets";
-import { ComputerUpdates } from "@/dashboard/components/ComputerUpdates";
-import { UpcomingBirthdays } from "@/dashboard/components/UpcomingBirthdays";
-import { MembersByCountry } from "@/dashboard/components/MembersByCountry";
-import { useFetchUserSettings } from "@/components/settings/hooks/useFetchUserSettings";
-import { useActivityLatest } from "@/dashboard/action/findLatest";
-import { LatestActivity } from "@/dashboard/components/LatestActivity";
+import {
+  Widgets,
+  DashboardLayout,
+  useSortedWidgets,
+  useFetchDashboard,
+} from "@/features/dashboard";
 
 export default observer(function Dashboard() {
-  const { data: sessionData } = useSession();
-  const [loading, setLoading] = useState(true);
-  const [itemsOrder, setItemsOrder] = useState<string[]>([]);
-
-  const queryClient = useQueryClient();
-
   const {
-    alerts: { setAlert },
-    user: { user, setUser },
+    user: { user },
   } = useStore();
 
-  const { isFetching: isFetchingSettings } = useFetchUserSettings(
-    user?.tenantName
-  );
-  const { isLoading: isLoadingMembers } = useFetchTeams();
-  const { data: membersData, isLoading: isLoadingTeams } = useFetchMembers();
-  const { data: assets, isLoading: isLoadingAssets } = useGetTableAssets();
-  const { data: activityLatest, isLoading: isLoadingActivity } =
-    useActivityLatest();
+  const { isLoading, members, assets, activityLatest } = useFetchDashboard();
 
-  useEffect(() => {
-    if (sessionStorage.getItem("accessToken")) {
-      setAuthInterceptor(sessionStorage.getItem("accessToken"));
+  const sortedWidgets = useSortedWidgets(user?.widgets ?? null);
 
-      if (sessionData?.user?._id) {
-        AuthServices.getUserInfro(sessionData.user._id)
-          .then((userInfo) => {
-            setUser(userInfo);
-          })
-          .catch((error) => {
-            console.error("Error fetching user info:", error);
-          });
-      }
-    }
-    setLoading(false);
-  }, [sessionData?.user?._id, setUser, user]);
-
-  useEffect(() => {
-    queryClient.setQueryData(["assets"], assets);
-  }, [assets, queryClient]);
-
-  useEffect(() => {
-    queryClient.getQueryData(["assets"]);
-  }, [queryClient]);
-
-  useEffect(() => {
-    if (user?.widgets) {
-      const sortedWidgets = user.widgets
-        .slice()
-        .sort((a, b) => a.order - b.order)
-        .map((widget) => widget.id);
-
-      setItemsOrder(sortedWidgets);
-    }
-  }, [user]);
-
-  if (
-    loading ||
-    isFetchingSettings ||
-    isLoadingTeams ||
-    isLoadingMembers ||
-    isLoadingAssets ||
-    isLoadingActivity
-  ) {
-    return <Loader />;
-  }
-
-  const widgetsMap: Record<string, JSX.Element> = {
-    "my-assets": (
-      <ItemDashboard id="my-assets">
-        {assets.length > 0 ? (
-          <MyAssets assets={assets} sessionData={sessionData} />
-        ) : (
-          <EmptyDashboardCard type="stock" handleSwapy />
-        )}
-      </ItemDashboard>
-    ),
-    "computer-updates": (
-      <ItemDashboard id="computer-updates">
-        {assets.length > 0 ? (
-          <ComputerUpdates assets={assets} user={user} />
-        ) : (
-          <EmptyDashboardCard type="computer" handleSwapy />
-        )}
-      </ItemDashboard>
-    ),
-    "upcoming-birthdays": (
-      <ItemDashboard id="upcoming-birthdays">
-        {membersData.length > 0 ? (
-          <UpcomingBirthdays
-            membersData={membersData}
-            user={user}
-            setAlert={setAlert}
-          />
-        ) : (
-          <EmptyDashboardCard type="members" handleSwapy />
-        )}
-      </ItemDashboard>
-    ),
-    "members-by-country": (
-      <ItemDashboard id="members-by-country">
-        {membersData.length > 0 ? (
-          <MembersByCountry membersData={membersData} />
-        ) : (
-          <EmptyDashboardCard type="opsByCountry" handleSwapy />
-        )}
-      </ItemDashboard>
-    ),
-    "latest-activity": (
-      <ItemDashboard id="latest-activity">
-        {activityLatest.length > 0 ? (
-          <LatestActivity history={activityLatest} />
-        ) : (
-          <EmptyDashboardCard type="latestActivity" handleSwapy />
-        )}
-      </ItemDashboard>
-    ),
-  };
+  if (isLoading || !user) return <PageLoader />;
 
   return (
     <PageLayout>
       <DashboardLayout>
-        <section className="grid grid-cols-2 gap-4 mb-6">
-          {itemsOrder.map((id) => (
-            <div key={id} className="h-[42vh]">
-              {widgetsMap[id]}
-            </div>
-          ))}
-        </section>
+        <Widgets
+          sortedWidgets={sortedWidgets}
+          assets={assets}
+          user={user}
+          members={members}
+          activityLatest={activityLatest}
+        />
       </DashboardLayout>
     </PageLayout>
   );

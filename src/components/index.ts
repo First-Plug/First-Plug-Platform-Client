@@ -26,6 +26,5 @@ export * from "./RadioButtons";
 export * from "./Sidebar";
 export * from "./StockCard";
 export * from "./TeamDetails";
-export * from "./TeamHomeCard";
 export * from "./TeamInfo";
 export * from "./TeamMembers";

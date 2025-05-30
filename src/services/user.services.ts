@@ -1,5 +1,5 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
-import type { Widget } from "@/dashboard/interfaces/widget.interface";
+import type { Widget } from "@/features/dashboard";
 import { UserZod } from "@/types";
 import axios from "axios";
 

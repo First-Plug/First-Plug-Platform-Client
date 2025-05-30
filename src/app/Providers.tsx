@@ -1,118 +1,21 @@
 "use client";
 
-import { setAuthInterceptor } from "@/config/axios.config";
-import { RootStore, RootStoreContext } from "@/models";
-import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import {
-  PersistQueryClientProvider,
-  persistQueryClientRestore,
-} from "@tanstack/react-query-persist-client";
-import { SessionProvider, getSession, useSession } from "next-auth/react";
-import React, { ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode } from "react";
+import { SessionProvider } from "next-auth/react";
+import { AuthProvider, QueryProvider, StoreProvider } from "@/providers";
 
-type ProvidersProps = {
+interface Props {
   children: ReactNode;
-};
+}
 
-export default function Providers({ children }: ProvidersProps) {
-  const store = RootStore.create({
-    orders: {},
-    shipments: {},
-    products: {},
-    teams: {},
-    members: {},
-    aside: {},
-    user: {},
-    alerts: {},
-  });
-  const queryClient = useMemo(() => {
-    return new QueryClient({
-      defaultOptions: {
-        queries: {
-          gcTime: 1000 * 60 * 30,
-        },
-      },
-    });
-  }, []);
-
-  const [persister, setPersister] = useState<any>(null);
-  const [buster, setBuster] = useState<string>("");
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const localPersister = createSyncStoragePersister({
-        storage: window.localStorage,
-      });
-      setPersister(localPersister);
-    }
-    const setupAxiosInterceptor = async () => {
-      const session = await getSession();
-      const accessToken = session?.backendTokens.accessToken;
-      if (accessToken) {
-        setAuthInterceptor(accessToken);
-      }
-    };
-
-    setupAxiosInterceptor();
-    const observer = new PerformanceObserver((list) => {
-      list.getEntries().forEach((entry) => {
-        console.warn("Long task detected:", entry);
-      });
-    });
-
-    observer.observe({ entryTypes: ["longtask"] });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    const persistedData = window.localStorage.getItem(
-      "REACT_QUERY_OFFLINE_CACHE"
-    );
-  }, []);
-
-  useEffect(() => {
-    const restoreData = async () => {
-      if (!persister) return;
-      try {
-        await persistQueryClientRestore({
-          queryClient,
-          persister,
-          maxAge: 1000 * 60 * 60 * 24,
-          buster,
-        });
-      } catch (error) {
-        console.error("Error restaurando los datos persistidos:", error);
-      }
-    };
-    restoreData();
-  }, [persister, queryClient]);
-
-  if (!persister) {
-    return null;
-  }
-
+export default function Providers({ children }: Props) {
   return (
-    <RootStoreContext.Provider value={store}>
-      <SessionProvider>
-        <PersistQueryClientProvider
-          client={queryClient}
-          persistOptions={{
-            persister,
-            buster,
-            dehydrateOptions: {
-              shouldDehydrateQuery: () => true,
-            },
-          }}
-        >
-          {children}
-          <ReactQueryDevtools initialIsOpen />
-        </PersistQueryClientProvider>
-      </SessionProvider>
-    </RootStoreContext.Provider>
+    <SessionProvider>
+      <StoreProvider>
+        <AuthProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </AuthProvider>
+      </StoreProvider>
+    </SessionProvider>
   );
 }
