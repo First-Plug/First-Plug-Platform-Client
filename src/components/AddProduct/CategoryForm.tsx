@@ -9,7 +9,7 @@ import { FieldValues, useFormContext } from "react-hook-form";
 import { Skeleton } from "../ui/skeleton";
 import QuantityCounter from "./QuantityCounter";
 import RecoverableSwitch from "./RecoverableSwitch";
-import { useFetchMembers } from "@/members/hooks";
+import { useFetchMembers } from "@/features/members";
 import PriceInput from "./PriceInput";
 import ProductCondition from "@/components/AddProduct/ProductCondition";
 import AdditionalInfo from "@/components/AddProduct/AdditionalInfo";
@@ -207,8 +207,8 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
 
   if (isLoading) {
     return (
-      <div className="h-full w-full flex flex-col gap-2">
-        <Skeleton className="h-12 w-full" />
+      <div className="flex flex-col gap-2 w-full h-full">
+        <Skeleton className="w-full h-12" />
         <Skeleton className="flex-grow w-full" />
       </div>
     );
@@ -217,7 +217,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
   return (
     <div className="w-full">
       {isUpdate ? (
-        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <div className="gap-4 grid grid-cols-1 lg:grid-cols-2">
           <div className="w-full lg:w-full">
             <DropdownInputProductForm
               options={CATEGORIES}
@@ -240,7 +240,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               )}
             </div>
           </div>
-          <div className="w-full ">
+          <div className="w-full">
             <DropdownInputProductForm
               options={assignedEmailOptions}
               placeholder="Assigned Member"
@@ -249,7 +249,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               selectedOption={selectedAssignedMember}
               onChange={handleAssignedMemberChange}
               searchable={true}
-              className="w-full "
+              className="w-full"
               disabled={true}
             />
             <div className="min-h-[24px]">
@@ -325,7 +325,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               }
             />
           </div>
-          <div className="w-full ">
+          <div className="w-full">
             <InputProductForm
               placeholder="Serial Number"
               title="Serial Number"
@@ -339,7 +339,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               disabled={quantity > 1 && !isUpdate}
             />
           </div>
-          <div className="w-full mt-3">
+          <div className="mt-3 w-full">
             <PriceInput
               currencyCode={currencyCode}
               amount={amount}
@@ -379,7 +379,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             </div>
           )}
           <div className="lg:col-span-2">
-            <div className="grid grid-cols-5 gap-4 items-start">
+            <div className="items-start gap-4 grid grid-cols-5">
               <div className="col-span-1">
                 <RecoverableSwitch
                   selectedCategory={selectedCategory}
@@ -399,7 +399,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-4 gap-4 items-start ">
+          <div className="items-start gap-4 grid grid-cols-4">
             <div>
               <DropdownInputProductForm
                 options={CATEGORIES}
@@ -470,7 +470,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
             )}
           </div>
 
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-4 mt-4">
+          <div className="gap-4 grid grid-cols-1 lg:grid-cols-4 mt-4">
             <div className="w-full">
               <DropdownInputProductForm
                 options={assignedEmailOptions}
@@ -485,7 +485,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               />
               <div className="min-h-[24px]">
                 {errors.assignedEmail && (
-                  <p className="text-red-500 bg-green">
+                  <p className="bg-green text-red-500">
                     {(errors.assignedEmail as any).message}
                   </p>
                 )}
@@ -571,7 +571,7 @@ const CategoryForm: React.FC<CategoryFormProps> = function ({
               />
             </div>
           </div>
-          <div className="grid grid-cols-4 gap-4 items-start mt-2">
+          <div className="items-start gap-4 grid grid-cols-4 mt-2">
             <div className="col-span-1">
               <ProductCondition
                 isUpdate={isUpdate}

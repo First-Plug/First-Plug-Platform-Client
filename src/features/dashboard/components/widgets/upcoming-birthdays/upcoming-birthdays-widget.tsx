@@ -3,11 +3,11 @@ import { observer } from "mobx-react-lite";
 import { EmptyDashboardCard, ShopIcon, Card } from "@/shared";
 import { TeamHomeCard } from "@/features/dashboard";
 import { UserServices } from "@/services/user.services";
-import type { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 import { useStore } from "@/models";
 
 interface Props {
-  members: TeamMember[];
+  members: Member[];
   user: any;
 }
 

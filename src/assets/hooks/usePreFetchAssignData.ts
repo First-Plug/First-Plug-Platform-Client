@@ -1,8 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { getAllMembers } from "@/members/actions";
+import { getAllMembers } from "@/features/members";
 import { getAssetById } from "../actions";
 import { useStore } from "@/models";
-import { Product, TeamMember } from "@/types";
+import { Product } from "@/types";
+import { Member } from "@/features/members";
 
 export const usePrefetchAssignData = (productId: string) => {
   const queryClient = useQueryClient();
@@ -30,11 +31,9 @@ export const usePrefetchAssignData = (productId: string) => {
       }
       setProductToAssing(product);
 
-      const cachedMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+      const cachedMembers = queryClient.getQueryData<Member[]>(["members"]);
       if (!cachedMembers) {
-        const members: TeamMember[] = await queryClient.fetchQuery<
-          TeamMember[]
-        >({
+        const members: Member[] = await queryClient.fetchQuery<Member[]>({
           queryKey: ["members"],
           queryFn: getAllMembers,
         });

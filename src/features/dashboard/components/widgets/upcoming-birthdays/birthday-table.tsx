@@ -6,7 +6,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 import { TeamCard, MiniCake } from "@/shared";
 
 import { formatBirthDate, isBirthdayToday } from "@/features/dashboard";
@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const birthdayColumns: ColumnDef<TeamMember>[] = [
+const birthdayColumns: ColumnDef<Member>[] = [
   {
     id: "fullName",
     accessorKey: "fullName",
@@ -62,7 +62,7 @@ const birthdayColumns: ColumnDef<TeamMember>[] = [
 ];
 
 interface BirthdayTableProps {
-  members: TeamMember[];
+  members: Member[];
 }
 
 export const BirthdayTable = ({ members }: BirthdayTableProps) => {

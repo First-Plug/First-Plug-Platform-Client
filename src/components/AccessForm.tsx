@@ -13,11 +13,11 @@ export var AccessForm = function AccessForm({ form }: Props) {
     user: { user },
   } = useStore();
   return (
-    <section className="w-1/2 flex flex-col gap-5  border rounded-md p-4 ">
-      <h2 className="text-xl font-montserrat font-bold text-black">Access</h2>
+    <section className="flex flex-col gap-5 p-4 border rounded-md w-1/2">
+      <h2 className="font-montserrat font-bold text-black text-xl">Access</h2>
       <SettingsSubForm form={form} keyValue="email" />
 
-      <div className="flex items-center gap-8  h-24">
+      <div className="flex items-center gap-8 h-24">
         <Button
           type="button"
           variant="secondary"

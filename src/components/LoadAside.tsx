@@ -5,8 +5,6 @@ import { AddStockCard, Button, LoaderSpinner } from "@/common";
 import Papa from "papaparse";
 import { useStore } from "@/models";
 import {
-  CreateMemberZodModel,
-  CsvInfo,
   CsvMember,
   CsvProduct,
   EMPTY_FILE_INFO,
@@ -21,6 +19,7 @@ import { useToast } from "./ui/use-toast";
 import { DownloadStock } from "./Download";
 import { parseMembers } from "@/utils/parseMembers";
 import { useQueryClient } from "@tanstack/react-query";
+import { CreateMemberZodModel } from "@/features/members";
 
 export const LoadAside = function () {
   const [csvInfo, setCsvInfo] = useState(EMPTY_FILE_INFO);
@@ -237,18 +236,18 @@ export const LoadAside = function () {
   return (
     <div className="drop-area">
       <div className="flex flex-col gap-6">
-        <div className=" flex flex-col gap-2 justify-center items-start p-4 rounded-md border-dashed border-2 font-inter  ">
-          <div className="relative h-20 aspect-square ">
+        <div className="flex flex-col justify-center items-start gap-2 p-4 border-2 border-dashed rounded-md font-inter">
+          <div className="relative h-20 aspect-square">
             <Image alt="folder icon" src="/svg/folder.svg" fill />
           </div>
           <p>Select a CSV file from your PC</p>
-          <section className="flex  gap-2 items-center justify-between w-full">
+          <section className="flex justify-between items-center gap-2 w-full">
             <div>
               <label
                 htmlFor="csvFileSelector"
-                className="cursor-pointer text-blue-500"
+                className="text-blue-500 cursor-pointer"
               >
-                <h2 className="text-blue font-lg font-bold font-sans">
+                <h2 className="font-lg font-sans font-bold text-blue">
                   Select a File
                 </h2>
               </label>
@@ -274,7 +273,7 @@ export const LoadAside = function () {
           />
         )}
       </div>
-      <div className="fixed bottom-5 w-[85%] flex">
+      <div className="bottom-5 fixed flex w-[85%]">
         <Button
           disabled={csvFile === null}
           variant={isLoading ? "secondary" : "primary"}

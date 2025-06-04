@@ -1,3 +1,4 @@
+"use client";
 import { ISimpleType, Instance, types } from "mobx-state-tree";
 import { Product, ProductModel } from "./product";
 

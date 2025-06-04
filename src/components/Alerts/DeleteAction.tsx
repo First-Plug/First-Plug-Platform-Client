@@ -16,12 +16,12 @@ import {
   useDeleteMember,
   useFetchMember,
   useFetchMembers,
-} from "@/members/hooks";
+} from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromTeam } from "@/teams/hooks";
 import { useDeleteAsset, usePrefetchAsset } from "@/assets/hooks";
 import { useCancelShipment } from "@/shipments/hooks/useCancelShipment";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 
 type DeleteTypes =
   | "product"
@@ -119,7 +119,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
           throw new Error("Member ID is undefined");
         }
 
-        const member = queryClient.getQueryData<TeamMember>(["members", id]);
+        const member = queryClient.getQueryData<Member>(["members", id]);
         if (member.activeShipment) {
           setAlert("shipmentCancelMemberError");
           return;
@@ -283,7 +283,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
             <DialogContent>
               <DialogHeader>
                 <DialogTitle className="text-xl">{title}</DialogTitle>
-                <DialogDescription className="text-md font-normal">
+                <DialogDescription className="font-normal text-md">
                   {description}
                 </DialogDescription>
               </DialogHeader>
@@ -299,7 +299,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
                   disabled={loading}
                   variant="delete"
                   onClick={deleteAction}
-                  className="w-full bg-error"
+                  className="bg-error w-full"
                 >
                   <p>Delete</p>
                 </Button>

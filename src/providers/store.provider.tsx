@@ -1,3 +1,4 @@
+"use client";
 import { RootStore, RootStoreContext } from "@/models";
 import { ReactNode } from "react";
 

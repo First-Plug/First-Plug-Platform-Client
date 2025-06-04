@@ -1,3 +1,4 @@
+"use client";
 import { AsideType, ASIDE_TYPES } from "@/types";
 import { types } from "mobx-state-tree";
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 
 interface TeamCardProps {
-  team?: TeamMember["team"];
+  team?: Member["team"];
   className?: string;
 }
 

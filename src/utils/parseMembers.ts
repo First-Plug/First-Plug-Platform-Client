@@ -1,4 +1,5 @@
-import { CreateMemberZodModel, CsvMember } from "@/types";
+import { CsvMember } from "@/types";
+import { CreateMemberZodModel } from "@/features/members";
 function convertToISODate(inputDate: string): string {
   const [month, day, year] = inputDate.split("/");
   const formattedDate = `${year}-${month}-${day}`;

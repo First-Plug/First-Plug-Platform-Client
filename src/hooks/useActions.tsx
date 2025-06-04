@@ -1,6 +1,7 @@
 import { useStore } from "@/models";
 import { ProductServices } from "@/services";
-import { Location, Product, TeamMember } from "@/types";
+import { Location, Product } from "@/types";
+import { Member } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function useActions() {
@@ -14,8 +15,8 @@ export default function useActions() {
     product,
     selectedMember,
   }: {
-    selectedMember: TeamMember;
-    currentMember: TeamMember;
+    selectedMember: Member;
+    currentMember: Member;
     product: Product;
   }) => {
     const status =
@@ -57,7 +58,7 @@ export default function useActions() {
   }: {
     location: Location;
     product: Product;
-    currentMember?: TeamMember;
+    currentMember?: Member;
   }) => {
     const status =
       product.productCondition === "Unusable" ? "Unavailable" : "Available";

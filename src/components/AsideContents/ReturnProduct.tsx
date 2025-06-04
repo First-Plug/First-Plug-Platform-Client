@@ -1,11 +1,11 @@
-import { LOCATION, Location, Product, TeamMember, User } from "@/types";
+import { LOCATION, Location, Product, User } from "@/types";
 import React, { Dispatch, SetStateAction, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import ProductDetail, { RelocateStatus } from "@/common/ProductDetail";
 import { Button, LoaderSpinner } from "@/common";
 import useActions from "@/hooks/useActions";
 import { useStore } from "@/models";
-
+import { Member } from "@/features/members";
 import { Badge, badgeVariants } from "../ui/badge";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -91,7 +91,7 @@ export function ReturnProduct({
       address: session?.user?.address,
       phone: session?.user?.phone,
     };
-    const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+    const allMembers = queryClient.getQueryData<Member[]>(["members"]);
 
     if (!allMembers || allMembers.length === 0) {
       console.error("Member list is empty or unavailable.");
@@ -235,7 +235,7 @@ export function ReturnProduct({
         <ProductDetail product={product} selectedProducts={selectedProducts} />
       </div>
 
-      <section className="flex items-end w-full gap-4">
+      <section className="flex items-end gap-4 w-full">
         <div className="flex-1 py-4">
           <Select
             value={newLocation || ""}
@@ -243,7 +243,7 @@ export function ReturnProduct({
             className="w-full max-w-md"
           >
             <SelectLabel className="flex items-center gap-2">
-              <span className="text-dark-grey font-semibold">
+              <span className="font-semibold text-dark-grey">
                 Please select the new location
               </span>
             </SelectLabel>

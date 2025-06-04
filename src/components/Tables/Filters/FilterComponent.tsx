@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SearchInput } from "../../../common/SearchInput";
-import { IconX } from "../../../common/Icons";
+import { SearchInput, IconX } from "@/shared";
 
 interface FilterComponentProps {
   options: string[];
@@ -88,14 +87,14 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   };
 
   return (
-    <div className="fixed bg-white p-6 w-64 shadow-lg overflow-visible z-40">
+    <div className="z-40 fixed bg-white shadow-lg p-6 w-64 overflow-visible">
       <div className="flex justify-end items-center mb-4">
         <IconX onClick={onClose} className="cursor-pointer" />
       </div>
       <SearchInput placeholder="Search..." onSearch={handleSearch} />
       <div className="p-2 max-h-60 overflow-y-auto">
         {selected.map((option) => (
-          <div key={option} className="mt-2 flex items-start">
+          <div key={option} className="flex items-start mt-2">
             <input
               type="checkbox"
               checked={selectedOptions.includes(option)}
@@ -103,17 +102,17 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
               id={option}
               className="mt-2"
             />
-            <label htmlFor={option} className="ml-2 mt-2 leading-tight flex-1">
+            <label htmlFor={option} className="flex-1 mt-2 ml-2 leading-tight">
               {option || "No Data"}
             </label>
           </div>
         ))}
 
         {selected.length > 0 && unselected.length > 0 && (
-          <div className="border-t my-2" />
+          <div className="my-2 border-t" />
         )}
         {unselected.map((option) => (
-          <div key={option} className="mt-2 flex items-start">
+          <div key={option} className="flex items-start mt-2">
             <input
               type="checkbox"
               checked={selectedOptions.includes(option)}
@@ -121,14 +120,14 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
               id={option}
               className="mt-2"
             />
-            <label htmlFor={option} className="ml-2 mt-2 leading-tight flex-1">
+            <label htmlFor={option} className="flex-1 mt-2 ml-2 leading-tight">
               {option || "No Data"}
             </label>
           </div>
         ))}
       </div>
       <button
-        className="mt-4 p-2 bg-red-200 hover:bg-hoverBlue rounded"
+        className="bg-red-200 hover:bg-hoverBlue mt-4 p-2 rounded"
         onClick={handleClearFilter}
       >
         Clear Filter

@@ -6,11 +6,12 @@ import { PenIcon, TrashIcon } from "@/common/Icons";
 import { Memberservices } from "@/services";
 import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
-import { AsideType, TeamMember, ShipmentStatus } from "@/types";
+import { AsideType, ShipmentStatus } from "@/types";
 import { StatusColor } from "@/common/StatusColors";
+import { Member } from "@/features/members";
 
 interface TeamMemberCardProps {
-  member: TeamMember;
+  member: Member;
   _id: string;
   shipmentDetails?: ShipmentStatus;
   className?: string;
@@ -43,9 +44,9 @@ export const TeamMemberCard = observer(function ({
       <div
         className={`flex flex-col gap-2  mx-auto rounded-lg border border-border p-4 font-inter w-full ${className}`}
       >
-        <header className="flex  items-start ">
-          <div className="flex gap-1 flex-grow">
-            <div className="w-[150px] relative aspect-square">
+        <header className="flex items-start">
+          <div className="flex flex-grow gap-1">
+            <div className="relative w-[150px] aspect-square">
               <Image
                 src={member.picture || Photo}
                 alt="colabPhoto"
@@ -54,7 +55,7 @@ export const TeamMemberCard = observer(function ({
                 fill
               />
             </div>
-            <div className="ml-1 flex flex-col  w-full ">
+            <div className="flex flex-col ml-1 w-full">
               <div className="flex items-center gap-1">
                 {!member.team ? (
                   <TeamCard team={undefined} key={"no team"} />
@@ -64,20 +65,20 @@ export const TeamMemberCard = observer(function ({
                 )}
               </div>
               <h2
-                className="text-black font-bold cursor-pointer  "
+                className="font-bold text-black cursor-pointer"
                 onClick={() => handleModal("MemberDetails")}
               >
                 {member.firstName} {member.lastName}
               </h2>
             </div>
           </div>
-          <div className="flex ">
+          <div className="flex">
             <Button
               variant="text"
               icon={
                 <PenIcon
                   strokeWidth={2}
-                  className="text-dark-grey w-[1.2rem] h-[1.2rem]"
+                  className="w-[1.2rem] h-[1.2rem] text-dark-grey"
                 />
               }
               onClick={() => handleModal("EditMember")}
@@ -88,20 +89,20 @@ export const TeamMemberCard = observer(function ({
               body={
                 <TrashIcon
                   strokeWidth={2}
-                  className=" text-dark-grey w-[1.2rem] h-[1.2rem] hover:text-error"
+                  className="w-[1.2rem] h-[1.2rem] text-dark-grey hover:text-error"
                 />
               }
             />
           </div>
         </header>
-        <section className="flex flex-col gap-2 justify-start">
-          <div className="flex   items-center gap-3">
+        <section className="flex flex-col justify-start gap-2">
+          <div className="flex items-center gap-3">
             <h2 className="font-semibold text-lg">Job Position:</h2>
             <p>{member.position}</p>
           </div>
-          <div className="flex items-center  gap-3">
+          <div className="flex items-center gap-3">
             <h2 className="font-semibold text-lg">Products</h2>
-            <p className="bg-border  rounded-full h-6 w-6 text-center  grid place-items-center items text-sm">
+            <p className="place-items-center grid bg-border rounded-full w-6 h-6 text-sm text-center items">
               {member.products.length}
             </p>
           </div>

@@ -10,7 +10,7 @@ import { CheckIcon } from "@/common";
 import { useQueryClient } from "@tanstack/react-query";
 
 function XIcon() {
-  return <XCircleIcon className="text-white " size={40} />;
+  return <XCircleIcon className="text-white" size={40} />;
 }
 interface IConfig {
   title: string;
@@ -439,32 +439,32 @@ export default observer(function AlertProvider() {
   return (
     <Dialog.Root open={alertType !== undefined}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 z-50" />
-        <Dialog.Content className="fixed bg-white p-6 rounded-md shadow-md top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-96">
-          <Dialog.Title className="text-center flex justify-center flex-col items-center">
+        <Dialog.Overlay className="z-50 fixed inset-0 bg-black bg-opacity-50" />
+        <Dialog.Content className="top-1/2 left-1/2 z-50 fixed bg-white shadow-md p-6 rounded-md w-96 -translate-x-1/2 -translate-y-1/2 transform">
+          <Dialog.Title className="flex flex-col justify-center items-center text-center">
             {type === "succes" && (
-              <div className="p-1 rounded-full bg-success/50 animate-pulse">
+              <div className="bg-success/50 p-1 rounded-full animate-pulse">
                 <CheckIcon />
               </div>
             )}
             {type === "error" && (
-              <div className=" rounded-full bg-error ">
+              <div className="bg-error rounded-full">
                 <XIcon />
               </div>
             )}
             <span className="font-semibold text-black text-2xl">{title}</span>
           </Dialog.Title>
-          <Dialog.Description className="text-lg text-center my-2 ">
+          <Dialog.Description className="my-2 text-lg text-center">
             {alertData?.isHtml ? (
               <div dangerouslySetInnerHTML={{ __html: description }} />
             ) : (
               description
             )}
           </Dialog.Description>
-          <div className="mt-4 flex justify-end">
+          <div className="flex justify-end mt-4">
             <Dialog.Close asChild>
               <button
-                className="px-4 py-2 bg-blue text-white rounded"
+                className="bg-blue px-4 py-2 rounded text-white"
                 onClick={closeAction}
               >
                 close

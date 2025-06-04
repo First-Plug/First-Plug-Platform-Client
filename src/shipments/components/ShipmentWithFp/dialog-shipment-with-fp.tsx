@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label"; // o cualquier componente de text
 import { AlertCircle } from "lucide-react"; // opcional, para ícono de error
 import { isBefore, isValid, parseISO, isEqual, format } from "date-fns"; // Importa isEqual
 import { checkMemberJoinDate } from "@/shipments/utils/memberDateValidation";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 
 interface Props {
   isOpen: boolean;
@@ -27,7 +27,7 @@ interface Props {
   onDeliveredDateChange: (val: AsapOrDateValue) => void;
   onSave: () => void;
   onCancel: () => void; // Agregar un prop para manejar el cancel
-  destinationMember: TeamMember | null;
+  destinationMember: Member | null;
 }
 
 export const DialogShipmentWithFp = ({
@@ -98,9 +98,9 @@ export const DialogShipmentWithFp = ({
             logistics constraints.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-2 min-h-[200px]">
+        <div className="gap-2 grid min-h-[200px]">
           {shouldShowWarning && joinDate && (
-            <div className="bg-amber-50 text-amber-700 border border-amber-200 rounded-xl px-4 py-2 flex items-center text-[15px]">
+            <div className="flex items-center bg-amber-50 px-4 py-2 border border-amber-200 rounded-xl text-[15px] text-amber-700">
               <span>
                 {destinationMember?.firstName +
                   " " +
@@ -123,10 +123,10 @@ export const DialogShipmentWithFp = ({
           />
         </div>
         <DialogFooter>
-          <div className="flex flex-col w-full gap-4">
+          <div className="flex flex-col gap-4 w-full">
             {isInvalidDateRange && (
-              <div className="bg-red-50 text-red-600 border border-red-200 rounded-xl p-3 flex items-center gap-2 text-sm">
-                <AlertCircle className="w-4 h-4 mt-0.5" />
+              <div className="flex items-center gap-2 bg-red-50 p-3 border border-red-200 rounded-xl text-red-600 text-sm">
+                <AlertCircle className="mt-0.5 w-4 h-4" />
                 <span>Pickup date must be before delivery date.</span>
               </div>
             )}

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   AssetsWidget,
   ComputerUpdatesWidget,
@@ -7,15 +8,15 @@ import {
   SwapyItem,
 } from "@/features/dashboard";
 
-import { TeamMember, LoggedInUser, ProductTable } from "@/types";
-
+import { LoggedInUser, ProductTable } from "@/types";
+import { Member } from "@/features/members";
 import { Datum } from "@/action-history/interfaces";
 
 interface Props {
   sortedWidgets: string[];
   assets: ProductTable[];
   user: LoggedInUser;
-  members: TeamMember[];
+  members: Member[];
   activityLatest: Datum[];
 }
 
@@ -26,15 +27,18 @@ export const Widgets = ({
   members,
   activityLatest,
 }: Props) => {
-  const widgetsMap: Record<string, JSX.Element> = {
-    "my-assets": <AssetsWidget assets={assets} user={user} />,
-    "computer-updates": <ComputerUpdatesWidget assets={assets} user={user} />,
-    "upcoming-birthdays": (
-      <UpcomingBirthdaysWidget members={members} user={user} />
-    ),
-    "members-by-country": <MembersByCountryWidget members={members} />,
-    "latest-activity": <LatestActivityWidget history={activityLatest} />,
-  };
+  const widgetsMap: Record<string, JSX.Element> = useMemo(
+    () => ({
+      "my-assets": <AssetsWidget assets={assets} user={user} />,
+      "computer-updates": <ComputerUpdatesWidget assets={assets} user={user} />,
+      "upcoming-birthdays": (
+        <UpcomingBirthdaysWidget members={members} user={user} />
+      ),
+      "members-by-country": <MembersByCountryWidget members={members} />,
+      "latest-activity": <LatestActivityWidget history={activityLatest} />,
+    }),
+    [assets, user, members, activityLatest]
+  );
 
   return (
     <>

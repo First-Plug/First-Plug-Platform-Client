@@ -1,6 +1,6 @@
 import { Instance, types } from "mobx-state-tree";
 import { z } from "zod";
-import fields from "@/components/AddMember/JSON/shipmentdata.json";
+import fields from "@/features/members/components/AddMember/JSON/shipmentdata.json";
 export const LoggedInUserModel = types.model({
   _id: types.string,
   name: types.string,

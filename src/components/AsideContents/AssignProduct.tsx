@@ -2,13 +2,14 @@
 import { useStore } from "@/models";
 import { AddMemberForm } from "../AddMemberForm";
 import { useEffect, useState } from "react";
-import { Product, TeamMember } from "@/types";
+import { Product } from "@/types";
 import { observer } from "mobx-react-lite";
 import { Skeleton } from "../ui/skeleton";
 import { useFetchAssetById } from "@/assets/hooks";
-import { useFetchMembers } from "@/members/hooks";
+import { useFetchMembers } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/common";
+import { Member } from "@/features/members";
 
 export const AssignProduct = observer(() => {
   const {
@@ -34,9 +35,9 @@ export const AssignProduct = observer(() => {
     isError: isMembersError,
   } = useFetchMembers();
 
-  const [member, setMember] = useState<TeamMember | null>(null);
+  const [member, setMember] = useState<Member | null>(null);
   const [selectedProdcut, setSelectedPrduct] = useState<Product>();
-  const [filteredMembers, setFilteredMembers] = useState<TeamMember[]>([]);
+  const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
 
   useEffect(() => {
     if (product && members) {
@@ -74,7 +75,7 @@ export const AssignProduct = observer(() => {
     refetchMembers,
   ]);
 
-  const handleSelectedMembers = (selectedMember: TeamMember | null) => {
+  const handleSelectedMembers = (selectedMember: Member | null) => {
     setMember(selectedMember);
   };
 
@@ -85,8 +86,8 @@ export const AssignProduct = observer(() => {
 
   if (loadingProduct || loadingMembers) {
     return (
-      <div className="h-full w-full flex flex-col gap-2">
-        <Skeleton className="h-12 w-full" />
+      <div className="flex flex-col gap-2 w-full h-full">
+        <Skeleton className="w-full h-12" />
         <Skeleton className="flex-grow w-full" />
       </div>
     );
@@ -94,8 +95,8 @@ export const AssignProduct = observer(() => {
 
   if (productError || membersError) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <div className="text-red-500 mb-4">Opps! Something went wrong</div>
+      <div className="flex flex-col justify-center items-center h-full">
+        <div className="mb-4 text-red-500">Opps! Something went wrong</div>
         <Button
           type="button"
           onClick={handleRetry}

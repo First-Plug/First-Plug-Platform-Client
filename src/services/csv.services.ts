@@ -1,5 +1,6 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
-import { CreateMemberZodModel, PrdouctModelZod } from "@/types";
+import { PrdouctModelZod } from "@/types";
+import { CreateMemberZodModel } from "@/features/members";
 
 export class CsvServices {
   static async bulkCreateProducts(data: PrdouctModelZod[]) {

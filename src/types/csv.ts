@@ -1,6 +1,7 @@
+"use client";
 import { z } from "zod";
 import { CATEGORIES, LOCATION, zodProductModel } from "./product";
-import { zodCreateMembertModel } from "./member";
+import { zodCreateMemberModel } from "@/features/members";
 export const EMPTY_FILE_INFO: CsvInfo = {
   title: "",
   file: "",
@@ -98,7 +99,7 @@ export type CsvMember = z.infer<typeof zodMemberCsvSchema>;
 export const csvMemberSchema = z.array(zodMemberCsvSchema);
 export const csvSquema = z.object({
   prdoucts: z.array(zodProductModel).optional(),
-  members: z.array(zodCreateMembertModel).optional(),
+  members: z.array(zodCreateMemberModel).optional(),
 });
 export type CsvInfo = {
   title: string;

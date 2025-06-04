@@ -1,3 +1,4 @@
+"use client";
 import { ALERTS_TYPES, AlertType } from "@/types/alerts";
 import { types } from "mobx-state-tree";
 

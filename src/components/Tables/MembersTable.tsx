@@ -1,5 +1,5 @@
 import { useStore } from "@/models";
-import { Team, TeamMember } from "@/types";
+import { Team } from "@/types";
 import { Button, ElipsisVertical, PenIcon, TeamCard } from "@/common";
 import { ColumnDef } from "@tanstack/react-table";
 import { DeleteAction } from "../Alerts";
@@ -9,7 +9,7 @@ import {
   useDeleteMember,
   useFetchMembers,
   usePrefetchMember,
-} from "@/members/hooks";
+} from "@/features/members";
 import {
   Tooltip,
   TooltipContent,
@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { TooltipArrow } from "@radix-ui/react-tooltip";
+import { Member } from "@/features/members";
 
 const MONTHS = [
   "January",
@@ -34,13 +35,13 @@ const MONTHS = [
 ];
 
 const membersColumns: (
-  handleEdit: (memberId: TeamMember["_id"]) => void,
-  handleDelete: (memberId: TeamMember["_id"]) => void,
-  handleViewDetail: (memberId: TeamMember["_id"]) => void,
+  handleEdit: (memberId: Member["_id"]) => void,
+  handleDelete: (memberId: Member["_id"]) => void,
+  handleViewDetail: (memberId: Member["_id"]) => void,
   prefetchMember: (id: string) => void,
-  members: TeamMember[],
-  filteredMembers?: TeamMember[]
-) => ColumnDef<TeamMember>[] = (
+  members: Member[],
+  filteredMembers?: Member[]
+) => ColumnDef<Member>[] = (
   handleEdit,
   handleDelete,
   handleViewDetail,
@@ -54,9 +55,7 @@ const membersColumns: (
     size: 150,
     header: "Name",
     cell: ({ getValue }) => (
-      <span className="font-semibold   text-blue-500">
-        {getValue<string>()}
-      </span>
+      <span className="font-semibold text-blue-500">{getValue<string>()}</span>
     ),
     meta: {
       filterVariant: "custom",
@@ -214,7 +213,7 @@ const membersColumns: (
     header: "Products",
     size: 60,
     cell: ({ row }) => (
-      <span className="font-semibold text-lg bg-lightPurple/25 rounded-md  h-6 w-6 px-2 grid place-items-center">
+      <span className="place-items-center grid bg-lightPurple/25 px-2 rounded-md w-6 h-6 font-semibold text-lg">
         {(row.original.products || []).length}
       </span>
     ),
@@ -249,7 +248,7 @@ const membersColumns: (
       const isDeleteDisabled = member.activeShipment === true;
 
       return (
-        <div className="flex gap-1 items-center justify-end">
+        <div className="flex justify-end items-center gap-1">
           <div
             onMouseEnter={() => {
               prefetchMember(member._id);
@@ -281,7 +280,7 @@ const membersColumns: (
                   <TooltipContent
                     side="bottom"
                     align="end"
-                    className="bg-blue/80 text-white p-2 rounded-md text-xs font-normal z-50"
+                    className="z-50 bg-blue/80 p-2 rounded-md font-normal text-white text-xs"
                   >
                     Members involved in a shipment that&apos;s &quot;On the
                     way&quot; cannot be edited.
@@ -307,7 +306,7 @@ const membersColumns: (
                 <TooltipContent
                   side="bottom"
                   align="end"
-                  className="bg-blue/80 text-white p-2 rounded-md text-xs font-normal z-50"
+                  className="z-50 bg-blue/80 p-2 rounded-md font-normal text-white text-xs"
                 >
                   Members with active shipments cannot be deleted.
                   <TooltipArrow className="fill-blue/80" />
@@ -327,7 +326,7 @@ const membersColumns: (
               icon={
                 <ElipsisVertical
                   strokeWidth={2}
-                  className="text-dark-grey w-[1.2rem] h-[1.2rem]"
+                  className="w-[1.2rem] h-[1.2rem] text-dark-grey"
                 />
               }
             />
@@ -338,7 +337,7 @@ const membersColumns: (
   },
 ];
 interface TableMembersProps {
-  members: TeamMember[];
+  members: Member[];
 }
 export function MembersTable({ members: propMembers }: TableMembersProps) {
   const prefetchMember = usePrefetchMember();
@@ -350,12 +349,12 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
     aside: { setAside },
   } = useStore();
 
-  const handleEdit = (memberId: TeamMember["_id"]) => {
+  const handleEdit = (memberId: Member["_id"]) => {
     setMemberToEdit(memberId);
     setAside("EditMember");
   };
 
-  const handleDelete = async (memberId: TeamMember["_id"]) => {
+  const handleDelete = async (memberId: Member["_id"]) => {
     await deleteMemberMutation.mutateAsync(memberId, {
       onSuccess: () => {
         alert("Member has been deleted!");
@@ -366,7 +365,7 @@ export function MembersTable({ members: propMembers }: TableMembersProps) {
     });
   };
 
-  const handleViewDetail = (memberId: TeamMember["_id"]) => {
+  const handleViewDetail = (memberId: Member["_id"]) => {
     setMemberToEdit(memberId);
     setSelectedMember(memberId);
     setAside("MemberDetails");

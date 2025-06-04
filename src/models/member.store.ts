@@ -1,9 +1,12 @@
+"use client";
+
 import { types } from "mobx-state-tree";
-import { TeamMemberModel, TeamMember, TeamMemberTable, Team } from "@/types";
+import { Team } from "@/types";
+import { MemberModel, Member, MemberTable } from "@/features/members";
 
 export const MemberStore = types
   .model({
-    members: types.array(TeamMemberModel),
+    members: types.array(MemberModel),
     memberId: types.optional(types.string, ""),
     selectedMemberEmail: types.optional(types.string, ""),
     teamFilterItems: types.array(types.string),
@@ -14,7 +17,7 @@ export const MemberStore = types
     offBoardingFullName: types.optional(types.string, ""),
   })
   .views((store) => ({
-    get membersTable(): TeamMemberTable[] {
+    get membersTable(): MemberTable[] {
       return store.members.map((member) => {
         let teamName: string;
         if (typeof member.team === "string") {
@@ -66,7 +69,7 @@ export const MemberStore = types
     setFetchMembers(fetchValue: boolean) {
       store.fetchingMembers = fetchValue;
     },
-    setMembers(members: TeamMember[]) {
+    setMembers(members: Member[]) {
       if (!members || !Array.isArray(members)) {
         console.error("members is undefined or not an array");
         return;
@@ -95,13 +98,13 @@ export const MemberStore = types
     setMemberOffBoarding(fullName: string) {
       store.offBoardingFullName = fullName;
     },
-    addMember(member: TeamMember) {
+    addMember(member: Member) {
       store.members.push(member);
     },
     setSelectedMember(memberId: string) {
       store.memberId = memberId;
     },
-    setSelectedMemberEmail(memberEmail?: TeamMember["email"]) {
+    setSelectedMemberEmail(memberEmail?: Member["email"]) {
       store.selectedMemberEmail = memberEmail;
     },
     updateMember(member) {

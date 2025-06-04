@@ -2,7 +2,7 @@
 import type React from "react";
 import { useState, useCallback, useEffect } from "react";
 import { observer } from "mobx-react-lite";
-import { Button, PageLayout, SectionTitle } from "@/common";
+import { Button, PageLayout, SectionTitle } from "@/shared";
 import { useStore } from "@/models/root.store";
 import {
   type Category,
@@ -10,8 +10,8 @@ import {
   AttributeModel,
   emptyProduct,
   zodCreateProductModel,
-  type TeamMember,
 } from "@/types";
+import { Member } from "@/features/members";
 import CategoryForm from "@/components/AddProduct/CategoryForm";
 import { cast } from "mobx-state-tree";
 import computerData from "@/components/AddProduct/JSON/computerform.json";
@@ -105,7 +105,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     description: "",
     isOpen: false,
   });
-  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [noneOption, setNoneOption] = useState<string | null>(null);
   const [proceedWithSuccessAlert, setProceedWithSuccessAlert] = useState(false);
   const [isGenericAlertOpen, setIsGenericAlertOpen] = useState(false);
@@ -236,7 +236,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
 
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
-    const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+    const allMembers = queryClient.getQueryData<Member[]>(["members"]);
     const selectedMember =
       allMembers?.find((member) => member.email === finalAssignedEmail) || null;
 
@@ -632,11 +632,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
   return (
     <FormProvider {...methods}>
       <PageLayout>
-        <div className="h-full w-full">
+        <div className="w-full h-full">
           {!showBulkCreate ? (
             <>
-              <div className="absolute h-[90%] w-[80%] overflow-y-auto scrollbar-custom pr-4">
-                <div className="px-4 py-2 rounded-3xl border">
+              <div className="absolute pr-4 w-[80%] h-[90%] overflow-y-auto scrollbar-custom">
+                <div className="px-4 py-2 border rounded-3xl">
                   <SectionTitle className="text-[20px]">
                     {isUpdate ? "" : "Add Product"}
                   </SectionTitle>
@@ -665,8 +665,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   </section>
                 </div>
                 {selectedCategory && (
-                  <div className="flex flex-col lg:flex:row gap-4 max-h-[100%] h-[90%] w-full mt-4">
-                    <div className="px-4 py-6 rounded-3xl border overflow-y-auto max-h-[500px] pb-40 scrollbar-custom">
+                  <div className="flex flex-col gap-4 mt-4 w-full h-[90%] max-h-[100%] lg:flex:row">
+                    <div className="px-4 py-6 pb-40 border rounded-3xl max-h-[500px] overflow-y-auto scrollbar-custom">
                       <section>
                         <DynamicForm
                           fields={FormConfig.fields}
@@ -681,7 +681,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   </div>
                 )}
               </div>
-              <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
+              <aside className="bottom-0 absolute flex justify-end bg-white p-2 border-t w-[80%] h-[10%]">
                 {quantity > 1 ? (
                   <Button
                     body="Next"

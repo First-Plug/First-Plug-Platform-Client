@@ -5,7 +5,7 @@ import { useStore } from "@/models";
 import { AddIcon, Cake, UploadIcon, Button } from "@/shared";
 
 import { BirthdayTable } from "@/features/dashboard";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 
 const isBirthdayInNext30Days = (birthDateString: string) => {
   const today = new Date();
@@ -23,7 +23,7 @@ const isBirthdayInNext30Days = (birthDateString: string) => {
   return diffDays >= 0 && diffDays <= 30;
 };
 
-const sortBirthdaysByUpcoming = (members: TeamMember[]) => {
+const sortBirthdaysByUpcoming = (members: Member[]) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -51,7 +51,7 @@ const sortBirthdaysByUpcoming = (members: TeamMember[]) => {
 export const TeamHomeCard = observer(function ({
   members,
 }: {
-  members: TeamMember[];
+  members: Member[];
 }) {
   const {
     aside: { setAside },
@@ -66,7 +66,7 @@ export const TeamHomeCard = observer(function ({
   );
 
   const handleAddMemberClick = () => {
-    window.location.href = "/home/my-team/addTeam";
+    window.location.href = "/home/my-team/add";
   };
   const handleLoadMembersClick = () => {
     setAside("LoadMembers");

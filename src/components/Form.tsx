@@ -27,14 +27,14 @@ export const Form = function ({
       className={`py-40 min-w-1/2 w-2/3  h-screen flex flex-col justify-center gap-6 my-4 text-md ${className}`}
       onSubmit={onSubmit}
     >
-      <h2 className="text-black font-bold text-2xl font-montserrat">{title}</h2>
+      <h2 className="font-montserrat font-bold text-black text-2xl">{title}</h2>
 
       {children}
 
       <div className="flex justify-center items-center gap-4">
-        <hr className="border-grey flex-1 " />
-        <span className="text-dark-grey flex-2">Or continue with</span>
-        <hr className="border-grey  flex-1 " />
+        <hr className="flex-1 border-grey" />
+        <span className="flex-2 text-dark-grey">Or continue with</span>
+        <hr className="flex-1 border-grey" />
       </div>
 
       <div className="flex justify-center items-center gap-4">
@@ -42,24 +42,24 @@ export const Form = function ({
           onClick={(e) => {
             e.preventDefault();
             return signIn("google", {
-              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/home/dashboard`,
+              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/dashboard`,
             });
           }}
           variant="secondary"
           icon={<GoogleIcon className="w-7 h-7" />}
-          className="border-none w-10 h-10 rounded-full"
+          className="border-none rounded-full w-10 h-10"
         />
 
         <Button
           onClick={(e) => {
             e.preventDefault();
             return signIn("azure-ad", {
-              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/home/dashboard`,
+              callbackUrl: `${process.env.NEXT_PUBLIC_URL}/dashboard`,
             });
           }}
           variant="secondary"
           icon={<MicrosoftIcon className="w-7 h-7" />}
-          className="border-none w-10 h-10 rounded-full"
+          className="border-none rounded-full w-10 h-10"
         />
       </div>
 

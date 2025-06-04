@@ -1,6 +1,7 @@
 import { Button } from "@/common";
 import { useStore } from "@/models";
-import { TeamMember, User } from "@/types";
+import { User } from "@/types";
+import { Member } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { observer } from "mobx-react-lite";
 import { useSession } from "next-auth/react";
@@ -85,7 +86,7 @@ const BulkCreateValidator: React.FC<BulkCreateValidatorProps> = observer(
       if (isClosed) {
         queryClient.invalidateQueries({ queryKey: ["members"] }).then(() => {
           queryClient.refetchQueries({ queryKey: ["members"] }).then(() => {
-            const updatedMembers = queryClient.getQueryData<TeamMember[]>([
+            const updatedMembers = queryClient.getQueryData<Member[]>([
               "members",
             ]);
 
@@ -104,7 +105,7 @@ const BulkCreateValidator: React.FC<BulkCreateValidatorProps> = observer(
 
     const revalidateStatus = () => {
       const updatedMembers =
-        queryClient.getQueryData<TeamMember[]>(["members"]) || [];
+        queryClient.getQueryData<Member[]>(["members"]) || [];
 
       const foundMember = updatedMembers.find(
         (m) =>
@@ -167,7 +168,7 @@ const BulkCreateValidator: React.FC<BulkCreateValidatorProps> = observer(
           {status === "not-company-details" && (
             <Button
               onClick={handleClick}
-              className="w-auto max-w-xs whitespace-normal text-center"
+              className="w-auto max-w-xs text-center whitespace-normal"
             >
               Complete Company Details
             </Button>
@@ -175,7 +176,7 @@ const BulkCreateValidator: React.FC<BulkCreateValidatorProps> = observer(
           {status === "not-member-details" && (
             <Button
               onClick={handleClick}
-              className="w-auto max-w-xs whitespace-normal text-center"
+              className="w-auto max-w-xs text-center whitespace-normal"
             >
               Complete Member Details
             </Button>

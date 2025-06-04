@@ -6,29 +6,29 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 
 interface MembersTableProps {
-  data: TeamMember | TeamMember[];
+  data: Member | Member[];
 }
 
 const CreateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
-  const normalizedData: TeamMember[] = Array.isArray(data) ? data : [data];
+  const normalizedData: Member[] = Array.isArray(data) ? data : [data];
 
   return (
     <Table>
       <TableHeader>
-        <TableRow className="border-gray-200 bg-light-grey rounded-md">
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+        <TableRow className="bg-light-grey border-gray-200 rounded-md">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Name
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Assigned email
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Team
           </TableHead>
-          <TableHead className="py-3 px-4 text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 font-semibold text-black text-start">
             Country
           </TableHead>
         </TableRow>
@@ -43,18 +43,18 @@ const CreateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
         ) : (
           normalizedData.map((member, index) => (
             <TableRow key={index}>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {member.firstName + " " + member.lastName}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {member.email}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {typeof member.team === "object" && member.team !== null
                   ? (member.team.name as string)
                   : "-"}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4">
+              <TableCell className="px-4 py-2 text-xs">
                 {member.country || "-"}
               </TableCell>
             </TableRow>

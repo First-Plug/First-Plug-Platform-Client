@@ -1,5 +1,6 @@
-import { Product, TeamMember, User } from "@/types";
+import { Product, User } from "@/types";
 import { QueryClient } from "@tanstack/react-query";
+import { Member } from "@/features/members";
 
 const capitalizeAndSeparateCamelCase = (text: string): string => {
   const separated = text.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -24,7 +25,7 @@ const getMissingFields = (selectedMember: any): string[] => {
   const missingFields: string[] = [];
 
   requiredFields.forEach((field) => {
-    const value = selectedMember[field as keyof TeamMember];
+    const value = selectedMember[field as keyof Member];
     if (!value || (typeof value === "string" && value.trim() === "")) {
       missingFields.push(field);
     }
@@ -63,11 +64,11 @@ const validateBillingInfo = (
 export const validateAfterAction = (
   source: {
     type: "member" | "office" | "warehouse";
-    data: TeamMember | Partial<User>;
+    data: Member | Partial<User>;
   } | null,
   destination: {
     type: "member" | "office" | "warehouse";
-    data: TeamMember | Partial<User>;
+    data: Member | Partial<User>;
   } | null
 ): string[] => {
   const missingMessages: string[] = [];
@@ -102,7 +103,7 @@ export const validateAfterAction = (
     }
 
     if (entity.type === "member") {
-      const missingFields = getMissingFields(entity.data as TeamMember);
+      const missingFields = getMissingFields(entity.data as Member);
 
       if (missingFields.length > 0) {
         const fullName =
@@ -139,8 +140,8 @@ export const validateAfterAction = (
 
 export const buildValidationEntities = (
   product: Product,
-  allMembers: TeamMember[] = [],
-  selectedMember?: TeamMember | null,
+  allMembers: Member[] = [],
+  selectedMember?: Member | null,
   sessionUser?: Partial<User>,
   noneOption?: string | null
 ) => {
@@ -210,14 +211,14 @@ interface ValidationResult {
 export const validateProductAssignment = (
   product: Product,
   finalAssignedEmail: string | undefined,
-  selectedMember: TeamMember | null,
+  selectedMember: Member | null,
   queryClient: QueryClient,
   setGenericAlertData: (data: { title: string; description: string }) => void,
   setShowErrorDialog: (show: boolean) => void,
   sessionUser: Partial<User>,
   noneOption: string | null
 ): ValidationResult => {
-  const allMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+  const allMembers = queryClient.getQueryData<Member[]>(["members"]);
 
   const { source, destination } = buildValidationEntities(
     product,
@@ -264,7 +265,7 @@ export const validateProductAssignment = (
 /* --------------------- Validate OnCreate --------------------- */
 
 export const validateOnCreate = async (
-  selectedMember: TeamMember | null,
+  selectedMember: Member | null,
   sessionUser: Partial<User>,
   noneOption: string | null
 ): Promise<string[]> => {

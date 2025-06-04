@@ -59,11 +59,11 @@ export default function Register() {
         alt="img"
         width={540}
         height={960}
-        className="w-[50%] h-screen  object-cover"
+        className="w-[50%] h-screen object-cover"
         priority
       />
 
-      <article className="w-[50%] h-screen flex justify-center">
+      <article className="flex justify-center w-[50%] h-screen">
         <Form title="Welcome Back!" register onSubmit={handleSubmit}>
           <div>
             <Input title="Full Name" placeholder="Placeholder" {...nameInput} />
@@ -87,7 +87,7 @@ export default function Register() {
           <Button
             disabled={sumbtiValidation}
             variant={isLoading ? "text" : "primary"}
-            className="rounded-md "
+            className="rounded-md"
             size="big"
             type="submit"
           >

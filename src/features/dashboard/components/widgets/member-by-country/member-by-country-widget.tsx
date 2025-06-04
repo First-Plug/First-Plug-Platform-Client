@@ -1,10 +1,10 @@
 import { EmptyDashboardCard } from "@/shared";
 import { OpsByCountryChart } from "@/features/dashboard";
 import { Card } from "@/components";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 
 interface Props {
-  members: TeamMember[];
+  members: Member[];
 }
 
 export const MembersByCountryWidget = ({ members }: Props) => {

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { DropdownInputProductForm } from "./DropDownProductForm";
-import { TeamMember } from "@/types";
+
 import { capitalizeAndSeparateCamelCase, getMissingFields } from "@/lib/utils";
 import { useStore } from "@/models";
 import { useFormContext } from "react-hook-form";
+import { Member } from "@/features/members";
 
 interface AssignedMemberFieldProps {
-  fetchedMembers: TeamMember[];
+  fetchedMembers: Member[];
   clearErrors: (name?: string | string[]) => void;
   isDisabled: boolean;
   showErrorDialog: (missingData: string) => void;

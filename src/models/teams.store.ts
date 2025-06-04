@@ -1,3 +1,4 @@
+"use client";
 import { types, flow } from "mobx-state-tree";
 import { TeamModel, Team } from "@/types";
 import { TeamServices } from "@/services/team.services";

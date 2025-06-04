@@ -1,10 +1,11 @@
 import Image from "next/image";
 import photo from "../../public/employees/Photo-2.png";
-import { Team, TeamMember } from "@/types";
+import { Team } from "@/types";
+import { Member } from "@/features/members";
 import { JobPositionColors } from "./StatusColors";
 
 interface joinerProps {
-  joiner: TeamMember;
+  joiner: Member;
 }
 
 export function JoinerRow({ joiner }: joinerProps) {
@@ -12,20 +13,20 @@ export function JoinerRow({ joiner }: joinerProps) {
   const backgroundColorClass = JobPositionColors[teamName] || "#d3d3d3";
 
   return (
-    <div className=" flex items-center gap-2 justify-between p-2 border-b rounded-md border-border   ">
-      <div className="flex gap-2 ">
+    <div className="flex justify-between items-center gap-2 p-2 border-b border-border rounded-md">
+      <div className="flex gap-2">
         <Image
           src={photo}
           alt={joiner.lastName}
-          className="w-[3rem] object-cover rounded-md"
+          className="rounded-md w-[3rem] object-cover"
         />
         <div>
-          <h2 className="text-black font-bold">
+          <h2 className="font-bold text-black">
             {joiner.firstName} {joiner.lastName}
           </h2>
-          <div className="flex gap-2 justify-start">
+          <div className="flex justify-start gap-2">
             <span className="font-medium text-dark-grey">Joining Date:</span>
-            <span className=" text-dark-grey">{joiner.startDate}</span>
+            <span className="text-dark-grey">{joiner.startDate}</span>
           </div>
         </div>
       </div>

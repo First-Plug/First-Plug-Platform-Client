@@ -1,3 +1,4 @@
+"use client";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -41,7 +42,7 @@ declare module "@tanstack/react-table" {
   }
 }
 import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
-import { ProductTable, TableType, TeamMember } from "@/types";
+import { ProductTable, TableType } from "@/types";
 import { TableActions } from "./TableActions";
 import { Button } from "../ui/button";
 import { ArrowLeft, ArrowRight, DropDownArrow } from "@/common";
@@ -56,7 +57,7 @@ import {
 import FilterComponent from "./Filters/FilterComponent";
 import { getSnapshot, isStateTreeNode } from "mobx-state-tree";
 import { PaginationAdvanced } from "@/components/ui/pagination-advanced";
-
+import { Member } from "@/features/members";
 const MONTHS = [
   "January",
   "February",
@@ -205,7 +206,7 @@ export function RootTable<TData, TValue>({
 
     const originalData = table.getCoreRowModel().rows.map((row) => {
       const value = row.getValue(headerId);
-      const member = row.original as TeamMember;
+      const member = row.original as Member;
 
       if (headerId === "birthDate" || headerId === "startDate") {
         if (typeof value === "string" || typeof value === "number") {
@@ -453,9 +454,9 @@ export function RootTable<TData, TValue>({
   }, [onClearFilters]);
 
   return (
-    <div className="relative h-full flex-grow flex flex-col gap-1">
+    <div className="relative flex flex-col flex-grow gap-1 h-full">
       {tableType !== "subRow" && (
-        <div className="max-h-[50%] flex items-center">
+        <div className="flex items-center max-h-[50%]">
           <Button
             onClick={handleClearAllFilters}
             variant="outline"
@@ -483,15 +484,15 @@ export function RootTable<TData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className="border-gray-200 bg-light-grey rounded-md"
+                className="bg-light-grey border-gray-200 rounded-md"
               >
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
                     style={{ width: `${header.getSize()}px` }}
-                    className="py-3 px-4 border-r text-start text-black font-semibold "
+                    className="px-4 py-3 border-r font-semibold text-black text-start"
                   >
-                    <div className="flex w-full justify-between items-center">
+                    <div className="flex justify-between items-center w-full">
                       <div>
                         {header.isPlaceholder
                           ? null
@@ -523,7 +524,7 @@ export function RootTable<TData, TValue>({
 
                             {filterMenuOpen === header.id && (
                               <div
-                                className="fixed z-40"
+                                className="z-40 fixed"
                                 ref={(el) =>
                                   (filterRefs.current[header.id] = el)
                                 }
@@ -618,7 +619,7 @@ export function RootTable<TData, TValue>({
       </div>
 
       {tableType !== "subRow" && (
-        <div className="flex justify-center absolute w-full bottom-0 z-30">
+        <div className="bottom-0 z-30 absolute flex justify-center w-full">
           <PaginationAdvanced
             pageIndex={table.getState().pagination.pageIndex}
             pageCount={table.getPageCount()}

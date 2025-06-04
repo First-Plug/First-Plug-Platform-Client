@@ -1,4 +1,4 @@
-import { Button, PageLayout, SectionTitle } from "@/common";
+import { Button, PageLayout, SectionTitle } from "@/shared";
 import ProductDetail from "@/common/ProductDetail";
 import { Product, User } from "@/types";
 import { DropdownInputProductForm } from "../AddProduct/DropDownProductForm";
@@ -343,7 +343,7 @@ export const RequestOffBoardingForm = observer(
         );
         setMemberToEdit(foundMember?._id);
         setAside("EditMember");
-        // router.push("/home/my-team");
+        // router.push("/my-team");
       }
     };
 
@@ -376,7 +376,7 @@ export const RequestOffBoardingForm = observer(
                 checked={applyToAll}
                 onChange={handleAssignAllChange}
               />
-              <p className="text-md font-semibold">
+              <p className="font-semibold text-md">
                 Apply &quot;Product 1&quot; settings to all Products
               </p> */}
             </div>
@@ -496,7 +496,7 @@ export const RequestOffBoardingForm = observer(
                 )}
               />
             </div>
-            <div className="flex-1 p-2 flex items-center">
+            <div className="flex flex-1 items-center p-2">
               {formStatus === "not-billing-information" && (
                 <Button size="default" onClick={() => handleClick(formStatus)}>
                   Complete Company Details

@@ -13,7 +13,7 @@ import {
   EditProductAside,
   EditTeamsAside,
 } from "./AsideContents";
-import EditMemberAside from "./EditMemberAside";
+import { EditMemberAside } from "@/features/members";
 import { ShipmentAside } from "@/shipments/components/ShipmentAside";
 
 export var AsideContent = observer(function () {

@@ -1,8 +1,9 @@
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
+
 import { isAfter, isSameDay, parseISO, isValid } from "date-fns";
 
 export const checkMemberJoinDate = (
-  destinationMember: TeamMember | null
+  destinationMember: Member | null
 ): { shouldShowWarning: boolean; joinDate: Date | null } => {
   console.log("Checking member join date for:", destinationMember);
 

@@ -1,15 +1,15 @@
 import { LoaderSpinner } from "@/common";
 import { BarLoader } from "@/components/Loader/BarLoader";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 
 interface MemberItemProp {
-  member: TeamMember;
+  member: Member;
   deleting: boolean;
   adding: boolean;
   isCurrent: boolean;
   isChanging?: boolean;
-  handleSelectMember?: (member: TeamMember) => void;
+  handleSelectMember?: (member: Member) => void;
 }
 export function MemberItem({
   member,
@@ -45,15 +45,15 @@ export function MemberItem({
               deleting && statuses.deleting
             }`}
           />
-          <div className="flex items-center py-2 gap-2">
-            <p className="text-black font-bold">
+          <div className="flex items-center gap-2 py-2">
+            <p className="font-bold text-black">
               {member.firstName} {member.lastName}
             </p>
             {member.team && (
-              <span className="text-dark-grey flex items-center gap-2 ">
+              <span className="flex items-center gap-2 text-dark-grey">
                 <p>Current Team</p>
                 {isChanging && (adding || deleting) ? (
-                  <p className="animate-pulse ">...</p>
+                  <p className="animate-pulse">...</p>
                 ) : typeof member.team === "string" ? (
                   member.team
                 ) : (

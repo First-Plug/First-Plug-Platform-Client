@@ -32,27 +32,27 @@ const Config: Record<EmptyCardType, TConfig> = {
     title: "My Assets",
     image: "/office.svg",
     paragraph: "You don't have any products.",
-    ButtonIcon: UploadIcon,
+    ButtonIcon: () => <UploadIcon />,
     buttonText: "Load Assets",
-    LinkIcon: ShopIcon,
+    LinkIcon: () => <ShopIcon />,
     link: CATALOGO_FIRST_PLUG,
     linkText: "Shop Now",
     additionalButtonText: "Add Product",
-    additionalButtonIcon: AddIcon,
+    additionalButtonIcon: () => <AddIcon />,
     additionalOnClick: () => {
-      window.location.href = "/home/my-stock/addOneProduct";
+      window.location.href = "/my-stock/addOneProduct";
     },
   },
   members: {
     title: "Upcoming Birthdays",
     image: "/girl.svg",
     paragraph: "You haven't loaded any members yet.",
-    ButtonIcon: UploadIcon,
+    ButtonIcon: () => <UploadIcon />,
     buttonText: "Load Team Members",
-    additionalButtonIcon: AddIcon,
+    additionalButtonIcon: () => <AddIcon />,
     additionalButtonText: "Add Team Member",
     additionalOnClick: () => {
-      window.location.href = "/home/my-team/addTeam";
+      window.location.href = "/home/my-team/add";
     },
   },
   computer: {
@@ -64,7 +64,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     // additionalButtonText: "Add Computer",
     // additionalButtonIcon: AddIcon,
     // additionalOnClick: () => {
-    //   window.location.href = "/home/computer/addComputer";
+    //   window.location.href = "/computer/addComputer";
     // },
   },
   recentActivity: {
@@ -76,7 +76,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     // additionalButtonText: "Check Activity Log",
     // additionalButtonIcon: AddIcon,
     // additionalOnClick: () => {
-    //   window.location.href = "/home/recent-activity";
+    //   window.location.href = "/recent-activity";
     // },
   },
   opsByCountry: {

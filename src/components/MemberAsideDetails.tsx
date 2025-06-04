@@ -1,6 +1,7 @@
 "use client";
 import React, { Fragment, useState } from "react";
-import { Button, EmptyCardLayout, MemberDetail } from "@/common";
+import { Button, MemberDetail } from "@/common";
+import { EmptyCardLayout } from "@/shared";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
 import ProductDetail from "@/common/ProductDetail";
@@ -11,7 +12,7 @@ import { useRouter } from "next/navigation";
 import { RelacoteProducts, ReturnPage } from "./AsideContents";
 import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { DeleteMemberModal } from "./Alerts/DeleteMemberModal";
-import { useFetchMember } from "@/members/hooks";
+import { useFetchMember } from "@/features/members";
 import { Loader } from "./Loader";
 
 interface MemberAsideDetailsProps {
@@ -144,7 +145,7 @@ export const MemberAsideDetails = observer(
       if (!getMissingFields(member).length) {
         setSelectedMember(selectedMember._id);
 
-        router.push(`/home/my-team/requestOffBoarding/${selectedMember._id}`);
+        router.push(`/home/my-team/request-off-boarding/${selectedMember._id}`);
 
         setAside(undefined);
       } else {
@@ -183,19 +184,19 @@ export const MemberAsideDetails = observer(
           />
         ) : (
           <Fragment>
-            <div className="flex flex-col gap-6   h-full   ">
+            <div className="flex flex-col gap-6 h-full">
               <MemberDetail memberId={memberToEdit} />
-              <div className=" flex-grow h-[70%]  ">
+              <div className="flex-grow h-[70%]">
                 {member?.products?.length ? (
                   <div className="flex flex-col gap-2 h-full">
                     <div className="flex justify-between">
                       <h1 className="font-semibold text-lg">Products</h1>
-                      <p className="border border-black text-black font-bold  rounded-full h-6 w-6  grid place-items-center  text-sm">
+                      <p className="place-items-center grid border border-black rounded-full w-6 h-6 font-bold text-black text-sm">
                         {member.products.length || 0}
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-2 overflow-y-auto  scrollbar-custom flex-grow max-h-full h-full  mb-6 ">
+                    <div className="flex flex-col flex-grow gap-2 mb-6 h-full max-h-full overflow-y-auto scrollbar-custom">
                       {member.products.length
                         ? member.products.map((product) => (
                             <ProductDetail
@@ -211,18 +212,18 @@ export const MemberAsideDetails = observer(
                   </div>
                 ) : (
                   <EmptyCardLayout>
-                    <section className="flex flex-col gap-2 items-center justify-center">
-                      <div className="w-32 aspect-square relative">
+                    <section className="flex flex-col justify-center items-center gap-2">
+                      <div className="relative w-32 aspect-square">
                         <Image src={"/office.svg"} alt={"first plug sv"} fill />
                       </div>
-                      <span className="text-md text-dark-grey">
+                      <span className="text-dark-grey text-md">
                         This member doesn&apos;t have any items.
                       </span>
 
                       <Button
                         variant="text"
                         size="small"
-                        className="rounded-md flex gap-2 items-center"
+                        className="flex items-center gap-2 rounded-md"
                         onClick={handleNavtoStock}
                       >
                         <LinkIcon size={14} />
@@ -233,8 +234,8 @@ export const MemberAsideDetails = observer(
                 )}
               </div>
             </div>
-            <aside className=" absolute  bg-white  py-2    bottom-0   left-0 w-full border-t ">
-              <div className="flex    w-5/6 mx-auto gap-2 justify-end">
+            <aside className="bottom-0 left-0 absolute bg-white py-2 border-t w-full">
+              <div className="flex justify-end gap-2 mx-auto w-5/6">
                 <Button
                   body={"Request Offboarding"}
                   variant={"secondary"}

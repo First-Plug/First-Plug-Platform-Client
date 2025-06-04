@@ -18,11 +18,11 @@ import {
   SelectTrigger,
 } from "@/firstplug/ui/Select";
 import { SelectLabel } from "../../../firstplug/ui/Select/select-label";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 
 interface Props {
   onSubmit: (data: any) => void;
-  destinationMember?: TeamMember | null;
+  destinationMember?: Member | null;
 }
 
 export const ShipmentWithFp = ({ onSubmit, destinationMember }: Props) => {
@@ -75,18 +75,18 @@ export const ShipmentWithFp = ({ onSubmit, destinationMember }: Props) => {
           className="w-full max-w-md"
         >
           <SelectLabel className="flex items-center gap-2">
-            <span className="text-dark-grey font-semibold">Ship with FP?</span>
+            <span className="font-semibold text-dark-grey">Ship with FP?</span>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button type="button" className=" text-blue/80">
+                  <button type="button" className="text-blue/80">
                     <InfoCircle />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent
                   side="bottom"
                   align="center"
-                  className="bg-blue/80 text-white p-2 rounded-md text-xs font-normal z-50"
+                  className="z-50 bg-blue/80 p-2 rounded-md font-normal text-white text-xs"
                 >
                   Select &apos;Yes&apos; to let First Plug handle the shipment.
                   Pickup and delivery dates will be required.

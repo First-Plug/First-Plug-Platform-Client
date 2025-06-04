@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button, LoaderSpinner, SearchInput } from "@/common";
-import { Team, TeamMember } from "@/types";
+import { Button, LoaderSpinner, SearchInput } from "@/shared";
+import { Team } from "@/types";
 import { observer } from "mobx-react-lite";
 import { MemberItem } from "./AsideContents/EditTeamAside";
 import { useStore } from "@/models";
@@ -10,10 +10,11 @@ import { Skeleton } from "./ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAddToTeam, useRemoveFromTeam } from "@/teams/hooks";
 import { TeamServices } from "@/services";
+import { Member } from "@/features/members";
 
 interface AddMembersToTeamFormProps {
-  selectedMembers?: TeamMember[];
-  handleSelectedMembers?: (member: TeamMember) => void;
+  selectedMembers?: Member[];
+  handleSelectedMembers?: (member: Member) => void;
   isEditFlow?: boolean;
   team?: Team;
   newTeamName?: string;
@@ -34,10 +35,10 @@ export const AddMembersToTeamForm = observer(function ({
   const addToTeamMutation = useAddToTeam();
   const removeFromTeamMutation = useRemoveFromTeam();
 
-  const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
-  const [currentMembers, setCurrentMembers] = useState<TeamMember[]>(members);
-  const [membersToAdd, setMembersToAdd] = useState<TeamMember[]>([]);
-  const [membersToDelete, setMembersToDelete] = useState<TeamMember[]>([]);
+  const [searchedMembers, setSearchedMembers] = useState<Member[]>(members);
+  const [currentMembers, setCurrentMembers] = useState<Member[]>(members);
+  const [membersToAdd, setMembersToAdd] = useState<Member[]>([]);
+  const [membersToDelete, setMembersToDelete] = useState<Member[]>([]);
   const [loading, setLoading] = useState(false);
 
   const setInitialData = () => {
@@ -68,7 +69,7 @@ export const AddMembersToTeamForm = observer(function ({
     );
   };
 
-  const toggleMemberSelection = (member: TeamMember) => {
+  const toggleMemberSelection = (member: Member) => {
     if (createAside) {
       handleSelectedMembers(member);
     }
@@ -148,14 +149,14 @@ export const AddMembersToTeamForm = observer(function ({
           <Button
             variant="primary"
             disabled={confirmBtnStatus || loading}
-            className="text-xs "
+            className="text-xs"
             onClick={handleConfirmChanges}
           >
             {loading ? <LoaderSpinner /> : "Confirm changes"}
           </Button>
         )}
       </div>
-      <div className="flex flex-col gap-2 flex-grow overflow-y-auto scrollbar-custom">
+      <div className="flex flex-col flex-grow gap-2 overflow-y-auto scrollbar-custom">
         {searchedMembers.map((member) => (
           <MemberItem
             key={member._id}

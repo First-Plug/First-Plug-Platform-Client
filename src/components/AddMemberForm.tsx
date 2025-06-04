@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Button, ChevronDown, LoaderSpinner, SearchInput } from "@/common";
+import { Button, LoaderSpinner, SearchInput } from "@/shared";
 import { observer } from "mobx-react-lite";
-import { TeamMember, Product, LOCATION, Location, User } from "@/types";
+import { Product, LOCATION, Location, User } from "@/types";
+import { Member } from "@/features/members";
 import { useStore } from "@/models";
 import {
   Select,
@@ -20,7 +21,7 @@ import { useRouter } from "next/navigation";
 import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { useSession } from "next-auth/react";
 import { validateAfterAction } from "@/lib/validateAfterAction";
-import { useFetchMembers } from "@/members/hooks";
+import { useFetchMembers } from "@/features/members";
 import { ShipmentWithFp } from "@/shipments/components";
 import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
 import { Shipment } from "@/shipments/interfaces/shipments-response.interface";
@@ -30,17 +31,17 @@ interface BackendResponse extends Product {
 }
 
 interface AddMemberFormProps {
-  members: TeamMember[];
-  selectedMember?: TeamMember | null;
-  handleSelectedMembers: (member: TeamMember | null) => void;
+  members: Member[];
+  selectedMember?: Member | null;
+  handleSelectedMembers: (member: Member | null) => void;
   currentProduct?: Product | null;
-  currentMember?: TeamMember | null;
+  currentMember?: Member | null;
   showNoneOption?: boolean;
   actionType?: "AssignProduct" | "ReassignProduct";
 }
 interface ValidationEntity {
   type: "member" | "office";
-  data: TeamMember | (Partial<User> & { location?: string }) | null;
+  data: Member | (Partial<User> & { location?: string }) | null;
 }
 
 export const AddMemberForm = observer(
@@ -56,8 +57,7 @@ export const AddMemberForm = observer(
     const { shipmentValue, onSubmitDropdown } = useShipmentValues();
 
     const { data: allMembers, isLoading: loadingMembers } = useFetchMembers();
-    const [searchedMembers, setSearchedMembers] =
-      useState<TeamMember[]>(members);
+    const [searchedMembers, setSearchedMembers] = useState<Member[]>(members);
     const [noneOption, setNoneOption] = useState<string | null>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [genericAlertData, setGenericAlertData] = useState({
@@ -275,7 +275,7 @@ export const AddMemberForm = observer(
       setValidationError(null);
     };
 
-    const handleSelectMember = (member: TeamMember | null) => {
+    const handleSelectMember = (member: Member | null) => {
       handleSelectedMembers(member);
       setNoneOption(null);
       setValidationError(null);
@@ -288,7 +288,7 @@ export const AddMemberForm = observer(
     const [missingOfficeData, setMissingOfficeData] = useState("");
 
     return (
-      <section className="flex flex-col gap-6 h-full ">
+      <section className="flex flex-col gap-6 h-full">
         <GenericAlertDialog
           open={showErrorDialog}
           onClose={() => {
@@ -317,10 +317,10 @@ export const AddMemberForm = observer(
             setShowErrorDialogOurOffice(false);
           }}
         />
-        <div className="h-[90%] w-full ">
+        <div className="w-full h-[90%]">
           {showNoneOption && (
             <section className="flex flex-col gap-2">
-              <span className="text-dark-grey font-medium">
+              <span className="font-medium text-dark-grey">
                 If you want to <strong>return</strong> this product, please
                 select the new Location.
               </span>
@@ -330,7 +330,7 @@ export const AddMemberForm = observer(
                 }
                 value={noneOption || ""}
               >
-                <SelectTrigger className="font-semibold text-md w-1/2">
+                <SelectTrigger className="w-1/2 font-semibold text-md">
                   <SelectValue placeholder="Select Location" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
@@ -351,7 +351,7 @@ export const AddMemberForm = observer(
             </section>
           )}
           {validationError && (
-            <p className="text-red-500 text-md">{validationError}</p>
+            <p className="text-md text-red-500">{validationError}</p>
           )}
           <div
             className={`flex flex-col gap-4 items-start ${
@@ -359,7 +359,7 @@ export const AddMemberForm = observer(
             }`}
           >
             {showNoneOption && (
-              <p className="text-dark-grey font-medium">
+              <p className="font-medium text-dark-grey">
                 If you want to <strong>relocate</strong> this product, please
                 select the <strong>employee</strong> to whom this item will be
                 assigned.
@@ -373,7 +373,7 @@ export const AddMemberForm = observer(
                 className="w-full"
               />
             </div>
-            <div className="flex flex-col gap-2 w-full h-full overflow-y-auto scrollbar-custom pt-4 ">
+            <div className="flex flex-col gap-2 pt-4 w-full h-full overflow-y-auto scrollbar-custom">
               {displayedMembers.map((member) => (
                 <div
                   className={`flex gap-2 items-center py-2 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue `}
@@ -385,7 +385,7 @@ export const AddMemberForm = observer(
                     checked={member._id === selectedMember?._id}
                   />
                   <div className="flex gap-2">
-                    <p className="text-black font-bold">
+                    <p className="font-bold text-black">
                       {member.firstName} {member.lastName}
                     </p>
                     <span className="text-dark-grey">
@@ -399,7 +399,7 @@ export const AddMemberForm = observer(
               ))}
             </div>
           </div>
-          <div className="w-80 mt-4">
+          <div className="mt-4 w-80">
             <ShipmentWithFp
               onSubmit={onSubmitDropdown}
               destinationMember={selectedMember}
@@ -407,8 +407,8 @@ export const AddMemberForm = observer(
           </div>
         </div>
 
-        <aside className=" absolute  bg-white  py-2    bottom-0   left-0 w-full border-t ">
-          <div className="flex    w-5/6 mx-auto gap-2 justify-end">
+        <aside className="bottom-0 left-0 absolute bg-white py-2 border-t w-full">
+          <div className="flex justify-end gap-2 mx-auto w-5/6">
             <Button
               variant="secondary"
               className="px-8"

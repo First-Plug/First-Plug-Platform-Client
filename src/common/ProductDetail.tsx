@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import type { Product, Team, TeamMember } from "@/types";
+import type { Product } from "@/types";
 import { ProductImage } from "./ProductImage";
 import PrdouctModelDetail from "./PrdouctModelDetail";
 import { useStore } from "@/models";
-import { SearchInput } from "./SearchInput";
+import { SearchInput } from "@/shared";
 import { Button } from "./Button";
 import { ArrowLeft } from "./Icons";
 import { observer } from "mobx-react-lite";
@@ -23,6 +23,7 @@ import {
 import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
 import { ShipmentWithFp } from "@/shipments/components";
 import { ShipmentStateColors, StatusColors } from "./StatusColors";
+import { Member } from "@/features/members";
 
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = observer(function MembersList({
@@ -48,11 +49,11 @@ const MembersList = observer(function MembersList({
     aside: { setAside },
     user: { user: sessionUser },
   } = useStore();
-  const [searchedMembers, setSearchedMembers] = useState<TeamMember[]>(members);
+  const [searchedMembers, setSearchedMembers] = useState<Member[]>(members);
   const [isRelocating, setRelocating] = useState(false);
   const [relocateResult, setRelocateResult] =
     useState<RelocateStatus>(undefined);
-  const [selectedMember, setSelectedMember] = useState<TeamMember>();
+  const [selectedMember, setSelectedMember] = useState<Member>();
   const { handleReassignProduct } = useActions();
   const queryClient = useQueryClient();
   const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -67,7 +68,7 @@ const MembersList = observer(function MembersList({
   const { isShipmentValueValid, onSubmitDropdown, shipmentValue } =
     useShipmentValues();
 
-  const handleSelectMember = (member: TeamMember) => {
+  const handleSelectMember = (member: Member) => {
     setSelectedMember(member);
   };
 
@@ -216,11 +217,11 @@ const MembersList = observer(function MembersList({
         }}
       />
       {selectedMember ? (
-        <section className="flex justify-between items-end w-full gap-6 pb-2">
+        <section className="flex justify-between items-end gap-6 pb-2 w-full">
           <div className="flex items-center gap-2">
             <span className="font-extralight">Relocate To:</span>
             <button
-              className="border border-light-grey rounded-md px-2 py-1 bg-hoverBlue flex items-center gap-2 cursor-pointer "
+              className="flex items-center gap-2 bg-hoverBlue px-2 py-1 border border-light-grey rounded-md cursor-pointer"
               disabled={
                 isRelocating ||
                 relocateResult === "success" ||
@@ -264,15 +265,15 @@ const MembersList = observer(function MembersList({
           )}
         </section>
       ) : (
-        <div className="flex flex-col gap-2 items-start h-full">
-          <p className="text-dark-grey mx-2">
+        <div className="flex flex-col items-start gap-2 h-full">
+          <p className="mx-2 text-dark-grey">
             Please select the employee to whom this item will be assigned
           </p>
 
           <div>
             <SearchInput placeholder="Search Member" onSearch={handleSearch} />
           </div>
-          <div className="flex flex-col gap-2 w-full max-h-[250px] h-[250px] overflow-y-auto pt-4">
+          <div className="flex flex-col gap-2 pt-4 w-full h-[250px] max-h-[250px] overflow-y-auto">
             {displayedMembers
               .filter((m) => m._id !== currentMember._id)
               .map((member) => (
@@ -289,7 +290,7 @@ const MembersList = observer(function MembersList({
                     />
                   )}
                   <div className="flex gap-2">
-                    <p className="text-black font-bold">
+                    <p className="font-bold text-black">
                       {member.firstName} {member.lastName}
                     </p>
                     <span className="text-dark-grey">
@@ -349,10 +350,10 @@ export default function ProductDetail({
       }  ${isChecked && "bg-blue/80 text-white"}`}
       onClick={handleSelect ? () => handleSelect(product) : null}
     >
-      <div className="flex items-center  justify-between  ">
-        <section className="flex items-center  gap-2  ">
-          <section className="flex gap-2 items-start">
-            <div className="flex gap-2 items-start">
+      <div className="flex justify-between items-center">
+        <section className="flex items-center gap-2">
+          <section className="flex items-start gap-2">
+            <div className="flex items-start gap-2">
               <ProductImage category={product?.category} />
               <span className="font-semibold">{product?.category}</span>
             </div>
@@ -367,7 +368,7 @@ export default function ProductDetail({
           {isRelocating && (
             <Button
               variant="outline"
-              className="text-black absolute right-0 hover:bg-hoverBlue/50 rounded-sm"
+              className="right-0 absolute hover:bg-hoverBlue/50 rounded-sm text-black"
               onClick={toggleList}
               disabled={relocateStatus === "success"}
             >

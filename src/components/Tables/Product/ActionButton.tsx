@@ -105,7 +105,7 @@ export function ActionButton({ product }: ActionButtonProps) {
     const assignedEmail = product.assignedEmail;
 
     router.push(
-      `/home/my-team/addTeam?&email=${encodeURIComponent(assignedEmail)}`
+      `/home/my-team/add?&email=${encodeURIComponent(assignedEmail)}`
     );
   };
 

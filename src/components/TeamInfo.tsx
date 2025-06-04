@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
-import { TeamMember, Team } from "@/types";
+import { Team } from "@/types";
 import { AddMembersToTeamForm } from "./AddMembersToTeamForm";
 import { transformData } from "@/utils/dataTransformUtil";
 import { Button, LoaderSpinner } from "@/common";
@@ -40,10 +40,10 @@ export const TeamInfo = observer(function ({
   };
 
   return (
-    <article className="flex flex-col justify-between gap-2 w-[95%] m-auto my-2 text-md">
-      <header className="flex flex-col gap-2 flex-grow ">
+    <article className="flex flex-col justify-between gap-2 m-auto my-2 w-[95%] text-md">
+      <header className="flex flex-col flex-grow gap-2">
         <span className="text-grey">Team Name</span>
-        <div className="relative flex items-center ">
+        <div className="relative flex items-center">
           <div className="w-full">
             <Input
               type="text"
@@ -52,7 +52,7 @@ export const TeamInfo = observer(function ({
               onChange={handleNewNameChange}
             />
           </div>
-          <div className="absolute right-2 flex items-center ">
+          <div className="right-2 absolute flex items-center">
             <Button
               variant="text"
               disabled={newTeamName === team.name || updating}

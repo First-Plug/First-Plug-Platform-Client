@@ -1,5 +1,5 @@
 "use client";
-import { ImgPorfile } from "@/common";
+import { ImageProfile } from "@/shared";
 import { UseFormReturn } from "react-hook-form";
 import { SettingsSubForm } from "@/app/home/settings/SettingsSubForm";
 
@@ -8,11 +8,11 @@ interface CompanyProps {
 }
 export var CompanyForm = function CompanyForm({ form }: CompanyProps) {
   return (
-    <section className="w-1/2 flex flex-col gap-5  border rounded-md p-4 ">
-      <h2 className="text-xl font-montserrat font-bold text-black">User</h2>
-      <div className="flex gap-8 items-center">
-        <ImgPorfile size={150} />
-        <div className="w-3/4 flex flex-col gap-4">
+    <section className="flex flex-col gap-5 p-4 border rounded-md w-1/2">
+      <h2 className="font-montserrat font-bold text-black text-xl">User</h2>
+      <div className="flex items-center gap-8">
+        <ImageProfile size={150} />
+        <div className="flex flex-col gap-4 w-3/4">
           <SettingsSubForm form={form} keyValue="tenantName" />
           <SettingsSubForm form={form} keyValue="phone" />
         </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import { types, Instance, cast } from "mobx-state-tree";
 import { z } from "zod";
 export const PRODUCT_STATUSES = [

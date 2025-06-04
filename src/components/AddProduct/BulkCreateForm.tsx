@@ -3,28 +3,25 @@
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { observer } from "mobx-react-lite";
-import { Button, PageLayout, SectionTitle } from "@/common";
+import { Button, PageLayout, SectionTitle } from "@/shared";
+
 import { DropdownInputProductForm } from "@/components/AddProduct/DropDownProductForm";
 import { InputProductForm } from "@/components/AddProduct/InputProductForm";
-import { getSnapshot, Instance } from "mobx-state-tree";
-import {
-  AttributeModel,
-  ProductModel,
-  TeamMember,
-  TeamMemberModel,
-} from "@/types";
+import { getSnapshot } from "mobx-state-tree";
+import { AttributeModel, ProductModel } from "@/types";
 import ProductDetail from "@/common/ProductDetail";
 import { useStore } from "@/models";
 import { BarLoader } from "../Loader/BarLoader";
 import { useBulkCreateAssets } from "@/assets/hooks";
 import { useQueryClient } from "@tanstack/react-query";
-import { useFetchMembers } from "@/members/hooks";
-import { getMemberFullName } from "@/members/helpers/getMemberFullName";
+import { useFetchMembers, getMemberFullName } from "@/features/members";
 import BulkCreateValidator, {
   validateCompanyBillingInfo,
   validateMemberInfo,
 } from "@/components/AddProduct/utils/BulkCreateValidator";
 import { useSession } from "next-auth/react";
+
+import type { Member } from "@/features/members";
 
 const BulkCreateForm: React.FC<{
   initialData: any;
@@ -110,9 +107,7 @@ const BulkCreateForm: React.FC<{
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );
-  const [members, setMembers] = useState<Instance<typeof TeamMemberModel>[]>(
-    []
-  );
+  const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLocationEnabled, setIsLocationEnabled] = useState<boolean[]>(
     Array(numProducts).fill(false)
@@ -173,7 +168,7 @@ const BulkCreateForm: React.FC<{
   //carga inicial de members y sus opciones de mail
   useEffect(() => {
     if (fetchedMembers) {
-      setMembers(fetchedMembers as Instance<typeof TeamMemberModel>[]);
+      setMembers(fetchedMembers as Member[]);
       const memberFullNames = [
         "None",
         ...fetchedMembers.map(getMemberFullName),
@@ -279,7 +274,7 @@ const BulkCreateForm: React.FC<{
 
   const handleBulkCreate = async (data: any) => {
     await queryClient.invalidateQueries({ queryKey: ["members"] });
-    const updatedMembers = queryClient.getQueryData<TeamMember[]>(["members"]);
+    const updatedMembers = queryClient.getQueryData<Member[]>(["members"]);
     if (!updatedMembers) {
       console.error("❌ No se pudieron obtener los miembros actualizados");
       return;
@@ -343,7 +338,7 @@ const BulkCreateForm: React.FC<{
 
   const checkIncompleteData = (data: any): boolean => {
     const updatedMembers =
-      queryClient.getQueryData<TeamMember[]>(["members"]) || [];
+      queryClient.getQueryData<Member[]>(["members"]) || [];
     let hasIncompleteData = false;
 
     data.products.forEach((product: any, index: number) => {
@@ -437,7 +432,7 @@ const BulkCreateForm: React.FC<{
           <div className="w-1/2">
             <ProductDetail product={initialProductData} />
           </div>
-          <div className="w-1/2 p-4 mt-2">
+          <div className="mt-2 p-4 w-1/2">
             <label className="flex items-center">
               <input
                 type="checkbox"
@@ -445,19 +440,19 @@ const BulkCreateForm: React.FC<{
                 checked={assignAll}
                 onChange={handleAssignAllChange}
               />
-              <p className="text-md font-semibold">
+              <p className="font-semibold text-md">
                 Apply &quot;Product 1&quot; settings to all Products
               </p>
             </label>
           </div>
         </div>
 
-        <div className="h-[60vh] w-full overflow-y-auto scrollbar-custom pr-4">
+        <div className="pr-4 w-full h-[60vh] overflow-y-auto scrollbar-custom">
           <form onSubmit={handleSubmit(onSubmit)}>
             {Array.from({ length: numProducts }, (_, index) => (
               <div key={index} className="mb-4">
                 <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 ">
+                <div className="gap-4 grid grid-cols-1 lg:grid-cols-4">
                   <div className="w-full">
                     <DropdownInputProductForm
                       options={assignedEmailOptions}
@@ -561,7 +556,7 @@ const BulkCreateForm: React.FC<{
                 </div>
               </div>
             ))}
-            <aside className="absolute flex justify-end bg-white w-[80%] bottom-0 p-2 h-[10%] border-t">
+            <aside className="bottom-0 absolute flex justify-end bg-white p-2 border-t w-[80%] h-[10%]">
               <div className="flex space-x-2">
                 <Button
                   body="Back"

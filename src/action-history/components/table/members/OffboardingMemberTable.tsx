@@ -6,7 +6,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 import {
   Tooltip,
   TooltipContent,
@@ -16,39 +16,39 @@ import {
 
 interface MembersTableProps {
   data: {
-    oldData: TeamMember[];
-    newData: TeamMember[];
+    oldData: Member[];
+    newData: Member[];
   };
 }
 
 const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
-  const oldData: TeamMember[] = Array.isArray(data.oldData)
+  const oldData: Member[] = Array.isArray(data.oldData)
     ? data.oldData
     : [data.oldData];
-  const newData: TeamMember[] = Array.isArray(data.newData)
+  const newData: Member[] = Array.isArray(data.newData)
     ? data.newData
     : [data.newData];
 
   return (
     <Table>
       <TableHeader>
-        <TableRow className="border-gray-200 bg-light-grey rounded-md">
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+        <TableRow className="bg-light-grey border-gray-200 rounded-md">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Name
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Assigned email
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Brand + Model + Name
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Recoverable
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Serial
           </TableHead>
-          <TableHead className="py-3 px-4 text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 font-semibold text-black text-start">
             New Location
           </TableHead>
         </TableRow>
@@ -77,7 +77,7 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                     <TooltipProvider>
                       <Tooltip delayDuration={350}>
                         <TooltipTrigger>
-                          <span className="cursor-pointer text-sm bg-hoverRed p-1 px-3 rounded-md text-black">
+                          <span className="bg-hoverRed p-1 px-3 rounded-md text-black text-sm cursor-pointer">
                             {newProduct?.assignedEmail} ⚠️
                           </span>
                         </TooltipTrigger>
@@ -95,13 +95,13 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
 
               return (
                 <TableRow key={`${memberIndex}-${productIndex}`}>
-                  <TableCell className="text-xs py-2 px-4 border-r">
+                  <TableCell className="px-4 py-2 border-r text-xs">
                     {member.firstName + " " + member.lastName}
                   </TableCell>
-                  <TableCell className="text-xs py-2 px-4 border-r">
+                  <TableCell className="px-4 py-2 border-r text-xs">
                     {member.email}
                   </TableCell>
-                  <TableCell className="text-xs py-2 px-4 border-r">
+                  <TableCell className="px-4 py-2 border-r text-xs">
                     {[
                       product.attributes?.find((attr) => attr.key === "brand")
                         ?.value,
@@ -112,13 +112,13 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                       .filter(Boolean)
                       .join(" ")}
                   </TableCell>
-                  <TableCell className="text-xs py-2 px-4 border-r">
+                  <TableCell className="px-4 py-2 border-r text-xs">
                     {product.recoverable ? "Yes" : "No"}
                   </TableCell>
-                  <TableCell className="text-xs py-2 px-4 border-r">
+                  <TableCell className="px-4 py-2 border-r text-xs">
                     {product.serialNumber || "-"}
                   </TableCell>
-                  <TableCell className="text-xs py-2 px-4 border-r">
+                  <TableCell className="px-4 py-2 border-r text-xs">
                     {locationToShow}
                   </TableCell>
                 </TableRow>

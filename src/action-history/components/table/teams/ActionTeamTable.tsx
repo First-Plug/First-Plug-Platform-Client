@@ -7,12 +7,12 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-// Modifica la interfaz de TeamMember para reflejar la posible estructura de `team`
+// Modifica la interfaz de Member para reflejar la posible estructura de `team`
 interface Team {
   name: string;
 }
 
-interface TeamMember {
+interface Member {
   firstName: string;
   lastName: string;
   email: string;
@@ -21,33 +21,33 @@ interface TeamMember {
 
 interface TeamsTableProps {
   data: {
-    oldData: TeamMember[];
-    newData: TeamMember[];
+    oldData: Member[];
+    newData: Member[];
   };
 }
 
 const ActionTeamsTable: React.FC<TeamsTableProps> = ({ data }) => {
-  const oldData: TeamMember[] = Array.isArray(data.oldData)
+  const oldData: Member[] = Array.isArray(data.oldData)
     ? data.oldData
     : [data.oldData];
-  const newData: TeamMember[] = Array.isArray(data.newData)
+  const newData: Member[] = Array.isArray(data.newData)
     ? data.newData
     : [data.newData];
 
   return (
     <Table>
       <TableHeader>
-        <TableRow className="border-gray-200 bg-light-grey rounded-md">
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+        <TableRow className="bg-light-grey border-gray-200 rounded-md">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Name
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Assigned email
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Old Team
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             New Team
           </TableHead>
         </TableRow>
@@ -62,19 +62,19 @@ const ActionTeamsTable: React.FC<TeamsTableProps> = ({ data }) => {
         ) : (
           oldData.map((member, index) => (
             <TableRow key={index}>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {member.firstName + " " + member.lastName}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {member.email}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {typeof member.team === "object" && member.team !== null
                   ? member.team.name
                   : "-"}
               </TableCell>
 
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {typeof newData[index].team === "object" &&
                 newData[index].team !== null
                   ? (newData[index].team as Team).name

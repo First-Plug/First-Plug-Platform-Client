@@ -1,5 +1,5 @@
 "use client";
-import { AddIcon, Button, PenIcon, SearchInput, TeamCard } from "@/common";
+import { AddIcon, Button, PenIcon } from "@/shared";
 import { useStore } from "@/models";
 import { AsideType } from "@/types";
 import { observer } from "mobx-react-lite";
@@ -43,15 +43,15 @@ export const MyTeamActions = observer(function <TData>({
       {/* {isLoading ? (
         <BarLoader />
       ) : ( */}
-      <div className="w-full flex justify-between  items-center    gap-2  ">
-        <div className="flex gap-2 items-center ">
+      <div className="flex justify-between items-center gap-2 w-full">
+        <div className="flex items-center gap-2">
           {/* <SearchInput
             placeholder="Search by Name"
             onSearch={(value) => table.getColumn("name")?.setFilterValue(value)}
           /> */}
         </div>
 
-        <div className="flex gap-2 items-center ">
+        <div className="flex items-center gap-2">
           <Button
             body="Create Team"
             variant={"text"}

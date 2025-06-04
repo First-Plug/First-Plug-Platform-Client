@@ -1,6 +1,6 @@
 import { useActivityLatest } from "@/action-history/hooks/useFetchDashboardActivity";
 import { useGetTableAssets } from "@/assets/hooks/useGetTableAssets";
-import { useFetchMembers } from "@/members/hooks/useFetchMembers";
+import { useFetchMembers } from "@/features/members";
 import { useFetchTeams } from "@/teams/hooks/useFetchTeams";
 
 export const useFetchDashboard = () => {

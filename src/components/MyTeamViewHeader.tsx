@@ -9,14 +9,14 @@ export function MyTeamViewHeader() {
   } = useStore();
   const router = useRouter();
   return (
-    <div className="w-full flex   justify-end gap-2 ">
+    <div className="flex justify-end gap-2 w-full">
       <Button
         size="small"
         variant="secondary"
         body="Add Team Member"
         icon={<AddIcon />}
         onClick={() => {
-          router.push("/home/my-team/addTeam");
+          router.push("/home/my-team/add");
         }}
       />
 

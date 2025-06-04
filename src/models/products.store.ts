@@ -1,3 +1,4 @@
+"use client";
 import { types, flow, applySnapshot, getSnapshot } from "mobx-state-tree";
 import {
   Product,

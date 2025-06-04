@@ -1,3 +1,4 @@
+"use client";
 import { types } from "mobx-state-tree";
 import { LoggedInUser, LoggedInUserModel } from "@/types";
 

@@ -1,5 +1,5 @@
 "use client";
-import { DropDownArrow, SearchInput } from "@/common";
+import { DropDownArrow, SearchInput } from "@/shared";
 import { useState } from "react";
 
 interface FilterModalProps {
@@ -49,11 +49,11 @@ export const FilterModal = function ({
   };
 
   return (
-    <div className="relative  text-left  h-10   ">
+    <div className="relative h-10 text-left">
       <button
         onClick={() => setIsOpen(!isOpen)}
         type="button"
-        className="text-sm p-4 flex items-center gap-3 font-medium rounded-md bg-white border active:bg-gray-100 w-full h-full  "
+        className="flex items-center gap-3 bg-white active:bg-gray-100 p-4 border rounded-md w-full h-full font-medium text-sm"
       >
         {title}
         <DropDownArrow
@@ -63,9 +63,9 @@ export const FilterModal = function ({
         />
       </button>
       {isOpen && (
-        <div className="absolute bg-white w-[20vw] p-4 border-2 rounded-md flex flex-col gap-2 z-10 ">
+        <div className="z-10 absolute flex flex-col gap-2 bg-white p-4 border-2 rounded-md w-[20vw]">
           <SearchInput />
-          <div className="p-0 max-h-[7rem] overflow-y-auto flex flex-col gap-2">
+          <div className="flex flex-col gap-2 p-0 max-h-[7rem] overflow-y-auto">
             <div className="flex items-center gap-2 my-1">
               <input
                 type="checkbox"
@@ -75,7 +75,7 @@ export const FilterModal = function ({
               <label>Select All</label>
             </div>
             {items.map((filter, index) => (
-              <div key={filter} className="flex items-center gap-2 ml-2 ">
+              <div key={filter} className="flex items-center gap-2 ml-2">
                 <input
                   type="checkbox"
                   className="w-5 h-5"

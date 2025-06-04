@@ -1,7 +1,7 @@
 import { StatusColor } from "@/common/StatusColors";
 import Image from "next/image";
 
-export function HeadsetIcon() {
+export const HeadsetIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -18,9 +18,9 @@ export function HeadsetIcon() {
       />
     </svg>
   );
-}
+};
 
-export function Cake() {
+export const Cake = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -37,9 +37,9 @@ export function Cake() {
       />
     </svg>
   );
-}
+};
 
-export function MiniCake() {
+export const MiniCake = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -56,9 +56,9 @@ export function MiniCake() {
       />
     </svg>
   );
-}
+};
 
-export function InfoCircle() {
+export const InfoCircle = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -78,9 +78,9 @@ export function InfoCircle() {
       <rect x="11" y="7" width="2" height="2" fill="currentColor" />
     </svg>
   );
-}
+};
 
-export function Mouse() {
+export const Mouse = () => {
   return (
     <Image
       src="/svg/mouse.svg"
@@ -90,9 +90,9 @@ export function Mouse() {
       style={{ filter: "brightness(0) saturate(100%)" }}
     />
   );
-}
+};
 
-export function HeadSet() {
+export const HeadSet = () => {
   return (
     <Image
       src="/svg/headphones.svg"
@@ -101,9 +101,9 @@ export function HeadSet() {
       height={24}
     />
   );
-}
+};
 
-export function Gift() {
+export const Gift = () => {
   return (
     <Image
       src="/svg/gift.svg"
@@ -113,9 +113,9 @@ export function Gift() {
       style={{ filter: "brightness(0) saturate(100%)" }}
     />
   );
-}
+};
 
-export function LapTop() {
+export const LapTop = () => {
   return (
     <Image
       src="/svg/laptop.svg"
@@ -125,9 +125,9 @@ export function LapTop() {
       style={{ filter: "brightness(0) saturate(100%)" }}
     />
   );
-}
+};
 
-export function Other() {
+export const Other = () => {
   return (
     <Image
       src="/svg/other.svg"
@@ -137,9 +137,9 @@ export function Other() {
       style={{ filter: "brightness(0) saturate(100%)" }}
     />
   );
-}
+};
 
-export function MouseIcon() {
+export const MouseIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -156,9 +156,9 @@ export function MouseIcon() {
       />
     </svg>
   );
-}
+};
 
-export function GenericIcon() {
+export const GenericIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -175,9 +175,9 @@ export function GenericIcon() {
       />
     </svg>
   );
-}
+};
 
-export function FileIcon() {
+export const FileIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -194,7 +194,7 @@ export function FileIcon() {
       />
     </svg>
   );
-}
+};
 
 type IconXProps = {
   className?: string | "";
@@ -202,7 +202,7 @@ type IconXProps = {
   onClick?: () => void;
 };
 
-export function IconX({ className = "", strokeWidth, onClick }: IconXProps) {
+export const IconX = ({ className = "", strokeWidth, onClick }: IconXProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -220,13 +220,13 @@ export function IconX({ className = "", strokeWidth, onClick }: IconXProps) {
       />
     </svg>
   );
-}
+};
 
 type EyeIconProps = {
   className?: string;
 };
 
-export function EyeIcon({ className }: EyeSlashIconProps) {
+export const EyeIcon = ({ className }: EyeSlashIconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -248,13 +248,13 @@ export function EyeIcon({ className }: EyeSlashIconProps) {
       />
     </svg>
   );
-}
+};
 
 type EyeSlashIconProps = {
   className?: string;
 };
 
-export function EyeSlashIcon({ className }: EyeSlashIconProps) {
+export const EyeSlashIcon = ({ className }: EyeSlashIconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -271,9 +271,9 @@ export function EyeSlashIcon({ className }: EyeSlashIconProps) {
       />
     </svg>
   );
-}
+};
 
-export function SettingsIcon() {
+export const SettingsIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -295,9 +295,9 @@ export function SettingsIcon() {
       />
     </svg>
   );
-}
+};
 
-export function PersonsGroupIcon() {
+export const PersonsGroupIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -314,9 +314,9 @@ export function PersonsGroupIcon() {
       />
     </svg>
   );
-}
+};
 
-export function NotebookOrdersIcon() {
+export const NotebookOrdersIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -333,9 +333,9 @@ export function NotebookOrdersIcon() {
       />
     </svg>
   );
-}
+};
 
-export function AppleIcon({ className = "" }) {
+export const AppleIcon = ({ className = "" }) => {
   return (
     <svg
       width="24"
@@ -351,13 +351,13 @@ export function AppleIcon({ className = "" }) {
       />
     </svg>
   );
-}
+};
 
 interface AlertCheckProps {
   className?: string;
 }
 
-export function AlertCheck({ className }: AlertCheckProps) {
+export const AlertCheck = ({ className }: AlertCheckProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -372,8 +372,9 @@ export function AlertCheck({ className }: AlertCheckProps) {
       />
     </svg>
   );
-}
-export function CheckIcon() {
+};
+
+export const CheckIcon = () => {
   return (
     <svg
       width="48"
@@ -392,8 +393,9 @@ export function CheckIcon() {
       />
     </svg>
   );
-}
-export function ShopBag({ className }) {
+};
+
+export const ShopBag = ({ className }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -410,9 +412,9 @@ export function ShopBag({ className }) {
       />
     </svg>
   );
-}
+};
 
-export function GoogleIcon({ className = "" }) {
+export const GoogleIcon = ({ className = "" }) => {
   return (
     <svg
       width="22"
@@ -440,9 +442,9 @@ export function GoogleIcon({ className = "" }) {
       />
     </svg>
   );
-}
+};
 
-export function MicrosoftIcon({ className = "" }) {
+export const MicrosoftIcon = ({ className = "" }) => {
   return (
     <svg
       width="24"
@@ -464,9 +466,9 @@ export function MicrosoftIcon({ className = "" }) {
       <rect x="2" y="2" width="9.09091" height="9.09091" fill="#F25325" />
     </svg>
   );
-}
+};
 
-export function ShopIcon() {
+export const ShopIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -483,7 +485,7 @@ export function ShopIcon() {
       />
     </svg>
   );
-}
+};
 
 type NotificationIconProps = {
   className?: string;
@@ -491,11 +493,11 @@ type NotificationIconProps = {
   hasNotification?: boolean;
 };
 
-export function NotificationIcon({
+export const NotificationIcon = ({
   className,
   stroke,
   hasNotification,
-}: NotificationIconProps) {
+}: NotificationIconProps) => {
   return (
     <div>
       {hasNotification && (
@@ -517,14 +519,14 @@ export function NotificationIcon({
       </svg>
     </div>
   );
-}
+};
 
 interface DropDownArrowProps {
   className?: string;
   onClick?: (event: React.MouseEvent) => void;
 }
 
-export function DropDownArrow({ className, onClick }: DropDownArrowProps) {
+export const DropDownArrow = ({ className, onClick }: DropDownArrowProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -542,9 +544,9 @@ export function DropDownArrow({ className, onClick }: DropDownArrowProps) {
       />
     </svg>
   );
-}
+};
 
-export function SearchIcon({ className }: { className?: string }) {
+export const SearchIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -561,9 +563,9 @@ export function SearchIcon({ className }: { className?: string }) {
       />
     </svg>
   );
-}
+};
 
-export function ExclamationIcon() {
+export const ExclamationIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -580,9 +582,9 @@ export function ExclamationIcon() {
       />
     </svg>
   );
-}
+};
 
-export function UserIcon({ className }) {
+export const UserIcon = ({ className }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -599,9 +601,9 @@ export function UserIcon({ className }) {
       />
     </svg>
   );
-}
+};
 
-export function TruckIcon() {
+export const TruckIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -618,9 +620,9 @@ export function TruckIcon() {
       />
     </svg>
   );
-}
+};
 
-export function ComputerIcon() {
+export const ComputerIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -637,13 +639,13 @@ export function ComputerIcon() {
       />
     </svg>
   );
-}
+};
 
 type DashboardIconProps = {
   className?: string;
 };
 
-export function DashboardIcon({ className }: DashboardIconProps) {
+export const DashboardIcon = ({ className }: DashboardIconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -660,7 +662,7 @@ export function DashboardIcon({ className }: DashboardIconProps) {
       />
     </svg>
   );
-}
+};
 
 type ArrowRightProps = {
   className?: string;
@@ -668,7 +670,11 @@ type ArrowRightProps = {
   strokeWidth?: number;
 };
 
-export function ArrowRight({ className, color, strokeWidth }: ArrowRightProps) {
+export const ArrowRight = ({
+  className,
+  color,
+  strokeWidth,
+}: ArrowRightProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -685,14 +691,18 @@ export function ArrowRight({ className, color, strokeWidth }: ArrowRightProps) {
       />
     </svg>
   );
-}
+};
 type ArrowLeftProps = {
   className?: string;
   color?: string;
   strokeWidth?: number;
 };
 
-export function ArrowLeft({ className, color, strokeWidth }: ArrowLeftProps) {
+export const ArrowLeft = ({
+  className,
+  color,
+  strokeWidth,
+}: ArrowLeftProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -709,12 +719,13 @@ export function ArrowLeft({ className, color, strokeWidth }: ArrowLeftProps) {
       />
     </svg>
   );
-}
-export function ElipsisVertical({
+};
+
+export const ElipsisVertical = ({
   className,
   color,
   strokeWidth,
-}: ArrowLeftProps) {
+}: ArrowLeftProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -731,9 +742,9 @@ export function ElipsisVertical({
       />
     </svg>
   );
-}
+};
 
-export function AddIcon() {
+export const AddIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -750,9 +761,9 @@ export function AddIcon() {
       />
     </svg>
   );
-}
+};
 
-export function MinusIcon() {
+export const MinusIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -765,7 +776,7 @@ export function MinusIcon() {
       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
     </svg>
   );
-}
+};
 
 type TrashIconProps = {
   className?: string;
@@ -773,7 +784,11 @@ type TrashIconProps = {
   strokeWidth?: number;
 };
 
-export function TrashIcon({ className, color, strokeWidth }: TrashIconProps) {
+export const TrashIcon = ({
+  className,
+  color,
+  strokeWidth,
+}: TrashIconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -790,9 +805,9 @@ export function TrashIcon({ className, color, strokeWidth }: TrashIconProps) {
       />
     </svg>
   );
-}
+};
 
-export function UploadIcon() {
+const UploadIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -800,7 +815,7 @@ export function UploadIcon() {
       viewBox="0 0 24 24"
       strokeWidth={2}
       stroke="currentColor"
-      className={`w-4 `}
+      className="w-4"
     >
       <path
         strokeLinecap="round"
@@ -809,7 +824,9 @@ export function UploadIcon() {
       />
     </svg>
   );
-}
+};
+
+export { UploadIcon };
 
 type ChevronDownProps = {
   className?: string;
@@ -818,12 +835,12 @@ type ChevronDownProps = {
   onClick?: () => void;
 };
 
-export function ChevronDown({
+export const ChevronDown = ({
   className,
   stroke,
   color,
   onClick,
-}: ChevronDownProps) {
+}: ChevronDownProps) => {
   return (
     <svg
       onClick={onClick}
@@ -841,14 +858,14 @@ export function ChevronDown({
       />
     </svg>
   );
-}
+};
 
 type ChevronRightProps = {
   className?: string;
   color?: string;
 };
 
-export function ChevronRight({ className, color }: ChevronRightProps) {
+export const ChevronRight = ({ className, color }: ChevronRightProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -865,13 +882,13 @@ export function ChevronRight({ className, color }: ChevronRightProps) {
       />
     </svg>
   );
-}
+};
 
 interface TableDisplayIconProps {
   className: string;
 }
 
-export function TableDisplayIcon({ className }: TableDisplayIconProps) {
+export const TableDisplayIcon = ({ className }: TableDisplayIconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -884,17 +901,17 @@ export function TableDisplayIcon({ className }: TableDisplayIconProps) {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125m0 0h7.5"
+        d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H8.25v-1.5c0-.621-.504-1.125-1.125-1.125H3.375zM15.75 12H8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125h7.5c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125z"
       />
     </svg>
   );
-}
+};
 
 interface GridLayoutIconProps {
   className: string | "";
 }
 
-export function GridLayoutIcon({ className }: GridLayoutIconProps) {
+export const GridLayoutIcon = ({ className }: GridLayoutIconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -907,13 +924,13 @@ export function GridLayoutIcon({ className }: GridLayoutIconProps) {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"
+        d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25z"
       />
     </svg>
   );
-}
+};
 
-export function VisaIcon() {
+export const VisaIcon = () => {
   return (
     <svg
       width="32"
@@ -928,14 +945,14 @@ export function VisaIcon() {
       />
     </svg>
   );
-}
+};
 
 type PenIconProps = {
   className?: string;
   strokeWidth?: number;
 };
 
-export function PenIcon({ className, strokeWidth }: PenIconProps) {
+export const PenIcon = ({ className, strokeWidth }: PenIconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -952,13 +969,13 @@ export function PenIcon({ className, strokeWidth }: PenIconProps) {
       />
     </svg>
   );
-}
+};
 
 type StatusCircleIcon = {
   color: StatusColor;
 };
 
-export function StatusCircleIcon({ color }: StatusCircleIcon) {
+export const StatusCircleIcon = ({ color }: StatusCircleIcon) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -970,13 +987,15 @@ export function StatusCircleIcon({ color }: StatusCircleIcon) {
       <circle cx="4" cy="4" r="4" fill={color} />
     </svg>
   );
-}
+};
 
 type StatusCircleIconShipment = {
   color: StatusColor;
 };
 
-export function StatusCircleIconShipment({ color }: StatusCircleIconShipment) {
+export const StatusCircleIconShipment = ({
+  color,
+}: StatusCircleIconShipment) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -988,9 +1007,9 @@ export function StatusCircleIconShipment({ color }: StatusCircleIconShipment) {
       <circle cx="4" cy="4" r="4" fill="currentColor" />
     </svg>
   );
-}
+};
 
-export function PencilIcon() {
+export const PencilIcon = () => {
   return (
     <svg
       width="20"
@@ -1008,9 +1027,9 @@ export function PencilIcon() {
       />
     </svg>
   );
-}
+};
 
-export function NavButtonIcon() {
+export const NavButtonIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1027,9 +1046,9 @@ export function NavButtonIcon() {
       />
     </svg>
   );
-}
+};
 
-export function DownloadIcon() {
+export const DownloadIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1046,9 +1065,9 @@ export function DownloadIcon() {
       />
     </svg>
   );
-}
+};
 
-export function MonitorIcon() {
+export const MonitorIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1065,9 +1084,9 @@ export function MonitorIcon() {
       />
     </svg>
   );
-}
+};
 
-export function DeviceTablet() {
+export const DeviceTablet = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1084,9 +1103,9 @@ export function DeviceTablet() {
       />
     </svg>
   );
-}
+};
 
-export function PencilAccesories() {
+export const PencilAccesories = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1103,9 +1122,9 @@ export function PencilAccesories() {
       />
     </svg>
   );
-}
+};
 
-export function ClockIcon() {
+export const ClockIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1118,8 +1137,8 @@ export function ClockIcon() {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0Z"
       />
     </svg>
   );
-}
+};

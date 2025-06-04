@@ -15,8 +15,8 @@ export const AuthProvider = observer(
     } = useStore();
 
     useEffect(() => {
-      if (sessionStorage.getItem("accessToken")) {
-        setAuthInterceptor(sessionStorage.getItem("accessToken"));
+      if (sessionData?.backendTokens?.accessToken) {
+        setAuthInterceptor(sessionData.backendTokens.accessToken);
 
         if (sessionData?.user?._id) {
           AuthServices.getUserInfro(sessionData.user._id)
@@ -28,7 +28,11 @@ export const AuthProvider = observer(
             });
         }
       }
-    }, [sessionData?.user?._id, setUser]);
+    }, [
+      sessionData?.user?._id,
+      sessionData?.backendTokens?.accessToken,
+      setUser,
+    ]);
 
     return <>{children}</>;
   }

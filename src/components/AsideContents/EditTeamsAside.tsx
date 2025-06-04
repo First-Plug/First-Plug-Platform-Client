@@ -6,16 +6,16 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
 import { Team } from "@/types/teams";
 import { TeamDetails } from "..";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 import { transformData } from "@/utils/dataTransformUtil";
 import { DeleteAction } from "../Alerts";
 import { useQueryClient } from "@tanstack/react-query";
-import { useFetchMembers } from "@/members/hooks";
+import { useFetchMembers } from "@/features/members";
 import { useFetchTeams, useDeleteTeam } from "@/teams/hooks";
 
 interface EditTeamsAsideProps {
   className?: string | "";
-  members?: TeamMember[];
+  members?: Member[];
 }
 
 export const EditTeamsAside = observer(function ({
@@ -92,7 +92,7 @@ export const EditTeamsAside = observer(function ({
 
   return (
     <div className={` ${className} flex flex-col justify-between h-full `}>
-      <div className="flex flex-col gap-2  h-full max-h-[100%] overflow-y-auto scrollbar-custom">
+      <div className="flex flex-col gap-2 h-full max-h-[100%] overflow-y-auto scrollbar-custom">
         {teams.map((team) => (
           <TeamDetails
             key={team._id}
@@ -104,8 +104,8 @@ export const EditTeamsAside = observer(function ({
         ))}
       </div>
 
-      <div className="flex gap-2  absolute  bg-white  py-2    bottom-0   left-0 w-full border-t px-4">
-        <div className="flex    w-5/6 mx-auto gap-2 justify-end">
+      <div className="bottom-0 left-0 absolute flex gap-2 bg-white px-4 py-2 border-t w-full">
+        <div className="flex justify-end gap-2 mx-auto w-5/6">
           <DeleteAction
             type="team"
             id={selectedTeams.map((team) => team._id).join(",")}
@@ -115,7 +115,7 @@ export const EditTeamsAside = observer(function ({
                 variant="delete"
                 disabled={selectedTeams.length === 0 || isUpdating}
                 size="big"
-                className="flex-grow w-full rounded-md"
+                className="flex-grow rounded-md w-full"
               >
                 {isUpdating ? <LoaderSpinner /> : "Delete"}
               </Button>

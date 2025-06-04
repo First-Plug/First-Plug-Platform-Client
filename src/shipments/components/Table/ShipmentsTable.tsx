@@ -159,7 +159,7 @@ const ShipmentsTable = () => {
               }}
             >
               <span>{status}</span>
-              {isClickable && <ExternalLinkIcon className="h-3 w-3 ml-1" />}
+              {isClickable && <ExternalLinkIcon className="ml-1 w-3 h-3" />}
             </div>
           );
         },
@@ -241,19 +241,19 @@ const ShipmentsTable = () => {
 
   return (
     <>
-      <div className="relative h-full flex-grow flex flex-col gap-1">
-        <div className="max-h-[85%] overflow-y-auto scrollbar-custom rounded-md border w-full mx-auto">
-          <Table className="w-full border-collapse m-0">
+      <div className="relative flex flex-col flex-grow gap-1 h-full">
+        <div className="mx-auto border rounded-md w-full max-h-[85%] overflow-y-auto scrollbar-custom">
+          <Table className="m-0 w-full border-collapse">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   key={headerGroup.id}
-                  className="border-gray-200 bg-light-grey rounded-md"
+                  className="bg-light-grey border-gray-200 rounded-md"
                 >
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="py-3 px-4 border-r text-start text-black font-semibold"
+                      className="px-4 py-3 border-r font-semibold text-black text-start"
                       style={{
                         width: header.getSize() ? header.getSize() : undefined,
                       }}
@@ -272,7 +272,7 @@ const ShipmentsTable = () => {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="text-center py-8"
+                    className="py-8 text-center"
                   >
                     <Loader />
                   </TableCell>
@@ -317,7 +317,7 @@ const ShipmentsTable = () => {
                       >
                         <TableCell
                           colSpan={columns.length}
-                          className="text-black border-b text-md text-left border-l-2 border-l-blue w-full p-0 rounded-none transition-colors"
+                          className="p-0 border-b border-l-2 border-l-blue rounded-none w-full text-black text-md text-left transition-colors"
                         >
                           <ShipmentDetailsTable data={row.original} />
                         </TableCell>
@@ -330,7 +330,7 @@ const ShipmentsTable = () => {
           </Table>
         </div>
 
-        <div className="flex justify-center absolute w-full bottom-0 z-30">
+        <div className="bottom-0 z-30 absolute flex justify-center w-full">
           {shipments.length > 0 && !isLoading && (
             <PaginationWithLinks
               page={currentPage}

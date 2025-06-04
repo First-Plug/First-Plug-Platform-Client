@@ -1,9 +1,10 @@
-import { Team, TeamMember } from "@/types";
+import { Team } from "@/types";
+import { Member } from "@/features/members";
 
 export const transformData = (
-  members: TeamMember[] = [],
+  members: Member[] = [],
   teams: Team[] = []
-): TeamMember[] => {
+): Member[] => {
   const teamMap = teams.reduce((acc, team) => {
     acc[team._id] = team;
     return acc;

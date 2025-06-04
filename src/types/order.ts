@@ -1,6 +1,8 @@
+"use client";
+
 import { Instance, types } from "mobx-state-tree";
 import { ProductModel } from "./product";
-import { TeamMemberModel } from "./member";
+import { MemberModel } from "@/features/members";
 
 export const ORDER_STATUSES = [
   "Confirmed",
@@ -13,7 +15,7 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export const OrderModel = types.model({
   _id: types.string,
-  teamMember: types.optional(types.array(TeamMemberModel), []),
+  teamMember: types.optional(types.array(MemberModel), []),
   status: types.enumeration(ORDER_STATUSES),
   date: types.string,
   products: types.optional(types.array(ProductModel), []),

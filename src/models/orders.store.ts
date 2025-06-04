@@ -1,3 +1,4 @@
+"use client";
 import { OrderModel, Order } from "@/types";
 import { types } from "mobx-state-tree";
 

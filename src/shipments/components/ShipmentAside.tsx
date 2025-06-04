@@ -11,8 +11,8 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { Shipment } from "../interfaces/shipments-response.interface";
 
-import { useFetchMembers } from "@/members/hooks";
-import { Button, SearchInput } from "@/common";
+import { useFetchMembers } from "@/features/members";
+import { Button } from "@/shared";
 import { MapPin } from "lucide-react";
 import { AsapOrDate } from "./ShipmentWithFp";
 import { AsapOrDateValue } from "./ShipmentWithFp/asap-or-date";
@@ -207,8 +207,8 @@ export const ShipmentAside = () => {
           className="w-full"
           disabled
         >
-          <SelectLabel className="flex items-center ">
-            <span className="text-black font-semibold">Origin</span>
+          <SelectLabel className="flex items-center">
+            <span className="font-semibold text-black">Origin</span>
           </SelectLabel>
           <SelectTrigger
             className="flex mt-2"
@@ -223,7 +223,7 @@ export const ShipmentAside = () => {
         </Select>
 
         <div>
-          <span className="text-black font-semibold">Destination</span>
+          <span className="font-semibold text-black">Destination</span>
 
           <Select
             value={
@@ -233,7 +233,7 @@ export const ShipmentAside = () => {
             }
             onChange={() => {}}
             color={"grey"}
-            className="w-full mt-2"
+            className="mt-2 w-full"
             disabled
           >
             <SelectTrigger placeholder="Destination" />
@@ -258,9 +258,9 @@ export const ShipmentAside = () => {
         <hr />
 
         <div>
-          <h2 className="text-black font-bold text-xl">Shipment Dates</h2>
+          <h2 className="font-bold text-black text-xl">Shipment Dates</h2>
 
-          <div className="grid gap-4 py-4 h-[200px]">
+          <div className="gap-4 grid py-4 h-[200px]">
             <AsapOrDate
               label="Pickup Date"
               value={pickupDate}
@@ -274,8 +274,8 @@ export const ShipmentAside = () => {
           </div>
         </div>
 
-        <aside className="absolute py-2 bottom-0 left-0 w-full border-t bg-slate-50">
-          <div className="flex w-5/6 mx-auto gap-2 justify-end py-2">
+        <aside className="bottom-0 left-0 absolute bg-slate-50 py-2 border-t w-full">
+          <div className="flex justify-end gap-2 mx-auto py-2 w-5/6">
             <Button variant="secondary" className="px-8" onClick={closeAside}>
               Cancel
             </Button>

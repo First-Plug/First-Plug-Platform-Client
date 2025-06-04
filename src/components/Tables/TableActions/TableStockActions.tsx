@@ -41,19 +41,19 @@ export default observer(function TableStockActions<TData>({
   const { data } = useSession();
 
   return (
-    <div className=" flex items-center justify-between   h-full w-full ">
+    <div className="flex justify-between items-center w-full h-full">
       <div className="flex gap-1">
         <input
           type="checkbox"
           checked={onlyAvaliable}
           onChange={handleFilter}
         />
-        <label className=" text-gray-500 text-md">
+        <label className="text-gray-500 text-md">
           Show only available products
         </label>
       </div>
 
-      <div className="flex gap-2   ">
+      <div className="flex gap-2">
         <Button
           size="small"
           variant="secondary"

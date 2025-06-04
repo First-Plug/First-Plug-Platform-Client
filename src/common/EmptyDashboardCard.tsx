@@ -33,7 +33,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     title: "My Assets",
     image: "/office.svg",
     paragraph: "You don't have any products.",
-    ButtonIcon: UploadIcon,
+    ButtonIcon: () => <UploadIcon />,
     buttonText: "Load Assets",
     LinkIcon: ShopIcon,
     link: CATALOGO_FIRST_PLUG,
@@ -41,19 +41,19 @@ const Config: Record<EmptyCardType, TConfig> = {
     additionalButtonText: "Add Product",
     additionalButtonIcon: AddIcon,
     additionalOnClick: () => {
-      window.location.href = "/home/my-stock/addOneProduct";
+      window.location.href = "/my-stock/addOneProduct";
     },
   },
   members: {
     title: "Upcoming Birthdays",
     image: "/girl.svg",
     paragraph: "You haven't loaded any members yet.",
-    ButtonIcon: UploadIcon,
+    ButtonIcon: () => <UploadIcon />,
     buttonText: "Load Team Members",
     additionalButtonIcon: AddIcon,
     additionalButtonText: "Add Team Member",
     additionalOnClick: () => {
-      window.location.href = "/home/my-team/addTeam";
+      window.location.href = "/home/my-team/add";
     },
   },
   computer: {
@@ -65,7 +65,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     // additionalButtonText: "Add Computer",
     // additionalButtonIcon: AddIcon,
     // additionalOnClick: () => {
-    //   window.location.href = "/home/computer/addComputer";
+    //   window.location.href = "/computer/addComputer";
     // },
   },
   recentActivity: {
@@ -77,7 +77,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     // additionalButtonText: "Check Activity Log",
     // additionalButtonIcon: AddIcon,
     // additionalOnClick: () => {
-    //   window.location.href = "/home/recent-activity";
+    //   window.location.href = "/recent-activity";
     // },
   },
   opsByCountry: {
@@ -127,11 +127,11 @@ export function EmptyDashboardCard({ type, handleSwapy }: EmptyCardProps) {
   const { data } = useSession();
 
   return (
-    <div className="flex flex-col items-center gap-3 h-full w-full rounded-xl p-4  border border-border overflow-hidden bg-white">
-      <div className="flex gap-2 w-full  items-center justify-between">
+    <div className="flex flex-col items-center gap-3 bg-white p-4 border border-border rounded-xl w-full h-full overflow-hidden">
+      <div className="flex justify-between items-center gap-2 w-full">
         <div className="flex mt-4">
-          {handleSwapy && <div className="handle mr-2" data-swapy-handle></div>}
-          <h2 className="text-[20px]  text-black font-montserrat font-bold flex-1 md:text-sm lg:text-xl truncate">
+          {handleSwapy && <div className="mr-2 handle" data-swapy-handle></div>}
+          <h2 className="flex-1 font-montserrat font-bold text-[20px] text-black md:text-sm lg:text-xl truncate">
             {title}
           </h2>
         </div>
@@ -139,7 +139,7 @@ export function EmptyDashboardCard({ type, handleSwapy }: EmptyCardProps) {
           <CustomLink
             variant="secondary"
             size="small"
-            className="rounded-md flex gap-2"
+            className="flex gap-2 rounded-md"
             href={link}
             onClick={
               CATALOGO_FIRST_PLUG === link
@@ -158,22 +158,22 @@ export function EmptyDashboardCard({ type, handleSwapy }: EmptyCardProps) {
           </CustomLink>
         )}
       </div>
-      <div className="flex flex-col items-center justify-center flex-1">
-        <div className="relative w-[50%] h-[50%] lg:w-[80%] lg:h-[80%] max-w-[200px] max-h-[200px]">
+      <div className="flex flex-col flex-1 justify-center items-center">
+        <div className="relative w-[50%] lg:w-[80%] max-w-[200px] h-[50%] lg:h-[80%] max-h-[200px]">
           <Image src={image} alt={paragraph} fill className="object-contain" />
         </div>
         <p className="text-dark-grey text-md lg:text-md text-center">
           {paragraph}
         </p>
       </div>
-      <div className="flex gap-2 flex-wrap justify-center mt-2">
+      <div className="flex flex-wrap justify-center gap-2 mt-2">
         {additionalButtonIcon && (
           <Button
             variant="secondary"
             body={additionalButtonText}
             size="small"
             icon={additionalButtonIcon()}
-            className="p-3 rounded-md gap-2"
+            className="gap-2 p-3 rounded-md"
             onClick={additionalOnClick}
           />
         )}

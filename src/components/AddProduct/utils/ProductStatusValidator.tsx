@@ -162,7 +162,7 @@ const ProductStatusValidator: React.FC<ProductStatusValidatorProps> = observer(
             <Button
               size="default"
               onClick={handleClick}
-              className="w-auto max-w-xs whitespace-normal text-center"
+              className="w-auto max-w-xs text-center whitespace-normal"
             >
               Complete Company Details
             </Button>
@@ -171,7 +171,7 @@ const ProductStatusValidator: React.FC<ProductStatusValidatorProps> = observer(
             <Button
               size="default"
               onClick={handleClick}
-              className="w-auto max-w-xs whitespace-normal text-center"
+              className="w-auto max-w-xs text-center whitespace-normal"
             >
               Complete Member Details
             </Button>

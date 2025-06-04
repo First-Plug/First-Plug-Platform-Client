@@ -1,3 +1,4 @@
+"use client";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";

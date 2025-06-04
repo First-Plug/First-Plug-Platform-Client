@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button, LoaderSpinner } from "@/common";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 import { AddMembersToTeamForm } from "./AddMembersToTeamForm";
 import { transformData } from "@/utils/dataTransformUtil";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,14 +25,14 @@ export const CreateTeamAside = observer(function ({
   } = useStore();
 
   const [name, setName] = useState("");
-  const [selectedMembers, setSelectedMembers] = useState<TeamMember[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
   const queryClient = useQueryClient();
   const createTeamMutation = useCreateTeam();
   const addToTeamMutation = useAddToTeam();
 
-  const handleSelectedMembers = (member: TeamMember) => {
+  const handleSelectedMembers = (member: Member) => {
     if (selectedMembers.some((m) => m._id === member._id)) {
       return setSelectedMembers(
         selectedMembers.filter((m) => m._id !== member._id)
@@ -70,13 +70,13 @@ export const CreateTeamAside = observer(function ({
 
   return (
     <div className={` ${className} flex flex-col justify-between h-full `}>
-      <div className="flex flex-col gap-2  h-full max-h-[100%] overflow-y-auto scrollbar-custom">
+      <div className="flex flex-col gap-2 h-full max-h-[100%] overflow-y-auto scrollbar-custom">
         <div className="flex flex-col">
           <span className="text-dark-grey">Team Name</span>
 
           <input
             type="text"
-            className="border-2 rounded-xl p-2 flex-grow w-full"
+            className="flex-grow p-2 border-2 rounded-xl w-full"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -97,8 +97,8 @@ export const CreateTeamAside = observer(function ({
         </div>
       </div>
 
-      <div className="flex gap-2  absolute  bg-white  py-2    bottom-0   left-0 w-full border-t px-4">
-        <div className="flex  justify-end  w-full gap-2 ">
+      <div className="bottom-0 left-0 absolute flex gap-2 bg-white px-4 py-2 border-t w-full">
+        <div className="flex justify-end gap-2 w-full">
           <Button
             variant="secondary"
             size="big"

@@ -14,7 +14,7 @@ import {
 } from "@/common/Icons";
 import { usePathname } from "next/navigation";
 // import { usePrefetchAssets } from "@/assets/hooks";
-import { usePrefetchMembers } from "@/members/hooks";
+import { usePrefetchMembers } from "@/features/members";
 import { usePrefetchLatestActivity } from "@/action-history/hooks/usePrefetchLatestActivity";
 
 export const Sidebar = function () {
@@ -136,19 +136,19 @@ export const Sidebar = function () {
           isSmall={isSidebarSmall}
           icon={<NotebookOrdersIcon />}
           title="Orders"
-          href="/home/orders"
+          href="/orders"
           isActive={pathArray.includes("orders")}
         /> */}
       </section>
 
       <hr className="my-2" />
 
-      <section className="flex flex-col flex-[-1] h-12 my-4 gap-4">
+      <section className="flex flex-col flex-[-1] gap-4 my-4 h-12">
         <SidebarLink
           isSmall={isSidebarSmall}
           icon={<SettingsIcon />}
           title="Settings"
-          href="/home/settings"
+          href="/settings"
           isActive={pathArray.includes("settings")}
           onMouseEnter={() => {
             // prefetchAssets();

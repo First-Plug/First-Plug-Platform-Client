@@ -6,16 +6,16 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { TeamMember } from "@/types";
+import { Member } from "@/features/members";
 
 interface MembersTableProps {
   data: {
-    oldData: TeamMember;
-    newData: TeamMember;
+    oldData: Member;
+    newData: Member;
   };
 }
 
-const getUpdatedFields = (oldData: TeamMember, newData: TeamMember) => {
+const getUpdatedFields = (oldData: Member, newData: Member) => {
   const changes: { field: string; oldValue: any; newValue: any }[] = [];
 
   Object.keys(newData).forEach((key) => {
@@ -23,8 +23,8 @@ const getUpdatedFields = (oldData: TeamMember, newData: TeamMember) => {
       return;
     }
     if (key === "team") {
-      const oldTeamName = oldData[key as keyof TeamMember]?.name || "-";
-      const newTeamName = newData[key as keyof TeamMember]?.name || "-";
+      const oldTeamName = oldData[key as keyof Member]?.name || "-";
+      const newTeamName = newData[key as keyof Member]?.name || "-";
 
       if (oldTeamName !== newTeamName) {
         changes.push({
@@ -35,11 +35,9 @@ const getUpdatedFields = (oldData: TeamMember, newData: TeamMember) => {
       }
     } else {
       if (key !== "products") {
-        if (
-          newData[key as keyof TeamMember] !== oldData[key as keyof TeamMember]
-        ) {
-          let oldValue = oldData[key as keyof TeamMember] || "-";
-          let newValue = newData[key as keyof TeamMember] || "-";
+        if (newData[key as keyof Member] !== oldData[key as keyof Member]) {
+          let oldValue = oldData[key as keyof Member] || "-";
+          let newValue = newData[key as keyof Member] || "-";
 
           changes.push({ field: key, oldValue, newValue });
         }
@@ -102,20 +100,20 @@ const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
   return (
     <Table>
       <TableHeader>
-        <TableRow className="border-gray-200 bg-light-grey rounded-md">
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+        <TableRow className="bg-light-grey border-gray-200 rounded-md">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Original name
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Original Assigned email
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Updated Field
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Old data
           </TableHead>
-          <TableHead className="py-3 px-4 text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 font-semibold text-black text-start">
             New data
           </TableHead>
         </TableRow>
@@ -123,19 +121,19 @@ const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
       <TableBody>
         {updatedFields.map((change, index) => (
           <TableRow key={index}>
-            <TableCell className="text-xs py-2 px-4 border-r">
+            <TableCell className="px-4 py-2 border-r text-xs">
               {data.oldData.firstName + " " + data.oldData.lastName}
             </TableCell>
-            <TableCell className="text-xs py-2 px-4 border-r">
+            <TableCell className="px-4 py-2 border-r text-xs">
               {data.oldData.email}
             </TableCell>
-            <TableCell className="text-xs py-2 px-4 border-r">
+            <TableCell className="px-4 py-2 border-r text-xs">
               {translateField(change.field)}
             </TableCell>
-            <TableCell className="text-xs py-2 px-4 border-r">
+            <TableCell className="px-4 py-2 border-r text-xs">
               {formatValue(change.oldValue, change.field)}
             </TableCell>
-            <TableCell className="text-xs py-2 px-4">
+            <TableCell className="px-4 py-2 text-xs">
               {formatValue(change.newValue, change.field)}
             </TableCell>
           </TableRow>

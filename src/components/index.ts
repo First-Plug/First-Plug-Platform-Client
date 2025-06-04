@@ -8,7 +8,6 @@ export * from "./CompanyForm";
 export * from "./TeamMemberCard";
 export * from "./CreateTeamAside";
 export * from "./Download";
-export * from "./EditMemberAside";
 export * from "./AsideContents/EditTeamsAside";
 export * from "./FilterModal";
 export * from "./Form";
