@@ -148,7 +148,7 @@ export const Sidebar = function () {
           isSmall={isSidebarSmall}
           icon={<SettingsIcon />}
           title="Settings"
-          href="/settings"
+          href="/home/settings"
           isActive={pathArray.includes("settings")}
           onMouseEnter={() => {
             // prefetchAssets();

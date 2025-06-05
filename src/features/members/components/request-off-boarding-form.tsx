@@ -1,7 +1,7 @@
 import { Button, PageLayout, SectionTitle } from "@/shared";
 import ProductDetail from "@/common/ProductDetail";
 import { Product, User } from "@/types";
-import { DropdownInputProductForm } from "../AddProduct/DropDownProductForm";
+import { DropdownInputProductForm } from "@/features/assets";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";

@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
-import { Loader } from "../Loader";
+import { Loader } from "@/shared";
 import {
   useDeleteMember,
   useFetchMember,

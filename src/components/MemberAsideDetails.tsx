@@ -13,7 +13,7 @@ import { RelacoteProducts, ReturnPage } from "./AsideContents";
 import { GenericAlertDialog } from "@/features/assets";
 import { DeleteMemberModal } from "./Alerts/DeleteMemberModal";
 import { useFetchMember } from "@/features/members";
-import { Loader } from "./Loader";
+import { Loader } from "@/shared";
 
 interface MemberAsideDetailsProps {
   className?: string;

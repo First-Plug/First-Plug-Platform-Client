@@ -11,7 +11,7 @@ import { useState } from "react";
 import { Memberservices } from "@/services";
 import { useStore } from "@/models/root.store";
 import { observer } from "mobx-react-lite";
-import { Loader } from "../Loader";
+import { Loader } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface DeleteAlertProps {
@@ -95,7 +95,7 @@ export const DeleteMemberModal: React.FC<DeleteAlertProps> = observer(
                 <DialogTitle className="text-xl">
                   {informationView[type].title}
                 </DialogTitle>
-                <DialogDescription className="text-md font-normal">
+                <DialogDescription className="font-normal text-md">
                   {informationView[type].description}
                 </DialogDescription>
               </DialogHeader>
@@ -112,7 +112,7 @@ export const DeleteMemberModal: React.FC<DeleteAlertProps> = observer(
                     disabled={loading}
                     variant="delete"
                     onClick={handleDeleteMember}
-                    className="w-full bg-error"
+                    className="bg-error w-full"
                   >
                     <p>Delete</p>
                   </Button>

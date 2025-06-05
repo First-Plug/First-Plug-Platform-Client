@@ -1,6 +1,6 @@
 import { useStore } from "@/models";
 import { observer } from "mobx-react-lite";
-import { Loader } from "../Loader";
+import { Loader } from "@/shared";
 import { ProductForm } from "@/features/assets";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";

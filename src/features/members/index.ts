@@ -8,6 +8,7 @@ export * from "./components/AddMember/shipment-data";
 export * from "./components/AddMember/additional-data";
 export * from "./components/AddMember/team-dropdown";
 export * from "./components/edit-member-aside";
+export * from "./components/request-off-boarding-form";
 
 export * from "./hooks/useFetchMembers";
 export * from "./hooks/useFetchMember";

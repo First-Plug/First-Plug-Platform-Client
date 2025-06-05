@@ -15,7 +15,7 @@ import {
 } from "@/types";
 import { CsvServices } from "@/services";
 import { isCsvCompleted, parseProduct } from "@/utils";
-import { useToast } from "./ui/use-toast";
+import { useToast } from "@/shared";
 import { DownloadStock } from "./Download";
 import { parseMembers } from "@/utils/parseMembers";
 import { useQueryClient } from "@tanstack/react-query";

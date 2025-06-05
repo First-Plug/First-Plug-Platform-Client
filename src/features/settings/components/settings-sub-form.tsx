@@ -1,4 +1,3 @@
-import { DropdownInputProductForm } from "@/components/AddProduct/DropDownProductForm";
 import {
   FormControl,
   FormDescription,
@@ -38,7 +37,7 @@ export function SettingsSubForm({
             {data.tpye === "select" ? (
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <SelectTrigger className=" w-full  h-14 py-2 text-lg  ">
+                  <SelectTrigger className="py-2 w-full h-14 text-lg">
                     {field.value ? (
                       <SelectValue
                         placeholder="Select Country"

@@ -13,7 +13,7 @@ import {
 } from "@radix-ui/react-tooltip";
 import { InfoCircle } from "../../../common/Icons";
 
-export default function AssetsForm({ form }: { form: any }) {
+export const AssetsForm = ({ form }: { form: any }) => {
   const { control, reset } = form;
 
   const {
@@ -46,9 +46,9 @@ export default function AssetsForm({ form }: { form: any }) {
 
   return (
     <TooltipProvider>
-      <section className="w-full flex flex-col gap-4 border rounded-md p-4">
+      <section className="flex flex-col gap-4 p-4 border rounded-md w-full">
         <div className="flex items-center">
-          <h2 className="text-xl font-montserrat font-bold text-black">
+          <h2 className="font-montserrat font-bold text-black text-xl">
             Recoverable Configuration
           </h2>
 
@@ -62,7 +62,7 @@ export default function AssetsForm({ form }: { form: any }) {
             <TooltipContent
               side="right"
               align="center"
-              className="bg-blue/80 text-white p-2 rounded-md text-sm"
+              className="bg-blue/80 p-2 rounded-md text-white text-sm"
             >
               The products created in each category will be automatically
               configured based on the option you choose
@@ -71,10 +71,10 @@ export default function AssetsForm({ form }: { form: any }) {
           </Tooltip>
         </div>
 
-        <div className="flex flex-wrap gap-10 justify-between">
+        <div className="flex flex-wrap justify-between gap-10">
           {CATEGORIES.map((category) => (
             <div key={category} className="flex flex-col items-center">
-              <span className="text-sm font-medium mb-2">{category}</span>
+              <span className="mb-2 font-medium text-sm">{category}</span>
               <Controller
                 name={`isRecoverableConfig.${category}`}
                 control={control}
@@ -104,4 +104,4 @@ export default function AssetsForm({ form }: { form: any }) {
       </section>
     </TooltipProvider>
   );
-}
+};

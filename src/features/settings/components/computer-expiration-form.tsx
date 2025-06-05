@@ -5,7 +5,7 @@ import { useStore } from "@/models";
 import { UserServices } from "@/services/user.services";
 import { MinusIcon, AddIcon } from "@/common";
 
-export default function ComputerExpirationForm({ form }: { form: any }) {
+export const ComputerExpirationForm = ({ form }: { form: any }) => {
   const { control, reset, setValue } = form;
   const {
     user: { user },
@@ -42,9 +42,9 @@ export default function ComputerExpirationForm({ form }: { form: any }) {
   };
 
   return (
-    <section className="w-full flex flex-col gap-4 md p-4">
+    <section className="flex flex-col gap-4 p-4 w-full md">
       <div>
-        <h2 className="text-xl font-montserrat font-bold text-black">
+        <h2 className="font-montserrat font-bold text-black text-xl">
           Computer Expiration Settings{" "}
           <span className="font-normal text-base">(years)</span>
         </h2>
@@ -56,7 +56,7 @@ export default function ComputerExpirationForm({ form }: { form: any }) {
         defaultValue={user.computerExpiration}
         render={({ field }) => (
           <div className="flex flex-col items-start">
-            <div className="flex items-center h-14 border rounded-xl p-4 text-black">
+            <div className="flex items-center p-4 border rounded-xl h-14 text-black">
               <button
                 type="button"
                 onClick={() => field.onChange(Math.max(0.5, field.value - 0.5))}
@@ -68,7 +68,7 @@ export default function ComputerExpirationForm({ form }: { form: any }) {
                 type="number"
                 value={field.value}
                 readOnly
-                className="w-10 text-center items-center justify-center tracking-wide font-montserrat font-semibold text-md appearance-none ml-4"
+                className="justify-center items-center ml-4 w-10 font-montserrat font-semibold text-md text-center tracking-wide appearance-none"
               />
               <button
                 type="button"
@@ -83,4 +83,4 @@ export default function ComputerExpirationForm({ form }: { form: any }) {
       />
     </section>
   );
-}
+};

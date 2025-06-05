@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getUserSettings } from "../actions/getUserSettings";
+import { getUserSettings } from "../api/getUserSettings";
 
 export const useFetchUserSettings = (tenantName?: string) => {
   return useQuery({

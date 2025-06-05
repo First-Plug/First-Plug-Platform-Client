@@ -13,7 +13,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared";
 import CategoryIcons from "./AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateAsset, GenericAlertDialog } from "@/features/assets";

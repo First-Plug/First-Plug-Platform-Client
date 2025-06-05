@@ -1,7 +1,6 @@
 "use client";
-import { Button, CustomLink } from "@/common";
-import { AppleIcon, GoogleIcon, MicrosoftIcon } from "@/common/Icons";
-import { BASE_URL } from "@/config/axios.config";
+import { Button, CustomLink, GoogleIcon, MicrosoftIcon } from "@/shared";
+
 import { signIn } from "next-auth/react";
 import { FormEvent, ReactNode } from "react";
 

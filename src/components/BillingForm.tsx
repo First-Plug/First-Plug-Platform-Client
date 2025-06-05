@@ -3,9 +3,9 @@ import { observer } from "mobx-react-lite";
 import { FormInput, Card } from "./";
 import fields from "../features/members/components/AddMember/JSON/shipmentdata.json";
 import { useStore } from "@/models";
-import { BarLoader } from "./Loader/BarLoader";
+import { BarLoader } from "@/shared";
 import { UseFormReturn } from "react-hook-form";
-import { SettingsSubForm } from "@/app/home/settings/SettingsSubForm";
+import { SettingsSubForm } from "@/features/settings";
 interface Props {
   form: UseFormReturn;
 }

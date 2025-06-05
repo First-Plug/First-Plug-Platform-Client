@@ -1,10 +1,10 @@
 import { LoaderSpinner } from "@/common";
 import React from "react";
 
-export function Loader() {
+export const Loader = () => {
   return (
-    <div className="h-full w-full grid place-items-center">
+    <div className="place-items-center grid w-full h-full">
       <LoaderSpinner size="bg" />
     </div>
   );
-}
+};

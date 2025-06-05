@@ -6,7 +6,7 @@ import { Team } from "@/types";
 import { AddMembersToTeamForm } from "./AddMembersToTeamForm";
 import { Button, LoaderSpinner } from "@/shared";
 import { TeamServices } from "@/services";
-import { Input } from "./ui/input";
+import { Input } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface TeamInfoProps {

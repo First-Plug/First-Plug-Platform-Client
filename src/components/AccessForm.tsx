@@ -1,6 +1,6 @@
 "use client";
-import { Button, Input } from "@/common";
-import { SettingsSubForm } from "@/app/home/settings/SettingsSubForm";
+import { Button } from "@/shared";
+import { SettingsSubForm } from "@/features/settings";
 import { UseFormReturn } from "react-hook-form";
 import { useStore } from "@/models";
 

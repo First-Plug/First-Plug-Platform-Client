@@ -1,7 +1,7 @@
 "use client";
 import { ImageProfile } from "@/shared";
 import { UseFormReturn } from "react-hook-form";
-import { SettingsSubForm } from "@/app/home/settings/SettingsSubForm";
+import { SettingsSubForm } from "@/features/settings";
 
 interface CompanyProps {
   form: UseFormReturn;

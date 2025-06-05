@@ -18,14 +18,13 @@ import { AuthServices } from "@/services";
 import { useSession } from "next-auth/react";
 import { setAuthInterceptor } from "@/config/axios.config";
 import { z } from "zod";
-import AssetsForm from "../../../components/settings/AssetsForm";
-import ComputerExpirationForm from "@/components/settings/ComputerExpirationForm";
+import { AssetsForm, ComputerExpirationForm } from "@/features/settings";
 import { useQueryClient } from "@tanstack/react-query";
 
-export default function SettingsForm() {
+export const SettingsForm = () => {
   const queryClient = useQueryClient();
   const {
-    user: { user, setUser },
+    user: { user },
     alerts: { setAlert },
   } = useStore();
 
@@ -125,26 +124,26 @@ export default function SettingsForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="h-full flex flex-col gap-2"
+        className="flex flex-col gap-2 h-full"
       >
-        <div className="flex flex-col gap-4  h-[90%] max-h-[90%] overflow-y-auto scrollbar-custom pr-2">
-          <div className="flex w-full gap-4 ">
+        <div className="flex flex-col gap-4 pr-2 h-[90%] max-h-[90%] overflow-y-auto scrollbar-custom">
+          <div className="flex gap-4 w-full">
             <CompanyForm form={form} />
             <AccessForm form={form} />
           </div>
           <BillingForm form={form} />
-          <div className="w-full grid grid-cols-5 gap-4 h-full">
+          <div className="gap-4 grid grid-cols-5 w-full h-full">
             {" "}
             <div className="col-span-3 h-full">
               {" "}
-              <div className="h-full flex flex-col justify-between border rounded-lg">
+              <div className="flex flex-col justify-between border rounded-lg h-full">
                 {" "}
                 <AssetsForm form={form} />
               </div>
             </div>
             <div className="col-span-2 h-full">
               {" "}
-              <div className="h-full flex flex-col justify-between border rounded-lg">
+              <div className="flex flex-col justify-between border rounded-lg h-full">
                 {" "}
                 <ComputerExpirationForm form={form} />
               </div>
@@ -152,13 +151,13 @@ export default function SettingsForm() {
           </div>
         </div>
 
-        <section className="flex h-[10%] py-6 items-center justify-end border-t relative">
+        <section className="relative flex justify-end items-center py-6 border-t h-[10%]">
           <Dialog>
             {/* <DialogTrigger>
               <Button
                 body="Cancel"
                 variant="secondary"
-                className="mr-[20px] w-[200px] h-[40px] rounded-lg"
+                className="mr-[20px] rounded-lg w-[200px] h-[40px]"
                 disabled={noChanges || isLoading}
               />
             </DialogTrigger> */}
@@ -170,7 +169,7 @@ export default function SettingsForm() {
               </DialogDescription>
 
               <DialogTrigger
-                className=" bg-blue rounded-md py-1 text-white"
+                className="bg-blue py-1 rounded-md text-white"
                 onClick={() => {
                   form.reset({
                     ...user,
@@ -188,7 +187,7 @@ export default function SettingsForm() {
 
           <Button
             variant="primary"
-            className="mr-[39px] w-[200px] h-[40px] rounded-lg"
+            className="mr-[39px] rounded-lg w-[200px] h-[40px]"
             type="submit"
             disabled={isAble}
           >
@@ -198,4 +197,4 @@ export default function SettingsForm() {
       </form>
     </Form>
   );
-}
+};
