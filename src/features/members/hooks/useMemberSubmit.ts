@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useStore } from "@/models/root.store";
 import { Member, useCreateMember, useUpdateMember } from "@/features/members";
-import { useGetOrCreateTeam } from "@/teams/hooks";
+import { useGetOrCreateTeam } from "@/features/teams";
 import { QueryClient } from "@tanstack/react-query";
 import { type Team } from "@/types";
 import { transformData } from "@/utils/dataTransformUtil";

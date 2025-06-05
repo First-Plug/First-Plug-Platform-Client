@@ -1,5 +1,5 @@
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { useFetchTeams, useCreateTeam } from "../hooks";
+import { useFetchTeams, useCreateTeam } from "@/features/teams";
 
 export const useGetOrCreateTeam = () => {
   const queryClient = useQueryClient();

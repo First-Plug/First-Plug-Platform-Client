@@ -1,7 +1,7 @@
 import { useActivityLatest } from "@/features/activity";
 import { useGetTableAssets } from "@/features/assets";
 import { useFetchMembers } from "@/features/members";
-import { useFetchTeams } from "@/teams/hooks/useFetchTeams";
+import { useFetchTeams } from "@/features/teams";
 
 export const useFetchDashboard = () => {
   const { isLoading: isLoadingTeams } = useFetchTeams();

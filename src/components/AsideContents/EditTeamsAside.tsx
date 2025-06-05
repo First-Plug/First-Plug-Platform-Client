@@ -7,11 +7,11 @@ import { useStore } from "@/models/root.store";
 import { Team } from "@/types/teams";
 import { TeamDetails } from "..";
 import { Member } from "@/features/members";
-import { transformData } from "@/utils/dataTransformUtil";
+
 import { DeleteAction } from "../Alerts";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchMembers } from "@/features/members";
-import { useFetchTeams, useDeleteTeam } from "@/teams/hooks";
+import { useFetchTeams } from "@/features/teams";
 
 interface EditTeamsAsideProps {
   className?: string | "";

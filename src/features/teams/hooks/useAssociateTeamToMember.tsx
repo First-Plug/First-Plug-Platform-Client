@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { associateTeamToMember } from "../actions";
+import { associateTeamToMember } from "@/features/teams";
 import { useStore } from "@/models";
 
 export const useAssociateTeamToMember = () => {

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllTeams } from "../actions";
+import { getAllTeams } from "@/features/teams";
 
 export const useFetchTeams = () => {
   return useQuery({

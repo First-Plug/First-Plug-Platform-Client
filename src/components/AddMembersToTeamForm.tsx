@@ -5,10 +5,8 @@ import { Team } from "@/types";
 import { observer } from "mobx-react-lite";
 import { MemberItem } from "./AsideContents/EditTeamAside";
 import { useStore } from "@/models";
-import { transformData } from "@/utils/dataTransformUtil";
-import { Skeleton } from "./ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAddToTeam, useRemoveFromTeam } from "@/teams/hooks";
+import { useAddToTeam, useRemoveFromTeam } from "@/features/teams";
 import { TeamServices } from "@/services";
 import { Member } from "@/features/members";
 

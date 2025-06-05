@@ -1,41 +1,38 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addToTeam } from "../actions";
+import { bulkDeleteTeams } from "@/features/teams";
 import { useStore } from "@/models";
 import { Team } from "@/types";
 
-export const useAddToTeam = () => {
+export const useBulkDeleteTeams = () => {
   const queryClient = useQueryClient();
   const {
-    teams: { updateTeam },
+    teams: { removeTeam },
     alerts: { setAlert },
   } = useStore();
 
   return useMutation({
-    mutationFn: ({ teamId, memberId }: { teamId: string; memberId: string }) =>
-      addToTeam(teamId, memberId),
-    onMutate: async ({ teamId, memberId }) => {
+    mutationFn: (teamIds: string[]) => bulkDeleteTeams(teamIds),
+    onMutate: async (teamIds: string[]) => {
       await queryClient.cancelQueries({ queryKey: ["teams"] });
-
       const previousTeams = queryClient.getQueryData<Team[]>(["teams"]);
 
-      queryClient.setQueryData<Team[]>(["teams"], (oldTeams) => {
-        return oldTeams?.map((team) =>
-          team._id === teamId ? { ...team } : team
+      if (previousTeams) {
+        queryClient.setQueryData<Team[]>(["teams"], (oldTeams = []) =>
+          oldTeams.filter((team) => !teamIds.includes(team._id))
         );
-      });
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+      }
+
       return { previousTeams };
     },
 
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
-      updateTeam(data);
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      setAlert("deleteTeam");
     },
     onError: (error, variables, context) => {
       queryClient.setQueryData(["teams"], context?.previousTeams);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      setAlert("errorDeleteTeam");
     },
   });
 };

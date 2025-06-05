@@ -7,7 +7,7 @@ import { useFormContext, Controller } from "react-hook-form";
 
 import { Button, SectionTitle, CustomLink, BarLoader } from "@/shared";
 import { type Member } from "@/features/members";
-import { useCreateTeam, useFetchTeams } from "@/teams/hooks";
+import { useCreateTeam, useFetchTeams } from "@/features/teams";
 
 import { InputProductForm, DropdownInputProductForm } from "@/features/assets";
 

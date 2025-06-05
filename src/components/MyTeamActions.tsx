@@ -5,8 +5,8 @@ import { AsideType } from "@/types";
 import { observer } from "mobx-react-lite";
 import { Table } from "@tanstack/react-table";
 import { MyTeamViewHeader } from "./MyTeamViewHeader";
-import { useFetchTeams, usePrefetchTeams } from "@/teams/hooks";
-import { BarLoader } from "./Loader/BarLoader";
+import { usePrefetchTeams } from "@/features/teams";
+
 import { useQueryClient } from "@tanstack/react-query";
 
 interface MyTeamActionsProps<TData> {

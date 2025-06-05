@@ -6,9 +6,8 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "@/models/root.store";
 import { Member } from "@/features/members";
 import { AddMembersToTeamForm } from "./AddMembersToTeamForm";
-import { transformData } from "@/utils/dataTransformUtil";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAddToTeam, useCreateTeam } from "@/teams/hooks";
+import { useAddToTeam, useCreateTeam } from "@/features/teams";
 
 interface CreateTeamAsideProps {
   className?: string;

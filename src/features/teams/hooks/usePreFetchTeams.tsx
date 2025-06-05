@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { getAllTeams } from "../actions";
+import { getAllTeams } from "@/features/teams";
 
 export const usePrefetchTeams = () => {
   const queryClient = useQueryClient();

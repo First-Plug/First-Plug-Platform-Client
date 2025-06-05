@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteTeam } from "../actions";
+import { deleteTeam } from "@/features/teams";
 import { useStore } from "@/models";
 import { Team } from "@/types";
 
