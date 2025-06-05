@@ -1,14 +1,14 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
-import { HistorialResponse } from "@/action-history/interfaces";
-import { startOfDay, endOfDay } from "date-fns";
+import { HistorialResponse } from "@/features/activity";
+import { endOfDay, startOfDay } from "date-fns";
 
-export class HistorialServices {
-  static async getAll(
-    page: number,
-    size: number,
-    startDate: string,
-    endDate: string
-  ) {
+export const getAllActionHistory = async (
+  page: number,
+  size: number,
+  startDate: string,
+  endDate: string
+) => {
+  try {
     const start = startOfDay(new Date(startDate));
     const end = endOfDay(new Date(endDate));
 
@@ -20,5 +20,8 @@ export class HistorialServices {
     );
 
     return response.data as HistorialResponse;
+  } catch (error) {
+    console.log(error);
+    throw error;
   }
-}
+};

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { HistorialServices } from "@/action-history/services";
 import {
   useReactTable,
   getCoreRowModel,
@@ -16,7 +15,6 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import { BarLoader } from "@/components/Loader/BarLoader";
 import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
 import DateRangeDropdown from "../date-range-calendar/DateRangeCalendar";
 import { endOfDay, format, parseISO, startOfDay, subDays } from "date-fns";
@@ -34,7 +32,7 @@ import UpdateTeamsTable from "./teams/UpdateTeamTable";
 import UpdateMembersTable from "./members/UpdateMemberTable";
 import UpdateAssetsTable from "./assets/UpdateAssetTable";
 import { Loader } from "@/components/Loader";
-import { useFetchLatestActivity } from "@/action-history/hooks/useFetchLatestActivity";
+import { useFetchLatestActivity } from "@/features/activity";
 import UpdateShipmentsTable from "./shipments/UpdateShipmentsTable";
 import CancelShipmentsTable from "./shipments/CancelShipmentsTable";
 import ConsolidateShipmentsTable from "./shipments/ConsolidateShipmentsTable";
@@ -43,7 +41,7 @@ import CreateShipmentsTable from "./shipments/CreateShipmentsTable";
 const DEFAULT_PAGE_SIZE = 10;
 const VALID_PAGE_SIZES = [10, 25, 50];
 
-const HistoryTable = () => {
+export const HistoryTable = () => {
   const searchParams = useSearchParams();
   const activityId = searchParams.get("activityId");
   const router = useRouter();
@@ -174,25 +172,25 @@ const HistoryTable = () => {
 
   return (
     <>
-      <div className="relative h-full flex-grow flex flex-col gap-1">
+      <div className="relative flex flex-col flex-grow gap-1 h-full">
         <div className="flex justify-end">
           <DateRangeDropdown
             setSelectedDates={setSelectedDates}
             selectedDates={selectedDates}
           />
         </div>
-        <div className="max-h-[85%] overflow-y-auto scrollbar-custom rounded-md border w-full mx-auto">
-          <Table className="w-full border-collapse m-0">
+        <div className="mx-auto border rounded-md w-full max-h-[85%] overflow-y-auto scrollbar-custom">
+          <Table className="m-0 w-full border-collapse">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   key={headerGroup.id}
-                  className="border-gray-200 bg-light-grey rounded-md"
+                  className="bg-light-grey border-gray-200 rounded-md"
                 >
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="py-3 px-4 border-r text-start text-black font-semibold"
+                      className="px-4 py-3 border-r font-semibold text-black text-start"
                     >
                       {flexRender(
                         header.column.columnDef.header,
@@ -208,7 +206,7 @@ const HistoryTable = () => {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="text-center py-8"
+                    className="py-8 text-center"
                   >
                     <Loader />
                   </TableCell>
@@ -253,7 +251,7 @@ const HistoryTable = () => {
                       >
                         <TableCell
                           colSpan={columns.length}
-                          className="text-black border-b text-md text-left border-l-2 border-l-blue w-full p-0 rounded-none transition-colors"
+                          className="p-0 border-b border-l-2 border-l-blue rounded-none w-full text-black text-md text-left transition-colors"
                         >
                           {row.original.itemType === "assets" ? (
                             row.original.actionType === "create" ||
@@ -391,7 +389,7 @@ const HistoryTable = () => {
           </Table>
         </div>
 
-        <div className="flex justify-center absolute w-full bottom-0 z-30">
+        <div className="bottom-0 z-30 absolute flex justify-center w-full">
           {tableData.length > 0 && !isLoading && (
             <PaginationWithLinks
               page={currentPage}
@@ -405,5 +403,3 @@ const HistoryTable = () => {
     </>
   );
 };
-
-export default HistoryTable;

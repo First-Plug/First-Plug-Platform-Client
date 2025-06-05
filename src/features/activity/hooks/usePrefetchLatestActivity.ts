@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { HistorialServices } from "../services";
+import { getAllActionHistory } from "@/features/activity";
 import { endOfDay, startOfDay, subDays } from "date-fns";
 
 export const usePrefetchLatestActivity = () => {
@@ -22,7 +22,7 @@ export const usePrefetchLatestActivity = () => {
           defaultEnd.toISOString(),
         ],
         queryFn: () =>
-          HistorialServices.getAll(
+          getAllActionHistory(
             currentPage,
             pageSize,
             defaultStart.toISOString(),

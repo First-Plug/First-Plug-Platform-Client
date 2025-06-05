@@ -15,7 +15,7 @@ import {
 import { usePathname } from "next/navigation";
 // import { usePrefetchAssets } from "@/assets/hooks";
 import { usePrefetchMembers } from "@/features/members";
-import { usePrefetchLatestActivity } from "@/action-history/hooks/usePrefetchLatestActivity";
+import { usePrefetchLatestActivity } from "@/features/activity";
 
 export const Sidebar = function () {
   const path = usePathname();

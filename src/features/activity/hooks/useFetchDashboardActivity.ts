@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Datum } from "@/action-history/interfaces";
-import { BASE_URL, HTTPRequests } from "../../config/axios.config";
+import { Datum } from "@/features/activity";
+import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 
 const fetchActivityLatest = async (): Promise<Datum[]> => {
   const response = await HTTPRequests.get(`${BASE_URL}/api/history/latest`);

@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { HistorialServices } from "../services";
+import { getAllActionHistory } from "@/features/activity";
 
 export const useFetchLatestActivity = (
   currentPage: number,
@@ -15,7 +15,7 @@ export const useFetchLatestActivity = (
       selectedDates.endDate.toISOString(),
     ],
     queryFn: () =>
-      HistorialServices.getAll(
+      getAllActionHistory(
         currentPage,
         pageSize,
         selectedDates.startDate.toISOString(),
