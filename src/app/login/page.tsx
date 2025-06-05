@@ -15,8 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { useToast } from "@/components/ui/use-toast";
+  useToast,
+} from "@/shared";
 
 export default function Login() {
   const emailInput = useInput("", "email");

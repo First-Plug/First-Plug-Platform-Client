@@ -10,7 +10,7 @@ import {
 
 import { LoggedInUser, ProductTable } from "@/types";
 import { Member } from "@/features/members";
-import { Datum } from "@/action-history/interfaces";
+import { Datum } from "@/features/activity";
 
 interface Props {
   sortedWidgets: string[];

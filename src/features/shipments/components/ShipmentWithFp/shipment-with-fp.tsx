@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/shared";
 import { InfoCircle } from "@/common";
 import { TooltipArrow } from "@radix-ui/react-tooltip";
 import {

@@ -15,7 +15,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/shared";
 import { TooltipArrow } from "@radix-ui/react-tooltip";
 import { Member } from "@/features/members";
 

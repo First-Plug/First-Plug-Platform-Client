@@ -1,6 +1,6 @@
 import { Product, ProductTable } from "@/types";
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
-import { Shipment } from "@/shipments/interfaces/shipments-response.interface";
+import { Shipment } from "@/features/shipments";
 
 type CreationProduct = Omit<Omit<Product, "_id">, "__v">;
 

@@ -5,7 +5,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
+} from "@/shared";
 import { Team } from "@/types";
 
 interface TeamsTableProps {
@@ -18,8 +18,8 @@ const DeleteTeamsTable: React.FC<TeamsTableProps> = ({ data }) => {
   return (
     <Table>
       <TableHeader>
-        <TableRow className="border-gray-200 bg-light-grey rounded-md">
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+        <TableRow className="bg-light-grey border-gray-200 rounded-md">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Team name
           </TableHead>
         </TableRow>
@@ -34,7 +34,7 @@ const DeleteTeamsTable: React.FC<TeamsTableProps> = ({ data }) => {
         ) : (
           normalizedData.map((team, index) => (
             <TableRow key={index}>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {team.name}
               </TableCell>
             </TableRow>

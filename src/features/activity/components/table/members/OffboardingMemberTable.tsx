@@ -5,14 +5,14 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
+} from "@/shared";
 import { Member } from "@/features/members";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/shared";
 
 interface MembersTableProps {
   data: {

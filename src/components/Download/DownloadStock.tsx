@@ -6,15 +6,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/shared";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared";
 import { saveAs } from "file-saver";
 import Image from "next/image";
-import { Button } from "../ui/button";
+import { Button } from "@/shared";
 import { DownloadIcon } from "@/common";
 import { useStore } from "@/models";
 export function DownloadStock() {
@@ -36,37 +32,37 @@ export function DownloadStock() {
   return (
     <Dialog>
       <DialogTrigger>
-        <div className="bg- p-1 rounded-md px-4">
+        <div className="bg- p-1 px-4 rounded-md">
           <span className="font-bold text-blue">Download Template 🗃️</span>
         </div>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-2xl   ">Attention 🫸</DialogTitle>
+          <DialogTitle className="text-2xl">Attention 🫸</DialogTitle>
           <DialogTitle className="text-lg">
             Before opening the Excel file, you need to enable ✅ the use of
             macros. Follow these steps:
           </DialogTitle>
-          <DialogDescription className="text-md   ">
+          <DialogDescription className="text-md">
             <div className="flex flex-col gap-4">
               <ol className="pl-8 h-full text-lg">
-                <li className="list-item list-decimal">
+                <li className="list-decimal list-item">
                   {" "}
                   Download the template ⬇.
                 </li>
-                <li className="list-item list-decimal">
+                <li className="list-decimal list-item">
                   Right-click on the downloaded file
                   <span className="font-medium"> ({fileToDownload} 📁)</span>
                   and select “Properties”;.
                 </li>
 
-                <li className="list-item list-decimal gap-2 ">
+                <li className="gap-2 list-decimal list-item">
                   At the bottom, there&apos;s a{" "}
                   <span className="font-medium">Security</span> message: you
                   need to press <span className="font-medium"> “Unblock”</span>,
                   then “Apply” and “Accept”.
                   <Popover>
-                    <PopoverTrigger className="text-blue underline mx-2">
+                    <PopoverTrigger className="mx-2 text-blue underline">
                       (see image)
                     </PopoverTrigger>
                     <PopoverContent
@@ -74,7 +70,7 @@ export function DownloadStock() {
                       side="right"
                       align="center"
                     >
-                      <div className="relative h-[500px] w-[30vw] bg-white   flex justify-center m-auto ">
+                      <div className="relative flex justify-center bg-white m-auto w-[30vw] h-[500px]">
                         <Image
                           src={"/excelProperties.jpg"}
                           alt="stock firstplug"
@@ -86,15 +82,15 @@ export function DownloadStock() {
                     </PopoverContent>
                   </Popover>
                 </li>
-                <li className="list-item list-decimal">
+                <li className="list-decimal list-item">
                   Open the Excel file and enable the use of macros.
                 </li>
               </ol>
               <Button
-                className="rounded-md p-1 bg-blue text-white "
+                className="bg-blue p-1 rounded-md text-white"
                 onClick={downloadTemplate}
               >
-                <div className="text-xs flex items-center">
+                <div className="flex items-center text-xs">
                   <DownloadIcon />
                   <p>Download Template</p>
                 </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { useStore } from "@/models";
-import { useFetchUserSettings } from "../../../components/settings/hooks/useFetchUserSettings";
+import { useFetchUserSettings } from "@/features/settings";
 
 interface RecoverableSwitchProps {
   selectedCategory: string;

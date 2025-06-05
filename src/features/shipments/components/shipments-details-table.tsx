@@ -5,7 +5,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
+} from "@/shared";
 import {
   useReactTable,
   getCoreRowModel,

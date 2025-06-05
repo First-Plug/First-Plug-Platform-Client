@@ -13,9 +13,9 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
+} from "@/shared";
 
-import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
+import { PaginationWithLinks } from "@/shared";
 import DateRangeDropdown from "../date-range-calendar/DateRangeCalendar";
 import { endOfDay, format, parseISO, startOfDay, subDays } from "date-fns";
 import CreateAssetsTable from "./assets/CreateAssetTable";
@@ -31,7 +31,7 @@ import OffboardingMembersTable from "./members/OffboardingMemberTable";
 import UpdateTeamsTable from "./teams/UpdateTeamTable";
 import UpdateMembersTable from "./members/UpdateMemberTable";
 import UpdateAssetsTable from "./assets/UpdateAssetTable";
-import { Loader } from "@/components/Loader";
+import { Loader } from "@/shared";
 import { useFetchLatestActivity } from "@/features/activity";
 import UpdateShipmentsTable from "./shipments/UpdateShipmentsTable";
 import CancelShipmentsTable from "./shipments/CancelShipmentsTable";

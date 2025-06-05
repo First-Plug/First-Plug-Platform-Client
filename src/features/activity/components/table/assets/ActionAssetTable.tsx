@@ -5,7 +5,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
+} from "@/shared";
 import { Product } from "@/types";
 import MemberNameAndLocation from "../../member-name/MemberNameAndLocation";
 
@@ -42,20 +42,20 @@ const ActionAssetTable: React.FC<AssetsTableProps> = ({ data }) => {
   return (
     <Table>
       <TableHeader>
-        <TableRow className="border-gray-200 bg-light-grey rounded-md">
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+        <TableRow className="bg-light-grey border-gray-200 rounded-md">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Category
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Brand + Model + Name
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Serial
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Old Location
           </TableHead>
-          <TableHead className="py-3 px-4 text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 font-semibold text-black text-start">
             New Location
           </TableHead>
         </TableRow>
@@ -70,10 +70,10 @@ const ActionAssetTable: React.FC<AssetsTableProps> = ({ data }) => {
         ) : (
           oldData.map((asset, index) => (
             <TableRow key={index}>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {asset.category}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {[
                   asset.attributes?.find((attr) => attr.key === "brand")?.value,
                   asset.attributes?.find((attr) => attr.key === "model")?.value,
@@ -82,13 +82,13 @@ const ActionAssetTable: React.FC<AssetsTableProps> = ({ data }) => {
                   .filter(Boolean)
                   .join(" ")}{" "}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {asset.serialNumber || "N/A"}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 <MemberNameAndLocation product={asset as Product} />
               </TableCell>
-              <TableCell className="text-xs py-2 px-4">
+              <TableCell className="px-4 py-2 text-xs">
                 <MemberNameAndLocation product={newData[index] as Product} />
               </TableCell>
             </TableRow>

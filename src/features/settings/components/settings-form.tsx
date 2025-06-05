@@ -1,16 +1,11 @@
 import { BillingForm, CompanyForm, AccessForm } from "@/components";
 import { Button, LoaderSpinner } from "@/common";
-import { Form } from "@/components/ui/form";
+import { Form } from "@/shared";
 import { useStore } from "@/models";
 import { UserZod, UserZodSchema } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/shared";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { UserServices } from "@/services/user.services";
 import { useState } from "react";

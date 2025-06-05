@@ -16,6 +16,7 @@ import { usePathname } from "next/navigation";
 // import { usePrefetchAssets } from "@/assets/hooks";
 import { usePrefetchMembers } from "@/features/members";
 import { usePrefetchLatestActivity } from "@/features/activity";
+import Link from "next/link";
 
 export const Sidebar = function () {
   const path = usePathname();
@@ -40,23 +41,25 @@ export const Sidebar = function () {
     >
       <header className={`py-8 flex flex-[-1] h-[8vh] mx-6`}>
         <div>
-          {isSidebarSmall ? (
-            <Image
-              src="/Isotipo.png"
-              alt="Logo small"
-              width={280}
-              height={98}
-              className="w-10"
-            />
-          ) : (
-            <Image
-              src="/logo1.png"
-              alt="Logo"
-              width={144.2}
-              height={48}
-              priority
-            />
-          )}
+          <Link href="/home/dashboard">
+            {isSidebarSmall ? (
+              <Image
+                src="/Isotipo.png"
+                alt="Logo small"
+                width={280}
+                height={98}
+                className="w-10"
+              />
+            ) : (
+              <Image
+                src="/logo1.png"
+                alt="Logo"
+                width={144.2}
+                height={48}
+                priority
+              />
+            )}
+          </Link>
         </div>
       </header>
 

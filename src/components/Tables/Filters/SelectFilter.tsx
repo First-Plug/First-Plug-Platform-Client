@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
   SelectGroup,
-} from "@/components/ui/select";
+} from "@/shared";
 import { observer } from "mobx-react-lite";
 import { useStore } from "@/models";
 import { SelectLabel } from "@radix-ui/react-select";
@@ -28,7 +28,7 @@ export default observer(function SelectFilter({
     case "members": {
       return (
         <Select onValueChange={(value) => onValueChange(value)}>
-          <SelectTrigger className=" bg-white  text-xs ">
+          <SelectTrigger className="bg-white text-xs">
             <SelectValue placeholder="Filter by Team" />
           </SelectTrigger>
           <SelectContent className="bg-white text-xs">
@@ -51,7 +51,7 @@ export default observer(function SelectFilter({
     case "stock": {
       return (
         <Select onValueChange={(value) => onValueChange(value)}>
-          <SelectTrigger className=" bg-white  text-xs ">
+          <SelectTrigger className="bg-white text-xs">
             <SelectValue placeholder="Filter by Category" />
           </SelectTrigger>
           <SelectContent className="bg-white text-xs">
@@ -73,7 +73,7 @@ export default observer(function SelectFilter({
     case "subRow": {
       return (
         <Select onValueChange={(value) => onValueChange(value)}>
-          <SelectTrigger className=" bg-white  text-xs ">
+          <SelectTrigger className="bg-white text-xs">
             <SelectValue placeholder="Filter by Status" />
           </SelectTrigger>
           <SelectContent className="bg-white text-xs">

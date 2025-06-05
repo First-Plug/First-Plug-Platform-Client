@@ -32,7 +32,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/shared";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -44,7 +44,7 @@ declare module "@tanstack/react-table" {
 import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
 import { ProductTable, TableType } from "@/types";
 import { TableActions } from "./TableActions";
-import { Button } from "../ui/button";
+import { Button } from "@/shared";
 import { ArrowLeft, ArrowRight, DropDownArrow } from "@/common";
 import {
   Select,
@@ -53,10 +53,10 @@ import {
   SelectValue,
   SelectGroup,
   SelectTrigger,
-} from "../ui/select";
+} from "@/shared";
 import FilterComponent from "./Filters/FilterComponent";
 import { getSnapshot, isStateTreeNode } from "mobx-state-tree";
-import { PaginationAdvanced } from "@/components/ui/pagination-advanced";
+import { PaginationAdvanced } from "@/shared";
 import { Member } from "@/features/members";
 const MONTHS = [
   "January",
@@ -459,9 +459,9 @@ export function RootTable<TData, TValue>({
         <div className="flex items-center max-h-[50%]">
           <Button
             onClick={handleClearAllFilters}
-            variant="outline"
-            size="sm"
-            className="mr-2"
+            variant="secondary"
+            size="small"
+            className="mr-2 w-32"
           >
             Clear All Filters
           </Button>
@@ -476,7 +476,7 @@ export function RootTable<TData, TValue>({
       <div
         ref={tableContainerRef}
         className={`rounded-md border w-full mx-auto ${
-          tableType === "members" ? "max-h-[80%]" : "max-h-[85%]"
+          tableType === "members" ? "max-h-[80%]" : "max-h-[85%] mt-2"
         } overflow-y-auto scrollbar-custom `}
       >
         <Table className="table">

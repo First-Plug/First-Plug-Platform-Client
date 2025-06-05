@@ -13,11 +13,11 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
+} from "@/shared";
 
-import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
+import { PaginationWithLinks } from "@/shared";
 import { ArrowRight, Button } from "@/shared";
-import { Loader } from "@/components/Loader";
+import { Loader } from "@/shared";
 import {
   ShipmentServices,
   ShipmentDetailsTable,

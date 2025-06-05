@@ -5,8 +5,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/shared";
+import { Input } from "@/shared";
 import {
   Select,
   SelectItem,
@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
   SelectGroup,
-} from "@/components/ui/select";
+} from "@/shared";
 import { SettingsFormConfig, SettingsFormKeys } from "@/types";
 import { UseFormReturn } from "react-hook-form";
 export function SettingsSubForm({

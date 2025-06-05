@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { AuthServices } from "@/services/auth.services";
 import useInput from "@/hooks/useInput";
 import { FormEvent, useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/shared";
 
 export default function Register() {
   const nameInput = useInput("", "userName");

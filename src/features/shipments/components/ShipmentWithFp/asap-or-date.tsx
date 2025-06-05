@@ -1,7 +1,7 @@
 "use client";
 
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/shared";
+import { Label } from "@/shared";
 import { format, isValid, parseISO } from "date-fns";
 
 export type AsapOrDateValue = "ASAP" | Date | "";
@@ -42,16 +42,16 @@ export const AsapOrDate = ({ label, value, onChange }: AsapOrDateProps) => {
 
   return (
     <div className="flex flex-col">
-      <h2 className="text-black font-semibold">{label}</h2>
+      <h2 className="font-semibold text-black">{label}</h2>
       <div className="flex justify-between items-center gap-4">
-        <div className="flex items-center gap-2 flex-1">
+        <div className="flex flex-1 items-center gap-2">
           <Checkbox
             id={label}
             className="border-black"
             checked={isAsap}
             onCheckedChange={handleCheckboxChange}
           />
-          <Label htmlFor={label} className="text-lg font-medium">
+          <Label htmlFor={label} className="font-medium text-lg">
             ASAP
           </Label>
         </div>
@@ -62,7 +62,7 @@ export const AsapOrDate = ({ label, value, onChange }: AsapOrDateProps) => {
             value={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
             onChange={handleDateChange}
             min={today} // Establece la fecha mínima como hoy
-            className="w-full h-14 py-2 rounded-xl border text-black p-4 font-sans focus:outline-none"
+            className="p-4 py-2 border rounded-xl focus:outline-none w-full h-14 font-sans text-black"
           />
         </div>
       </div>

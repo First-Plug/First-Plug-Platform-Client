@@ -2,7 +2,7 @@ import "./globals.css";
 import { Montserrat, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/shared";
 import "@/config/env.config";
 import { Providers } from "@/providers";
 

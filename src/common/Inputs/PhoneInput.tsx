@@ -6,7 +6,7 @@ import * as RPNInput from "react-phone-number-input";
 
 import flags from "react-phone-number-input/flags";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared";
 import {
   Command,
   CommandEmpty,
@@ -14,16 +14,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { Input, InputProps } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/shared";
+import { Input, InputProps } from "@/shared";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared";
 
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/shared";
 
 type PhoneInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -111,7 +107,7 @@ const CountrySelect = ({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0 bg-white">
+      <PopoverContent className="bg-white p-0 w-[300px]">
         <Command>
           <CommandList>
             <ScrollArea className="h-72">
@@ -157,7 +153,7 @@ const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
   const Flag = flags[country];
 
   return (
-    <span className="bg-foreground/20 flex h-4 w-6 overflow-hidden rounded-sm">
+    <span className="flex bg-foreground/20 rounded-sm w-6 h-4 overflow-hidden">
       {Flag && <Flag title={countryName} />}
     </span>
   );

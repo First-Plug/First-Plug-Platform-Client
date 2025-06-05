@@ -5,8 +5,8 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
-import type { Shipment } from "@/shipments/interfaces/shipments-response.interface";
+} from "@/shared";
+import type { Shipment } from "@/features/shipments";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "-";
@@ -169,17 +169,17 @@ const UpdateShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
   return (
     <Table>
       <TableHeader>
-        <TableRow className="border-gray-200 bg-light-grey rounded-md">
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+        <TableRow className="bg-light-grey border-gray-200 rounded-md">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Order ID
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Updated Field
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Old Data
           </TableHead>
-          <TableHead className="py-3 px-4 text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 font-semibold text-black text-start">
             New Data
           </TableHead>
         </TableRow>
@@ -194,16 +194,16 @@ const UpdateShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
         ) : (
           updatedFields.map((change, index) => (
             <TableRow key={`${data.oldData.order_id}-${change.field}`}>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {data.oldData.order_id}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {translateField(change.field)}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {change.oldValue}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4">
+              <TableCell className="px-4 py-2 text-xs">
                 {change.newValue}
               </TableCell>
             </TableRow>

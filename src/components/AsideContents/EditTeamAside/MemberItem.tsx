@@ -1,6 +1,4 @@
-import { LoaderSpinner } from "@/common";
-import { BarLoader } from "@/components/Loader/BarLoader";
-import { Skeleton } from "@/components/ui/skeleton";
+import { BarLoader } from "@/shared";
 import { Member } from "@/features/members";
 
 interface MemberItemProp {

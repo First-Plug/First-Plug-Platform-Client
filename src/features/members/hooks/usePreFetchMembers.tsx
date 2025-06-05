@@ -3,14 +3,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getAllMembers } from "@/features/members";
 import { useStore } from "@/models";
 import { Member } from "@/features/members";
+import { useEffect, useCallback } from "react";
 
 export const usePrefetchMembers = () => {
   const queryClient = useQueryClient();
-  const {
-    members: { setMembers },
-  } = useStore();
+  const store = useStore();
 
-  const prefetchMembers = async () => {
+  const prefetchMembers = useCallback(async () => {
+    if (!store) return;
+
     try {
       let members = queryClient.getQueryData(["members"]);
 
@@ -23,14 +24,20 @@ export const usePrefetchMembers = () => {
       }
 
       if (Array.isArray(members)) {
-        setMembers(members);
+        store.members.setMembers(members);
       } else {
         console.error("Los datos de miembros no tienen el formato esperado.");
       }
     } catch (error) {
       console.error("Error al prefetch de miembros:", error);
     }
-  };
+  }, [queryClient, store]);
+
+  useEffect(() => {
+    if (store) {
+      prefetchMembers();
+    }
+  }, [store, prefetchMembers]);
 
   return prefetchMembers;
 };

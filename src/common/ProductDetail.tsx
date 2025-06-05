@@ -9,7 +9,7 @@ import { Button } from "./Button";
 import { ArrowLeft } from "./Icons";
 import { observer } from "mobx-react-lite";
 import { LoaderSpinner } from "./LoaderSpinner";
-import { Badge, badgeVariants } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/shared";
 import useActions from "@/hooks/useActions";
 import { XIcon } from "lucide-react";
 import CategoryIcons from "@/components/AsideContents/EditTeamAside/CategoryIcons";

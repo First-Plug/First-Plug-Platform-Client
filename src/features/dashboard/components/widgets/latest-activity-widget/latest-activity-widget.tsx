@@ -13,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/shared";
 
 import { Button, EmptyDashboardCard, Card } from "@/shared";
 

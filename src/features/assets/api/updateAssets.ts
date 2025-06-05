@@ -1,5 +1,5 @@
 import type { Product } from "@/types";
-import type { Shipment } from "@/shipments/interfaces/shipments-response.interface";
+import type { Shipment } from "@/features/shipments";
 import { ProductServices } from "@/services";
 
 export const updateAsset = async (

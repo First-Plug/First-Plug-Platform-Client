@@ -2,21 +2,18 @@
 import { signOut, useSession } from "next-auth/react";
 import { NavButtonIcon } from "@/shared";
 import { useRouter } from "next/navigation";
-import { LogOut, Mail, Users } from "lucide-react";
+import { LogOut, Users } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger } from "@/shared";
+import { Button } from "@/shared";
 
 export const SessionDropdown = () => {
   const router = useRouter();
   const session = useSession();
   const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
 
   const handleLogOut = () => {
     if (localStorage.getItem("token")) {
@@ -27,15 +24,11 @@ export const SessionDropdown = () => {
     queryClient.removeQueries();
     localStorage.removeItem("REACT_QUERY_OFFLINE_CACHE");
 
-    // localStorage.removeItem("reactQueryCache");
-    // sessionStorage.removeItem("reactQueryCache");
-
     const checkCacheClear = setInterval(() => {
       const isCacheCleared = queryClient.getQueryCache().getAll().length === 0;
       if (isCacheCleared) {
         clearInterval(checkCacheClear);
 
-        // queryClient.getQueryCache().clear();
         if (session.status === "authenticated") {
           signOut({ callbackUrl: "http://localhost:3000/login" });
         } else {
@@ -46,35 +39,41 @@ export const SessionDropdown = () => {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="p-0">
-          <NavButtonIcon />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-white mr-4 w-56">
-        <DropdownMenuLabel>
-          <div className="flex items-center text-md">
-            <Users className="h-4" />{" "}
-            {session?.data?.user?.name || session?.data?.user?.name}
-          </div>
-          <div className="flex items-center text-sm">
-            <Mail className="h-3" />
-            {session?.data?.user?.email}
-          </div>
-        </DropdownMenuLabel>
-
-        <DropdownMenuLabel className="hover:bg-light-grey p-0 text-red-600 transition-all duration-150">
-          <Button
-            variant="ghost"
-            className="w-full h-full text-start"
-            onClick={handleLogOut}
-          >
-            <LogOut className="mr-2 w-4 h-4" />
-            <span>Log out</span>
+    <div className="inline-block relative">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="text" className="p-0" onClick={() => setOpen(!open)}>
+            <NavButtonIcon />
           </Button>
-        </DropdownMenuLabel>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuTrigger>
+        {open && (
+          <div className="top-12 right-0 z-[100] absolute bg-white shadow-lg p-2 border border-gray-200 rounded-md w-56 item">
+            <div className="flex flex-col justify-center items-start">
+              <div className="flex items-center gap-2 text-md">
+                <Users className="w-5 h-5" />
+                <span className="font-semibold">
+                  {session?.data?.user?.name || session?.data?.user?.name}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 mt-1 text-sm">
+                <span>{session?.data?.user?.email}</span>
+              </div>
+            </div>
+
+            <div className="mt-2 p-0">
+              <Button
+                variant="text"
+                className="hover:bg-gray-100 p-2 rounded-md w-full h-full text-red-600 text-sm text-start"
+                onClick={handleLogOut}
+              >
+                <LogOut className="mr-2 w-4 h-4" />
+                <span>Log out</span>
+              </Button>
+            </div>
+          </div>
+        )}
+      </DropdownMenu>
+    </div>
   );
 };

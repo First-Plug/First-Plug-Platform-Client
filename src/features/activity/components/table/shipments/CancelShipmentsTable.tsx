@@ -5,8 +5,8 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
-import type { Shipment } from "@/shipments/interfaces/shipments-response.interface";
+} from "@/shared";
+import type { Shipment } from "@/features/shipments";
 import { formatDate } from "@/utils/formateDate";
 
 interface ShipmentsTableProps {
@@ -19,15 +19,15 @@ const CancelShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
   return (
     <Table>
       <TableHeader>
-        <TableRow className="border-gray-200 bg-light-grey rounded-md">
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+        <TableRow className="bg-light-grey border-gray-200 rounded-md">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Order ID
           </TableHead>
 
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Origin / Pickup date
           </TableHead>
-          <TableHead className="py-3 px-4 text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 font-semibold text-black text-start">
             Destination / Delivery date
           </TableHead>
         </TableRow>
@@ -42,15 +42,15 @@ const CancelShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
         ) : (
           normalizedData.map((shipment) => (
             <TableRow key={shipment.order_id}>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {shipment.order_id}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {shipment.origin}
                 {" / "}
                 {formatDate(shipment.originDetails.desirableDate)}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4">
+              <TableCell className="px-4 py-2 text-xs">
                 {shipment.destination}
                 {" / "}
                 {formatDate(shipment.destinationDetails.desirableDate)}

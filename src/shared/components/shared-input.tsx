@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { SearchIcon } from "@/shared";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared";
 
 type SearchInputProps = {
   placeholder?: string;

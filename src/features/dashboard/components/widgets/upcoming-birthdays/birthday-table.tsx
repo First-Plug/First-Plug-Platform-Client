@@ -18,7 +18,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/shared";
 
 const birthdayColumns: ColumnDef<Member>[] = [
   {

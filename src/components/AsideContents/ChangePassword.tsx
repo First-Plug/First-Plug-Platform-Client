@@ -4,12 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormMessage } from "@/shared";
 import { useStore } from "@/models";
 import { AuthServices } from "@/services";
 
@@ -60,7 +55,7 @@ export function ChangePassword() {
     <FormProvider {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="h-full flex flex-col justify-between gap-2 "
+        className="flex flex-col justify-between gap-2 h-full"
       >
         <div className="flex flex-col gap-3">
           <FormField
@@ -117,10 +112,10 @@ export function ChangePassword() {
             )}
           />
         </div>
-        <section className="flex absolute h-[10%] py-6 items-center justify-end border-t  bottom-0 w-5/6">
+        <section className="bottom-0 absolute flex justify-end items-center py-6 border-t w-5/6 h-[10%]">
           <Button
             variant="primary"
-            className="mr-[39px] w-[200px] h-[40px] rounded-lg"
+            className="mr-[39px] rounded-lg w-[200px] h-[40px]"
             type="submit"
             disabled={isLoading || !form.formState.isValid}
           >

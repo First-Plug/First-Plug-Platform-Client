@@ -10,11 +10,11 @@ import { type Product } from "@/types";
 import { Button, LoaderSpinner, PageLayout } from "@/shared";
 
 import { useFetchMembers } from "@/features/members";
-import { RequestOffBoardingForm } from "@/components/RequestOffBoarding/Request-off-boarding-form";
+import { RequestOffBoardingForm } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
-import { validateMemberBillingInfo } from "../../../../../components/RequestOffBoarding/Request-off-boarding-form";
-import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
-import { ShipmentWithFp } from "@/shipments/components";
+import { validateMemberBillingInfo } from "@/features/members";
+import { useShipmentValues } from "@/features/shipments";
+import { ShipmentWithFp } from "@/features/shipments";
 
 import { Member } from "@/features/members";
 import { Memberservices } from "@/services";

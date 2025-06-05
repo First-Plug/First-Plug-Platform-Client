@@ -1,3 +1,4 @@
+"use client";
 import { Button, PageLayout, SectionTitle } from "@/shared";
 import ProductDetail from "@/common/ProductDetail";
 import { Product, User } from "@/types";

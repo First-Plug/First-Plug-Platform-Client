@@ -5,7 +5,7 @@ import { Button, LoaderSpinner } from "@/common";
 import useActions from "@/hooks/useActions";
 import { useStore } from "@/models";
 import { Member } from "@/features/members";
-import { Badge, badgeVariants } from "../ui/badge";
+import { Badge, badgeVariants } from "@/shared";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { GenericAlertDialog } from "@/features/assets";

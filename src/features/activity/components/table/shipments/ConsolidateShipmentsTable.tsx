@@ -1,4 +1,4 @@
-import { Changes } from "@/action-history/interfaces";
+import { Changes } from "@/features/activity";
 import {
   Table,
   TableHeader,
@@ -6,7 +6,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
+} from "@/shared";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "-";
@@ -76,20 +76,20 @@ const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
   return (
     <Table>
       <TableHeader>
-        <TableRow className="border-gray-200 bg-light-grey rounded-md">
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+        <TableRow className="bg-light-grey border-gray-200 rounded-md">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Original Order ID
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Consolidated ID
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Updated Field
           </TableHead>
-          <TableHead className="py-3 px-4 border-r text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Old Data
           </TableHead>
-          <TableHead className="py-3 px-4 text-start text-black font-semibold">
+          <TableHead className="px-4 py-3 font-semibold text-black text-start">
             New Data
           </TableHead>
         </TableRow>
@@ -106,21 +106,21 @@ const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
             <TableRow
               key={`${comparison.originalOrderId}-${comparison.field}-${index}`}
             >
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {data.context === "single-product"
                   ? "-"
                   : comparison.originalOrderId}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {comparison.consolidatedId}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {comparison.field}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4 border-r">
+              <TableCell className="px-4 py-2 border-r text-xs">
                 {data.context === "single-product" ? "-" : comparison.oldValue}
               </TableCell>
-              <TableCell className="text-xs py-2 px-4">
+              <TableCell className="px-4 py-2 text-xs">
                 {comparison.newValue}
               </TableCell>
             </TableRow>

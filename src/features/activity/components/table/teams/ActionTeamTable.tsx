@@ -5,7 +5,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
+} from "@/shared";
 
 // Modifica la interfaz de Member para reflejar la posible estructura de `team`
 interface Team {
