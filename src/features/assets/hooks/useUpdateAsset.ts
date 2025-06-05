@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateAsset } from "@/features/assets";
 import { useStore } from "@/models";
 import type { Product } from "@/types";
-import type { Shipment } from "@/shipments/interfaces/shipments-response.interface";
+import type { Shipment } from "@/features/shipments";
 
 interface UpdateAssetProps {
   id: string;

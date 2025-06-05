@@ -14,7 +14,7 @@ import {
   EditTeamsAside,
 } from "./AsideContents";
 import { EditMemberAside } from "@/features/members";
-import { ShipmentAside } from "@/shipments/components/ShipmentAside";
+import { ShipmentAside } from "@/features/shipments";
 
 export var AsideContent = observer(function () {
   const { aside } = useStore();

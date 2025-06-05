@@ -1,6 +1,5 @@
 import { LOCATION, Location, Product, User } from "@/types";
 import React, { Dispatch, SetStateAction, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
 import ProductDetail, { RelocateStatus } from "@/common/ProductDetail";
 import { Button, LoaderSpinner } from "@/common";
 import useActions from "@/hooks/useActions";
@@ -15,15 +14,15 @@ import {
   validateAfterAction,
 } from "@/lib/validateAfterAction";
 import { useQueryClient } from "@tanstack/react-query";
-import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
-import { ShipmentWithFp } from "@/shipments/components";
+import { useShipmentValues } from "@/features/shipments";
+import { ShipmentWithFp } from "@/features/shipments";
 import {
   Select,
   SelectLabel,
   SelectOption,
   SelectOptions,
   SelectTrigger,
-} from "@/firstplug/ui/Select";
+} from "@/features/shipments";
 
 interface IRemoveItems {
   product: Product;

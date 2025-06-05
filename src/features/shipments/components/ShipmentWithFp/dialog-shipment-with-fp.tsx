@@ -15,7 +15,7 @@ import { useMemo } from "react";
 import { Label } from "@/components/ui/label"; // o cualquier componente de texto
 import { AlertCircle } from "lucide-react"; // opcional, para ícono de error
 import { isBefore, isValid, parseISO, isEqual, format } from "date-fns"; // Importa isEqual
-import { checkMemberJoinDate } from "@/shipments/utils/memberDateValidation";
+import { checkMemberJoinDate } from "@/features/shipments";
 import { Member } from "@/features/members";
 
 interface Props {

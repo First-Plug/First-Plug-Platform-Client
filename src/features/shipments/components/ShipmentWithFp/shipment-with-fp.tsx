@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Dropdown } from "../index";
 import { DialogShipmentWithFp } from "./dialog-shipment-with-fp";
 import { useForm, Controller } from "react-hook-form";
 import { AsapOrDateValue } from "./asap-or-date";
@@ -16,8 +15,8 @@ import {
   SelectOption,
   SelectOptions,
   SelectTrigger,
-} from "@/firstplug/ui/Select";
-import { SelectLabel } from "../../../firstplug/ui/Select/select-label";
+  SelectLabel,
+} from "@/features/shipments";
 import { Member } from "@/features/members";
 
 interface Props {

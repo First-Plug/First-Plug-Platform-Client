@@ -20,7 +20,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromTeam } from "@/features/teams";
 import { useDeleteAsset, usePrefetchAsset } from "@/features/assets";
-import { useCancelShipment } from "@/shipments/hooks/useCancelShipment";
+import { useCancelShipment } from "@/features/shipments";
 import { Member } from "@/features/members";
 
 type DeleteTypes =

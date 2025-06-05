@@ -21,9 +21,9 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { validateAfterAction } from "@/lib/validateAfterAction";
 import { useFetchMembers } from "@/features/members";
-import { ShipmentWithFp } from "@/shipments/components";
-import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
-import { Shipment } from "@/shipments/interfaces/shipments-response.interface";
+import { ShipmentWithFp } from "@/features/shipments";
+import { useShipmentValues } from "@/features/shipments";
+import { Shipment } from "@/features/shipments";
 
 interface BackendResponse extends Product {
   shipment?: Shipment;

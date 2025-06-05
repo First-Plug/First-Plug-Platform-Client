@@ -16,14 +16,16 @@ import {
 } from "@/components/ui/table";
 
 import { PaginationWithLinks } from "@/components/ui/pagination-with-links";
-import { ArrowRight, Button, PenIcon, TrashIcon } from "@/common";
+import { ArrowRight, Button } from "@/shared";
 import { Loader } from "@/components/Loader";
-import { ShipmentServices } from "@/shipments/services/shipments.services";
+import {
+  ShipmentServices,
+  ShipmentDetailsTable,
+  useFetchShipments,
+  EditShipment,
+  useShipmentStore,
+} from "@/features/shipments";
 import { DeleteAction } from "@/components/Alerts";
-import ShipmentDetailsTable from "./ShipmentDetailsTable";
-import { useFetchShipments } from "@/shipments/hooks/useFetchShipments";
-import { EditShipment } from "../EditShipment";
-import { useShipmentStore } from "@/shipments/store/useShipmentStore";
 import { ExternalLinkIcon } from "lucide-react";
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -37,7 +39,7 @@ const statusColors = {
   "On Hold - Missing Data": "bg-[#FF8A80]",
 };
 
-const ShipmentsTable = () => {
+export const ShipmentsTable = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const shipmentId = searchParams.get("id");
@@ -344,5 +346,3 @@ const ShipmentsTable = () => {
     </>
   );
 };
-
-export default ShipmentsTable;

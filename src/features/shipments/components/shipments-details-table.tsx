@@ -14,7 +14,7 @@ import {
 } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import type { Shipment } from "@/shipments/interfaces/shipments-response.interface";
+import type { Shipment } from "@/features/shipments";
 import { ProductImage } from "@/common";
 import PrdouctModelDetail from "@/common/PrdouctModelDetail";
 
@@ -22,7 +22,7 @@ interface Props {
   data: Shipment;
 }
 
-const ShipmentDetailsTable = ({ data }: Props) => {
+export const ShipmentDetailsTable = ({ data }: Props) => {
   const tableData = useMemo(() => {
     return data.snapshots ?? [];
   }, [data.snapshots]);
@@ -33,7 +33,7 @@ const ShipmentDetailsTable = ({ data }: Props) => {
         accessorKey: "category",
         header: "Category",
         cell: ({ getValue }) => (
-          <div className="flex gap-2 text-lg items-center w-[150px]">
+          <div className="flex items-center gap-2 w-[150px] text-lg">
             <ProductImage category={getValue<string>()} />
             <p>{getValue<string>()}</p>
           </div>
@@ -105,12 +105,12 @@ const ShipmentDetailsTable = ({ data }: Props) => {
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow
             key={headerGroup.id}
-            className="border-gray-200 bg-light-grey rounded-md"
+            className="bg-light-grey border-gray-200 rounded-md"
           >
             {headerGroup.headers.map((header) => (
               <TableHead
                 key={header.id}
-                className="py-3 px-4 border-r text-start text-black font-semibold"
+                className="px-4 py-3 border-r font-semibold text-black text-start"
                 style={{
                   width: header.getSize(),
                 }}
@@ -128,7 +128,7 @@ const ShipmentDetailsTable = ({ data }: Props) => {
         {table.getRowModel().rows.map((row) => (
           <TableRow key={row.id}>
             {row.getVisibleCells().map((cell) => (
-              <TableCell key={cell.id} className="text-xs py-4 px-4 border-r">
+              <TableCell key={cell.id} className="px-4 py-4 border-r text-xs">
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </TableCell>
             ))}
@@ -138,8 +138,6 @@ const ShipmentDetailsTable = ({ data }: Props) => {
     </Table>
   );
 };
-
-export default ShipmentDetailsTable;
 
 function formatDate(date: string) {
   const parsedDate = new Date(date);

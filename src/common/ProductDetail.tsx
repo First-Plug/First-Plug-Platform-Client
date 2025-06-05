@@ -20,8 +20,8 @@ import {
   buildValidationEntities,
   validateAfterAction,
 } from "@/lib/validateAfterAction";
-import { useShipmentValues } from "@/shipments/hooks/useShipmentValues";
-import { ShipmentWithFp } from "@/shipments/components";
+import { useShipmentValues } from "@/features/shipments";
+import { ShipmentWithFp } from "@/features/shipments";
 import { ShipmentStateColors, StatusColors } from "./StatusColors";
 import { Member } from "@/features/members";
 

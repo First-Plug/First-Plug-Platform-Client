@@ -1,3 +1,4 @@
+"use client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getAllMembers } from "@/features/members";
 import { useStore } from "@/models";

@@ -9,7 +9,6 @@ import {
   ProductsStore,
   MemberStore,
   UserStore,
-  FetchStore,
   AlertStore,
 } from "./";
 
