@@ -15,7 +15,7 @@ import { ProductLocation, ShipmentStatusCard } from "@/common";
 import { ActionButton } from "./ActionButton";
 import EditProduct from "./EditProduct";
 import { DeleteAction } from "@/components/Alerts";
-import { usePrefetchAsset } from "@/assets/hooks";
+import { usePrefetchAsset } from "@/features/assets";
 import { ProductConditionCard } from "@/common/ProductConditionCard";
 
 interface IProdcutsDetailsTable {
@@ -42,7 +42,7 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
       },
     },
     cell: ({ getValue }) => (
-      <span className="text-md font-semibold">#{getValue<string>()}</span>
+      <span className="font-semibold text-md">#{getValue<string>()}</span>
     ),
     enableColumnFilter: true,
     filterFn: (row, columnId, filterValue) => {

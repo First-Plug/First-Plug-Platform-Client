@@ -2,9 +2,8 @@
 import { Button } from "@/common";
 import { useStore } from "@/models";
 import type { Product } from "@/types";
-import { usePrefetchAssignData } from "@/assets/hooks";
+import { usePrefetchAssignData, GenericAlertDialog } from "@/features/assets";
 import { useQueryClient } from "@tanstack/react-query";
-import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 

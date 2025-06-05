@@ -19,7 +19,7 @@ import {
 } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromTeam } from "@/teams/hooks";
-import { useDeleteAsset, usePrefetchAsset } from "@/assets/hooks";
+import { useDeleteAsset, usePrefetchAsset } from "@/features/assets";
 import { useCancelShipment } from "@/shipments/hooks/useCancelShipment";
 import { Member } from "@/features/members";
 

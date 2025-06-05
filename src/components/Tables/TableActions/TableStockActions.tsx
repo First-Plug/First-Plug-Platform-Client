@@ -60,7 +60,7 @@ export default observer(function TableStockActions<TData>({
           body="Add Product"
           icon={<AddIcon />}
           onClick={() => {
-            router.push("/home/my-stock/addOneProduct");
+            router.push("/home/my-stock/add");
           }}
         />
 

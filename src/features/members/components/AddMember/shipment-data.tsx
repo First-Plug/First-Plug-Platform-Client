@@ -5,8 +5,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import { SectionTitle } from "@/shared";
 import { type Member, shipmentData } from "@/features/members";
 
-import { InputProductForm } from "../../../../components/AddProduct/InputProductForm";
-import { DropdownInputProductForm } from "../../../../components/AddProduct/DropDownProductForm";
+import { InputProductForm, DropdownInputProductForm } from "@/features/assets";
 
 export const ShipmentData = observer(
   ({ isUpdate }: { isUpdate: boolean; initialData: Member }) => {

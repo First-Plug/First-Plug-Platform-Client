@@ -40,7 +40,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     additionalButtonText: "Add Product",
     additionalButtonIcon: () => <AddIcon />,
     additionalOnClick: () => {
-      window.location.href = "/my-stock/addOneProduct";
+      window.location.href = "/my-stock/add";
     },
   },
   members: {

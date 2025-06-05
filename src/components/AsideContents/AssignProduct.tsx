@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Product } from "@/types";
 import { observer } from "mobx-react-lite";
 import { Skeleton } from "../ui/skeleton";
-import { useFetchAssetById } from "@/assets/hooks";
+import { useFetchAssetById } from "@/features/assets";
 import { useFetchMembers } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/common";

@@ -1,5 +1,5 @@
 import { useActivityLatest } from "@/action-history/hooks/useFetchDashboardActivity";
-import { useGetTableAssets } from "@/assets/hooks/useGetTableAssets";
+import { useGetTableAssets } from "@/features/assets";
 import { useFetchMembers } from "@/features/members";
 import { useFetchTeams } from "@/teams/hooks/useFetchTeams";
 

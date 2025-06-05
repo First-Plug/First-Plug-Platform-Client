@@ -9,8 +9,7 @@ import { Button, SectionTitle, CustomLink, BarLoader } from "@/shared";
 import { type Member } from "@/features/members";
 import { useCreateTeam, useFetchTeams } from "@/teams/hooks";
 
-import { InputProductForm } from "../../../../components/AddProduct/InputProductForm";
-import { DropdownInputProductForm } from "../../../../components/AddProduct/DropDownProductForm";
+import { InputProductForm, DropdownInputProductForm } from "@/features/assets";
 
 export const EmployeeData = observer(
   ({ isUpdate, initialData }: { isUpdate: boolean; initialData: Member }) => {

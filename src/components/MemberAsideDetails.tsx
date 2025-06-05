@@ -10,7 +10,7 @@ import Image from "next/image";
 import { LinkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { RelacoteProducts, ReturnPage } from "./AsideContents";
-import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
+import { GenericAlertDialog } from "@/features/assets";
 import { DeleteMemberModal } from "./Alerts/DeleteMemberModal";
 import { useFetchMember } from "@/features/members";
 import { Loader } from "./Loader";

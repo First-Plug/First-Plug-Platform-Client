@@ -16,9 +16,8 @@ import {
 } from "@/components/ui/select";
 import CategoryIcons from "./AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUpdateAsset } from "@/assets/hooks";
+import { useUpdateAsset, GenericAlertDialog } from "@/features/assets";
 import { useRouter } from "next/navigation";
-import GenericAlertDialog from "./AddProduct/ui/GenericAlertDialog";
 import { useSession } from "next-auth/react";
 import { validateAfterAction } from "@/lib/validateAfterAction";
 import { useFetchMembers } from "@/features/members";

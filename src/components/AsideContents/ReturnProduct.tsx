@@ -9,7 +9,7 @@ import { Member } from "@/features/members";
 import { Badge, badgeVariants } from "../ui/badge";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import GenericAlertDialog from "../AddProduct/ui/GenericAlertDialog";
+import { GenericAlertDialog } from "@/features/assets";
 import {
   buildValidationEntities,
   validateAfterAction,

@@ -14,7 +14,7 @@ import useActions from "@/hooks/useActions";
 import { XIcon } from "lucide-react";
 import CategoryIcons from "@/components/AsideContents/EditTeamAside/CategoryIcons";
 import { useQueryClient } from "@tanstack/react-query";
-import GenericAlertDialog from "@/components/AddProduct/ui/GenericAlertDialog";
+import { GenericAlertDialog } from "@/features/assets";
 import { useRouter } from "next/navigation";
 import {
   buildValidationEntities,

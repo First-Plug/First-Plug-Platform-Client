@@ -14,5 +14,6 @@ export * from "./components/section-title";
 export * from "./components/image-profile";
 export * from "./components/session-dropdown";
 export * from "./components/shared-input";
+export * from "./components/ui/skeleton";
 
 export * from "./icons/icons";

@@ -6,7 +6,7 @@ import { useFormContext, Controller } from "react-hook-form";
 
 import { type Member, personalData } from "@/features/members";
 
-import { InputProductForm } from "../../../../components/AddProduct/InputProductForm";
+import { InputProductForm } from "@/features/assets";
 
 interface Props {
   memberImage: StaticImageData;

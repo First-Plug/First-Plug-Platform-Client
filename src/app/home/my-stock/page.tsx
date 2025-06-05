@@ -1,19 +1,12 @@
 "use client";
-import { observer } from "mobx-react-lite";
+import { useEffect } from "react";
 import { useStore } from "@/models";
-import DataStock from "./DataStock";
-import EmptyStock from "./EmptyStock";
-import { PageLayout } from "@/common";
-import { BarLoader } from "@/components/Loader/BarLoader";
-import useFetch from "@/hooks/useFetch";
-import { useEffect, useState } from "react";
-import { setAuthInterceptor } from "@/config/axios.config";
-import { useGetTableAssets } from "@/assets/hooks";
 
-export default observer(function MyStock() {
+import { PageLayout, BarLoader } from "@/shared";
+import { useGetTableAssets, DataStock, EmptyStock } from "@/features/assets";
+
+export default function MyStock() {
   const { data: assets = [], isLoading, isFetching } = useGetTableAssets();
-
-  const [loading, setLoading] = useState(true);
 
   const {
     products: { setTable },
@@ -24,13 +17,6 @@ export default observer(function MyStock() {
       setTable(assets);
     }
   }, [assets, setTable]);
-
-  useEffect(() => {
-    if (sessionStorage.getItem("accessToken")) {
-      setAuthInterceptor(sessionStorage.getItem("accessToken"));
-    }
-    setLoading(false);
-  }, []);
 
   return (
     <PageLayout>
@@ -43,4 +29,4 @@ export default observer(function MyStock() {
       )}
     </PageLayout>
   );
-});
+}
