@@ -1,8 +1,6 @@
-import { BillingForm, CompanyForm, AccessForm } from "@/components";
-import { Button, LoaderSpinner } from "@/common";
+import { Button, LoaderSpinner } from "@/shared";
 import { Form } from "@/shared";
-import { useStore } from "@/models";
-import { UserZod, UserZodSchema } from "@/types";
+import { UserZod, UserZodSchema } from "@/features/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/shared";
@@ -13,15 +11,22 @@ import { AuthServices } from "@/services";
 import { useSession } from "next-auth/react";
 import { setAuthInterceptor } from "@/config/axios.config";
 import { z } from "zod";
-import { AssetsForm, ComputerExpirationForm } from "@/features/settings";
+import {
+  AssetsForm,
+  ComputerExpirationForm,
+  AccessForm,
+  BillingForm,
+  CompanyForm,
+} from "@/features/settings";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAlertStore } from "@/shared";
 
 export const SettingsForm = () => {
   const queryClient = useQueryClient();
+  const { setAlert } = useAlertStore();
   const {
-    user: { user },
-    alerts: { setAlert },
-  } = useStore();
+    data: { user },
+  } = useSession();
 
   const [isLoading, setIsLoading] = useState(false);
   const session = useSession();
@@ -35,7 +40,12 @@ export const SettingsForm = () => {
           ...user,
           computerExpiration: user.computerExpiration,
           isRecoverableConfig: user.isRecoverableConfig
-            ? Object.fromEntries(user.isRecoverableConfig.entries())
+            ? Object.fromEntries(
+                Object.entries(user.isRecoverableConfig).map(([key, value]) => [
+                  key,
+                  value,
+                ])
+              )
             : {},
         }
       : {},
@@ -169,7 +179,11 @@ export const SettingsForm = () => {
                   form.reset({
                     ...user,
                     isRecoverableConfig: user.isRecoverableConfig
-                      ? Object.fromEntries(user.isRecoverableConfig.entries())
+                      ? Object.fromEntries(
+                          Object.entries(user.isRecoverableConfig).map(
+                            ([key, value]) => [key, value]
+                          )
+                        )
                       : {},
                     computerExpiration: user.computerExpiration,
                   });

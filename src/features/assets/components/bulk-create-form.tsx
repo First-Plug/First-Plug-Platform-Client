@@ -13,16 +13,19 @@ import {
   validateMemberInfo,
 } from "@/features/assets";
 
-import { getSnapshot } from "mobx-state-tree";
-import { AttributeModel, ProductModel } from "@/types";
-import ProductDetail from "@/common/ProductDetail";
-import { useStore } from "@/models";
+import { ProductDetail } from "@/features/assets";
+
 import { useQueryClient } from "@tanstack/react-query";
-import { useFetchMembers, getMemberFullName } from "@/features/members";
+import {
+  useFetchMembers,
+  getMemberFullName,
+  useMemberStore,
+} from "@/features/members";
 
 import { useSession } from "next-auth/react";
 
 import type { Member } from "@/features/members";
+import { useAlertStore, useAsideStore } from "@/shared";
 
 export const BulkCreateForm: React.FC<{
   initialData: any;
@@ -39,15 +42,12 @@ export const BulkCreateForm: React.FC<{
 
   const queryClient = useQueryClient();
 
+  const { setAside } = useAsideStore();
+  const { setSelectedMember } = useMemberStore();
+
   const numProducts = quantity;
 
-  const attributesArray = initialData.attributes.map((attr) =>
-    AttributeModel.create({
-      _id: attr._id,
-      key: attr.key,
-      value: attr.value || "",
-    })
-  );
+  const attributesArray = initialData.attributes.map((attr) => attr);
 
   const initialProductData = {
     _id: initialData._id || "new_id",
@@ -79,20 +79,13 @@ export const BulkCreateForm: React.FC<{
     activeShipment: false,
   };
 
-  const productInstance = ProductModel.create(initialProductData);
+  const productInstance = initialProductData;
 
-  const {
-    members: { setMemberToEdit, members: storeMembers },
-    aside: { setAside },
-    products: { setProducts },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   const methods = useForm({
     defaultValues: {
-      products: Array.from({ length: numProducts }, () =>
-        getSnapshot(productInstance)
-      ),
+      products: Array.from({ length: numProducts }, () => productInstance),
     },
   });
 
@@ -316,8 +309,7 @@ export const BulkCreateForm: React.FC<{
 
     try {
       await bulkCreateAssets(productsData, {
-        onSuccess: async (createdProducts) => {
-          setProducts(createdProducts);
+        onSuccess: async () => {
           queryClient.invalidateQueries({ queryKey: ["assets"] });
 
           setIsProcessing(false);
@@ -470,7 +462,10 @@ export const BulkCreateForm: React.FC<{
                       {errors.products &&
                         errors.products[index]?.assignedEmail && (
                           <p className="text-red-500">
-                            {errors.products[index].assignedEmail.message}
+                            {
+                              errors.products[index].assignedEmail
+                                .message as string
+                            }
                           </p>
                         )}
                     </div>
@@ -501,7 +496,10 @@ export const BulkCreateForm: React.FC<{
                           {errors.products &&
                             errors.products[index]?.location && (
                               <p className="text-red-500">
-                                {errors.products[index].location.message}
+                                {
+                                  errors.products[index].location
+                                    .message as string
+                                }
                               </p>
                             )}
                         </div>
@@ -550,7 +548,6 @@ export const BulkCreateForm: React.FC<{
                           return newStatuses;
                         });
                       }}
-                      setMemberToEdit={setMemberToEdit}
                       setAside={setAside}
                     />
                   </div>

@@ -1,4 +1,3 @@
-import { Product } from "@/types";
 import { ProductServices } from "@/services";
 
 export const getAssetsForAssign = async (id: string) => {

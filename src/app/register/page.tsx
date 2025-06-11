@@ -1,11 +1,11 @@
 "use client";
 
-import { AlertCheck, Button, Input, LoaderSpinner } from "@/common";
-import { Form } from "@/components";
+import { Button, Input, LoaderSpinner, AuthForm } from "@/shared";
+
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AuthServices } from "@/services/auth.services";
-import useInput from "@/hooks/useInput";
+import useInput from "@/shared/hooks/useInput";
 import { FormEvent, useState } from "react";
 import { useToast } from "@/shared";
 
@@ -64,7 +64,7 @@ export default function Register() {
       />
 
       <article className="flex justify-center w-[50%] h-screen">
-        <Form title="Welcome Back!" register onSubmit={handleSubmit}>
+        <AuthForm title="Welcome Back!" register onSubmit={handleSubmit}>
           <div>
             <Input title="Full Name" placeholder="Placeholder" {...nameInput} />
 
@@ -94,7 +94,7 @@ export default function Register() {
             {isLoading && <LoaderSpinner />}
             Create Account
           </Button>
-        </Form>
+        </AuthForm>
       </article>
     </section>
   );

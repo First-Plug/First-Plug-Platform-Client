@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTeams } from "@/features/teams";
-import { Team } from "@/types";
-import { useStore } from "@/models";
+import { type Team } from "@/features/teams";
+import { useAlertStore } from "@/shared";
 
 type CreateTeamProps = {
   name: string;
@@ -10,10 +10,7 @@ type CreateTeamProps = {
 
 export const useCreateTeam = () => {
   const queryClient = useQueryClient();
-  const {
-    teams: { addTeam },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   const mutation = useMutation({
     mutationFn: (newTeam: CreateTeamProps) => {
@@ -46,16 +43,12 @@ export const useCreateTeam = () => {
         if (!oldTeams) return [data];
         return [...oldTeams, data];
       });
-      addTeam(data);
+
       setAlert("createTeam");
     },
 
     onError: (error, variables, context) => {
       queryClient.setQueryData(["teams"], context?.previousTeams);
-    },
-
-    onSettled: () => {
-      // queryClient.invalidateQueries({ queryKey: ["teams"] });
     },
   });
 

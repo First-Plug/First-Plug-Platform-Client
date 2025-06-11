@@ -1,5 +1,5 @@
 import { TeamServices } from "@/services";
-import { Team } from "@/types";
+import { type Team } from "@/features/teams";
 
 export const removeFromTeam = async (
   teamId: string,

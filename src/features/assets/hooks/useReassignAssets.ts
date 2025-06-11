@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { reassignAsset } from "@/features/assets";
-import { useStore } from "@/models";
-import { Product } from "@/types";
+import { useAlertStore } from "@/shared";
+import { Product } from "@/features/assets";
 
 interface ReassignAssetProps {
   id: string;
@@ -10,10 +10,7 @@ interface ReassignAssetProps {
 
 export const useReassignAssets = () => {
   const queryClient = useQueryClient();
-  const {
-    products: { updateProduct },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   return useMutation({
     mutationFn: ({ id, data }: ReassignAssetProps) => reassignAsset(id, data),
@@ -35,8 +32,7 @@ export const useReassignAssets = () => {
         );
       }
     },
-    onSuccess: (data) => {
-      updateProduct(data);
+    onSuccess: () => {
       setAlert("assignedProductSuccess");
       queryClient.invalidateQueries({ queryKey: ["assets"] });
     },

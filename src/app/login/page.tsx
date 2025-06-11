@@ -1,9 +1,10 @@
 "use client";
 import Image from "next/image";
-import { Button, Input, LoaderSpinner } from "@/common";
-import { Form } from "@/components";
+import { Button, LoaderSpinner } from "@/shared";
+import { Input } from "./Input";
+
 import { useRouter } from "next/navigation";
-import useInput from "@/hooks/useInput";
+import useInput from "@/shared/hooks/useInput";
 import { signIn } from "next-auth/react";
 import { FormEvent, useState } from "react";
 import {
@@ -15,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
+  AuthForm,
   useToast,
 } from "@/shared";
 
@@ -63,7 +65,7 @@ export default function Login() {
       />
 
       <article className="flex justify-center w-[50%] h-screen">
-        <Form title="Welcome Back!" login onSubmit={handleSumbit}>
+        <AuthForm title="Welcome Back!" login onSubmit={handleSumbit}>
           <div className="text-md">
             <Input
               title="Email"
@@ -127,7 +129,7 @@ export default function Login() {
             {isLoading && <LoaderSpinner />}
             Log In
           </Button>
-        </Form>
+        </AuthForm>
       </article>
     </section>
   );

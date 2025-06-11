@@ -1,8 +1,8 @@
 "use client";
 
-import { ProductsTable } from "@/components/Tables";
-import { FilterResetProvider } from "@/components/Tables/Filters/FilterResetContext";
-import { ProductTable } from "@/types";
+import { ProductsTable } from "@/shared/components/Tables";
+import { FilterResetProvider } from "@/shared/components/Tables/Filters/FilterResetContext";
+import { ProductTable } from "@/features/assets";
 
 interface DataStockProps {
   assets: ProductTable[];

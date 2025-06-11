@@ -1,5 +1,6 @@
-import { StatusColor } from "@/common/StatusColors";
+"use client";
 import Image from "next/image";
+import { StatusColor } from "@/features/shipments";
 
 export const HeadsetIcon = () => {
   return (

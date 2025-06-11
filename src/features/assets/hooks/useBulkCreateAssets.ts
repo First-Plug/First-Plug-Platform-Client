@@ -1,14 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { bulkCreateAssets } from "@/features/assets";
-import { useStore } from "@/models";
-import { Product } from "@/types";
+import { bulkCreateAssets, type Product } from "@/features/assets";
+
+import { useAlertStore } from "@/shared";
 
 export const useBulkCreateAssets = () => {
   const queryClient = useQueryClient();
-  const {
-    alerts: { setAlert },
-    products: { setProducts },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   return useMutation<Product[], any, Product[]>({
     mutationFn: bulkCreateAssets,
@@ -21,7 +18,6 @@ export const useBulkCreateAssets = () => {
         ...newProducts,
       ]);
 
-      setProducts(newProducts);
       return { previousProducts };
     },
     onSuccess: (data) => {

@@ -19,7 +19,7 @@ import { PaginationWithLinks } from "@/shared";
 import DateRangeDropdown from "../date-range-calendar/DateRangeCalendar";
 import { endOfDay, format, parseISO, startOfDay, subDays } from "date-fns";
 import CreateAssetsTable from "./assets/CreateAssetTable";
-import { ArrowRight, Button } from "@/common";
+import { ArrowRight, Button } from "@/shared";
 import CreateMembersTable from "./members/CreateMemberTable";
 import CreateTeamsTable from "./teams/CreateTeamTable";
 import DeleteAssetsTable from "./assets/DeleteAssetTable";

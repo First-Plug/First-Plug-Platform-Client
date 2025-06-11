@@ -1,8 +1,7 @@
 "use client";
-import { CustomLink, Layout } from "@/common";
 import Image from "next/image";
-import notFound from "../../public/svg/not-found.svg";
-import { Navbar } from "@/components";
+import notFound from "/public/svg/not-found.svg";
+import { CustomLink, Layout, Navbar } from "@/shared";
 
 export default function NotFount() {
   return (

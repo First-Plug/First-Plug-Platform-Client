@@ -7,7 +7,8 @@ import {
   ComputerAgeChart,
 } from "@/features/dashboard";
 
-import type { LoggedInUser, ProductTable } from "@/types";
+import type { LoggedInUser } from "@/features/auth";
+import type { ProductTable } from "@/features/assets";
 
 interface Props {
   assets: ProductTable[];

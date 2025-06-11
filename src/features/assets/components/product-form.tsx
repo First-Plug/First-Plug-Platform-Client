@@ -1,19 +1,14 @@
 "use client";
-import type React from "react";
 import { useState, useCallback, useEffect } from "react";
-import { observer } from "mobx-react-lite";
 import { Button, PageLayout, SectionTitle } from "@/shared";
-import { useStore } from "@/models/root.store";
 import {
   type Category,
   type Product,
-  AttributeModel,
-  emptyProduct,
   zodCreateProductModel,
-} from "@/types";
+} from "@/features/assets";
 import { Member } from "@/features/members";
 import { CategoryForm } from "@/features/assets";
-import { cast } from "mobx-state-tree";
+
 import computerData from "@/features/assets/components/JSON/computerform.json";
 import audioData from "@/features/assets/components/JSON/audioform.json";
 import monitorData from "@/features/assets/components/JSON/monitorform.json";
@@ -30,7 +25,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useCreateAsset, useUpdateEntityAsset } from "@/features/assets";
 import { useQueryClient } from "@tanstack/react-query";
-import { validateOnCreate } from "@/lib/validateAfterAction";
+import { validateOnCreate } from "@/shared";
+import { useAsideStore, useAlertStore } from "@/shared";
+
+import { useSession } from "next-auth/react";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -46,15 +44,47 @@ const categoryComponents = {
   Other: othersData,
 };
 
+const getEmptyProduct = (): Product => ({
+  _id: "",
+  name: "",
+  category: undefined,
+  attributes: [],
+  status: "Available",
+  productCondition: "Optimal",
+  deleted: false,
+  recoverable: true,
+  acquisitionDate: "",
+  createdAt: "",
+  updatedAt: "",
+  deletedAt: "",
+  serialNumber: "",
+  location: undefined,
+  assignedEmail: undefined,
+  assignedMember: undefined,
+  lastAssigned: "",
+  price: undefined,
+  additionalInfo: "",
+  fp_shipment: false,
+  desirableDate: {
+    origin: "",
+    destination: "",
+  },
+  shipmentOrigin: "",
+  shipmentDestination: "",
+  shipmentId: "",
+  origin: "",
+  activeShipment: false,
+});
+
 export const ProductForm: React.FC<ProductFormProps> = ({
   initialData,
   isUpdate = false,
 }) => {
+  const { setAside } = useAsideStore();
+  const { setAlert } = useAlertStore();
   const {
-    user: { user: sessionUser },
-    aside: { setAside },
-    alerts: { setAlert },
-  } = useStore();
+    data: { user: sessionUser },
+  } = useSession();
 
   const createAsset = useCreateAsset();
   const updateEntityAsset = useUpdateEntityAsset();
@@ -63,7 +93,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const methods = useForm({
     resolver: zodResolver(zodCreateProductModel),
     defaultValues: {
-      ...emptyProduct,
+      ...getEmptyProduct(),
       ...initialData,
       category: initialData?.category || undefined,
       serialNumber: initialData?.serialNumber || undefined,
@@ -125,7 +155,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     (category: Category | undefined) => {
       if (!isUpdate) {
         methods.reset({
-          ...emptyProduct,
+          ...getEmptyProduct(),
           category: category,
         });
         setSelectedCategory(category);
@@ -141,7 +171,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         clearErrors(["assignedEmail", "assignedMember", "location"]);
 
         const isRecoverable =
-          sessionUser?.isRecoverableConfig?.get(category || "") ??
+          sessionUser?.isRecoverableConfig[category || ""] ??
           category !== "Merchandising";
 
         setValue("recoverable", isRecoverable);
@@ -281,7 +311,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     }
 
     const formatData: Product = {
-      ...emptyProduct,
+      ...getEmptyProduct(),
       ...data,
       ...(amount !== undefined
         ? { price: { amount, currencyCode: data.price?.currencyCode || "USD" } }
@@ -293,22 +323,21 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       productCondition:
         data.productCondition ?? initialData?.productCondition ?? "Optimal",
       additionalInfo: data.additionalInfo || "",
-      attributes: cast(
-        attributes.map((attr) => {
-          const initialAttr = initialData?.attributes.find(
-            (ia) => ia.key === attr.key
-          );
-          return {
-            ...AttributeModel.create(attr),
-            value:
-              attr.value !== ""
-                ? attr.value
-                : initialAttr
-                ? initialAttr.value
-                : attr.value,
-          };
-        })
-      ),
+      attributes: attributes.map((attr) => {
+        const initialAttr = initialData?.attributes.find(
+          (ia) => ia.key === attr.key
+        );
+        return {
+          _id: initialAttr?._id || "",
+          key: attr.key,
+          value:
+            attr.value !== ""
+              ? attr.value
+              : initialAttr
+              ? initialAttr.value
+              : attr.value,
+        };
+      }),
       ...(data.serialNumber?.trim()
         ? { serialNumber: data.serialNumber.trim() }
         : {}),
@@ -532,29 +561,28 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     const finalAssignedEmail = watch("assignedEmail");
 
     const formattedData: Product = {
-      ...emptyProduct,
+      ...getEmptyProduct(),
       ...data,
       recoverable: data.recoverable,
       status:
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
       assignedEmail: finalAssignedEmail,
-      attributes: cast(
-        attributes.map((attr) => {
-          const initialAttr = initialData?.attributes.find(
-            (ia) => ia.key === attr.key
-          );
-          return {
-            ...AttributeModel.create(attr),
-            value:
-              attr.value !== ""
-                ? attr.value
-                : initialAttr
-                ? initialAttr.value
-                : attr.value,
-          };
-        })
-      ),
+      attributes: attributes.map((attr) => {
+        const initialAttr = initialData?.attributes.find(
+          (ia) => ia.key === attr.key
+        );
+        return {
+          _id: initialAttr?._id || "",
+          key: attr.key,
+          value:
+            attr.value !== ""
+              ? attr.value
+              : initialAttr
+              ? initialAttr.value
+              : attr.value,
+        };
+      }),
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
 

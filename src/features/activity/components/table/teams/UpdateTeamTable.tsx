@@ -6,7 +6,7 @@ import {
   TableHead,
   TableCell,
 } from "@/shared";
-import { Team } from "@/types";
+import { type Team } from "@/features/teams";
 
 interface TeamsTableProps {
   data: {

@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateMember } from "@/features/members";
 import { Member } from "@/features/members";
-
-import { useStore } from "@/models";
+import { useAlertStore } from "@/shared";
 
 interface UpdateMemberProps {
   id: string;
@@ -11,10 +10,7 @@ interface UpdateMemberProps {
 
 export const useUpdateMember = () => {
   const queryClient = useQueryClient();
-  const {
-    members: { updateMember: updateMemberInStore },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   const mutation = useMutation({
     mutationFn: ({ id, data }: UpdateMemberProps) => updateMember(id, data),
@@ -47,7 +43,7 @@ export const useUpdateMember = () => {
           member._id === data._id ? data : member
         );
       });
-      updateMemberInStore(data);
+
       setAlert("updateMember");
 
       queryClient.invalidateQueries({ queryKey: ["teams"] });

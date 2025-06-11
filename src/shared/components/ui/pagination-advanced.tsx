@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
-import { ArrowLeft, ArrowRight } from "@/common";
+import { ArrowLeft, ArrowRight } from "@/shared";
 import {
   Select,
   SelectContent,
@@ -71,8 +71,8 @@ export function PaginationAdvanced({
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
-      <div className="flex items-center gap-4 justify-center w-full">
+    <div className="flex md:flex-row flex-col justify-between items-center gap-4 w-full">
+      <div className="flex justify-center items-center gap-4 w-full">
         <Button
           onClick={() => setPageIndex(pageIndex - 1)}
           disabled={pageIndex === 0}

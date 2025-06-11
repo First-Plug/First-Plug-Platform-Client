@@ -1,14 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addToTeam } from "@/features/teams";
-import { useStore } from "@/models";
-import { Team } from "@/types";
+import { type Team } from "@/features/teams";
 
 export const useAddToTeam = () => {
   const queryClient = useQueryClient();
-  const {
-    teams: { updateTeam },
-    alerts: { setAlert },
-  } = useStore();
 
   return useMutation({
     mutationFn: ({ teamId, memberId }: { teamId: string; memberId: string }) =>
@@ -27,9 +22,8 @@ export const useAddToTeam = () => {
       return { previousTeams };
     },
 
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
-      updateTeam(data);
     },
     onError: (error, variables, context) => {
       queryClient.setQueryData(["teams"], context?.previousTeams);

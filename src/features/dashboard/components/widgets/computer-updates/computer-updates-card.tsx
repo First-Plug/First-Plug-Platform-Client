@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 
 import { ProgressCircle, ComputerUpgradeTable } from "@/features/dashboard";
 
-import { useStore } from "@/models";
-
 import { UserServices } from "@/services/user.services";
 
-import type { ProductTable } from "@/types";
+import type { ProductTable } from "@/features/assets";
+import { useAlertStore } from "@/shared";
+import { useSession } from "next-auth/react";
 
 interface ComputerUpdateCardProps {
   products: ProductTable[];
@@ -25,10 +25,11 @@ export const ComputerUpdateCard = ({
   products,
   computerExpiration,
 }: ComputerUpdateCardProps) => {
+  const { setAlert } = useAlertStore();
+
   const {
-    user: { user },
-    alerts: { setAlert },
-  } = useStore();
+    data: { user },
+  } = useSession();
 
   const [productsWithDate, setProductsWithDate] = useState<number>(0);
   const [productsWithoutDate, setProductsWithoutDate] = useState<number>(0);

@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import { useStore } from "@/models";
 import {
   Button,
   AddIcon,
@@ -14,6 +13,7 @@ import {
 import { signOut, useSession } from "next-auth/react";
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { UserServices } from "@/services/user.services";
+import { useAsideStore } from "@/shared";
 type EmptyCardType =
   | "stock"
   | "members"
@@ -64,7 +64,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     additionalButtonText: "Add Product",
     additionalButtonIcon: () => <AddIcon />,
     additionalOnClick: () => {
-      window.location.href = "/my-stock/add";
+      window.location.href = "/home/my-stock/add";
     },
   },
   members: {
@@ -145,9 +145,7 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
     additionalOnClick,
   } = Config[type];
 
-  const {
-    aside: { setAside },
-  } = useStore();
+  const { setAside } = useAsideStore();
 
   const handleActions = () => {
     if (type === "stock") {

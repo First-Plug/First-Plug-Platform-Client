@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getTableAssets } from "@/features/assets";
-import { ProductTable } from "@/types";
+import { ProductTable } from "@/features/assets";
 
 export const useGetTableAssets = () => {
   return useQuery<ProductTable[]>({

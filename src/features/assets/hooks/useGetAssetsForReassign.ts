@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAssetsForReassign } from "@/features/assets";
-import { Product } from "@/types";
 
 export const useGetAssetsForReassign = (id: string) => {
   return useQuery({

@@ -25,7 +25,7 @@ import {
   EditShipment,
   useShipmentStore,
 } from "@/features/shipments";
-import { DeleteAction } from "@/components/Alerts";
+import { DeleteAction } from "@/shared";
 import { ExternalLinkIcon } from "lucide-react";
 
 const DEFAULT_PAGE_SIZE = 10;

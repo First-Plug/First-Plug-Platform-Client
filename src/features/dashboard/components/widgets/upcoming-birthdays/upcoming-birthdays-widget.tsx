@@ -1,20 +1,16 @@
-import { observer } from "mobx-react-lite";
-
 import { EmptyDashboardCard, ShopIcon, Card } from "@/shared";
 import { TeamHomeCard } from "@/features/dashboard";
 import { UserServices } from "@/services/user.services";
 import { Member } from "@/features/members";
-import { useStore } from "@/models";
+import { useAlertStore } from "@/shared";
 
 interface Props {
   members: Member[];
   user: any;
 }
 
-export const UpcomingBirthdaysWidget = observer(({ members, user }: Props) => {
-  const {
-    alerts: { setAlert },
-  } = useStore();
+export const UpcomingBirthdaysWidget = function ({ members, user }: Props) {
+  const { setAlert } = useAlertStore();
 
   const handleBirthdayGift = async () => {
     try {
@@ -44,4 +40,4 @@ export const UpcomingBirthdaysWidget = observer(({ members, user }: Props) => {
       <TeamHomeCard members={members} />
     </Card>
   );
-});
+};

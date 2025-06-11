@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
 import { HeadSet, LapTop, Gift, MonitorIcon, Mouse, Other } from "@/shared";
-import { CATEGORIES, type ProductTable } from "@/types";
+import { type ProductTable } from "@/features/assets";
+import { CATEGORIES } from "@/features/assets/interfaces/product";
 import { DoughnutChart, useProductStats } from "@/features/dashboard";
 
 interface StockCardProps {

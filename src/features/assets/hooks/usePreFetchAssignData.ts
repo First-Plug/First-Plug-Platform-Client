@@ -1,16 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { getAllMembers } from "@/features/members";
 import { getAssetById } from "@/features/assets";
-import { useStore } from "@/models";
-import { Product } from "@/types";
+
+import { Product } from "@/features/assets";
 import { Member } from "@/features/members";
 
 export const usePrefetchAssignData = (productId: string) => {
   const queryClient = useQueryClient();
-  const {
-    products: { setProductToAssing },
-    members: { setMembers },
-  } = useStore();
 
   const prefetchAssignData = async () => {
     try {
@@ -29,7 +25,6 @@ export const usePrefetchAssignData = (productId: string) => {
       if (!product) {
         throw new Error("Failed to fetch product");
       }
-      setProductToAssing(product);
 
       const cachedMembers = queryClient.getQueryData<Member[]>(["members"]);
       if (!cachedMembers) {
@@ -37,9 +32,9 @@ export const usePrefetchAssignData = (productId: string) => {
           queryKey: ["members"],
           queryFn: getAllMembers,
         });
-        setMembers(members);
+        queryClient.setQueryData(["members"], members);
       } else {
-        setMembers(cachedMembers);
+        queryClient.setQueryData(["members"], cachedMembers);
       }
     } catch (error) {
       console.error("Error prefetching assign data:", error);

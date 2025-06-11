@@ -6,7 +6,8 @@ import {
   TableHead,
   TableCell,
 } from "@/shared";
-import { Member } from "@/features/members";
+import { type Member } from "@/features/members";
+import { type Team } from "@/features/teams";
 
 interface MembersTableProps {
   data: {
@@ -23,8 +24,8 @@ const getUpdatedFields = (oldData: Member, newData: Member) => {
       return;
     }
     if (key === "team") {
-      const oldTeamName = oldData[key as keyof Member]?.name || "-";
-      const newTeamName = newData[key as keyof Member]?.name || "-";
+      const oldTeamName = (oldData[key as keyof Member] as Team)?.name || "-";
+      const newTeamName = (newData[key as keyof Member] as Team)?.name || "-";
 
       if (oldTeamName !== newTeamName) {
         changes.push({

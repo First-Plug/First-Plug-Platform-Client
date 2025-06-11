@@ -1,4 +1,4 @@
-import { LoaderSpinner } from "@/common";
+import { LoaderSpinner } from "@/shared";
 import React from "react";
 
 export const Loader = () => {

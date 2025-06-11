@@ -2,8 +2,8 @@ import * as React from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { type ButtonProps, buttonVariants } from "./button";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight } from "@/common";
+import { cn } from "@/shared";
+import { ArrowLeft, ArrowRight } from "@/shared";
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav
@@ -102,7 +102,7 @@ const PaginationEllipsis = ({
     className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
   >
-    <MoreHorizontal className="h-4 w-4" />
+    <MoreHorizontal className="w-4 h-4" />
   </span>
 );
 PaginationEllipsis.displayName = "PaginationEllipsis";

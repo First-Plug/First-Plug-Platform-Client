@@ -1,14 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteAsset } from "@/features/assets";
-import { useStore } from "@/models";
-import { Product } from "@/types";
+import { deleteAsset, type Product } from "@/features/assets";
+import { useAlertStore } from "@/shared";
 
 export const useDeleteAsset = () => {
   const queryClient = useQueryClient();
-  const {
-    products: { deleteProduct },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -23,8 +19,6 @@ export const useDeleteAsset = () => {
       queryClient.setQueryData<Product[]>(["assets"], (oldAssets) =>
         oldAssets?.filter((asset) => asset._id !== id)
       );
-
-      deleteProduct(id);
 
       return { previousAssets };
     },

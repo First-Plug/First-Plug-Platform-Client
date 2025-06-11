@@ -1,11 +1,11 @@
+"use client";
 import React from "react";
-import { AddIcon, ShopIcon, UploadIcon } from "@/common";
-import { Button, CustomLink } from "@/common";
+import { Button, CustomLink, AddIcon, ShopIcon, UploadIcon } from "@/shared";
 import Image from "next/image";
-import { useStore } from "@/models";
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { useSession } from "next-auth/react";
 import { UserServices } from "@/services/user.services";
+import { useAsideStore } from "@/shared";
 type EmptyCardType =
   | "stock"
   | "members"
@@ -40,7 +40,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     additionalButtonText: "Add Product",
     additionalButtonIcon: () => <AddIcon />,
     additionalOnClick: () => {
-      window.location.href = "/my-stock/add";
+      window.location.href = "/home/my-stock/add";
     },
   },
   members: {
@@ -86,7 +86,7 @@ const Config: Record<EmptyCardType, TConfig> = {
   },
   latestActivity: {
     title: "Latest Activity",
-    image: "/svg/magnifyingGlass.svg",
+    image: "/activity-icon.svg",
     paragraph: "There is no recent activity yet.",
   },
 };
@@ -111,9 +111,7 @@ export function EmptyDashboardCard({ type, handleSwapy }: EmptyCardProps) {
     ButtonIcon,
   } = Config[type];
 
-  const {
-    aside: { setAside },
-  } = useStore();
+  const { setAside } = useAsideStore();
 
   const handleActions = () => {
     if (type === "stock") {

@@ -1,7 +1,9 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
-import { useStore } from "@/models";
+
 import { useFetchUserSettings } from "@/features/settings";
+import { useSession } from "next-auth/react";
 
 interface RecoverableSwitchProps {
   selectedCategory: string;
@@ -23,8 +25,8 @@ export const RecoverableSwitch: React.FC<RecoverableSwitchProps> = ({
   manualChange,
 }) => {
   const {
-    user: { user },
-  } = useStore();
+    data: { user },
+  } = useSession();
   const { data: userSettings } = useFetchUserSettings(user?.tenantName);
   const [isRecoverable, setIsRecoverable] = useState(false);
 

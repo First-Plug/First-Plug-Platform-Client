@@ -1,16 +1,16 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
-import { useStore } from "@/models";
+
 import { UserServices } from "@/services/user.services";
-import { MinusIcon, AddIcon } from "@/common";
+import { MinusIcon, AddIcon } from "@/shared";
+import { useSession } from "next-auth/react";
 
 export const ComputerExpirationForm = ({ form }: { form: any }) => {
   const { control, reset, setValue } = form;
   const {
-    user: { user },
-    products: { tableProducts },
-  } = useStore();
+    data: { user },
+  } = useSession();
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
   useEffect(() => {

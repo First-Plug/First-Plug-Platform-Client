@@ -1,6 +1,6 @@
 import { EmptyDashboardCard } from "@/shared";
 import { OpsByCountryChart } from "@/features/dashboard";
-import { Card } from "@/components";
+import { Card } from "@/shared";
 import { Member } from "@/features/members";
 
 interface Props {

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useStore } from "@/models";
-import { Product } from "@/types";
+import { Product } from "@/features/assets";
 import { updateEntityAsset } from "../api/updateEntityAsset";
+import { useAlertStore } from "@/shared";
 
 interface UpdateAssetProps {
   id: string;
@@ -20,11 +20,7 @@ function isProduct(response: BackendResponse): response is Product {
 
 export const useUpdateEntityAsset = () => {
   const queryClient = useQueryClient();
-  const {
-    products: { updateProduct },
-    alerts: { setAlert },
-  } = useStore();
-
+  const { setAlert } = useAlertStore();
   const mutation = useMutation<
     BackendResponse,
     unknown,
@@ -40,8 +36,6 @@ export const useUpdateEntityAsset = () => {
       const optimisticAsset = { ...previousAsset, ...data };
 
       queryClient.setQueryData<Product>(["assets", id], optimisticAsset);
-
-      if (previousAsset) updateProduct(optimisticAsset);
 
       return { previousAsset };
     },
@@ -60,23 +54,21 @@ export const useUpdateEntityAsset = () => {
             asset._id === response._id ? response : asset
           )
         );
-        updateProduct(response);
       } else {
         const optimisticAsset = queryClient.getQueryData<Product>([
           "assets",
           id,
         ]);
         if (optimisticAsset) {
-          updateProduct(optimisticAsset);
+          queryClient.setQueryData<Product>(["assets", id], optimisticAsset);
         }
       }
 
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      // if (showSuccessAlert) {
-      //   console.log("🚀 Asset actualizado con éxito:", response);
-      //   setAlert("updateStock");
-      // }
+      if (showSuccessAlert) {
+        setAlert("updateStock");
+      }
     },
   });
 

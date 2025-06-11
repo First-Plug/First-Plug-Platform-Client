@@ -1,6 +1,6 @@
 "use client";
 import React, { MouseEvent, ReactNode } from "react";
-import { Button, InfoCircle } from "@/common";
+import { Button, InfoCircle } from "@/shared";
 import Image from "next/image";
 import {
   Tooltip,

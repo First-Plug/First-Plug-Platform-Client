@@ -7,7 +7,7 @@ import {
   TableCell,
 } from "@/shared";
 import type { Shipment } from "@/features/shipments";
-import { formatDate } from "@/utils/formateDate";
+import { formatDate } from "@/shared";
 
 interface ShipmentsTableProps {
   data: Shipment | Shipment[];

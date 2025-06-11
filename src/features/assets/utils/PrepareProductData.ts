@@ -1,13 +1,11 @@
-import { Product, ProductFormData, Category, Atrribute } from "@/types";
-import { cast } from "mobx-state-tree";
-import { AttributeModel } from "@/types";
+import { Product, Category, Attribute } from "@/features/assets";
 
 export const prepareProductData = (
-  data: ProductFormData,
+  data: Product,
   isUpdate: boolean,
   selectedCategory: Category | undefined,
   initialData: Product | undefined,
-  attributes: Atrribute[],
+  attributes: Attribute[],
   recoverable: boolean,
   amount?: number,
   assignedEmail?: string
@@ -25,22 +23,20 @@ export const prepareProductData = (
     category: selectedCategory || initialData?.category || "Other",
     location: data.location || initialData?.location,
     name: data.name || initialData?.name || "",
-    attributes: cast(
-      attributes.map((attr) => {
-        const initialAttr = initialData?.attributes.find(
-          (ia) => ia.key === attr.key
-        );
-        return {
-          ...AttributeModel.create(attr),
-          value:
-            attr.value !== ""
-              ? attr.value
-              : initialAttr
-              ? initialAttr.value
-              : attr.value,
-        };
-      })
-    ),
+    attributes: attributes.map((attr) => {
+      const initialAttr = initialData?.attributes.find(
+        (ia) => ia.key === attr.key
+      );
+      return {
+        ...attr,
+        value:
+          attr.value !== ""
+            ? attr.value
+            : initialAttr
+            ? initialAttr.value
+            : attr.value,
+      };
+    }),
     ...(data.serialNumber?.trim()
       ? { serialNumber: data.serialNumber.trim() }
       : {}),

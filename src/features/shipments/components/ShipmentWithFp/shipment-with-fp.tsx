@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared";
-import { InfoCircle } from "@/common";
+import { InfoCircle } from "@/shared";
 import { TooltipArrow } from "@radix-ui/react-tooltip";
 import {
   Select,

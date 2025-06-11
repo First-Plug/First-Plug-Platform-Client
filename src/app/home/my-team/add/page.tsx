@@ -1,12 +1,10 @@
 "use client";
-import { MemberForm, EditMemberAside } from "@/features/members";
-import { useStore } from "@/models";
-import { observer } from "mobx-react-lite";
+import { MemberForm } from "@/features/members";
+import { EditMemberAside } from "@/shared";
+import { useAsideStore } from "@/shared";
 
-export default observer(function AddMemberPage() {
-  const { aside } = useStore();
+export default function AddMemberPage() {
+  const { type } = useAsideStore();
 
-  return (
-    <>{aside.type === "EditMember" ? <EditMemberAside /> : <MemberForm />}</>
-  );
-});
+  return <>{type === "EditMember" ? <EditMemberAside /> : <MemberForm />}</>;
+}

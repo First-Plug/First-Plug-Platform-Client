@@ -1,5 +1,5 @@
 import { EmptyCard, EmptyCardLayout } from "@/shared";
-import { Navbar } from "@/components";
+import { Navbar } from "@/shared";
 
 export default function ErrorRegistration() {
   return (

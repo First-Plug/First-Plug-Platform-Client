@@ -1,5 +1,5 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
-import { PrdouctModelZod } from "@/types";
+import { PrdouctModelZod } from "@/features/assets";
 import { CreateMemberZodModel } from "@/features/members";
 
 export class CsvServices {

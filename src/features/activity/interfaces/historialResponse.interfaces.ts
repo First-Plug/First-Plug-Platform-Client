@@ -1,3 +1,5 @@
+import { Product } from "@/features/assets";
+
 export interface HistorialResponse {
   data: Datum[];
   totalCount: number;
@@ -19,4 +21,8 @@ export interface Changes {
   oldData: any;
   newData: any;
   context?: string;
+}
+
+export interface ActivityProduct extends Omit<Product, "category"> {
+  category: string;
 }

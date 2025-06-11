@@ -1,8 +1,5 @@
 "use client";
 
-import { observer } from "mobx-react-lite";
-import { useStore } from "@/models";
-
 import { PageLayout, PageLoader } from "@/shared";
 
 import {
@@ -11,11 +8,12 @@ import {
   useSortedWidgets,
   useFetchDashboard,
 } from "@/features/dashboard";
+import { useSession } from "next-auth/react";
 
-export default observer(function Dashboard() {
+export default function Dashboard() {
   const {
-    user: { user },
-  } = useStore();
+    data: { user },
+  } = useSession();
 
   const { isLoading, members, assets, activityLatest } = useFetchDashboard();
 
@@ -36,4 +34,4 @@ export default observer(function Dashboard() {
       </DashboardLayout>
     </PageLayout>
   );
-});
+}

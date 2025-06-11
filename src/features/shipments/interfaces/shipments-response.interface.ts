@@ -51,8 +51,15 @@ export interface Price {
 }
 
 export enum ShipmentStatus {
-  InPreparation = "In Preparation",
-  OnHoldMissingData = "On Hold - Missing Data",
+  Available = "Available",
+  Complete = "Complete",
+  "Missing Data" = "Missing Data",
+  Delivered = "Delivered",
+  Preparing = "Preparing",
+  Shipped = "Shipped",
+  Unavailable = "Unavailable",
+  "In Transit" = "In Transit",
+  "In Transit - Missing Data" = "In Transit - Missing Data",
 }
 
 export interface Snapshot {

@@ -1,19 +1,15 @@
 "use client";
 import { useState } from "react";
-import { useStore } from "@/models/root.store";
+import { useAsideStore } from "@/shared";
 import { Member, useCreateMember, useUpdateMember } from "@/features/members";
 import { useGetOrCreateTeam } from "@/features/teams";
 import { QueryClient } from "@tanstack/react-query";
-import { type Team } from "@/types";
-import { transformData } from "@/utils/dataTransformUtil";
+import { type Team } from "@/features/teams";
+
 import { formatAcquisitionDate } from "@/features/members";
 
 export const useMemberSubmit = (initialData?: Member, isUpdate?: boolean) => {
-  const {
-    members: { setMembers },
-    teams: { setTeams },
-    aside: { closeAside },
-  } = useStore();
+  const { closeAside } = useAsideStore();
   const queryClient = new QueryClient();
   const [isButtonDisabled, setButtonDisabled] = useState(false);
 
@@ -87,11 +83,6 @@ export const useMemberSubmit = (initialData?: Member, isUpdate?: boolean) => {
 
       const updatedMembers = queryClient.getQueryData<Member[]>(["members"]);
       const updatedTeams = queryClient.getQueryData<Team[]>(["teams"]);
-
-      const transformedMembers = transformData(updatedMembers, updatedTeams);
-
-      setMembers(transformedMembers);
-      setTeams(updatedTeams);
 
       closeAside();
     } catch (error: any) {

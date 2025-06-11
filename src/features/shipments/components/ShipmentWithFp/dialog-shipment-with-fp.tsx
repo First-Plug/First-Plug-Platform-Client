@@ -1,4 +1,4 @@
-import { Button } from "@/common";
+import { Button } from "@/shared";
 import { Calendar } from "lucide-react";
 import {
   Dialog,

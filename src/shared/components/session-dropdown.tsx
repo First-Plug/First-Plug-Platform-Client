@@ -1,13 +1,12 @@
 "use client";
 import { signOut, useSession } from "next-auth/react";
-import { NavButtonIcon } from "@/shared";
 import { useRouter } from "next/navigation";
 import { LogOut, Users } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-
-import { DropdownMenu, DropdownMenuTrigger } from "@/shared";
-import { Button } from "@/shared";
+import { Button } from "./button";
+import { NavButtonIcon } from "../icons/icons";
+import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 export const SessionDropdown = () => {
   const router = useRouter();

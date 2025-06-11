@@ -1,14 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteMemberAction } from "@/features/members";
-import { useStore } from "@/models";
 import { Member } from "@/features/members";
+import { useAlertStore } from "@/shared";
 
 export const useDeleteMember = () => {
   const queryClient = useQueryClient();
-  const {
-    members: { setMembers, deleteMember },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   return useMutation({
     mutationFn: (id: string) => deleteMemberAction(id),
@@ -33,12 +30,8 @@ export const useDeleteMember = () => {
       }
     },
 
-    onSuccess: (data, id) => {
+    onSuccess: () => {
       setAlert("deleteMember");
-      const updatedMembers = queryClient.getQueryData<Member[]>(["members"]);
-
-      deleteMember(id);
-      setMembers(updatedMembers || []);
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
     },

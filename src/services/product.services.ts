@@ -1,4 +1,4 @@
-import { Product, ProductTable } from "@/types";
+import { Product, ProductTable } from "@/features/assets";
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 import { Shipment } from "@/features/shipments";
 

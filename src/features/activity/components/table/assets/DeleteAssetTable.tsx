@@ -6,7 +6,7 @@ import {
   TableHead,
   TableCell,
 } from "@/shared";
-import { Product } from "@/types";
+import { Product } from "@/features/assets";
 import MemberNameAndLocation from "../../member-name/MemberNameAndLocation";
 
 interface AssetAttribute {

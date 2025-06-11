@@ -2,15 +2,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createMember, handleApiError } from "@/features/members";
 import { Member } from "@/features/members";
 
-import { useStore } from "@/models";
-import { cast } from "mobx-state-tree";
+import { useAlertStore } from "@/shared";
 
 export const useCreateMember = () => {
   const queryClient = useQueryClient();
-  const {
-    members: { addMember },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   const mutation = useMutation({
     mutationFn: (newMember: Member) => createMember(newMember),
@@ -40,7 +36,7 @@ export const useCreateMember = () => {
         additionalInfo: newMember.additionalInfo || "",
         startDate: newMember.startDate || "",
         birthDate: newMember.birthDate || null,
-        products: cast(newMember.products || []),
+        products: newMember.products || [],
         team: newMember.team || "Not Assigned",
         teamId: newMember.teamId || "",
         dni: newMember.dni || 0,
@@ -67,8 +63,6 @@ export const useCreateMember = () => {
         );
       });
 
-      // Actualizar el store de MobX
-      addMember(data);
       setAlert("createMember");
     },
     // si hay error, se restaura el estado anterior

@@ -4,8 +4,7 @@ import {
   LoginUser,
   RegisterUser,
   RegisterUserPlatforms,
-  User,
-} from "@/types";
+} from "@/features/auth";
 import axios from "axios";
 import { Session } from "next-auth";
 import { JWT } from "next-auth/jwt";

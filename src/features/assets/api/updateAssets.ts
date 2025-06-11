@@ -1,4 +1,4 @@
-import type { Product } from "@/types";
+import type { Product } from "@/features/assets";
 import type { Shipment } from "@/features/shipments";
 import { ProductServices } from "@/services";
 

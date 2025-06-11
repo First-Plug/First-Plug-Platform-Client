@@ -3,7 +3,8 @@ import { StockCard } from "@/features/dashboard";
 import { Card, EmptyDashboardCard, ShopIcon } from "@/shared";
 import { UserServices } from "@/services/user.services";
 
-import type { ProductTable, LoggedInUser } from "@/types";
+import type { ProductTable } from "@/features/assets";
+import { LoggedInUser } from "@/features/auth";
 
 interface Props {
   assets: ProductTable[];

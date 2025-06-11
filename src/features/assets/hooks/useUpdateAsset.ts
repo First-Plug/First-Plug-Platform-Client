@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateAsset } from "@/features/assets";
-import { useStore } from "@/models";
-import type { Product } from "@/types";
+
+import type { Product } from "@/features/assets";
 import type { Shipment } from "@/features/shipments";
 
 interface UpdateAssetProps {
@@ -24,10 +24,7 @@ function isProduct(response: BackendResponse): response is Product {
 
 export const useUpdateAsset = () => {
   const queryClient = useQueryClient();
-  const {
-    products: { updateProduct },
-    alerts: { setAlert },
-  } = useStore();
+
   const validConditions = ["Optimal", "Defective", "Unusable"];
   const mutation = useMutation<
     BackendResponse,
@@ -62,8 +59,6 @@ export const useUpdateAsset = () => {
 
       queryClient.setQueryData<Product>(["assets", id], optimisticAsset);
 
-      if (previousAsset) updateProduct(optimisticAsset);
-
       return { previousAsset };
     },
 
@@ -81,14 +76,13 @@ export const useUpdateAsset = () => {
             asset._id === response._id ? response : asset
           )
         );
-        updateProduct(response);
       } else {
         const optimisticAsset = queryClient.getQueryData<Product>([
           "assets",
           id,
         ]);
         if (optimisticAsset) {
-          updateProduct(optimisticAsset);
+          queryClient.setQueryData<Product>(["assets", id], optimisticAsset);
         }
       }
 

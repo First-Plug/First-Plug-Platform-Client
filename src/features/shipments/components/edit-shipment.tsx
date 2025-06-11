@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useStore } from "@/models";
-import { PenIcon } from "@/common";
+import { PenIcon } from "@/shared";
 import { Shipment } from "../interfaces/shipments-response.interface";
+import { useAsideStore } from "@/shared";
 
 interface Props {
   shipment: Shipment;
@@ -9,9 +9,7 @@ interface Props {
 }
 
 export const EditShipment = ({ isDisabled, shipment }: Props) => {
-  const {
-    aside: { setAside },
-  } = useStore();
+  const { setAside } = useAsideStore();
 
   const queryClient = useQueryClient();
 

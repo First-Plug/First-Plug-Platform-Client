@@ -26,7 +26,7 @@ export const DynamicForm = ({
 
     const newAttributes = fields.map((field) => {
       const matchingAttribute = watchedAttributes.find(
-        (attr) => attr.key === field.name
+        (attr) => attr?.key === field.name
       );
 
       return {
@@ -40,29 +40,30 @@ export const DynamicForm = ({
     handleAttributesChange(newAttributes);
 
     newAttributes.forEach((attr, index) => {
-      setValue(`attributes.${index}.key`, attr.key);
-      setValue(`attributes.${index}.value`, attr.value);
+      if (attr && attr.key) {
+        setValue(`attributes.${index}.key`, attr.key);
+        setValue(`attributes.${index}.value`, attr.value);
+      }
     });
   }, [fields, watch("attributes"), handleAttributesChange, setValue]);
 
   const handleChange = (fieldKey, value) => {
-    const updatedAttributes = attributes.map((attr) =>
-      attr.key === fieldKey ? { ...attr, value } : attr
-    );
+    if (!fieldKey) return;
+
+    const updatedAttributes = attributes
+      .map((attr) => (attr?.key === fieldKey ? { ...attr, value } : attr))
+      .filter(Boolean);
 
     setAttributes(updatedAttributes);
     handleAttributesChange(updatedAttributes);
 
-    // if (isUpdate) {
-    setValue(
-      `attributes.${attributes.findIndex(
-        (attr) => attr.key === fieldKey
-      )}.value`,
-      value
+    const attributeIndex = updatedAttributes.findIndex(
+      (attr) => attr?.key === fieldKey
     );
-    // } else {
-    //   setValue(fieldKey, value);
-    // }
+
+    if (attributeIndex !== -1) {
+      setValue(`attributes.${attributeIndex}.value`, value);
+    }
 
     clearErrors(fieldKey);
     setCustomErrors((prev) => ({ ...prev, [fieldKey]: undefined }));

@@ -1,8 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronDown } from "@/common";
-import { useStore } from "@/models/root.store";
-import { TeamServices } from "@/services/team.services";
+import { ChevronDown } from "@/shared";
 
 interface TeamDropdownProps {
   className?: string;
@@ -30,9 +28,6 @@ export function TeamDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState<string>(selectedOption || "");
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const {
-    teams: { addTeam },
-  } = useStore();
 
   const toggleDropdown = () => {
     if (!disabled) {
@@ -75,8 +70,6 @@ export function TeamDropdown({
 
   const handleCreateNewTeam = async (teamName: string) => {
     try {
-      const newTeam = await TeamServices.createTeam({ name: teamName });
-      addTeam(newTeam);
       onChange && onChange(teamName);
       setInputValue(teamName);
       setIsOpen(false);

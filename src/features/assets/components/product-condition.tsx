@@ -1,7 +1,7 @@
 "use client";
 import { Controller, useFormContext } from "react-hook-form";
 import { DropdownInputProductForm } from "@/features/assets";
-import { PRODUCT_CONDITIONS } from "@/types";
+import { PRODUCT_CONDITIONS } from "@/features/assets";
 
 export const ProductCondition = ({ isUpdate, isDisabled, selectedOption }) => {
   const { control } = useFormContext();

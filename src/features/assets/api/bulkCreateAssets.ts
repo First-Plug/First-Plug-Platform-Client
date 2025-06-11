@@ -1,4 +1,4 @@
-import { Product } from "@/types";
+import { Product } from "@/features/assets";
 import { ProductServices } from "@/services";
 
 export const bulkCreateAssets = async (

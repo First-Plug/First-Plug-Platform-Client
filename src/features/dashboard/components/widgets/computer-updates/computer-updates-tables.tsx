@@ -6,7 +6,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { Product } from "@/types";
+import { Product } from "@/features/assets";
 
 import {
   Table,

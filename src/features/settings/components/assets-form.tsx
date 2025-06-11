@@ -1,7 +1,7 @@
 import { Controller } from "react-hook-form";
 import * as Switch from "@radix-ui/react-switch";
-import { CATEGORIES } from "@/types";
-import { useStore } from "@/models";
+import { CATEGORIES } from "@/features/assets/interfaces/product";
+
 import { useEffect, useState } from "react";
 import { UserServices } from "@/services/user.services";
 import {
@@ -11,14 +11,15 @@ import {
   TooltipContent,
   TooltipArrow,
 } from "@radix-ui/react-tooltip";
-import { InfoCircle } from "../../../common/Icons";
+import { InfoCircle } from "@/shared";
+import { useSession } from "next-auth/react";
 
 export const AssetsForm = ({ form }: { form: any }) => {
   const { control, reset } = form;
 
   const {
-    user: { user },
-  } = useStore();
+    data: { user },
+  } = useSession();
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
   useEffect(() => {

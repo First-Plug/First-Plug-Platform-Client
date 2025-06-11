@@ -18,7 +18,9 @@
     "jsx": "preserve",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"] 
+      "@/*": [
+        "src/*"
+      ]
     },
     "plugins": [
       {
@@ -28,10 +30,12 @@
   },
   "include": [
     "next-env.d.ts",
-    ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "src/models/root.store.tsx"  ],
+    "**/*.tsx",
+    "src/models/root.store.tsx",
+    "src/next-auth.d.ts",
+    ".next/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

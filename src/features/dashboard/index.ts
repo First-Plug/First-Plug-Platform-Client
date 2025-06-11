@@ -2,6 +2,7 @@
 export * from "./components/dashboard-layout";
 export * from "./components/swapy-item";
 export * from "./components/widgets";
+export * from "./components/empty-dashboard-card";
 
 export * from "./components/widgets/my-assets/assets-widget";
 export * from "./components/widgets/my-assets/stock-card";

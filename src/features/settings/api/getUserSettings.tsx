@@ -1,5 +1,5 @@
 import { UserServices } from "@/services/user.services";
-import { User } from "@/types";
+import { User } from "@/features/auth";
 import { QueryFunctionContext } from "@tanstack/react-query";
 
 export const getUserSettings = async ({

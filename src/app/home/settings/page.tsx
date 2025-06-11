@@ -1,14 +1,13 @@
 "use client";
-import { observer } from "mobx-react-lite";
-import { useStore } from "@/models";
 
 import { PageLayout, BarLoader } from "@/shared";
 import { SettingsForm } from "@/features/settings";
+import { useSession } from "next-auth/react";
 
-export default observer(function Settings() {
+export default function Settings() {
   const {
-    user: { user },
-  } = useStore();
+    data: { user },
+  } = useSession();
 
   return (
     <PageLayout>
@@ -21,4 +20,4 @@ export default observer(function Settings() {
       )}
     </PageLayout>
   );
-});
+}

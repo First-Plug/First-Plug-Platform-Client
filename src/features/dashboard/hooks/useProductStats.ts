@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { CATEGORIES } from "@/types";
+import { CATEGORIES } from "@/features/assets/interfaces/product";
 
 interface Product {
   status: string;
-  deleted: boolean;
+  deleted?: boolean;
 }
 
 interface ProductTable {

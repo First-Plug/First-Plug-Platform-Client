@@ -4,7 +4,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared";
-import { Product } from "@/types";
+import { Product } from "@/features/assets";
 
 export default function MemberNameAndLocation({
   product,

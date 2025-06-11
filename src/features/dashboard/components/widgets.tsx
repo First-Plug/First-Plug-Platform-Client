@@ -8,7 +8,8 @@ import {
   SwapyItem,
 } from "@/features/dashboard";
 
-import { LoggedInUser, ProductTable } from "@/types";
+import { LoggedInUser } from "@/features/auth";
+import { ProductTable } from "@/features/assets";
 import { Member } from "@/features/members";
 import { Datum } from "@/features/activity";
 

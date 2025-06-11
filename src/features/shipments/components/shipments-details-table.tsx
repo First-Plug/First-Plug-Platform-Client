@@ -15,8 +15,7 @@ import {
 import { useMemo } from "react";
 
 import type { Shipment } from "@/features/shipments";
-import { ProductImage } from "@/common";
-import PrdouctModelDetail from "@/common/PrdouctModelDetail";
+import { ProductImage, PrdouctModelDetail } from "@/features/assets";
 
 interface Props {
   data: Shipment;

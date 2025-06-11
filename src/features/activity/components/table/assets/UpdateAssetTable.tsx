@@ -6,7 +6,7 @@ import {
   TableHead,
   TableCell,
 } from "@/shared";
-import { Product } from "@/types";
+import { type Price, type Product } from "@/features/assets";
 
 interface AssetAttribute {
   key: string;
@@ -58,13 +58,17 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
         typeof newValue === "object"
       ) {
         if (
-          oldValue.amount !== newValue.amount ||
-          oldValue.currencyCode !== newValue.currencyCode
+          (oldValue as Price).amount !== (newValue as Price).amount ||
+          (oldValue as Price).currencyCode !== (newValue as Price).currencyCode
         ) {
           changes.push({
             field: key,
-            oldValue: `${oldValue.amount} ${oldValue.currencyCode}`,
-            newValue: `${newValue.amount} ${newValue.currencyCode}`,
+            oldValue: `${(oldValue as Price).amount} ${
+              (oldValue as Price).currencyCode
+            }`,
+            newValue: `${(newValue as Price).amount} ${
+              (newValue as Price).currencyCode
+            }`,
           });
         }
       } else if (oldValue !== newValue) {

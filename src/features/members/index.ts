@@ -7,7 +7,10 @@ export * from "./components/AddMember/personal-data";
 export * from "./components/AddMember/shipment-data";
 export * from "./components/AddMember/additional-data";
 export * from "./components/AddMember/team-dropdown";
-export * from "./components/edit-member-aside";
+export * from "./components/AddMember/add-member-form";
+export * from "./components/member-item";
+export * from "./components/member-detail";
+
 export * from "./components/request-off-boarding-form";
 
 export * from "./hooks/useFetchMembers";
@@ -17,7 +20,7 @@ export * from "./hooks/useUpdateMember";
 export * from "./hooks/useDeleteMember";
 export * from "./hooks/usePrefetchMember";
 export * from "./hooks/usePreFetchMembers";
-export * from "./hooks/useLoadMemberData";
+
 export * from "./hooks/useMemberForm";
 export * from "./hooks/useMemberSubmit";
 
@@ -38,4 +41,5 @@ import shipmentData from "./components/AddMember/JSON/shipmentdata.json";
 export { personalData, shipmentData };
 
 export * from "./schemas/members.zod";
-export * from "./schemas/members.mobx";
+
+export * from "./store/member.store";

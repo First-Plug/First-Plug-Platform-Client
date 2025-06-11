@@ -5,7 +5,6 @@ export { ProductForm } from "./components/product-form";
 export { ProductCondition } from "./components/product-condition";
 export { QuantityCounter } from "./components/quantity-counter";
 export { RecoverableSwitch } from "./components/recoverable-switch";
-export { AssignedMemberField } from "./components/assigned-member-field";
 export { AdditionalInfo } from "./components/additional-info";
 export { CategoryForm } from "./components/category-form";
 export { DropdownInputProductForm } from "./components/dropdown-product-form";
@@ -14,6 +13,14 @@ export { PriceInput } from "./components/price-input";
 export { InventoryStatusLegend } from "./components/inventary-status-legend";
 export { DynamicForm } from "./components/dynamic-form";
 export { BulkCreateForm } from "./components/bulk-create-form";
+export { DownloadStock } from "./components/download-stock";
+export { CategoryIcons } from "./components/category-icons";
+export { AddStockCard } from "./components/add-stock-card";
+export { PrdouctModelDetail } from "./components/product-model-details";
+export { ProductImage } from "./components/product-image";
+export { ProductDetail } from "./components/product-details";
+export { ProductConditionCard } from "./components/product-condition-card";
+
 export {
   BulkCreateValidator,
   validateCompanyBillingInfo,
@@ -60,3 +67,16 @@ export * from "./api/reassignAsset";
 export * from "./api/exportAssetsCsv";
 export * from "./api/getTableAssets";
 export * from "./api/updateEntityAsset";
+
+export * from "./store/product.store";
+
+export * from "./interfaces/product";
+export {
+  LOCATION,
+  CATEGORIES,
+  type Category,
+  zodProductModel,
+  zodCreateProductModel,
+  type PrdouctModelZod,
+  type CreateProductModel,
+} from "./interfaces/product";

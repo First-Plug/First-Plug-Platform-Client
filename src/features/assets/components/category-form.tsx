@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 
-import { useStore } from "@/models";
-import { Location, CATEGORIES, Category } from "@/types";
+import { Category, Location } from "@/features/assets";
+import { CATEGORIES } from "@/features/assets/interfaces/product";
+
 import { FieldValues, useFormContext } from "react-hook-form";
 import { Skeleton } from "@/shared";
 import {
@@ -32,7 +33,7 @@ interface CategoryFormProps {
   setManualChange?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const CategoryForm: React.FC<CategoryFormProps> = function ({
+export const CategoryForm = ({
   handleCategoryChange,
   selectedCategory,
   setAssignedEmail,
@@ -46,8 +47,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = function ({
   setFormValues,
   manualChange,
   setManualChange,
-}) {
-  const { members } = useStore();
+}: CategoryFormProps) => {
   const {
     setValue,
     watch,
@@ -72,7 +72,6 @@ export const CategoryForm: React.FC<CategoryFormProps> = function ({
 
   useEffect(() => {
     if (fetchedMembers) {
-      members.setMembers(fetchedMembers);
       const memberFullNames = [
         "None",
         ...fetchedMembers.map(
@@ -81,7 +80,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = function ({
       ];
       setAssignedEmailOptions(memberFullNames);
     }
-  }, [fetchedMembers, members]);
+  }, [fetchedMembers]);
 
   useEffect(() => {
     if (isUpdate && !manualChange) {
@@ -140,7 +139,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = function ({
         setIsLocationEnabled(true);
       }
     } else {
-      const selectedMember = members.members.find(
+      const selectedMember = fetchedMembers.find(
         (member) =>
           `${member.firstName} ${member.lastName}` === selectedFullName
       );
@@ -190,13 +189,15 @@ export const CategoryForm: React.FC<CategoryFormProps> = function ({
   };
 
   useEffect(() => {
-    watch("attributes").find((attr) => attr.key === "model")?.value;
+    const attributes = watch("attributes") || [];
+    const modelValue = attributes.find((attr) => attr?.key === "model")?.value;
+    return modelValue;
   }, [watch("attributes")]);
 
   const shouldShowProductNameInput = () => {
+    const attributes = watch("attributes") || [];
     const selectedModel =
-      watch("model") ||
-      watch("attributes")?.find((attr) => attr.key === "model")?.value;
+      watch("model") || attributes.find((attr) => attr?.key === "model")?.value;
 
     if (selectedCategory === "Merchandising") {
       return true;

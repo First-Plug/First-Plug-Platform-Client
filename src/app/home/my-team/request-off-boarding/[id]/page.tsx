@@ -3,13 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
-import { observer } from "mobx-react-lite";
-import { useStore } from "@/models/root.store";
 
-import { type Product } from "@/types";
+import { type Product } from "@/features/assets";
 import { Button, LoaderSpinner, PageLayout } from "@/shared";
 
-import { useFetchMembers } from "@/features/members";
+import { useFetchMembers, useMemberStore } from "@/features/members";
 import { RequestOffBoardingForm } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { validateMemberBillingInfo } from "@/features/members";
@@ -18,6 +16,8 @@ import { ShipmentWithFp } from "@/features/shipments";
 
 import { Member } from "@/features/members";
 import { Memberservices } from "@/services";
+
+import { useAsideStore, useAlertStore } from "@/shared";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
@@ -30,7 +30,7 @@ export interface ProductOffBoarding {
   newMember?: any;
 }
 
-export default observer(function RequestOffBoardingPage({
+export default function RequestOffBoardingPage({
   params,
 }: {
   params: { id: string };
@@ -46,11 +46,9 @@ export default observer(function RequestOffBoardingPage({
 
   const { data: members = [] } = useFetchMembers();
 
-  const {
-    members: { setMemberOffBoarding },
-    aside: { isClosed },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
+  const { isClosed } = useAsideStore();
+  const { setMemberOffBoarding } = useMemberStore();
 
   const methods = useForm({
     defaultValues: {
@@ -234,4 +232,4 @@ export default observer(function RequestOffBoardingPage({
       </FormProvider>
     </PageLayout>
   );
-});
+}

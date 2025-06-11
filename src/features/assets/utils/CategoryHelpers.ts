@@ -1,46 +1,61 @@
-import { Category, emptyProduct, ProductFormData } from "@/types";
-import { UseFormReturn } from "react-hook-form";
+import { Category, ProductFormData } from "@/features/assets";
 
-interface HandleCategoryChangeParams {
-  category: Category | undefined;
-  isUpdate: boolean;
-  methods: UseFormReturn<ProductFormData>;
-  setSelectedCategory: (category: Category | undefined) => void;
-  setValue: (name: string, value: any) => void;
-  setFormValues: React.Dispatch<React.SetStateAction<any>>;
-  userRecoverableConfig?: Map<Category, boolean>;
-  setManualChange: (value: boolean) => void;
-}
+export const handleCategoryChange = (
+  category: Category,
+  setValue: (name: string, value: any) => void
+) => {
+  const defaultProduct = {
+    _id: "",
+    name: "",
+    category: undefined,
+    attributes: [],
+    status: "Available",
+    productCondition: "Optimal",
+    deleted: false,
+    recoverable: true,
+    acquisitionDate: "",
+    createdAt: "",
+    updatedAt: "",
+    deletedAt: "",
+    serialNumber: "",
+    location: undefined,
+    assignedEmail: undefined,
+    assignedMember: undefined,
+    lastAssigned: "",
+    price: undefined,
+    additionalInfo: "",
+    fp_shipment: false,
+    desirableDate: {
+      origin: "",
+      destination: "",
+    },
+    shipmentOrigin: "",
+    shipmentDestination: "",
+    shipmentId: "",
+    origin: "",
+    activeShipment: false,
+  };
 
-export const handleCategoryChange = ({
-  category,
-  isUpdate,
-  methods,
-  setSelectedCategory,
-  setValue,
-  setFormValues,
-  userRecoverableConfig,
-  setManualChange,
-}: HandleCategoryChangeParams) => {
-  if (!isUpdate) {
-    methods.reset({
-      ...emptyProduct,
-      category: category,
-      assignedMember: "",
-      assignedEmail: "",
-      location: "",
-      productCondition: "Optimal",
-      additionalInfo: "",
-    });
-    setSelectedCategory(category);
-    setValue("category", category || undefined);
-    setManualChange(false);
-
-    const isRecoverable =
-      userRecoverableConfig?.get(category as Category) ??
-      category !== "Merchandising";
-
-    setValue("recoverable", isRecoverable);
-    setFormValues((prev: any) => ({ ...prev, recoverable: isRecoverable }));
-  }
+  setValue("category", category);
+  setValue("attributes", []);
+  setValue("name", "");
+  setValue("serialNumber", "");
+  setValue("location", undefined);
+  setValue("assignedEmail", undefined);
+  setValue("assignedMember", undefined);
+  setValue("price", undefined);
+  setValue("additionalInfo", "");
+  setValue("productCondition", "Optimal");
+  setValue("recoverable", true);
+  setValue("deleted", false);
+  setValue("fp_shipment", false);
+  setValue("desirableDate", {
+    origin: "",
+    destination: "",
+  });
+  setValue("shipmentOrigin", "");
+  setValue("shipmentDestination", "");
+  setValue("shipmentId", "");
+  setValue("origin", "");
+  setValue("activeShipment", false);
 };

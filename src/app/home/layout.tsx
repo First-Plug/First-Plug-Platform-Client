@@ -1,9 +1,7 @@
 import { ReactNode } from "react";
-import { Navbar, Sidebar } from "@/components";
-import { Layout } from "@/common";
-import { Aside } from "@/components/Aside";
-import AlertProvider from "@/components/Alerts/AlertProvider";
+
 import { TenantProvider } from "@/providers";
+import { Sidebar, Navbar, Layout, AlertProvider, Aside } from "@/shared";
 
 interface RootLayoutProps {
   children: ReactNode;

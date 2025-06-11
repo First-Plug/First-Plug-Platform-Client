@@ -1,14 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { bulkDeleteTeams } from "@/features/teams";
-import { useStore } from "@/models";
-import { Team } from "@/types";
+import { type Team } from "@/features/teams";
+import { useAlertStore } from "@/shared";
 
 export const useBulkDeleteTeams = () => {
   const queryClient = useQueryClient();
-  const {
-    teams: { removeTeam },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   return useMutation({
     mutationFn: (teamIds: string[]) => bulkDeleteTeams(teamIds),

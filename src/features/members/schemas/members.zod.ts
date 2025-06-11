@@ -1,5 +1,4 @@
-"use client";
-import { zodCreateProductModel } from "@/types";
+import { zodCreateProductModel } from "@/features/assets/interfaces/product";
 import { z } from "zod";
 
 const phoneRegex = /^\+?[0-9\s]*$/;

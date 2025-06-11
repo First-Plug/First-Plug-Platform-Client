@@ -2,7 +2,7 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthServices } from "@/services";
-import { RegisterUserPlatforms } from "@/types";
+import { RegisterUserPlatforms } from "@/features/auth";
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -82,7 +82,10 @@ const authOptions: NextAuthOptions = {
         image: user.image,
         name: user.name,
         tenantName: "",
-        accountProvider: account.provider,
+        accountProvider: account.provider as
+          | "credentials"
+          | "google"
+          | "azure-ad",
       };
 
       if (account.provider === "google" || account.provider === "azure-ad") {

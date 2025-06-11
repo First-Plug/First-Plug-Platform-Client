@@ -16,7 +16,7 @@ import {
   SelectValue,
   SelectGroup,
 } from "@/shared";
-import { SettingsFormConfig, SettingsFormKeys } from "@/types";
+import { SettingsFormConfig, SettingsFormKeys } from "@/features/auth";
 import { UseFormReturn } from "react-hook-form";
 export function SettingsSubForm({
   keyValue,

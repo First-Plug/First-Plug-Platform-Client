@@ -1,11 +1,10 @@
 "use client";
-import { observer } from "mobx-react-lite";
-import { useStore } from "@/models";
 
 import { AddIcon, Cake, UploadIcon, Button } from "@/shared";
 
 import { BirthdayTable } from "@/features/dashboard";
 import { Member } from "@/features/members";
+import { useAsideStore } from "@/shared";
 
 const isBirthdayInNext30Days = (birthDateString: string) => {
   const today = new Date();
@@ -48,14 +47,8 @@ const sortBirthdaysByUpcoming = (members: Member[]) => {
   });
 };
 
-export const TeamHomeCard = observer(function ({
-  members,
-}: {
-  members: Member[];
-}) {
-  const {
-    aside: { setAside },
-  } = useStore();
+export const TeamHomeCard = function ({ members }: { members: Member[] }) {
+  const { setAside } = useAsideStore();
 
   const membersWithBirthdate = members.filter((member) => member.birthDate);
 
@@ -118,4 +111,4 @@ export const TeamHomeCard = observer(function ({
       </section>
     </div>
   );
-});
+};

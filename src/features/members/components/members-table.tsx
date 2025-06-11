@@ -1,14 +1,15 @@
 "use client";
-import { useStore } from "@/models";
-import { Team } from "@/types";
-import { Button, ElipsisVertical, PenIcon, TeamCard } from "@/common";
+import { useAsideStore } from "@/shared";
+
+import { Button, ElipsisVertical, PenIcon, TeamCard } from "@/shared";
 import { ColumnDef } from "@tanstack/react-table";
-import { DeleteAction } from "@/components/Alerts";
-import { RootTable } from "@/components/Tables/RootTable";
-import FormatedDate from "@/components/Tables/helpers/FormatedDate";
+import { DeleteAction } from "@/shared";
+import { RootTable } from "@/shared/components/Tables/RootTable";
+import FormatedDate from "@/shared/components/Tables/helpers/FormatedDate";
 import {
   useDeleteMember,
   useFetchMembers,
+  useMemberStore,
   usePrefetchMember,
 } from "@/features/members";
 import {
@@ -19,6 +20,7 @@ import {
 } from "@/shared";
 import { TooltipArrow } from "@radix-ui/react-tooltip";
 import { Member } from "@/features/members";
+import { Team } from "@/features/teams";
 
 const MONTHS = [
   "January",
@@ -345,13 +347,11 @@ export const MembersTable = ({ members: propMembers }: TableMembersProps) => {
   const { data: fetchedMembers = [], isLoading, isError } = useFetchMembers();
   const deleteMemberMutation = useDeleteMember();
 
-  const {
-    members: { setMemberToEdit, setSelectedMember },
-    aside: { setAside },
-  } = useStore();
+  const { setAside } = useAsideStore();
+  const { setSelectedMember } = useMemberStore();
 
   const handleEdit = (memberId: Member["_id"]) => {
-    setMemberToEdit(memberId);
+    setSelectedMember(fetchedMembers.find((member) => member._id === memberId));
     setAside("EditMember");
   };
 
@@ -367,8 +367,7 @@ export const MembersTable = ({ members: propMembers }: TableMembersProps) => {
   };
 
   const handleViewDetail = (memberId: Member["_id"]) => {
-    setMemberToEdit(memberId);
-    setSelectedMember(memberId);
+    setSelectedMember(fetchedMembers.find((member) => member._id === memberId));
     setAside("MemberDetails");
   };
 

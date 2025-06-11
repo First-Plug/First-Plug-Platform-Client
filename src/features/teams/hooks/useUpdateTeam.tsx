@@ -1,30 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateTeam } from "@/features/teams";
-import { useStore } from "@/models";
-import { Team } from "@/types";
+import { updateTeam, type Team } from "@/features/teams";
+import { useAlertStore } from "@/shared";
 
 export const useUpdateTeam = () => {
   const queryClient = useQueryClient();
-  const {
-    teams: { updateTeam: updateStoreTeam },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   return useMutation({
     mutationFn: ({ id, team }: { id: string; team: Partial<Team> }) =>
       updateTeam(id, team),
 
-    onSuccess: (data) => {
-      updateStoreTeam(data);
-      // setAlert("updateTeamSuccess");
-
-      // Opcionalmente puedes refetchear directamente desde el store si es necesario
+    onSuccess: () => {
+      setAlert("updateTeam");
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
     },
     onError: (error) => {
       console.error("Error updating team:", error);
-      //   setAlert("updateTeamError");
+      setAlert("errorUpdateTeam");
     },
   });
 };

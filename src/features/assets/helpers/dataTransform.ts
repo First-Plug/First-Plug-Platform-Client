@@ -1,12 +1,4 @@
-import {
-  AttributeModel,
-  Category,
-  emptyProduct,
-  Key,
-  Product,
-  ProductTable,
-} from "@/types";
-import { cast } from "mobx-state-tree";
+import { type ProductTable, type Product } from "@/features/assets";
 
 export const transformData = (rawData: any[]): ProductTable[] => {
   const groupedData: Record<string, ProductTable> = {};
@@ -16,7 +8,7 @@ export const transformData = (rawData: any[]): ProductTable[] => {
       _id: item._id,
       name: item.name || null,
       category: item.category,
-      attributes: cast(item.attributes || []),
+      attributes: item.attributes || [],
       status: item.status || "Available",
       deleted: item.deleted || false,
       recoverable: item.recoverable ?? true,
@@ -34,11 +26,11 @@ export const transformData = (rawData: any[]): ProductTable[] => {
     if (!groupedData[item.category]) {
       groupedData[item.category] = {
         category: item.category,
-        products: cast([]),
+        products: [],
       };
     }
 
-    groupedData[item.category].products.push(product);
+    groupedData[item.category].products.push(product as Product);
   });
 
   return Object.values(groupedData);

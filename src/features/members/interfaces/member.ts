@@ -1,11 +1,35 @@
-import { Instance } from "mobx-state-tree";
 import { z } from "zod";
 
-import { zodCreateMemberModel, MemberModel } from "@/features/members";
-import { Team } from "@/types";
-import { Product } from "@/types";
+import { zodCreateMemberModel } from "@/features/members";
+import { Team } from "@/features/teams";
+import { Product } from "@/features/assets";
 
-export type Member = Instance<typeof MemberModel>;
+export interface Member {
+  _id?: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  activeShipment?: boolean;
+  hasOnTheWayShipment?: boolean;
+  picture?: string;
+  position?: string;
+  personalEmail?: string | null;
+  phone?: string;
+  city?: string;
+  country?: string;
+  zipCode?: string;
+  address?: string;
+  apartment?: string;
+  additionalInfo?: string;
+  startDate?: string;
+  birthDate?: string | null;
+  teamId?: string;
+  products?: Product[];
+  team?: string | Team;
+  dni?: string | number;
+  isDeleted?: boolean;
+}
 
 export type CreateMemberZodModel = z.infer<typeof zodCreateMemberModel>;
 export type CreationMember = Omit<

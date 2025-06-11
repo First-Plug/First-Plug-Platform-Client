@@ -1,4 +1,4 @@
-import { Team } from "@/types";
+import { type Team } from "@/features/teams";
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 
 type TeamCreation = { name: string };

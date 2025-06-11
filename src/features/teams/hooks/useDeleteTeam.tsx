@@ -1,15 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteTeam } from "@/features/teams";
-import { useStore } from "@/models";
-import { Team } from "@/types";
+import { type Team } from "@/features/teams";
+import { useAlertStore } from "@/shared";
 
 export const useDeleteTeam = () => {
   const queryClient = useQueryClient();
 
-  const {
-    teams: { removeTeam, setTeams },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAlert } = useAlertStore();
 
   return useMutation({
     mutationFn: (id: string) => deleteTeam(id),
@@ -29,11 +26,8 @@ export const useDeleteTeam = () => {
         queryClient.setQueryData(["Teams"], context.previousTeams);
       }
     },
-    onSuccess: (data, id) => {
-      removeTeam(id);
+    onSuccess: () => {
       setAlert("deleteTeam");
-      const updatedTeams = queryClient.getQueryData<Team[]>(["teams"]);
-      setTeams(updatedTeams || []);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });

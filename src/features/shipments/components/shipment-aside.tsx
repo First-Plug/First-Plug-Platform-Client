@@ -16,11 +16,12 @@ import { Button } from "@/shared";
 import { MapPin } from "lucide-react";
 import { AsapOrDate } from "./ShipmentWithFp";
 import { AsapOrDateValue } from "./ShipmentWithFp/asap-or-date";
-import { useStore } from "@/models";
-import { LOCATION } from "@/types";
+import { LOCATION } from "@/features/assets";
 import { isValid, parseISO } from "date-fns";
 import { useUpdateShipment } from "../hooks/useUpdateShipment";
 import { useShipmentStore } from "../store/useShipmentStore";
+import { useAsideStore, useAlertStore } from "@/shared";
+
 type DestinationState =
   | { type: "employee"; assignedEmail: string }
   | { type: "location"; location: string };
@@ -35,10 +36,8 @@ const parseDesirableDate = (
 };
 
 export const ShipmentAside = () => {
-  const {
-    aside: { setAside },
-    alerts: { setAlert },
-  } = useStore();
+  const { setAside } = useAsideStore();
+  const { setAlert } = useAlertStore();
 
   const updateShipmentMutation = useUpdateShipment();
 

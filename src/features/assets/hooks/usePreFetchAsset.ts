@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { getAssetById } from "@/features/assets";
-import { Product } from "@/types";
+import { Product } from "@/features/assets";
 
 export const usePrefetchAsset = () => {
   const queryClient = useQueryClient();

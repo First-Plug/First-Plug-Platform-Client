@@ -1,12 +1,15 @@
 import {
-  FieldValues,
   UseFormClearErrors,
   UseFormReturn,
   UseFormSetError,
   UseFormTrigger,
   UseFormWatch,
 } from "react-hook-form";
-import { Product, Category, Atrribute, ProductFormData } from "@/types";
+import {
+  type Category,
+  type Attribute,
+  type ProductFormData,
+} from "@/features/assets";
 
 export const validateCategory = async (
   trigger: UseFormTrigger<ProductFormData>
@@ -16,7 +19,7 @@ export const validateCategory = async (
 };
 
 export const validateAttributes = (
-  attributes: Atrribute[],
+  attributes: Attribute[],
   category: Category,
   setCustomErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>
 ): boolean => {
@@ -80,7 +83,7 @@ export const validateProductName = async (
 };
 
 export const validateForNext = (
-  attributes: Atrribute[],
+  attributes: Attribute[],
   selectedCategory: Category | undefined,
   watch: (field: string) => any,
   methods: UseFormReturn<ProductFormData>,
