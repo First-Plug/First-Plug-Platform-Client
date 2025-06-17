@@ -4,7 +4,7 @@ import { Button, Input, LoaderSpinner, AuthForm } from "@/shared";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { AuthServices } from "@/services/auth.services";
+import { AuthServices } from "@/features/auth";
 import useInput from "@/shared/hooks/useInput";
 import { FormEvent, useState } from "react";
 import { useToast } from "@/shared";
