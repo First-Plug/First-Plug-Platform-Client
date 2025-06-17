@@ -28,3 +28,5 @@ export * from "./api/updateTeams";
 export * from "./api/associateTeamToMember";
 export * from "./api/removeFromTeam";
 export * from "./api/changeTeamFroMember";
+
+export * from "./services/team.services";

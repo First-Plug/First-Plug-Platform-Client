@@ -43,3 +43,5 @@ export { personalData, shipmentData };
 export * from "./schemas/members.zod";
 
 export * from "./store/member.store";
+
+export * from "./services/members.services";

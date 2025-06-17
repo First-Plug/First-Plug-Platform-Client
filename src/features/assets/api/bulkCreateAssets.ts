@@ -1,5 +1,4 @@
-import { Product } from "@/features/assets";
-import { ProductServices } from "@/services";
+import { type Product, ProductServices } from "@/features/assets";
 
 export const bulkCreateAssets = async (
   assets: Omit<Product, "_id" | "__v">[]

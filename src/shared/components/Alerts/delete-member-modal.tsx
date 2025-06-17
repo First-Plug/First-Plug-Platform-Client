@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/shared";
 import { useState } from "react";
-import { Memberservices } from "@/services";
+import { Memberservices } from "@/features/members";
 import { Loader, useAlertStore } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
 

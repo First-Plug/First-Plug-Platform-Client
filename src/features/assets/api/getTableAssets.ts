@@ -1,5 +1,4 @@
-import { ProductTable } from "@/features/assets";
-import { ProductServices } from "@/services";
+import { type ProductTable, ProductServices } from "@/features/assets";
 
 export const getTableAssets = async (): Promise<ProductTable[]> => {
   const response = await ProductServices.getTableFormat();

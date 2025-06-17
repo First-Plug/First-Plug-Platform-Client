@@ -6,7 +6,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { FormControl, FormField, FormItem, FormMessage } from "@/shared";
 
-import { AuthServices } from "@/services";
+import { AuthServices } from "@/features/auth";
 import { useAlertStore, useAsideStore } from "@/shared";
 
 const ChangePasswordSchema = z

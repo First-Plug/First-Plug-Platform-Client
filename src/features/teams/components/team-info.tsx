@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { type Team } from "@/features/teams";
 import { AddMembersToTeamForm } from "./add-members-to-team-form";
 import { Button, LoaderSpinner } from "@/shared";
-import { TeamServices } from "@/services";
+import { TeamServices } from "@/features/teams";
 import { Input } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
 

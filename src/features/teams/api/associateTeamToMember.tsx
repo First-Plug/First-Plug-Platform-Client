@@ -1,5 +1,4 @@
-import { TeamServices } from "@/services";
-import { type Team } from "@/features/teams";
+import { type Team, TeamServices } from "@/features/teams";
 
 export const associateTeamToMember = async (
   teamId: string,

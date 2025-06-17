@@ -1,5 +1,4 @@
-import { Product } from "@/features/assets";
-import { ProductServices } from "@/services";
+import { Product, ProductServices } from "@/features/assets";
 
 export const createAsset = async (
   data: Omit<Product, "_id" | "__v">

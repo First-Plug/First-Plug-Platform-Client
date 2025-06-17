@@ -1,6 +1,5 @@
-import type { Product } from "@/features/assets";
+import { type Product, ProductServices } from "@/features/assets";
 import type { Shipment } from "@/features/shipments";
-import { ProductServices } from "@/services";
 
 export const updateAsset = async (
   id: Product["_id"],

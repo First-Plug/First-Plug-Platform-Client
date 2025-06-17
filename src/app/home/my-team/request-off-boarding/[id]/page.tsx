@@ -15,7 +15,7 @@ import { useShipmentValues } from "@/features/shipments";
 import { ShipmentWithFp } from "@/features/shipments";
 
 import { Member } from "@/features/members";
-import { Memberservices } from "@/services";
+import { Memberservices } from "@/shared/services";
 
 import { useAsideStore, useAlertStore } from "@/shared";
 

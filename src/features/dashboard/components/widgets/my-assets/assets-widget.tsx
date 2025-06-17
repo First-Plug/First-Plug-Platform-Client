@@ -1,7 +1,7 @@
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { StockCard } from "@/features/dashboard";
 import { Card, EmptyDashboardCard, ShopIcon } from "@/shared";
-import { UserServices } from "@/services/user.services";
+import { UserServices } from "@/features/settings";
 
 import type { ProductTable } from "@/features/assets";
 import { LoggedInUser } from "@/features/auth";

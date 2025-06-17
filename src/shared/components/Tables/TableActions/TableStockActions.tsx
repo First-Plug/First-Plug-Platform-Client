@@ -6,11 +6,10 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useFilterReset } from "../Filters/FilterResetContext";
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
-import { UserServices } from "@/services/user.services";
+import { UserServices } from "@/features/settings";
 import { useSession } from "next-auth/react";
 import { useAsideStore } from "@/shared";
-import { useProductStore } from "@/features/assets";
-import { ProductServices } from "@/services/product.services";
+import { useProductStore, ProductServices } from "@/features/assets";
 
 interface ITableStockActions<TData> {
   table: Table<TData>;

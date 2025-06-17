@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Button, LoaderSpinner, useAlertStore } from "@/shared";
-import { TeamServices } from "@/services";
+import { TeamServices } from "@/features/teams";
 
 import { Member } from "@/features/members";
 import { TeamDetails, type Team } from "@/features/teams";

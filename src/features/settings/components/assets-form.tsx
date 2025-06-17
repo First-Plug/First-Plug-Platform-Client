@@ -3,7 +3,7 @@ import * as Switch from "@radix-ui/react-switch";
 import { CATEGORIES } from "@/features/assets/interfaces/product";
 
 import { useEffect, useState } from "react";
-import { UserServices } from "@/services/user.services";
+import { UserServices } from "@/features/settings";
 import {
   TooltipProvider,
   Tooltip,

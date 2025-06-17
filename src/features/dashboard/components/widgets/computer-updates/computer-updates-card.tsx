@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { ProgressCircle, ComputerUpgradeTable } from "@/features/dashboard";
 
-import { UserServices } from "@/services/user.services";
+import { UserServices } from "@/features/settings";
 
 import type { ProductTable } from "@/features/assets";
 import { useAlertStore } from "@/shared";

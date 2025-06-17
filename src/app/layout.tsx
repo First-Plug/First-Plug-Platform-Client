@@ -40,11 +40,12 @@ export default function RootLayout({ children }: Props) {
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
 
-        <script
+        {/* Dev only */}
+        {/* <script
           crossOrigin="anonymous"
           src="//unpkg.com/react-scan/dist/auto.global.js"
           async
-        />
+        /> */}
       </head>
       <body className="font-inter">
         <Providers>{children}</Providers>

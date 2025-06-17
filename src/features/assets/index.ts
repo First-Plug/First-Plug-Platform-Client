@@ -80,3 +80,5 @@ export {
   type PrdouctModelZod,
   type CreateProductModel,
 } from "./interfaces/product";
+
+export * from "./services/assets.services";

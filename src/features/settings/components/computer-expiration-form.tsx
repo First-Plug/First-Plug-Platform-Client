@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 
-import { UserServices } from "@/services/user.services";
+import { UserServices } from "@/features/settings";
 import { MinusIcon, AddIcon } from "@/shared";
 import { useSession } from "next-auth/react";
 

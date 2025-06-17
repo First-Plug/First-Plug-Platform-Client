@@ -1,6 +1,6 @@
 import { EmptyDashboardCard, ShopIcon, Card } from "@/shared";
 import { TeamHomeCard } from "@/features/dashboard";
-import { UserServices } from "@/services/user.services";
+import { UserServices } from "@/features/settings";
 import { Member } from "@/features/members";
 import { useAlertStore } from "@/shared";
 

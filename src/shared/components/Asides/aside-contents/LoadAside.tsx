@@ -13,7 +13,7 @@ import {
   csvSchema,
 } from "@/shared";
 
-import { CsvServices } from "@/services";
+import { CsvServices } from "@/shared";
 import { isCsvCompleted, parseProduct, parseMembers } from "@/shared";
 import { useToast } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";

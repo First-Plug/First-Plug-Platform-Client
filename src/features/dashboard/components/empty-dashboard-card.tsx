@@ -4,7 +4,7 @@ import { Button, CustomLink } from "@/shared";
 import Image from "next/image";
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { useSession } from "next-auth/react";
-import { UserServices } from "@/services/user.services";
+import { UserServices } from "@/features/settings";
 import { useAsideStore } from "@/shared";
 type EmptyCardType =
   | "stock"

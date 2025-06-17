@@ -1,8 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { AuthServices } from "@/services";
-import { RegisterUserPlatforms } from "@/features/auth";
+import { AuthServices, type RegisterUserPlatforms } from "@/features/auth";
 
 const authOptions: NextAuthOptions = {
   providers: [

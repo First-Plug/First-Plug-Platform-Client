@@ -8,7 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
-import { UserServices } from "@/services/user.services";
+import { UserServices } from "@/features/settings";
 import { useMemberStore } from "@/features/members";
 
 type NavbarProps = {

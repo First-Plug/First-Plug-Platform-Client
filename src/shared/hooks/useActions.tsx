@@ -1,4 +1,4 @@
-import { ProductServices } from "@/services";
+import { ProductServices } from "@/features/assets";
 import { Location, Product } from "@/features/assets";
 import { Member } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";

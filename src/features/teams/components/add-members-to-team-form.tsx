@@ -6,7 +6,7 @@ import { MemberItem } from "@/features/members";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useAddToTeam, useRemoveFromTeam, type Team } from "@/features/teams";
-import { TeamServices } from "@/services";
+import { TeamServices } from "@/features/teams";
 import { Member } from "@/features/members";
 import { useFetchMembers } from "@/features/members";
 

@@ -1,4 +1,4 @@
-import { UserServices } from "@/services/user.services";
+import { UserServices } from "@/features/settings";
 import { User } from "@/features/auth";
 import { QueryFunctionContext } from "@tanstack/react-query";
 

@@ -9,3 +9,5 @@ export * from "./components/company-form";
 export * from "./api/getUserSettings";
 
 export * from "./hooks/useFetchUserSettings";
+
+export * from "./services/user.services";
