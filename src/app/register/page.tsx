@@ -73,7 +73,7 @@ export default function Register() {
 
             <Input
               title="Password"
-              placeholder="Passworad"
+              placeholder="Password"
               type="password"
               {...passwordInput}
             />
