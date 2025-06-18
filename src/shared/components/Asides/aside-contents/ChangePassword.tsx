@@ -17,7 +17,7 @@ const ChangePasswordSchema = z
   })
   .refine((data) => data.newPassword === data.newPasswordConfirmation, {
     message: "The password must be equal.",
-    path: ["newPasswordConfirmation"], // Puedes especificar el campo que debería mostrar el error
+    path: ["newPasswordConfirmation"],
   });
 type ChangePassword = z.infer<typeof ChangePasswordSchema>;
 
@@ -38,7 +38,7 @@ export function ChangePassword() {
   const onSubmit = async (values: ChangePassword) => {
     setIsLoading(true);
     try {
-      await AuthServices.cahngePassword({
+      await AuthServices.changePassword({
         newPassword: values.newPassword,
         oldPassword: values.oldPassword,
       });

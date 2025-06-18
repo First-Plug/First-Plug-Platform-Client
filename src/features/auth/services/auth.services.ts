@@ -10,7 +10,7 @@ import { Session } from "next-auth";
 import { JWT } from "next-auth/jwt";
 
 export class AuthServices {
-  static async cahngePassword(data: {
+  static async changePassword(data: {
     oldPassword: string;
     newPassword: string;
   }): Promise<LoggedInUser> {

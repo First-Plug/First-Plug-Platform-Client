@@ -1,6 +1,7 @@
 "use client";
 import { z } from "zod";
-import { zodProductModel, LOCATION, CATEGORIES } from "@/features/assets";
+import { zodProductModel } from "@/features/assets";
+import { CATEGORIES, LOCATION } from "@/features/assets/interfaces/product";
 import { zodCreateMemberModel } from "@/features/members/schemas/members.zod";
 
 export const EMPTY_FILE_INFO: CsvInfo = {

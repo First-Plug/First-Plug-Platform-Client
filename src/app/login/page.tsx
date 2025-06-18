@@ -19,8 +19,10 @@ import {
   AuthForm,
   useToast,
 } from "@/shared";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Login() {
+  const queryClient = useQueryClient();
   const emailInput = useInput("", "email");
   const passWordInput = useInput("", "password");
   const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +41,9 @@ export default function Login() {
       if (!res.ok) {
         throw new Error(res.error);
       }
+
+      queryClient.invalidateQueries();
+
       router.push("/home/dashboard");
       router.refresh();
     } catch (error) {

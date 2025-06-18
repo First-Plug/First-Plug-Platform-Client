@@ -32,6 +32,7 @@ export * from "./hooks/useFetchDashboard";
 export * from "./hooks/useProductStats";
 export * from "./hooks/useAverageAge";
 export * from "./hooks/useComputerAge";
+export * from "./hooks/useFetchUser";
 
 // interfaces
 export * from "./interfaces/widget.interface";

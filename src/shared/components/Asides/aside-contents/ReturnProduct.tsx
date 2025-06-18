@@ -66,8 +66,6 @@ export function ReturnProduct({
 
   const selectedMember = queryClient.getQueryData<Member>(["selectedMember"]);
 
-  console.log(selectedMember);
-
   const handleRemoveItems = async (location: Location) => {
     if (!location) {
       console.error("Location is required for return");

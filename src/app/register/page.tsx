@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Input, LoaderSpinner, AuthForm } from "@/shared";
+import { Button, LoaderSpinner, AuthForm } from "@/shared";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,7 @@ import { AuthServices } from "@/features/auth";
 import useInput from "@/shared/hooks/useInput";
 import { FormEvent, useState } from "react";
 import { useToast } from "@/shared";
+import { Input } from "../login/Input";
 
 export default function Register() {
   const nameInput = useInput("", "userName");
@@ -72,10 +73,11 @@ export default function Register() {
 
             <Input
               title="Password"
-              placeholder="Password"
+              placeholder="Passworad"
               type="password"
               {...passwordInput}
             />
+
             <Input
               title="Confirm Password"
               placeholder="Confirm Password"
