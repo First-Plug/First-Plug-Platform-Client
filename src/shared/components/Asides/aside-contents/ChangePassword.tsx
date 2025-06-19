@@ -11,12 +11,21 @@ import { useAlertStore, useAsideStore } from "@/shared";
 
 const ChangePasswordSchema = z
   .object({
-    oldPassword: z.string().min(1),
-    newPassword: z.string().min(1),
-    newPasswordConfirmation: z.string().min(1),
+    oldPassword: z.string().min(1, "Current password is required"),
+    newPassword: z
+      .string()
+      .min(1, "New password is required")
+      .min(6, "Password must be at least 6 characters long")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#\$%\^&\*\(\)_\+\-=\[\]\{\};':"\\|,.<>\/?]{6,}$/,
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+      ),
+    newPasswordConfirmation: z
+      .string()
+      .min(1, "Password confirmation is required"),
   })
   .refine((data) => data.newPassword === data.newPasswordConfirmation, {
-    message: "The password must be equal.",
+    message: "Passwords must match",
     path: ["newPasswordConfirmation"],
   });
 type ChangePassword = z.infer<typeof ChangePasswordSchema>;

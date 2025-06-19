@@ -110,6 +110,8 @@ export const SettingsForm = () => {
             queryKey: ["userSettings", values.tenantName],
           });
           setAlert("dataUpdatedSuccessfully");
+
+          form.reset(values, { keepDirty: false });
         }
 
         queryClient.invalidateQueries({ queryKey: ["assets"] });
