@@ -138,7 +138,7 @@ export const productColumns = (
               {total}
             </span>
           </span>
-          <span className="flex justify-between shadow-sm p-1 px-2 rounded-md">
+          <span className="flex justify-between p-1 px-2 rounded-md">
             <span>Available</span>
             <span className="flex justify-center items-center bg-lightGreen rounded-md w-6 h-6 font-semibold">
               {available}
