@@ -188,12 +188,6 @@ export const CategoryForm = ({
     setValue("recoverable", value);
   };
 
-  useEffect(() => {
-    const attributes = watch("attributes") || [];
-    const modelValue = attributes.find((attr) => attr?.key === "model")?.value;
-    return modelValue;
-  }, [watch("attributes")]);
-
   const shouldShowProductNameInput = () => {
     const attributes = watch("attributes") || [];
     const selectedModel =

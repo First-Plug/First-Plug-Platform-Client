@@ -18,17 +18,6 @@ export const EditProductAside = () => {
     } else {
       console.error("Producto no encontrado en caché, mostrando loader.");
     }
-
-    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-      if (
-        event.query.queryKey[0] === "selectedProduct" &&
-        event.query.state.data
-      ) {
-        setProductToEdit(event.query.state.data as Product);
-      }
-    });
-
-    return () => unsubscribe();
   }, [queryClient]);
 
   if (!productToEdit) return <Loader />;
