@@ -16,7 +16,7 @@ export default function Shop() {
       <div>
         <nav className="top-0 right-0 left-0 fixed flex justify-between items-center bg-white px-[2.5rem] py-[1.25rem] w-full h-[5.5rem]">
           <div className="flex items-center gap-[1.5rem]">
-            <CustomLink href="/dashboard">
+            <CustomLink href="/home/dashboard">
               <Image
                 src={logo}
                 alt="logoFirstPlug"
@@ -48,7 +48,7 @@ export default function Shop() {
                 variant="primary"
                 size="big"
                 className="flex rounded-lg w-[10rem] h-[3rem]"
-                href="/dashboard"
+                href="/home/dashboard"
               >
                 <ChevronRight /> Dashboard
               </CustomLink>

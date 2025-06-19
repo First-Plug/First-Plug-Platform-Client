@@ -28,6 +28,8 @@ export default function Register() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    emailInput.setExternalError(null);
+
     try {
       await AuthServices.register({
         name: nameInput.value,
@@ -37,8 +39,22 @@ export default function Register() {
         accountProvider: "credentials",
       });
       router.push("/login");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+
+      if (
+        error?.response?.data?.message === "Email Already in Use" ||
+        error?.message === "Email Already in Use"
+      ) {
+        emailInput.setExternalError("Email Already in Use");
+      } else {
+        toast({
+          title: "Error",
+          description:
+            "An error occurred during registration. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -65,9 +81,9 @@ export default function Register() {
       />
 
       <article className="flex justify-center w-[50%] h-screen">
-        <AuthForm title="Welcome Back!" register onSubmit={handleSubmit}>
+        <AuthForm title="Welcome !" register onSubmit={handleSubmit}>
           <div>
-            <Input title="Full Name" placeholder="Placeholder" {...nameInput} />
+            <Input title="Full Name" placeholder="Full Name" {...nameInput} />
 
             <Input title="Email" placeholder="user@mail.com" {...emailInput} />
 

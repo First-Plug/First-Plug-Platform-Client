@@ -91,6 +91,7 @@ interface InputState<T> {
   handleOption: (option: T) => void;
   selectedOption: T;
   clearInput: () => void;
+  setExternalError: (error: string | null) => void;
   passwordToCompare?: string;
 }
 
@@ -154,6 +155,10 @@ export default function useInput<T>(
     setSelectedOption(initialValue);
   }, [initialValue]);
 
+  const setExternalError = useCallback((error: string | null) => {
+    setError(error);
+  }, []);
+
   return {
     value,
     error,
@@ -164,5 +169,6 @@ export default function useInput<T>(
     handleOption,
     selectedOption,
     clearInput,
+    setExternalError,
   };
 }
