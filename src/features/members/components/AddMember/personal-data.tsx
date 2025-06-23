@@ -74,7 +74,7 @@ export const PersonalData = ({ memberImage, isUpdate, initialData }: Props) => {
                     />
                     <div className="min-h-[24px]">
                       {errors[field.name] && (
-                        <p className="text-red-500">
+                        <p className="text-red-500 text-sm">
                           {String(
                             errors[field.name]?.message || field.errorMessage
                           )}

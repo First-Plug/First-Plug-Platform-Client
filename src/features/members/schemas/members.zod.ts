@@ -2,10 +2,23 @@ import { zodCreateProductModel } from "@/features/assets/interfaces/product";
 import { z } from "zod";
 
 const phoneRegex = /^\+?[0-9\s]*$/;
+const onlyLettersRegex = /^[A-Za-z\s\u00C0-\u00FF]+$/;
 
 export const zodCreateMemberModel = z.object({
-  firstName: z.string().min(1, { message: "First name is required" }).trim(),
-  lastName: z.string().min(1, { message: "Last name is required" }).trim(),
+  firstName: z
+    .string()
+    .min(1, { message: "First name is required" })
+    .trim()
+    .refine((value) => onlyLettersRegex.test(value), {
+      message: "First name cannot contain numbers",
+    }),
+  lastName: z
+    .string()
+    .min(1, { message: "Last name is required" })
+    .trim()
+    .refine((value) => onlyLettersRegex.test(value), {
+      message: "Last name cannot contain numbers",
+    }),
   email: z
     .string()
     .email({ message: "Invalid email address" })

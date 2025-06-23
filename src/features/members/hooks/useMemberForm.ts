@@ -8,6 +8,7 @@ import { Member, zodCreateMemberModel } from "@/features/members";
 export const useMemberForm = (initialData?: Member) => {
   const methods = useForm({
     resolver: zodResolver(zodCreateMemberModel),
+    mode: "onChange",
     defaultValues: {
       ...initialData,
       dni: initialData?.dni === undefined ? "" : initialData.dni,

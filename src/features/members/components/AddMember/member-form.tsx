@@ -27,7 +27,7 @@ export const MemberForm = ({
   const {
     methods,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, isValid },
   } = useMemberForm(initialData);
 
   const { handleSaveMember, isButtonDisabled } = useMemberSubmit(
@@ -69,7 +69,7 @@ export const MemberForm = ({
               onClick={() => {
                 handleSubmit(handleSaveMember)();
               }}
-              disabled={isSubmitting || isButtonDisabled}
+              disabled={isSubmitting || isButtonDisabled || !isValid}
             />
           </aside>
         </div>
