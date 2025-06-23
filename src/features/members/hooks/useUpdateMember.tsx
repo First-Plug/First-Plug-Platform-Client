@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateMember } from "@/features/members";
 import { Member } from "@/features/members";
 import { useAlertStore } from "@/shared";
+import { handleApiError } from "@/features/members";
 
 interface UpdateMemberProps {
   id: string;
@@ -29,6 +30,10 @@ export const useUpdateMember = () => {
 
     onError: (err, variables, context) => {
       console.error("Error en la mutación:", err);
+
+      const alertType = handleApiError(err);
+      setAlert(alertType);
+
       if (context?.previousMember) {
         queryClient.setQueryData(
           ["members", variables.id],
