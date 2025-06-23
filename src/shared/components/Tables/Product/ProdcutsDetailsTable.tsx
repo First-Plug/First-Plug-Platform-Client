@@ -210,12 +210,21 @@ const InternalProductsColumns: ColumnDef<Product>[] = [
     id: "actiondelete",
     header: "",
     size: 85,
-    cell: ({ row }) => (
-      <div className="flex justify-end px-2">
-        <EditProduct product={row.original} />
-        <DeleteAction type="product" id={row.original._id} />
-      </div>
-    ),
+    cell: ({ row }) => {
+      return (
+        <div className="flex justify-end px-2">
+          <EditProduct product={row.original} />
+          <DeleteAction
+            type="product"
+            id={row.original._id}
+            disabled={
+              row.original.status === "In Transit" ||
+              row.original.status === "In Transit - Missing Data"
+            }
+          />
+        </div>
+      );
+    },
   },
 ];
 export default function ProdcutsDetailsTable({
