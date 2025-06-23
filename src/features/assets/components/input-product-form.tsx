@@ -6,7 +6,9 @@ interface InputProps {
   type?: string;
   className?: string;
   value?: string;
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
   name?: string;
   // required?: string;
   allowFutureDates?: boolean;
@@ -14,7 +16,9 @@ interface InputProps {
   readOnly?: boolean;
   min?: number;
   onWheel?: (event: React.WheelEvent<HTMLInputElement>) => void;
-  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onKeyDown?: (
+    event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
 }
 
 export const InputProductForm = ({
@@ -39,31 +43,45 @@ export const InputProductForm = ({
 
   const today = new Date().toISOString().split("T")[0];
   const formattedValue = type === "date" && value ? value.split("T")[0] : value;
+  const isTextarea = type === "textarea";
 
   return (
     <div className={`relative ${className}`}>
       <label className="block ml-2 font-sans text-dark-grey">{title}</label>
-      <input
-        name={name}
-        type={type}
-        value={formattedValue || ""}
-        onChange={(e) => {
-          onChange(e);
-          if (type === "date") {
-            handleDateChange(e);
-          } else {
-            onChange && onChange(e);
-          }
-        }}
-        placeholder={placeholder}
-        className={`w-full h-14 py-2 rounded-xl border text-black p-4 font-sans focus:outline-none ${className}`}
-        max={type === "date" && !allowFutureDates ? today : undefined}
-        disabled={disabled}
-        readOnly={readOnly}
-        onWheel={onWheel}
-        min={min}
-        onKeyDown={onKeyDown}
-      />
+      {isTextarea ? (
+        <textarea
+          name={name}
+          value={formattedValue || ""}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`w-full h-28 py-2 rounded-xl border text-black p-4 font-sans focus:outline-none resize-none ${className}`}
+          disabled={disabled}
+          readOnly={readOnly}
+          onKeyDown={onKeyDown}
+        />
+      ) : (
+        <input
+          name={name}
+          type={type}
+          value={formattedValue || ""}
+          onChange={(e) => {
+            onChange(e);
+            if (type === "date") {
+              handleDateChange(e);
+            } else {
+              onChange && onChange(e);
+            }
+          }}
+          placeholder={placeholder}
+          className={`w-full h-14 py-2 rounded-xl border text-black p-4 font-sans focus:outline-none ${className}`}
+          max={type === "date" && !allowFutureDates ? today : undefined}
+          disabled={disabled}
+          readOnly={readOnly}
+          onWheel={onWheel}
+          min={min}
+          onKeyDown={onKeyDown}
+        />
+      )}
     </div>
   );
 };

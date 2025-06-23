@@ -39,8 +39,8 @@ export const MemberForm = ({
     <PageLayout>
       <FormProvider {...methods}>
         <div className="flex flex-col w-full h-full">
-          <div className="absolute flex-grow p-4 w-[80%] h-[90%] overflow-y-auto scrollbar-custom">
-            <div className="px-4 py-5 border rounded-3xl">
+          <div className="flex-1 py-4 w-full overflow-y-auto scrollbar-custom">
+            <div className="px-4 py-5 border rounded-3xl w-full">
               <SectionTitle className="text-[20px]">
                 {isUpdate ? "" : "Add Team Member"}
               </SectionTitle>
@@ -60,18 +60,18 @@ export const MemberForm = ({
               </section>
             </div>
           </div>
-          <aside className="bottom-0 absolute flex justify-end bg-white p-2 border-t w-[80%] h-[10%]">
+          <div className="flex justify-end items-center bg-white -mx-[18px] p-2 border-t w-full h-16">
             <Button
               body={isUpdate ? "Update" : "Save"}
               variant="primary"
-              className="disabled:bg-hoverRed rounded-lg"
+              className="disabled:bg-hoverRed mt-4 rounded-lg"
               size={"big"}
               onClick={() => {
                 handleSubmit(handleSaveMember)();
               }}
               disabled={isSubmitting || isButtonDisabled || !isValid}
             />
-          </aside>
+          </div>
         </div>
       </FormProvider>
     </PageLayout>
