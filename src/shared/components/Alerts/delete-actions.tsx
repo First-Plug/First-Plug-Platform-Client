@@ -225,6 +225,10 @@ export const DeleteAction = ({
         setOpen(false);
         setLoading(false);
       },
+      onSettled: () => {
+        queryClient.invalidateQueries();
+        queryClient.refetchQueries();
+      },
     });
 
     setLoading(true);
