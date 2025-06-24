@@ -39,7 +39,7 @@ export const MemberForm = ({
     <PageLayout>
       <FormProvider {...methods}>
         <div className="flex flex-col w-full h-full">
-          <div className="flex-1 py-4 w-full overflow-y-auto scrollbar-custom">
+          <div className="flex-1 py-4 pr-5 w-full overflow-y-auto scrollbar-custom">
             <div className="px-4 py-5 border rounded-3xl w-full">
               <SectionTitle className="text-[20px]">
                 {isUpdate ? "" : "Add Team Member"}
@@ -60,7 +60,7 @@ export const MemberForm = ({
               </section>
             </div>
           </div>
-          <div className="flex justify-end items-center bg-white -mx-[18px] p-2 border-t w-full h-16">
+          <div className="flex justify-end items-center bg-white -mx-[18px] 2xl:-mx-[23px] border-t w-full h-[61px]">
             <Button
               body={isUpdate ? "Update" : "Save"}
               variant="primary"

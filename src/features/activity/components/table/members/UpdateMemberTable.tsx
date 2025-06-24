@@ -74,6 +74,21 @@ const translateField = (field: string) => {
 const formatValue = (value: any, field?: string) => {
   if (field === "birthDate" || field === "startDate") {
     if (typeof value === "string") {
+      if (value.includes("T") && value.includes("Z")) {
+        try {
+          const date = new Date(value);
+          if (!isNaN(date.getTime())) {
+            return date.toLocaleDateString("es-ES", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            });
+          }
+        } catch (error) {
+          console.error("Error parsing date:", error);
+        }
+      }
+
       const parts = value.split("-");
       if (parts.length === 3) {
         const [year, month, day] = parts;
@@ -81,7 +96,8 @@ const formatValue = (value: any, field?: string) => {
           return `${day}/${month}/${year}`;
         }
       }
-      return "-";
+
+      return value || "-";
     }
 
     if (value instanceof Date && !isNaN(value.getTime())) {
