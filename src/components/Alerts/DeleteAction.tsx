@@ -230,6 +230,10 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
           setOpen(false);
           setLoading(false);
         },
+        onSettled: () => {
+          queryClient.invalidateQueries();
+          queryClient.refetchQueries();
+        },
       });
 
       setLoading(true);
@@ -283,7 +287,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
             <DialogContent>
               <DialogHeader>
                 <DialogTitle className="text-xl">{title}</DialogTitle>
-                <DialogDescription className="text-md font-normal">
+                <DialogDescription className="font-normal text-md">
                   {description}
                 </DialogDescription>
               </DialogHeader>
@@ -299,7 +303,7 @@ export const DeleteAction: React.FC<DeleteAlertProps> = observer(
                   disabled={loading}
                   variant="delete"
                   onClick={deleteAction}
-                  className="w-full bg-error"
+                  className="bg-error w-full"
                 >
                   <p>Delete</p>
                 </Button>
