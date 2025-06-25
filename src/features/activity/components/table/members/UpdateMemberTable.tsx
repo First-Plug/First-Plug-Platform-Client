@@ -23,9 +23,13 @@ const getUpdatedFields = (oldData: Member, newData: Member) => {
     if (["updatedAt", "createdAt", "deletedAt"].includes(key)) {
       return;
     }
+
+    const oldValue = oldData[key as keyof Member];
+    const newValue = newData[key as keyof Member];
+
     if (key === "team") {
-      const oldTeamName = (oldData[key as keyof Member] as Team)?.name || "-";
-      const newTeamName = (newData[key as keyof Member] as Team)?.name || "-";
+      const oldTeamName = (oldValue as Team)?.name || "-";
+      const newTeamName = (newValue as Team)?.name || "-";
 
       if (oldTeamName !== newTeamName) {
         changes.push({
@@ -36,11 +40,28 @@ const getUpdatedFields = (oldData: Member, newData: Member) => {
       }
     } else {
       if (key !== "products") {
-        if (newData[key as keyof Member] !== oldData[key as keyof Member]) {
-          let oldValue = oldData[key as keyof Member] || "-";
-          let newValue = newData[key as keyof Member] || "-";
+        let hasChanged = false;
 
-          changes.push({ field: key, oldValue, newValue });
+        if (key === "birthDate" || key === "startDate") {
+          const oldDate =
+            oldValue && typeof oldValue === "string"
+              ? new Date(oldValue).toISOString().split("T")[0]
+              : null;
+          const newDate =
+            newValue && typeof newValue === "string"
+              ? new Date(newValue).toISOString().split("T")[0]
+              : null;
+          hasChanged = oldDate !== newDate;
+        } else {
+          hasChanged = oldValue !== newValue;
+        }
+
+        if (hasChanged) {
+          changes.push({
+            field: key,
+            oldValue: oldValue || "-",
+            newValue: newValue || "-",
+          });
         }
       }
     }
