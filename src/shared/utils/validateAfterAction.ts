@@ -87,8 +87,6 @@ export const validateAfterAction = (
     }
 
     if (entity.type === "office" && entity.data.location === "Our office") {
-      console.log(entity.data);
-
       const billingValidation = validateBillingInfo(
         entity.data as Partial<User>
       );
@@ -295,10 +293,6 @@ export const validateOnCreate = async (
       );
     }
   }
-
-  // if (missingMessages.length > 0) {
-  //   console.log("🔍 validateOnCreate - Missing Messages:", missingMessages);
-  // }
 
   return missingMessages;
 };

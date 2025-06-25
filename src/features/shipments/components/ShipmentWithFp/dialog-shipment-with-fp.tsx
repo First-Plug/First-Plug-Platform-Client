@@ -40,7 +40,6 @@ export const DialogShipmentWithFp = ({
   onCancel, // Recibir el método de cancelación
   destinationMember,
 }: Props) => {
-  console.log("Dialog opened with destination member:", destinationMember);
   const { shouldShowWarning, joinDate } = useMemo(
     () => checkMemberJoinDate(destinationMember),
     [destinationMember]
@@ -76,8 +75,6 @@ export const DialogShipmentWithFp = ({
   }, [pickupDate, deliveredDate]);
 
   const isEmptyField = pickupDate === "" || deliveredDate === "";
-
-  console.log("Dialog opened with destination member:", destinationMember);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

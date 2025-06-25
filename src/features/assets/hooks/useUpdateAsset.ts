@@ -40,13 +40,8 @@ export const useUpdateAsset = () => {
 
       if (!("productCondition" in data)) {
         data.productCondition = cachedProduct?.productCondition ?? "Optimal";
-        console.log(
-          "Preserving existing productCondition:",
-          data.productCondition
-        );
       }
 
-      console.log("Final data being sent:", data);
       const response = await updateAsset(id, data);
       return response;
     },

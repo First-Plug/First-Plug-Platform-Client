@@ -27,9 +27,7 @@ interface ProductStatusValidatorProps {
 
 const validateBillingInfo = (user: User): boolean => {
   const requiredFields = ["country", "city", "state", "zipCode", "address"];
-  console.log("Validating user billing info:", user);
   const result = requiredFields.every((field) => user[field]?.trim() !== "");
-  console.log("Billing info valid:", result);
   return result;
 };
 

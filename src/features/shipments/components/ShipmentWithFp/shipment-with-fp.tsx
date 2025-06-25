@@ -62,8 +62,6 @@ export const ShipmentWithFp = ({ onSubmit, destinationMember }: Props) => {
     onSubmit(null);
   };
 
-  console.log("Destination member in ShipmentWithFp:", destinationMember);
-
   return (
     <>
       <form>

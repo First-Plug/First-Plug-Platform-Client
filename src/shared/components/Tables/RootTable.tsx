@@ -137,9 +137,6 @@ export function RootTable<TData, TValue>({
       }),
     ],
   });
-  useEffect(() => {
-    // console.log("Middleware Data:", middlewareData);
-  }, [middlewareData]);
 
   const [clearAll, setClearAll] = useState(false);
 

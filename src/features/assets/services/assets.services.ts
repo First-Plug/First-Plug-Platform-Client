@@ -24,7 +24,7 @@ export class ProductServices {
       `${BASE_URL}/api/products`,
       productData
     );
-    console.log("desde el servicio", response.data);
+
     return response.data;
   }
 

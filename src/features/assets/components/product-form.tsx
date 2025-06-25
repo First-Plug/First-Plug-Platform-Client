@@ -473,7 +473,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         });
 
         if (Object.keys(changes).length === 0) {
-          console.log("No changes detected");
           setShowSuccessDialog(true);
           return;
         }
