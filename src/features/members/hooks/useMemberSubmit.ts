@@ -78,11 +78,14 @@ export const useMemberSubmit = (initialData?: Member, isUpdate?: boolean) => {
         await createMemberMutation.mutateAsync(processedData);
       }
 
+      await queryClient.invalidateQueries({
+        queryKey: ["member", initialData?._id],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["members", initialData?._id],
+      });
       await queryClient.refetchQueries({ queryKey: ["members"] });
       await queryClient.invalidateQueries({ queryKey: ["teams"] });
-
-      const updatedMembers = queryClient.getQueryData<Member[]>(["members"]);
-      const updatedTeams = queryClient.getQueryData<Team[]>(["teams"]);
 
       closeAside();
     } catch (error: any) {

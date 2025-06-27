@@ -44,6 +44,7 @@ export default function useActions() {
       return response;
     } catch (error) {
       console.error(`Error relocating product ${product._id}:`, error);
+      throw error;
     }
   };
 
@@ -78,11 +79,16 @@ export default function useActions() {
     }
 
     try {
+      const response = await ProductServices.updateProduct(
+        product._id,
+        updatedProduct
+      );
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
-      return await ProductServices.updateProduct(product._id, updatedProduct);
+      return response;
     } catch (error) {
       console.error("Error unassigning product:", error);
+      throw error;
     }
   };
 

@@ -26,6 +26,9 @@ export const useMemberForm = (initialData?: Member) => {
 
   return {
     methods,
-    ...methods,
+    assignerEmail,
+    hasChanges: methods.formState.isDirty,
+    handleSubmit: methods.handleSubmit,
+    formState: methods.formState,
   };
 };

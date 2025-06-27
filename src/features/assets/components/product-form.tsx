@@ -108,7 +108,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     setValue,
     clearErrors,
     trigger,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting, errors, isDirty },
     watch,
   } = methods;
 
@@ -728,7 +728,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     className="rounded lg"
                     size="big"
                     onClick={handleSubmit(handleSaveProduct)}
-                    disabled={isSubmitting || isProcessing}
+                    disabled={isSubmitting || isProcessing || !isDirty}
                   />
                 )}
               </aside>

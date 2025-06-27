@@ -26,7 +26,8 @@ export const MemberAsideDetails = ({ className }: MemberAsideDetailsProps) => {
   const { setAlert } = useAlertStore();
   const { setAside } = useAsideStore();
   const queryClient = useQueryClient();
-  const { selectedMember, setSelectedMember } = useMemberStore();
+  const { selectedMember, setSelectedMember, setMemberOffBoarding } =
+    useMemberStore();
   const {
     data: member,
     isLoading,
@@ -131,6 +132,7 @@ export const MemberAsideDetails = ({ className }: MemberAsideDetailsProps) => {
       return missingFields;
     };
 
+    setMemberOffBoarding(`${member.firstName} ${member.lastName}`);
     setId(member._id);
 
     if (!member.products.length) {

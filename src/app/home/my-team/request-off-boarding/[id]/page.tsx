@@ -177,12 +177,13 @@ export default function RequestOffBoardingPage({
           <span>Please confirm the relocation of each product.</span>
         </div>
       </div>
-      <div className="mt-4 w-80">
+      <div className="mt-4 mb-4 w-80">
         <ShipmentWithFp
           onSubmit={onSubmitDropdown}
           destinationMember={selectedMember}
         />
       </div>
+
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="w-full h-screen overflow-y-auto scrollbar-custom">

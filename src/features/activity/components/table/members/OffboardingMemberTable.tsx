@@ -69,29 +69,55 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
 
               const newLocation = (newProduct as any)?.newLocation || "-";
 
-              const locationToShow =
-                newLocation === "New employee" ? (
-                  newProduct?.assignedMember ? (
-                    newProduct?.assignedMember
-                  ) : (
-                    <TooltipProvider>
-                      <Tooltip delayDuration={350}>
-                        <TooltipTrigger>
-                          <span className="bg-hoverRed p-1 px-3 rounded-md text-black text-sm cursor-pointer">
-                            {newProduct?.assignedEmail} ⚠️
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-white">
-                          <p className="font-semibold">
-                            ❌ This email is not registered as part of your team
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )
-                ) : (
-                  newLocation
-                );
+              const locationToShow = (() => {
+                // Check for different variations of "New employee"
+                const isNewEmployee =
+                  newLocation === "New employee" ||
+                  newLocation === "new employee" ||
+                  newLocation === "Employee" ||
+                  newLocation === "employee";
+
+                if (isNewEmployee) {
+                  const assignedMember = (newProduct as any)?.assignedMember;
+                  const assignedEmail = (newProduct as any)?.assignedEmail;
+
+                  if (assignedMember && typeof assignedMember === "string") {
+                    return assignedMember;
+                  }
+
+                  if (assignedEmail) {
+                    const assignedMemberData = newData.find(
+                      (member) => member.email === assignedEmail
+                    );
+
+                    if (assignedMemberData) {
+                      return `${assignedMemberData.firstName} ${assignedMemberData.lastName}`;
+                    }
+
+                    return (
+                      <TooltipProvider>
+                        <Tooltip delayDuration={350}>
+                          <TooltipTrigger>
+                            <span className="bg-hoverRed p-1 px-3 rounded-md text-black text-sm cursor-pointer">
+                              {assignedEmail} ⚠️
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-white">
+                            <p className="font-semibold">
+                              ❌ This email is not registered as part of your
+                              team
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  }
+
+                  return "New employee";
+                }
+
+                return newLocation;
+              })();
 
               return (
                 <TableRow key={`${memberIndex}-${productIndex}`}>

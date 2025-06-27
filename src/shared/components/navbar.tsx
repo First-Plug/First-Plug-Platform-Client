@@ -28,7 +28,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   const pathName = usePathname();
   const { status, data } = useSession();
 
-  const { selectedMember } = useMemberStore();
+  const { memberOffBoarding } = useMemberStore();
 
   return (
     <nav className="flex justify-between items-center px-4 h-[10vh] min-h-[10vh] max-h-[10vh]">
@@ -38,8 +38,8 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         ) : (
           <h2 className="font-bold text-black text-2xl">
             {pathName.split("/")[3] === "request-off-boarding"
-              ? selectedMember?.fullName
-                ? selectedMember?.fullName
+              ? memberOffBoarding
+                ? memberOffBoarding
                 : ""
               : Titles[pathName.split("/")[2]] ?? ""}
           </h2>

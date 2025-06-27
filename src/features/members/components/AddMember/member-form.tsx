@@ -27,7 +27,7 @@ export const MemberForm = ({
   const {
     methods,
     handleSubmit,
-    formState: { isSubmitting, isValid },
+    formState: { isSubmitting, isValid, isDirty },
   } = useMemberForm(initialData);
 
   const { handleSaveMember, isButtonDisabled } = useMemberSubmit(
@@ -60,16 +60,20 @@ export const MemberForm = ({
               </section>
             </div>
           </div>
-          <div className="flex justify-end items-center bg-white -mx-[18px] 2xl:-mx-[23px] border-t w-full h-[61px]">
+          <div className="flex justify-end items-center bg-white -mx-[18px] 2xl:-mx-[23px] border-t w-full">
             <Button
               body={isUpdate ? "Update" : "Save"}
               variant="primary"
-              className="disabled:bg-hoverRed mt-4 rounded-lg"
+              className={`disabled:bg-hoverRed mt-4 rounded-lg ${
+                isUpdate ? "h-20" : ""
+              }`}
               size={"big"}
               onClick={() => {
                 handleSubmit(handleSaveMember)();
               }}
-              disabled={isSubmitting || isButtonDisabled || !isValid}
+              disabled={
+                isSubmitting || isButtonDisabled || !isValid || !isDirty
+              }
             />
           </div>
         </div>
