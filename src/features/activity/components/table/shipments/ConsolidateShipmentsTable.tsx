@@ -43,29 +43,39 @@ const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
     }[] = [];
 
     for (const originalShipment of originalShipments) {
-      comparisons.push({
-        originalOrderId: originalShipment.order_id,
-        consolidatedId: consolidatedShipment.order_id,
-        field: "Pickup Date",
-        oldValue: formatDate(
-          originalShipment.originDetails?.desirableDate || ""
-        ),
-        newValue: formatDate(
-          consolidatedShipment.originDetails?.desirableDate || ""
-        ),
-      });
+      const pickupOldValue = formatDate(
+        originalShipment.originDetails?.desirableDate || ""
+      );
+      const pickupNewValue = formatDate(
+        consolidatedShipment.originDetails?.desirableDate || ""
+      );
 
-      comparisons.push({
-        originalOrderId: originalShipment.order_id,
-        consolidatedId: consolidatedShipment.order_id,
-        field: "Delivery Date",
-        oldValue: formatDate(
-          originalShipment.destinationDetails?.desirableDate || ""
-        ),
-        newValue: formatDate(
-          consolidatedShipment.destinationDetails?.desirableDate || ""
-        ),
-      });
+      if (pickupOldValue !== pickupNewValue) {
+        comparisons.push({
+          originalOrderId: originalShipment.order_id,
+          consolidatedId: consolidatedShipment.order_id,
+          field: "Pickup Date",
+          oldValue: pickupOldValue,
+          newValue: pickupNewValue,
+        });
+      }
+
+      const deliveryOldValue = formatDate(
+        originalShipment.destinationDetails?.desirableDate || ""
+      );
+      const deliveryNewValue = formatDate(
+        consolidatedShipment.destinationDetails?.desirableDate || ""
+      );
+
+      if (deliveryOldValue !== deliveryNewValue) {
+        comparisons.push({
+          originalOrderId: originalShipment.order_id,
+          consolidatedId: consolidatedShipment.order_id,
+          field: "Delivery Date",
+          oldValue: deliveryOldValue,
+          newValue: deliveryNewValue,
+        });
+      }
     }
 
     return comparisons;
