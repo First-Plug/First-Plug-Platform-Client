@@ -50,7 +50,10 @@ const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
         consolidatedShipment.originDetails?.desirableDate || ""
       );
 
-      if (pickupOldValue !== pickupNewValue) {
+      if (
+        data.context === "single-product" ||
+        pickupOldValue !== pickupNewValue
+      ) {
         comparisons.push({
           originalOrderId: originalShipment.order_id,
           consolidatedId: consolidatedShipment.order_id,
@@ -67,7 +70,10 @@ const ConsolidateShipmentsTable: React.FC<ConsolidateShipmentsTableProps> = ({
         consolidatedShipment.destinationDetails?.desirableDate || ""
       );
 
-      if (deliveryOldValue !== deliveryNewValue) {
+      if (
+        data.context === "single-product" ||
+        deliveryOldValue !== deliveryNewValue
+      ) {
         comparisons.push({
           originalOrderId: originalShipment.order_id,
           consolidatedId: consolidatedShipment.order_id,
