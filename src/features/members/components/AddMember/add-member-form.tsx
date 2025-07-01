@@ -190,6 +190,7 @@ export const AddMemberForm = ({
           origin: shipmentValue.pickupDate,
           destination: shipmentValue.deliveredDate,
         },
+        price: currentProduct.price,
       };
 
       const updatedProduct = selectedMember
