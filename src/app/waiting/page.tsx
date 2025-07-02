@@ -1,16 +1,17 @@
 "use client";
 import {
+  ImageProfile,
+  SessionDropdown,
   EmptyCard,
   EmptyCardLayout,
-  ImgPorfile,
-  SessionDropdownButton,
-} from "@/common";
+} from "@/shared";
+
 import Image from "next/image";
 
 export default function Page() {
   return (
-    <section className="h-[100vh] ">
-      <header className="  py-4 px-6  flex justify-between items-center  ">
+    <section className="h-[100vh]">
+      <header className="flex justify-between items-center px-6 py-4">
         <div className="relative">
           <Image
             src="/logo1.png"
@@ -21,14 +22,14 @@ export default function Page() {
           />
         </div>
 
-        <div className="flex items-center rounded-md gap-2 hover:bg-light-grey ">
-          <div className="relative w-10 h-10 ">
-            <ImgPorfile />
+        <div className="flex items-center gap-2 hover:bg-light-grey rounded-md">
+          <div className="relative w-10 h-10">
+            <ImageProfile />
           </div>
-          <SessionDropdownButton />
+          <SessionDropdown />
         </div>
       </header>
-      <section className="h-[90%] p-8 ">
+      <section className="p-8 h-[90%]">
         <EmptyCardLayout>
           <EmptyCard type="registerok" />
         </EmptyCardLayout>

@@ -1,9 +1,7 @@
 import { ReactNode } from "react";
-import { Navbar, Sidebar } from "@/components";
-import { Layout } from "@/common";
-import DataProvider from "./DataProvider";
-import { Aside } from "@/components/Aside";
-import AlertProvider from "@/components/Alerts/AlertProvider";
+
+import { TenantProvider } from "@/providers";
+import { Sidebar, Navbar, Layout, AlertProvider, Aside } from "@/shared";
 
 interface RootLayoutProps {
   children: ReactNode;
@@ -11,16 +9,16 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <DataProvider>
+    <TenantProvider>
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
-        <section className="flex flex-col w-[90%] flex-grow   h-[100vh] max-h-[100vh] overflow-y-auto  ">
+        <section className="flex flex-col flex-grow w-[90%] h-[100vh] max-h-[100vh] overflow-y-auto">
           <Navbar />
           <Layout>{children}</Layout>
           <Aside />
           <AlertProvider />
         </section>
       </div>
-    </DataProvider>
+    </TenantProvider>
   );
 }

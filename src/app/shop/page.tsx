@@ -1,9 +1,8 @@
 import React from "react";
 import Image from "next/image";
 import logo from "../../../public/logo1.png";
-import { SearchInput, CustomLink } from "@/common";
-import { Navbar } from "@/components";
-import { ChevronRight } from "@/common/Icons";
+import { SearchInput, CustomLink } from "@/shared";
+import { Navbar, ChevronRight } from "@/shared";
 import waveBottom from "../../../public/waves/Header shape 1.svg";
 import waveTop from "../../../public/waves/Header shape 2.svg";
 import girlPc from "../../../public/svg/Frame 427321382.svg";
@@ -15,10 +14,16 @@ export default function Shop() {
   return (
     <>
       <div>
-        <nav className="w-full h-[5.5rem] flex justify-between items-center py-[1.25rem] px-[2.5rem] bg-white fixed top-0 left-0 right-0">
+        <nav className="top-0 right-0 left-0 fixed flex justify-between items-center bg-white px-[2.5rem] py-[1.25rem] w-full h-[5.5rem]">
           <div className="flex items-center gap-[1.5rem]">
             <CustomLink href="/home/dashboard">
-              <Image src={logo} alt="logoFirstPlug" width={193} height={210} priority />
+              <Image
+                src={logo}
+                alt="logoFirstPlug"
+                width={193}
+                height={210}
+                priority
+              />
             </CustomLink>
             <SearchInput
               placeholder="Search by Team, Name or ID Number"
@@ -28,13 +33,13 @@ export default function Shop() {
           </div>
           <Navbar />
         </nav>
-        <div className=" flex">
-          <div className="w-1/2  h-screen">
-            <section className="w-[38rem] h-[14rem] ml-[9rem] mt-[14rem]">
-              <h1 className="font-montserrat text-[3rem] font-bold text-black gap-[1rem]">
+        <div className="flex">
+          <div className="w-1/2 h-screen">
+            <section className="mt-[14rem] ml-[9rem] w-[38rem] h-[14rem]">
+              <h1 className="gap-[1rem] font-montserrat font-bold text-[3rem] text-black">
                 Coming Soon!
               </h1>
-              <p className="font-inter text-[1.25rem] text-dark-grey mb-[1.5rem] mt-[1rem]">
+              <p className="mt-[1rem] mb-[1.5rem] font-inter text-[1.25rem] text-dark-grey">
                 We`re excited to reveal that the Firstplug shop is coming soon!
                 Our dedicated team is hard at work, handpicking the very best
                 products for you.
@@ -42,7 +47,7 @@ export default function Shop() {
               <CustomLink
                 variant="primary"
                 size="big"
-                className="rounded-lg w-[10rem] h-[3rem] flex"
+                className="flex rounded-lg w-[10rem] h-[3rem]"
                 href="/home/dashboard"
               >
                 <ChevronRight /> Dashboard
@@ -50,38 +55,38 @@ export default function Shop() {
             </section>
           </div>
 
-          <div className="w-1/2  h-screen flex ">
-            <div className="w-[50rem] h-[31.25rem]  relative mx-auto my-auto ml-0">
+          <div className="flex w-1/2 h-screen">
+            <div className="relative mx-auto my-auto ml-0 w-[50rem] h-[31.25rem]">
               <Image
                 src={rectangle}
                 alt="rectangle"
                 height={50}
-                className="absolute left-[12rem] top-[14rem] z-0 "
+                className="top-[14rem] left-[12rem] z-0 absolute"
               />
               <Image
                 src={girlPc}
                 alt="girlPc"
                 height={500}
-                className="absolute right-3 top-7"
+                className="top-7 right-3 absolute"
               />
               <Image
                 src={bagImage}
                 alt="bagImage"
-                className="absolute right-[25rem] top-4"
+                className="top-4 right-[25rem] absolute"
               />
               <Image
                 src={arrowIcon}
                 alt="arrowIcon"
-                className="absolute left-[23rem]"
+                className="left-[23rem] absolute"
               />
             </div>
-            <div className="absolute right-0 top-0 -z-10">
+            <div className="top-0 right-0 -z-10 absolute">
               <Image src={waveTop} alt="waveTop" width={500} />
             </div>
           </div>
         </div>
         <div className="relative">
-          <div className="absolute left-0 bottom-0 z-0">
+          <div className="bottom-0 left-0 z-0 absolute">
             <Image src={waveBottom} alt="waveBottom" width={600} />
           </div>
         </div>

@@ -1,13 +1,14 @@
 "use client";
 
-import { AlertCheck, Button, Input, LoaderSpinner } from "@/common";
-import { Form } from "@/components";
+import { Button, LoaderSpinner, AuthForm } from "@/shared";
+
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { AuthServices } from "@/services/auth.services";
-import useInput from "@/hooks/useInput";
+import { AuthServices } from "@/features/auth";
+import useInput from "@/shared/hooks/useInput";
 import { FormEvent, useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/shared";
+import { Input } from "../login/Input";
 
 export default function Register() {
   const nameInput = useInput("", "userName");
@@ -27,6 +28,8 @@ export default function Register() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    emailInput.setExternalError(null);
+
     try {
       await AuthServices.register({
         name: nameInput.value,
@@ -36,8 +39,22 @@ export default function Register() {
         accountProvider: "credentials",
       });
       router.push("/login");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+
+      if (
+        error?.response?.data?.message === "Email Already in Use" ||
+        error?.message === "Email Already in Use"
+      ) {
+        emailInput.setExternalError("Email Already in Use");
+      } else {
+        toast({
+          title: "Error",
+          description:
+            "An error occurred during registration. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -59,14 +76,14 @@ export default function Register() {
         alt="img"
         width={540}
         height={960}
-        className="w-[50%] h-screen  object-cover"
+        className="w-[50%] h-screen object-cover"
         priority
       />
 
-      <article className="w-[50%] h-screen flex justify-center">
-        <Form title="Welcome Back!" register onSubmit={handleSubmit}>
+      <article className="flex justify-center w-[50%] h-screen">
+        <AuthForm title="Welcome !" register onSubmit={handleSubmit}>
           <div>
-            <Input title="Full Name" placeholder="Placeholder" {...nameInput} />
+            <Input title="Full Name" placeholder="Full Name" {...nameInput} />
 
             <Input title="Email" placeholder="user@mail.com" {...emailInput} />
 
@@ -76,6 +93,7 @@ export default function Register() {
               type="password"
               {...passwordInput}
             />
+
             <Input
               title="Confirm Password"
               placeholder="Confirm Password"
@@ -87,14 +105,14 @@ export default function Register() {
           <Button
             disabled={sumbtiValidation}
             variant={isLoading ? "text" : "primary"}
-            className="rounded-md "
+            className="rounded-md"
             size="big"
             type="submit"
           >
             {isLoading && <LoaderSpinner />}
             Create Account
           </Button>
-        </Form>
+        </AuthForm>
       </article>
     </section>
   );

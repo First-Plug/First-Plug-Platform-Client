@@ -1,39 +1,22 @@
 "use client";
-import { PageLayout } from "@/common";
-import DataTeam from "./DataTeam";
-import EmptyTeam from "./EmptyTeam";
-import { BarLoader } from "@/components/Loader/BarLoader";
-import { useEffect } from "react";
-import { setAuthInterceptor } from "@/config/axios.config";
-import { useFetchMembers } from "@/members/hooks";
-import { useStore } from "@/models";
+
+import { PageLayout, BarLoader } from "@/shared";
+import { useFetchMembers, DataMembers, EmptyMembers } from "@/features/members";
 
 export default function MyTeam() {
   const { data: members = [], isLoading, isFetching } = useFetchMembers();
-  const {
-    members: { setMembers },
-  } = useStore();
 
-  useEffect(() => {
-    if (members.length) {
-      setMembers(members);
-    }
-  }, [members, setMembers]);
-
-  useEffect(() => {
-    if (sessionStorage.getItem("accessToken")) {
-      setAuthInterceptor(sessionStorage.getItem("accessToken"));
-    }
-  }, []);
+  const isLoadingMembers = isLoading || isFetching;
+  const hasMembers = members.length > 0;
 
   return (
     <PageLayout>
-      {isLoading || isFetching ? (
+      {isLoadingMembers ? (
         <BarLoader />
-      ) : members.length ? (
-        <DataTeam members={members} />
+      ) : hasMembers ? (
+        <DataMembers members={members} />
       ) : (
-        <EmptyTeam />
+        <EmptyMembers />
       )}
     </PageLayout>
   );

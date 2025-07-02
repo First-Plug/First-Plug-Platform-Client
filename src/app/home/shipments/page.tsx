@@ -1,8 +1,7 @@
 "use client";
 
-import ShipmentsTable from "@/shipments/components/Table/ShipmentsTable";
-
-import { PageLayout } from "@/common";
+import { ShipmentsTable } from "@/features/shipments";
+import { PageLayout } from "@/shared";
 
 export default function Shipments() {
   return (

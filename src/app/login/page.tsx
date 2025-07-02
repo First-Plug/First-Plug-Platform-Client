@@ -1,9 +1,10 @@
 "use client";
 import Image from "next/image";
-import { Button, Input, LoaderSpinner } from "@/common";
-import { Form } from "@/components";
+import { Button, LoaderSpinner } from "@/shared";
+import { Input } from "./Input";
+
 import { useRouter } from "next/navigation";
-import useInput from "@/hooks/useInput";
+import useInput from "@/shared/hooks/useInput";
 import { signIn } from "next-auth/react";
 import { FormEvent, useState } from "react";
 import {
@@ -15,10 +16,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { useToast } from "@/components/ui/use-toast";
+  AuthForm,
+  useToast,
+} from "@/shared";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Login() {
+  const queryClient = useQueryClient();
   const emailInput = useInput("", "email");
   const passWordInput = useInput("", "password");
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +41,9 @@ export default function Login() {
       if (!res.ok) {
         throw new Error(res.error);
       }
+
+      queryClient.invalidateQueries();
+
       router.push("/home/dashboard");
       router.refresh();
     } catch (error) {
@@ -58,12 +65,12 @@ export default function Login() {
         alt="img"
         width={540}
         height={960}
-        className="w-[50%] h-screen p-15 object-cover"
+        className="p-15 w-[50%] h-screen object-cover"
         priority
       />
 
-      <article className="w-[50%] h-screen flex justify-center ">
-        <Form title="Welcome Back!" login onSubmit={handleSumbit}>
+      <article className="flex justify-center w-[50%] h-screen">
+        <AuthForm title="Welcome Back!" login onSubmit={handleSumbit}>
           <div className="text-md">
             <Input
               title="Email"
@@ -82,25 +89,25 @@ export default function Login() {
             />
           </div>
 
-          <div className=" flex justify-end">
+          <div className="flex justify-end">
             <AlertDialog>
-              <AlertDialogTrigger className=" w-1/3">
+              <AlertDialogTrigger className="w-1/3">
                 <Button variant="text">Forgot Password ?</Button>
               </AlertDialogTrigger>
               <AlertDialogContent className="font-inter">
                 <AlertDialogHeader>
                   <AlertDialogTitle>
-                    <h2 className="text-xl text-black font-semibold ">
+                    <h2 className="font-semibold text-black text-xl">
                       Forgot Password ?
                     </h2>
                   </AlertDialogTitle>
                   <AlertDialogDescription>
-                    <div className="text-md ">
+                    <div className="text-md">
                       <p>
                         Looks like you&apos;ve forgotten your password.
                         Don&apos;t worry, we&apos;ve got you covered. Simply
                         send an email to
-                        <b className="text-black "> hola@firstplug.co </b>
+                        <b className="text-black"> hola@firstplug.co </b>
                         requesting a password reset, and we&apos;ll get you back
                         into your account in no time.
                       </p>
@@ -122,12 +129,12 @@ export default function Login() {
               emailInput.error !== null
             }
             variant={isLoading ? "text" : "primary"}
-            className="rounded-md "
+            className="rounded-md"
           >
             {isLoading && <LoaderSpinner />}
             Log In
           </Button>
-        </Form>
+        </AuthForm>
       </article>
     </section>
   );
