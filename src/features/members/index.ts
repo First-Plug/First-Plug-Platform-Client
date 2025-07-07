@@ -10,10 +10,11 @@ export * from "./components/AddMember/team-dropdown";
 export * from "./components/AddMember/add-member-form";
 export * from "./components/member-item";
 export * from "./components/member-detail";
-
+export * from "./components/actions-table-members";
 export * from "./components/request-off-boarding-form";
 
 export * from "./hooks/useFetchMembers";
+
 export * from "./hooks/useFetchMember";
 export * from "./hooks/useCreateMember";
 export * from "./hooks/useUpdateMember";
