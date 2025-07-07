@@ -29,9 +29,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useEffect, useCallback } from "react";
 import FormatedDate from "@/shared/components/Tables/helpers/FormatedDate";
-import { MemberActions } from "@/features/fp-tables/components/member-actions";
 import { MyTeamActions } from "@/features/teams";
-import { TooltipArrow } from "@radix-ui/react-tooltip";
 
 const useMembersTableFilterStore = createFilterStore();
 

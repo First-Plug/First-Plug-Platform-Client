@@ -1,6 +1,6 @@
 "use client";
 import { z } from "zod";
-import { zodProductModel } from "@/features/assets";
+import { zodProductModel } from "@/features/assets/interfaces/product";
 import { CATEGORIES, LOCATION } from "@/features/assets/interfaces/product";
 import { zodCreateMemberModel } from "@/features/members/schemas/members.zod";
 

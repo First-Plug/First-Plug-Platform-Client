@@ -20,7 +20,7 @@ interface DataTableProps<TData> {
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends RowData, TValue> {
-    hasFilter: boolean;
+    hasFilter?: boolean;
     filterOptions?: { label: string; value: string }[];
     fetchFilterOptions?: () => Promise<{ label: string; value: string }[]>;
   }

@@ -15,7 +15,7 @@ export function TableActions<TData>({
 }: ITableActions<TData>) {
   switch (type) {
     case "members":
-      return <MyTeamActions table={table} />;
+      return <MyTeamActions />;
 
     case "stock":
       return (

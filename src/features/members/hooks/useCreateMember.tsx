@@ -37,7 +37,7 @@ export const useCreateMember = () => {
         startDate: newMember.startDate || "",
         birthDate: newMember.birthDate || null,
         products: newMember.products || [],
-        team: newMember.team || "Not Assigned",
+        team: newMember.team || undefined,
         teamId: newMember.teamId || "",
         dni: newMember.dni || 0,
         isDeleted: false,
