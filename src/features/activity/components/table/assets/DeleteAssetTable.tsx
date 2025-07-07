@@ -18,6 +18,7 @@ interface Asset {
   category: string;
   name: string;
   serialNumber: string;
+  lastSerialNumber?: string;
   location?: string;
   assignedMember?: string;
   attributes?: AssetAttribute[];
@@ -75,7 +76,7 @@ const DeleteAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
                   .join(" ")}{" "}
               </TableCell>
               <TableCell className="px-4 py-2 border-r text-xs">
-                {asset.serialNumber || "N/A"}
+                {asset.serialNumber || asset.lastSerialNumber || "N/A"}
               </TableCell>
               <TableCell className="px-4 py-2 border-r text-xs">
                 <MemberNameAndLocation product={asset as Product} />
