@@ -1,5 +1,5 @@
 import { TeamCard } from "@/features/teams";
-import FormatedDate from "@/shared/components/Tables/helpers/FormatedDate";
+import { FormatedDate } from "@/shared/components/Tables";
 import Avvvatars from "avvvatars-react";
 import { Team } from "@/features/teams";
 import { useFetchMember } from "@/features/members";

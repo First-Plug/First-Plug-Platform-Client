@@ -192,8 +192,6 @@ export function ColumnFilterPopover({
           </div>
           <div className="flex items-center my-2">
             <div className="flex-1 border-gray-200 border-t" />
-            <span className="mx-2 text-gray-400 text-xs">OR</span>
-            <div className="flex-1 border-gray-200 border-t" />
           </div>
           <div className="flex gap-2 mt-2">
             <Button
@@ -202,7 +200,7 @@ export function ColumnFilterPopover({
               onClick={handleCancel}
               disabled={loading}
             >
-              Cancel
+              Clear Filter
             </Button>
             <Button
               className="flex-1 bg-[#17479E] hover:bg-[#123a7c] text-white"

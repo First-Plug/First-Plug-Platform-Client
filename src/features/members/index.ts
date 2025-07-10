@@ -12,18 +12,9 @@ export * from "./components/member-item";
 export * from "./components/member-detail";
 export * from "./components/actions-table-members";
 export * from "./components/request-off-boarding-form";
+export * from "./components/members-table-columns";
 
-export * from "./hooks/useFetchMembers";
-
-export * from "./hooks/useFetchMember";
-export * from "./hooks/useCreateMember";
-export * from "./hooks/useUpdateMember";
-export * from "./hooks/useDeleteMember";
-export * from "./hooks/usePrefetchMember";
-export * from "./hooks/usePreFetchMembers";
-
-export * from "./hooks/useMemberForm";
-export * from "./hooks/useMemberSubmit";
+export * from "./hooks";
 
 export * from "./interfaces/member";
 
@@ -36,6 +27,7 @@ export * from "./api/getAllMembers";
 export * from "./utils/getMemberFullName";
 export * from "./utils/handleApiError";
 export * from "./utils/formatAcquisitionDate";
+export * from "./utils/countryUtils";
 
 import personalData from "./components/AddMember/JSON/personaldata.json";
 import shipmentData from "./components/AddMember/JSON/shipmentdata.json";
