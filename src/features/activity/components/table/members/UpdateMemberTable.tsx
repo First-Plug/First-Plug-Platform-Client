@@ -19,7 +19,10 @@ interface MembersTableProps {
 const getUpdatedFields = (oldData: Member, newData: Member) => {
   const changes: { field: string; oldValue: any; newValue: any }[] = [];
 
-  const allKeys = new Set([...Object.keys(oldData), ...Object.keys(newData)]);
+  const allKeys = new Set([
+    ...Object.keys(oldData || {}),
+    ...Object.keys(newData || {}),
+  ]);
   allKeys.forEach((key) => {
     if (["updatedAt", "createdAt", "deletedAt"].includes(key)) {
       return;
