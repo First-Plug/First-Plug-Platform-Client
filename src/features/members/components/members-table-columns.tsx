@@ -2,10 +2,13 @@
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Member } from "@/features/members";
-import { TeamCard } from "@/shared";
+import { TeamCard, CountryFlag } from "@/shared";
 import { ActionsTableMembers } from "@/features/members";
 import { FormatedDate } from "@/shared/components/Tables";
-import { getFlagEmoji, months } from "@/features/members/utils/countryUtils";
+import {
+  getCountryDisplay,
+  months,
+} from "@/features/members/utils/countryUtils";
 
 interface UseMembersTableColumnsProps {
   members: Member[];
@@ -38,28 +41,39 @@ export const useMembersTableColumns = ({
         header: "Country",
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(members?.map((m: Member) => m.country || ""))
-          )
-            .filter((name): name is string => !!name)
-            .map((name) => ({ label: name, value: name }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: [
+            ...Array.from(new Set(members?.map((m: Member) => m.country || "")))
+              .filter((name): name is string => !!name)
+              .map((name) => ({ label: name, value: name }))
+              .sort((a, b) => a.label.localeCompare(b.label)),
+            { label: "No Data", value: "no-data" },
+          ],
         },
-        cell: ({ getValue }) => (
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-xl">
-              {getFlagEmoji(getValue<string>() || "")}
-            </span>
-            <span>{getValue<string>()}</span>
-          </div>
-        ),
+        cell: ({ getValue }) => {
+          const country = getValue<string>();
+          if (!country) {
+            return <span>-</span>;
+          }
+
+          const countryDisplay = getCountryDisplay(country);
+          if (!countryDisplay) {
+            return <span>{country}</span>;
+          }
+
+          return (
+            <div className="flex items-center gap-2">
+              <CountryFlag countryName={country} size={15} />
+              <span>{countryDisplay.name}</span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: "birthDate",
         header: "Date Of Birth",
         meta: {
           hasFilter: true,
-          filterOptions: months,
+          filterOptions: [...months, { label: "No Data", value: "no-data" }],
         },
         cell: ({ getValue }) => (
           <span className="font-normal">
@@ -72,7 +86,7 @@ export const useMembersTableColumns = ({
         header: "Joining Date",
         meta: {
           hasFilter: true,
-          filterOptions: months,
+          filterOptions: [...months, { label: "No Data", value: "no-data" }],
         },
         cell: ({ getValue }) => {
           return (
@@ -87,12 +101,13 @@ export const useMembersTableColumns = ({
         header: "Team",
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(members?.map((m: Member) => m.team?.name))
-          )
-            .filter((name): name is string => name !== undefined)
-            .map((name) => ({ label: name, value: name }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: [
+            ...Array.from(new Set(members?.map((m: Member) => m.team?.name)))
+              .filter((name): name is string => name !== undefined)
+              .map((name) => ({ label: name, value: name }))
+              .sort((a, b) => a.label.localeCompare(b.label)),
+            { label: "Not Assigned", value: "not-assigned" },
+          ],
         },
         cell: ({ row }) => {
           const team = row.original.team || null;
@@ -109,12 +124,13 @@ export const useMembersTableColumns = ({
         header: "Job Position",
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(members?.map((m: Member) => m.position))
-          )
-            .filter((pos): pos is string => !!pos)
-            .map((pos) => ({ label: pos, value: pos }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: [
+            ...Array.from(new Set(members?.map((m: Member) => m.position)))
+              .filter((pos): pos is string => !!pos)
+              .map((pos) => ({ label: pos, value: pos }))
+              .sort((a, b) => a.label.localeCompare(b.label)),
+            { label: "No Data", value: "no-data" },
+          ],
         },
         cell: ({ getValue }) => (
           <span className="font-semibold">
@@ -128,15 +144,18 @@ export const useMembersTableColumns = ({
         size: 120,
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(members?.map((m: Member) => m.products.length))
-          )
-            .filter((product): product is number => !!product)
-            .map((product) => ({
-              label: product.toString(),
-              value: product.toString(),
-            }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: [
+            ...Array.from(
+              new Set(members?.map((m: Member) => m.products.length))
+            )
+              .filter((product): product is number => !!product)
+              .map((product) => ({
+                label: product.toString(),
+                value: product.toString(),
+              }))
+              .sort((a, b) => a.label.localeCompare(b.label)),
+            { label: "0", value: "0" },
+          ],
         },
         cell: ({ row }) => (
           <div className="flex justify-center items-center w-full">

@@ -210,8 +210,60 @@ export const months = [
   { label: "December", value: "12" },
 ];
 
+// Función para normalizar texto removiendo acentos
+function normalizeText(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Función para encontrar el código de país normalizando el nombre
+export function getCountryCode(countryName: string): string | null {
+  if (!countryName) return null;
+
+  // Primero intenta con el nombre exacto
+  if (countryCodes[countryName]) {
+    return countryCodes[countryName];
+  }
+
+  // Si no encuentra, normaliza y busca
+  const normalizedInput = normalizeText(countryName);
+
+  for (const [country, code] of Object.entries(countryCodes)) {
+    if (normalizeText(country) === normalizedInput) {
+      return code;
+    }
+  }
+
+  return null;
+}
+
+// Función para obtener el nombre normalizado del país
+export function getNormalizedCountryName(countryName: string): string | null {
+  if (!countryName) return null;
+
+  // Primero intenta con el nombre exacto
+  if (countryCodes[countryName]) {
+    return countryName;
+  }
+
+  // Si no encuentra, normaliza y busca
+  const normalizedInput = normalizeText(countryName);
+
+  for (const [country, code] of Object.entries(countryCodes)) {
+    if (normalizeText(country) === normalizedInput) {
+      return country;
+    }
+  }
+
+  return null;
+}
+
+// Función original para emojis (mantenida por compatibilidad)
 export function getFlagEmoji(countryName: string): string {
-  const countryCode = countryCodes[countryName];
+  const countryCode = getCountryCode(countryName);
 
   if (!countryCode) return "";
 
@@ -221,4 +273,19 @@ export function getFlagEmoji(countryName: string): string {
     .map((char) => 127397 + char.charCodeAt(0));
 
   return String.fromCodePoint(...codePoints);
+}
+
+// Nueva función para mostrar código de país en lugar de emoji
+export function getCountryDisplay(
+  countryName: string
+): { code: string; name: string } | null {
+  const normalizedName = getNormalizedCountryName(countryName);
+  const code = getCountryCode(countryName);
+
+  if (!normalizedName || !code) return null;
+
+  return {
+    code,
+    name: normalizedName,
+  };
 }

@@ -52,6 +52,8 @@ export * from "./components/ui/label";
 export * from "./components/ui/scroll-area";
 export * from "./components/ui/command";
 
+export * from "./components/CountryFlag";
+
 export * from "./icons/icons";
 
 export * from "./stores/alerts.store";

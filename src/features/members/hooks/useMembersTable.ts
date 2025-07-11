@@ -55,37 +55,62 @@ export const useMembersTable = (members: Member[]) => {
 
           case "country":
             const country = member.country || "";
-            return filterValues.some((value) =>
-              country.toLowerCase().includes(value.toLowerCase())
-            );
+            return filterValues.some((value) => {
+              if (value === "no-data") {
+                return !country || country.trim() === "";
+              }
+              return country.toLowerCase().includes(value.toLowerCase());
+            });
 
           case "birthDate":
-            const birthMonth = new Date(member.birthDate).getMonth() + 1;
-            const birthMonthStr = birthMonth.toString().padStart(2, "0");
-            return filterValues.includes(birthMonthStr);
+            const birthDate = member.birthDate;
+            return filterValues.some((value) => {
+              if (value === "no-data") {
+                return !birthDate || birthDate.trim() === "";
+              }
+              const birthMonth = new Date(birthDate).getMonth() + 1;
+              const birthMonthStr = birthMonth.toString().padStart(2, "0");
+              return birthMonthStr === value;
+            });
 
           case "startDate":
-            const startMonth = new Date(member.startDate).getMonth() + 1;
-            const startMonthStr = startMonth.toString().padStart(2, "0");
-            return filterValues.includes(startMonthStr);
+            const startDate = member.startDate;
+            return filterValues.some((value) => {
+              if (value === "no-data") {
+                return !startDate || startDate.trim() === "";
+              }
+              const startMonth = new Date(startDate).getMonth() + 1;
+              const startMonthStr = startMonth.toString().padStart(2, "0");
+              return startMonthStr === value;
+            });
 
           case "team":
-            const teamName = member.team?.name || "";
-            return filterValues.some((value) =>
-              teamName.toLowerCase().includes(value.toLowerCase())
-            );
+            const team = member.team;
+            return filterValues.some((value) => {
+              if (value === "not-assigned") {
+                return !team || !team.name || team.name.trim() === "";
+              }
+              const teamName = team?.name || "";
+              return teamName.toLowerCase().includes(value.toLowerCase());
+            });
 
           case "position":
             const position = member.position || "";
-            return filterValues.some((value) =>
-              position.toLowerCase().includes(value.toLowerCase())
-            );
+            return filterValues.some((value) => {
+              if (value === "no-data") {
+                return !position || position.trim() === "";
+              }
+              return position.toLowerCase().includes(value.toLowerCase());
+            });
 
           case "products":
             const productCount = (member.products || []).length;
-            return filterValues.some(
-              (value) => productCount.toString() === value
-            );
+            return filterValues.some((value) => {
+              if (value === "0") {
+                return productCount === 0;
+              }
+              return productCount.toString() === value;
+            });
 
           default:
             return true;
