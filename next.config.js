@@ -32,6 +32,7 @@ module.exports = () => {
         "cloudflare-ipfs.com",
         "avatars.githubusercontent.com",
         "example.com",
+        "flagcdn.com",
       ],
     },
   };

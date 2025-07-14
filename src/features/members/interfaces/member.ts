@@ -26,7 +26,7 @@ export interface Member {
   birthDate?: string | null;
   teamId?: string;
   products?: Product[];
-  team?: string | Team;
+  team?: Team;
   dni?: string | number;
   isDeleted?: boolean;
 }

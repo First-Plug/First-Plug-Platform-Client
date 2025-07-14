@@ -25,9 +25,7 @@ export const EmployeeData = ({
     clearErrors,
   } = useFormContext();
 
-  const [teamValue, setTeamValue] = useState(
-    (initialData?.team as string) || ""
-  );
+  const [teamValue, setTeamValue] = useState(initialData?.team || "");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
 
@@ -101,7 +99,7 @@ export const EmployeeData = ({
                 }
                 placeholder="Team Name"
                 title="Select a Team"
-                selectedOption={teamValue}
+                selectedOption={teamValue as string}
                 onChange={handleTeamChange}
                 searchable={true}
               />
