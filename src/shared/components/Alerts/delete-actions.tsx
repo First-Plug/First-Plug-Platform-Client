@@ -10,11 +10,7 @@ import {
   Loader,
 } from "@/shared";
 import { useState } from "react";
-import {
-  useDeleteMember,
-  useFetchMember,
-  useFetchMembers,
-} from "@/features/members";
+import { useDeleteMember } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromTeam } from "@/features/teams";
 import { useDeleteAsset, usePrefetchAsset } from "@/features/assets";
@@ -63,13 +59,19 @@ export const DeleteAction = ({
 
   const queryClient = useQueryClient();
   const { prefetchAsset } = usePrefetchAsset();
-  const { data: membersData } = useFetchMembers();
 
-  const { data: memberData } = useFetchMember(
-    type === "member" ? id : undefined
-  );
+  const getMembersData = () => {
+    return queryClient.getQueryData<Member[]>(["members"]);
+  };
+
+  const getMemberData = (memberId: string) => {
+    return queryClient
+      .getQueryData<Member[]>(["members"])
+      ?.find((member) => member._id === memberId);
+  };
 
   const checkMemberProducts = () => {
+    const memberData = getMemberData(id);
     if (!memberData) return false;
 
     const hasRecoverableProducts = memberData.products.some(
@@ -114,8 +116,8 @@ export const DeleteAction = ({
         throw new Error("Member ID is undefined");
       }
 
-      const member = queryClient.getQueryData<Member>(["members", id]);
-      if (member.activeShipment) {
+      const member = getMemberData(id);
+      if (member?.activeShipment) {
         setAlert("shipmentCancelMemberError");
         return;
       }
@@ -145,7 +147,9 @@ export const DeleteAction = ({
   };
 
   const checkIfTeamHasMembers = async (teamId: string) => {
+    const membersData = getMembersData();
     if (!membersData) return false;
+
     const teamMembers = membersData?.filter(
       (member) =>
         member.team &&

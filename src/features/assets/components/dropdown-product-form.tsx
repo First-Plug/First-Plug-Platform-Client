@@ -78,7 +78,7 @@ export const DropdownInputProductForm = ({
       const matchingOptions = options.filter((option) =>
         normalizeString(option)
           .toLowerCase()
-          .startsWith(normalizeString(inputValue).toLowerCase())
+          .includes(normalizeString(inputValue).toLowerCase())
       );
 
       setFilteredOptions(matchingOptions);

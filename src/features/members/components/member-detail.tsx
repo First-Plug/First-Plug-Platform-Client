@@ -1,5 +1,5 @@
 import { TeamCard } from "@/features/teams";
-import FormatedDate from "@/shared/components/Tables/helpers/FormatedDate";
+import { FormatedDate } from "@/shared/components/Tables";
 import Avvvatars from "avvvatars-react";
 import { Team } from "@/features/teams";
 import { useFetchMember } from "@/features/members";
@@ -32,7 +32,7 @@ export function MemberDetail({ memberId, className }: MemberDetailProps) {
         <div className="flex flex-col justify-start w-full text-md">
           <div className="flex justify-between items-center w-full">
             <div className="flex items-center gap-1">
-              {member.team && <TeamCard team={teamData} />}
+              {member.team && <TeamCard team={team} />}
             </div>
           </div>
           <div className="flex items-center gap-2">

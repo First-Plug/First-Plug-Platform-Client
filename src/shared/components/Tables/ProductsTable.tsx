@@ -1,3 +1,4 @@
+"use client";
 import { Product, ProductTable } from "@/features/assets";
 import { CATEGORIES } from "@/features/assets/interfaces/product";
 import { LoaderSpinner } from "@/shared";

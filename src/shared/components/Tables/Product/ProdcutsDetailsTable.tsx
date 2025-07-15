@@ -1,10 +1,11 @@
+"use client";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { RootTable } from "../RootTable";
 import { Location, Product } from "@/features/assets";
 import { LOCATION } from "@/features/assets/interfaces/product";
 import { ShipmentStatus } from "@/features/shipments";
 import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
-import FormatedDate from "../helpers/FormatedDate";
+import { FormatedDate } from "@/shared/components/Tables";
 import MemberName from "../helpers/MemberName";
 import { ShipmentStatusCard } from "@/features/shipments";
 import { ProductLocation } from "@/shared/components/Tables";

@@ -27,7 +27,7 @@ export const useMemberSubmit = (initialData?: Member, isUpdate?: boolean) => {
       } else if (
         data.team &&
         typeof data.team === "string" &&
-        data.team.trim() !== ""
+        (data.team as string).trim() !== ""
       ) {
         const team = await getOrCreateTeam(data.team);
         teamId = team._id;
@@ -60,7 +60,10 @@ export const useMemberSubmit = (initialData?: Member, isUpdate?: boolean) => {
       if (isUpdate && initialData) {
         await updateMemberMutation.mutateAsync({
           id: initialData._id,
-          data: { ...changes, ...(teamId && { team: teamId }) },
+          data: {
+            ...changes,
+            ...(teamId && { team: teamId }),
+          } as unknown as Member,
         });
       } else {
         if (data.personalEmail === "") {
@@ -68,7 +71,7 @@ export const useMemberSubmit = (initialData?: Member, isUpdate?: boolean) => {
         }
         const processedData = {
           ...data,
-          ...(teamId && { team: teamId }),
+          ...((teamId && { team: teamId }) as unknown as Team),
         };
         if (processedData.dni !== undefined) {
           processedData.dni = String(processedData.dni);

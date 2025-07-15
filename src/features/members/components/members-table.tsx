@@ -5,7 +5,7 @@ import { Button, ElipsisVertical, PenIcon, TeamCard } from "@/shared";
 import { ColumnDef } from "@tanstack/react-table";
 import { DeleteAction } from "@/shared";
 import { RootTable } from "@/shared/components/Tables/RootTable";
-import FormatedDate from "@/shared/components/Tables/helpers/FormatedDate";
+import { FormatedDate } from "@/shared/components/Tables";
 import {
   useDeleteMember,
   useFetchMembers,

@@ -70,7 +70,6 @@ export const AddMemberForm = ({
   const { setAlert } = useAlertStore();
   const { setAside, closeAside } = useAsideStore();
 
-  const queryClient = useQueryClient();
   const { mutate: updateAssetMutation } = useUpdateAsset();
 
   const router = useRouter();
@@ -85,8 +84,7 @@ export const AddMemberForm = ({
       members.filter(
         (member) =>
           member.firstName.toLowerCase().includes(query.toLowerCase()) ||
-          member.lastName.toLowerCase().includes(query.toLowerCase()) ||
-          member.email.toLowerCase().includes(query.toLowerCase())
+          member.lastName.toLowerCase().includes(query.toLowerCase())
       )
     );
   };

@@ -42,16 +42,19 @@ export default function Login() {
         throw new Error(res.error);
       }
 
-      queryClient.invalidateQueries();
+      if (typeof window !== "undefined") {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+
+      queryClient.clear();
 
       router.push("/home/dashboard");
-      router.refresh();
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Invalid Credential",
         description: "Invalid username or password. Please try again.",
-        // duration: 1500,
       });
     } finally {
       setIsLoading(false);

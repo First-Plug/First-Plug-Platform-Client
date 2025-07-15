@@ -3,19 +3,13 @@ import { AddIcon, Button, PenIcon } from "@/shared";
 
 import { AsideType } from "@/features/asides";
 
-import { Table } from "@tanstack/react-table";
 import { MyTeamViewHeader } from "./my-team-view-header";
 import { usePrefetchTeams } from "@/features/teams";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useAsideStore } from "@/shared";
 
-interface MyTeamActionsProps<TData> {
-  table: Table<TData>;
-}
-export const MyTeamActions = function <TData>({
-  table,
-}: MyTeamActionsProps<TData>) {
+export const MyTeamActions = function () {
   const { setAside } = useAsideStore();
 
   const queryClient = useQueryClient();
