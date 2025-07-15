@@ -76,8 +76,7 @@ const MembersList = function MembersList({
       members.filter(
         (member) =>
           member.firstName.toLowerCase().includes(query.toLowerCase()) ||
-          member.lastName.toLowerCase().includes(query.toLowerCase()) ||
-          member.email.toLowerCase().includes(query.toLowerCase())
+          member.lastName.toLowerCase().includes(query.toLowerCase())
       )
     );
   };
