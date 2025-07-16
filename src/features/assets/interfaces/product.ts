@@ -118,7 +118,7 @@ export interface Product {
   price?: Price;
   productCondition: ProductCondition;
   additionalInfo?: string;
-  shipmentStatus: ShipmentStatus;
+  shipmentStatus?: ShipmentStatus;
 }
 
 export interface ProductTable {
