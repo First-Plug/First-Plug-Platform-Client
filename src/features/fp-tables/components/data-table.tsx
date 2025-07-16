@@ -1,11 +1,14 @@
 "use client";
 
+import React from "react";
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   useReactTable,
   RowData,
+  Row,
 } from "@tanstack/react-table";
 
 import { createFilterStore, ColumnFilterPopover } from "@/features/fp-tables";
@@ -14,8 +17,10 @@ interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
   data: TData[];
   useFilterStore: ReturnType<typeof createFilterStore>;
-  rowHeight?: number; // Altura de las filas en píxeles
-  scrollContainerRef?: React.RefObject<HTMLDivElement>; // Referencia para el contenedor de scroll
+  rowHeight?: number;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
+  getRowCanExpand?: (row: Row<TData>) => boolean;
+  renderSubComponent?: (row: Row<TData>) => React.ReactNode;
 }
 
 declare module "@tanstack/react-table" {
@@ -32,11 +37,15 @@ export function DataTable<TData>({
   useFilterStore,
   rowHeight = 70,
   scrollContainerRef,
+  getRowCanExpand,
+  renderSubComponent,
 }: DataTableProps<TData>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand,
   });
 
   const filters = useFilterStore((s) => s.filters);
@@ -128,32 +137,48 @@ export function DataTable<TData>({
             <table className="w-full text-xs table-fixed">
               <tbody>
                 {table.getRowModel().rows.map((row, index) => (
-                  <tr
-                    key={row.id}
-                    className={`z-10 border-gray-200 border-b ${
-                      index !== 0 ? "border-t" : ""
-                    } snap-start`}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        className="px-4"
-                        style={{
-                          paddingTop: `${rowHeight / 2 - 8}px`,
-                          paddingBottom: `${rowHeight / 2 - 8}px`,
-                          width:
-                            cell.column.getSize() !== 150
-                              ? `${cell.column.getSize()}px`
-                              : "auto",
-                        }}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
+                  <React.Fragment key={row.id}>
+                    <tr
+                      className={`z-10 border-gray-200 border-b ${
+                        index !== 0 ? "border-t" : ""
+                      } snap-start ${row.getIsExpanded() ? "bg-blue/10" : ""}`}
+                    >
+                      {row.getVisibleCells().map((cell, cellIndex) => (
+                        <td
+                          key={cell.id}
+                          className={`px-4 ${
+                            cellIndex === 0 && row.getIsExpanded()
+                              ? "border-l-2 border-black"
+                              : ""
+                          }`}
+                          style={{
+                            paddingTop: `${rowHeight / 2 - 8}px`,
+                            paddingBottom: `${rowHeight / 2 - 8}px`,
+                            width:
+                              cell.column.getSize() !== 150
+                                ? `${cell.column.getSize()}px`
+                                : "auto",
+                          }}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    {/* Renderizar contenido expandido */}
+                    {row.getIsExpanded() && renderSubComponent && (
+                      <tr>
+                        <td
+                          colSpan={row.getVisibleCells().length}
+                          className="p-0 border-black border-l-2"
+                        >
+                          {renderSubComponent(row)}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
