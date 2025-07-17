@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { useAsideStore } from "@/shared";
 import { useProductStore, ProductServices } from "@/features/assets";
 
-export default function TableStockActions() {
+export const TableStockActions = () => {
   const router = useRouter();
   const { setAside } = useAsideStore();
 
@@ -83,4 +83,4 @@ export default function TableStockActions() {
       </div>
     </div>
   );
-}
+};

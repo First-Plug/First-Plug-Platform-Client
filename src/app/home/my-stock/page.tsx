@@ -1,17 +1,19 @@
 "use client";
 
 import { PageLayout, BarLoader, Button, PaginationAdvanced } from "@/shared";
-import { useGetTableAssets } from "@/features/assets";
-import { useAssetsTable } from "@/features/assets/hooks/useAssetsTable";
-import { useAssetsTableColumns } from "@/features/assets/hooks/useAssetsTableColumns";
-import { DataTable } from "@/features/fp-tables";
-import { EmptyStock } from "@/features/assets";
-import TableStockActions from "@/shared/components/Tables/TableActions/TableStockActions";
-import { ProductTable } from "@/features/assets/interfaces/product";
-import { Row } from "@tanstack/react-table";
-import ProdcutsDetailsTable from "@/shared/components/Tables/Product/ProdcutsDetailsTable";
 
-export default function MyStock() {
+import { DataTable } from "@/features/fp-tables";
+
+import {
+  EmptyStock,
+  useGetTableAssets,
+  useAssetsTable,
+  useAssetsTableColumns,
+  TableStockActions,
+  useSubtableLogic,
+} from "@/features/assets";
+
+export default function MyAssets() {
   const { data: assets = [], isLoading } = useGetTableAssets();
 
   const {
@@ -28,20 +30,16 @@ export default function MyStock() {
 
   const columns = useAssetsTableColumns({ assets: assets || [] });
 
-  const getRowCanExpand = (row: Row<ProductTable>) => {
-    return row.original.products && row.original.products.length > 0;
-  };
+  const {
+    getRowCanExpand,
+    getRowId,
+    renderSubComponent,
+    handleClearSubtableFilters,
+  } = useSubtableLogic();
 
-  const renderSubComponent = (row: Row<ProductTable>) => {
-    const products = row.original.products.filter(
-      (product) => product.status !== "Deprecated"
-    );
-
-    return (
-      <div className="bg-white w-full">
-        <ProdcutsDetailsTable products={products} clearAll={false} />
-      </div>
-    );
+  const handleClearAllFiltersExtended = () => {
+    handleClearAllFilters();
+    handleClearSubtableFilters();
   };
 
   return (
@@ -50,9 +48,9 @@ export default function MyStock() {
 
       {assets && assets.length > 0 ? (
         <div className="flex flex-col h-full max-h-full">
-          <div className="flex items-center mb-2 max-h-[50%]">
+          <div className="flex items-center mb-4 max-h-[50%]">
             <Button
-              onClick={handleClearAllFilters}
+              onClick={handleClearAllFiltersExtended}
               variant="secondary"
               size="small"
               className="mr-2 w-32"
@@ -72,6 +70,9 @@ export default function MyStock() {
               scrollContainerRef={tableContainerRef}
               getRowCanExpand={getRowCanExpand}
               renderSubComponent={renderSubComponent}
+              getRowId={getRowId}
+              adaptiveHeight={false}
+              enableSnapScroll={false}
             />
           </div>
 

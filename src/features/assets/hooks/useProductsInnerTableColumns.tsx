@@ -4,13 +4,14 @@ import { Product } from "@/features/assets";
 import { LOCATION } from "@/features/assets/interfaces/product";
 import { ShipmentStatus } from "@/features/shipments";
 import { FormatedDate } from "@/shared/components/Tables";
-import MemberName from "../helpers/MemberName";
+import MemberName from "@/shared/components/Tables/helpers/MemberName";
 import { ShipmentStatusCard } from "@/features/shipments";
 import { ProductLocation } from "@/shared/components/Tables";
-import EditProduct from "./EditProduct";
+import EditProduct from "@/shared/components/Tables/Product/EditProduct";
 import { DeleteAction } from "@/shared";
 import { ProductConditionCard } from "@/features/assets";
 import { ColumnDef } from "@tanstack/react-table";
+import { ActionButton } from "@/shared/components/Tables/Product";
 
 export function useProductsInnerTableColumns({
   products,
@@ -42,6 +43,7 @@ export function useProductsInnerTableColumns({
       {
         accessorKey: "acquisitionDate",
         header: "Acquisition Date",
+        size: 180,
         meta: {
           hasFilter: true,
           filterOptions: (() => {
@@ -72,8 +74,9 @@ export function useProductsInnerTableColumns({
           filterOptions: (() => {
             const options = new Set<string>();
             products.forEach((product) => {
-              const assignedMember = product.assignedMember || "No Data";
-              options.add(assignedMember);
+              if (product.assignedMember) {
+                options.add(product.assignedMember);
+              }
             });
             return Array.from(options)
               .sort()
@@ -83,10 +86,13 @@ export function useProductsInnerTableColumns({
               }));
           })(),
         },
-        cell: ({ row }) => <MemberName product={row.original} />,
+        cell: ({ row }) => {
+          return <MemberName product={row.original} />;
+        },
       },
       {
         id: "status + productCondition",
+        size: 250,
         accessorFn: (row) => ({
           status: row.status,
           productCondition: row.productCondition as
@@ -141,6 +147,7 @@ export function useProductsInnerTableColumns({
       {
         accessorKey: "location",
         header: "Location",
+        size: 190,
         meta: {
           hasFilter: true,
           filterOptions: [...LOCATION].map((location) => ({
@@ -153,8 +160,17 @@ export function useProductsInnerTableColumns({
         ),
       },
       {
-        id: "actions",
+        accessorFn: (row) => row.status,
         header: "Actions",
+        size: 170,
+        cell: ({ row }) => {
+          return <ActionButton product={row.original} />;
+        },
+        enableColumnFilter: false,
+      },
+      {
+        id: "actions",
+        header: "",
         cell: ({ row }) => {
           return (
             <div className="flex justify-end gap-1">

@@ -9,6 +9,7 @@ import {
   useReactTable,
   RowData,
   Row,
+  ExpandedState,
 } from "@tanstack/react-table";
 
 import { createFilterStore, ColumnFilterPopover } from "@/features/fp-tables";
@@ -21,6 +22,10 @@ interface DataTableProps<TData> {
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
   getRowCanExpand?: (row: Row<TData>) => boolean;
   renderSubComponent?: (row: Row<TData>) => React.ReactNode;
+  getRowId?: (row: TData) => string;
+  // Props condicionales simplificadas
+  adaptiveHeight?: boolean; // true = se adapta al contenido, false = altura fija como antes
+  enableSnapScroll?: boolean; // true = habilita snap scroll, false = scroll normal
 }
 
 declare module "@tanstack/react-table" {
@@ -39,26 +44,52 @@ export function DataTable<TData>({
   scrollContainerRef,
   getRowCanExpand,
   renderSubComponent,
+  getRowId,
+  adaptiveHeight = false,
+  enableSnapScroll = true,
 }: DataTableProps<TData>) {
+  const expandedRows = useFilterStore((s) => s.expandedRows);
+  const setExpandedRows = useFilterStore((s) => s.setExpandedRows);
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getRowCanExpand,
+    state: {
+      expanded: expandedRows,
+    },
+    onExpandedChange: (updater) => {
+      if (typeof updater === "function") {
+        const newExpanded = updater(expandedRows);
+        setExpandedRows(newExpanded as Record<string, boolean>);
+      } else {
+        setExpandedRows(updater as Record<string, boolean>);
+      }
+    },
+    getRowId: getRowId ? (row) => getRowId(row) : undefined,
   });
 
   const filters = useFilterStore((s) => s.filters);
   const setFilter = useFilterStore((s) => s.setFilter);
 
-  return (
-    <div className="relative flex flex-col flex-grow h-full">
-      {/* <div className="mb-4">
-        <pre className="bg-gray-100 p-4 rounded">
-          {JSON.stringify(filters, null, 2)}
-        </pre>
-      </div> */}
+  // Determinar las clases CSS para la altura
+  const containerHeightClass = adaptiveHeight
+    ? "h-auto min-h-0"
+    : "h-full max-h-full";
 
+  const scrollContainerHeightClass = adaptiveHeight
+    ? "h-auto min-h-0"
+    : "min-h-[60vh] max-h-[60vh]";
+
+  // Determinar las clases CSS para el snap scroll
+  const snapScrollClasses = enableSnapScroll ? "snap-mandatory snap-y" : "";
+
+  const rowSnapClass = enableSnapScroll ? "snap-start" : "";
+
+  return (
+    <div className={`relative flex flex-col flex-grow ${containerHeightClass}`}>
       <div className="mx-auto border border-gray-200 rounded-md w-full overflow-hidden">
         <table className="w-full text-xs border-collapse table-fixed">
           <thead className="top-0 z-9 sticky bg-[#F7F7F9] border-gray-200 border-b">
@@ -109,7 +140,8 @@ export function DataTable<TData>({
         </table>
         <div
           ref={scrollContainerRef}
-          className="min-h-[60vh] max-h-[60vh] overflow-y-auto snap-mandatory snap-y"
+          className={`${scrollContainerHeightClass} overflow-y-auto ${snapScrollClasses}`}
+          style={!adaptiveHeight ? { height: "60vh" } : undefined}
         >
           {table.getRowModel().rows.length === 0 ? (
             <div className="flex justify-center items-center h-full min-h-[60vh]">
@@ -141,7 +173,9 @@ export function DataTable<TData>({
                     <tr
                       className={`z-10 border-gray-200 border-b ${
                         index !== 0 ? "border-t" : ""
-                      } snap-start ${row.getIsExpanded() ? "bg-blue/10" : ""}`}
+                      } ${rowSnapClass} ${
+                        row.getIsExpanded() ? "bg-blue/10" : ""
+                      }`}
                     >
                       {row.getVisibleCells().map((cell, cellIndex) => (
                         <td

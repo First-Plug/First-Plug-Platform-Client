@@ -5,16 +5,21 @@ export function createFilterStore() {
     filters: Record<string, string[]>;
     pageIndex: number;
     pageSize: number;
+    expandedRows: Record<string, boolean>;
     setFilter: (column: string, values: string[]) => void;
     clearFilters: () => void;
     setPageIndex: (pageIndex: number) => void;
     setPageSize: (pageSize: number) => void;
     onFiltersChange?: () => void;
     setOnFiltersChange: (callback: () => void) => void;
+    toggleRowExpansion: (rowId: string) => void;
+    setExpandedRows: (expandedRows: Record<string, boolean>) => void;
+    collapseAllRows: () => void;
   }>((set, get) => ({
     filters: {},
     pageIndex: 0,
     pageSize: 10,
+    expandedRows: {},
     onFiltersChange: undefined,
     setOnFiltersChange: (callback) => set({ onFiltersChange: callback }),
 
@@ -49,5 +54,17 @@ export function createFilterStore() {
       }
       set({ filters: {} });
     },
+    toggleRowExpansion: (rowId) =>
+      set((state) => {
+        const newExpandedRows = { ...state.expandedRows };
+        if (newExpandedRows[rowId]) {
+          delete newExpandedRows[rowId];
+        } else {
+          newExpandedRows[rowId] = true;
+        }
+        return { expandedRows: newExpandedRows };
+      }),
+    setExpandedRows: (expandedRows) => set({ expandedRows }),
+    collapseAllRows: () => set({ expandedRows: {} }),
   }));
 }

@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from "react";
 import { DialogShipmentWithFp } from "./dialog-shipment-with-fp";
 import { useForm, Controller } from "react-hook-form";

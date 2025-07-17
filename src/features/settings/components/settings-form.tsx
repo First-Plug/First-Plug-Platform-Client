@@ -1,3 +1,4 @@
+"use client";
 import { Button, LoaderSpinner } from "@/shared";
 import { Form } from "@/shared";
 import { UserZod, UserZodSchema } from "@/features/auth";

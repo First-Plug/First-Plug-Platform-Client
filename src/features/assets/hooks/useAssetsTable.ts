@@ -1,6 +1,8 @@
+"use client";
+
 import { useMemo, useEffect } from "react";
 import { createFilterStore, usePagination } from "@/features/fp-tables";
-import { ProductTable } from "../interfaces/product";
+import { type ProductTable } from "../interfaces/product";
 import { useProductStore } from "../store/product.store";
 
 const useAssetsTableFilterStore = createFilterStore();
@@ -12,6 +14,7 @@ export function useAssetsTable(assets: ProductTable[]) {
   const setOnFiltersChange = useAssetsTableFilterStore(
     (s) => s.setOnFiltersChange
   );
+  const collapseAllRows = useAssetsTableFilterStore((s) => s.collapseAllRows);
 
   const {
     pageIndex,
@@ -31,6 +34,10 @@ export function useAssetsTable(assets: ProductTable[]) {
       resetToFirstPage();
     });
   }, [setOnFiltersChange, resetToFirstPage]);
+
+  useEffect(() => {
+    resetToFirstPage();
+  }, [onlyAvailable]);
 
   const filteredAssets = useMemo(() => {
     let availableAssets = assets;
@@ -112,5 +119,6 @@ export function useAssetsTable(assets: ProductTable[]) {
     paginatedAssets,
     tableContainerRef,
     useAssetsTableFilterStore,
+    collapseAllRows,
   };
 }

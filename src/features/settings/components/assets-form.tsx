@@ -1,3 +1,4 @@
+"use client";
 import { Controller } from "react-hook-form";
 import * as Switch from "@radix-ui/react-switch";
 import { CATEGORIES } from "@/features/assets/interfaces/product";
