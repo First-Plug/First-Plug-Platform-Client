@@ -81,6 +81,16 @@ export interface Price {
   currencyCode?: (typeof CURRENCY_CODES)[number];
 }
 
+export const SHIPMENT_STATUS = [
+  "On Hold - Missing Data",
+  "In Preparation",
+  "On The Way",
+  "Received",
+  "Cancelled",
+] as const;
+
+export type ShipmentStatus = (typeof SHIPMENT_STATUS)[number];
+
 export interface Product {
   _id: string;
   name: string | null;
@@ -108,6 +118,7 @@ export interface Product {
   price?: Price;
   productCondition: ProductCondition;
   additionalInfo?: string;
+  shipmentStatus?: ShipmentStatus;
 }
 
 export interface ProductTable {

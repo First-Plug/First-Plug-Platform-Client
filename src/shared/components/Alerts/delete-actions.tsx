@@ -1,5 +1,12 @@
 "use client";
-import { Button, TrashIcon } from "@/shared";
+import {
+  Button,
+  TrashIcon,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +16,7 @@ import {
   DialogTrigger,
   Loader,
 } from "@/shared";
+import { TooltipArrow } from "@radix-ui/react-tooltip";
 import { useState } from "react";
 import { useDeleteMember } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
@@ -266,21 +274,41 @@ export const DeleteAction = ({
     },
   };
   const { title, description, deleteAction } = DeleteConfig[type];
+  const shouldShowTooltip = type === "product" && disabled;
+
   return (
     <>
       <Dialog open={open}>
-        <DialogTrigger onClick={handleTriggerClick} disabled={disabled}>
-          {trigger ? (
-            trigger
-          ) : (
-            <TrashIcon
-              className={`w-[1.2rem] h-[1.2rem] ${
-                disabled ? "text-disabled" : "text-error hover:text-error/70"
-              }`}
-              strokeWidth={2}
-            />
-          )}
-        </DialogTrigger>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DialogTrigger onClick={handleTriggerClick} disabled={disabled}>
+                {trigger ? (
+                  trigger
+                ) : (
+                  <TrashIcon
+                    className={`w-[1.2rem] h-[1.2rem] ${
+                      disabled
+                        ? "text-disabled"
+                        : "text-error hover:text-error/70"
+                    }`}
+                    strokeWidth={2}
+                  />
+                )}
+              </DialogTrigger>
+            </TooltipTrigger>
+            {shouldShowTooltip && (
+              <TooltipContent
+                side="bottom"
+                align="end"
+                className="z-50 bg-blue/80 p-2 rounded-md font-normal text-white text-xs"
+              >
+                Products with active shipments cannot be deleted.
+                <TooltipArrow className="fill-blue/80" />
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
         {!loading ? (
           <DialogContent>
             <DialogHeader>
