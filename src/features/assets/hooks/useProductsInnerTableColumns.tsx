@@ -15,8 +15,10 @@ import { ActionButton } from "@/shared/components/Tables/Product";
 
 export function useProductsInnerTableColumns({
   products,
+  allProducts,
 }: {
   products: Product[];
+  allProducts: Product[];
 }) {
   return useMemo<ColumnDef<Product>[]>(
     () => [
@@ -27,7 +29,7 @@ export function useProductsInnerTableColumns({
           hasFilter: true,
           filterOptions: (() => {
             const options = new Set<string>();
-            products.forEach((product) => {
+            allProducts.forEach((product) => {
               options.add(product.serialNumber || "No Data");
             });
             return Array.from(options).map((option) => ({
@@ -48,7 +50,7 @@ export function useProductsInnerTableColumns({
           hasFilter: true,
           filterOptions: (() => {
             const options = new Set<string>();
-            products.forEach((product) => {
+            allProducts.forEach((product) => {
               const date = product.acquisitionDate
                 ? new Date(product.acquisitionDate).toLocaleDateString(
                     "es-AR",
@@ -73,7 +75,7 @@ export function useProductsInnerTableColumns({
           hasFilter: true,
           filterOptions: (() => {
             const options = new Set<string>();
-            products.forEach((product) => {
+            allProducts.forEach((product) => {
               if (product.assignedMember) {
                 options.add(product.assignedMember);
               }
@@ -105,7 +107,7 @@ export function useProductsInnerTableColumns({
           hasFilter: true,
           filterOptions: (() => {
             const options = new Set<string>();
-            products.forEach((product) => {
+            allProducts.forEach((product) => {
               const status = product.status || "No Data";
               const productCondition = product.productCondition || "Optimal";
               const combinedOption = `${status} - ${productCondition}`;
@@ -188,6 +190,6 @@ export function useProductsInnerTableColumns({
         },
       },
     ],
-    [products]
+    [products, allProducts]
   );
 }

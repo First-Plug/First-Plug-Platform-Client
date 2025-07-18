@@ -16,7 +16,10 @@ interface Props {
 export const ProductsDetailsTable = ({ products, useFilterStore }: Props) => {
   const { filteredProducts } = useProductsFiltering(products, useFilterStore);
 
-  const columns = useProductsInnerTableColumns({ products: filteredProducts });
+  const columns = useProductsInnerTableColumns({
+    products: filteredProducts,
+    allProducts: products,
+  });
 
   return (
     <div className="w-full">

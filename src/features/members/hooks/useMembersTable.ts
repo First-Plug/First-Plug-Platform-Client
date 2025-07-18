@@ -59,6 +59,16 @@ export const useMembersTable = (members: Member[]) => {
               if (value === "no-data") {
                 return !country || country.trim() === "";
               }
+              // Si el valor contiene pipes, significa que es un valor normalizado
+              // que puede corresponder a múltiples valores originales
+              if (value.includes("|")) {
+                const originalValues = value.split("|");
+                return originalValues.some(
+                  (originalValue) =>
+                    country.toLowerCase() === originalValue.toLowerCase()
+                );
+              }
+              // Si no tiene pipes, usar la lógica original
               return country.toLowerCase().includes(value.toLowerCase());
             });
 
