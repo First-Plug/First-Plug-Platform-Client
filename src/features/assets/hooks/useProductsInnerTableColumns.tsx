@@ -176,7 +176,10 @@ export function useProductsInnerTableColumns({
         cell: ({ row }) => {
           return (
             <div className="flex justify-end gap-1">
-              <EditProduct product={row.original} />
+              <EditProduct
+                product={row.original}
+                disabled={row.original.shipmentStatus === "On The Way"}
+              />
               <DeleteAction
                 type="product"
                 id={row.original._id}
