@@ -112,7 +112,9 @@ export function useAssetsTableColumns({ assets }: { assets: ProductTable[] }) {
               }
             });
 
-            return filterData;
+            return filterData.sort(
+              (a, b) => parseInt(b.value) - parseInt(a.value)
+            );
           })(),
         },
         cell: ({ getValue, row }) => {
