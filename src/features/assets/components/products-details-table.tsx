@@ -11,10 +11,19 @@ import {
 interface Props {
   products: Product[];
   useFilterStore: UseBoundStore<any>;
+  tableId?: string;
 }
 
-export const ProductsDetailsTable = ({ products, useFilterStore }: Props) => {
-  const { filteredProducts } = useProductsFiltering(products, useFilterStore);
+export const ProductsDetailsTable = ({
+  products,
+  useFilterStore,
+  tableId,
+}: Props) => {
+  const { filteredProducts } = useProductsFiltering(
+    products,
+    useFilterStore,
+    tableId
+  );
 
   const columns = useProductsInnerTableColumns({
     products: filteredProducts,
@@ -27,6 +36,7 @@ export const ProductsDetailsTable = ({ products, useFilterStore }: Props) => {
         columns={columns}
         data={filteredProducts}
         useFilterStore={useFilterStore}
+        tableId={tableId}
         rowHeight={50}
         adaptiveHeight={true}
         enableSnapScroll={false}

@@ -1,7 +1,6 @@
 import React from "react";
 import { useMemo } from "react";
 import { Product } from "@/features/assets";
-import { LOCATION } from "@/features/assets/interfaces/product";
 import { ShipmentStatus } from "@/features/shipments";
 import { FormatedDate } from "@/shared/components/Tables";
 import MemberName from "@/shared/components/Tables/helpers/MemberName";
@@ -152,10 +151,19 @@ export function useProductsInnerTableColumns({
         size: 190,
         meta: {
           hasFilter: true,
-          filterOptions: [...LOCATION].map((location) => ({
-            label: location,
-            value: location,
-          })),
+          filterOptions: (() => {
+            const options = new Set<string>();
+            allProducts.forEach((product) => {
+              const location = product.location || "No Data";
+              options.add(location);
+            });
+            return Array.from(options)
+              .sort()
+              .map((option) => ({
+                label: option,
+                value: option,
+              }));
+          })(),
         },
         cell: ({ getValue }) => (
           <ProductLocation location={getValue<string>() as any} />

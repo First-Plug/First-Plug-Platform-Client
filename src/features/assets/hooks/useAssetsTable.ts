@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { createFilterStore, usePagination } from "@/features/fp-tables";
 import { type ProductTable } from "../interfaces/product";
 import { useProductStore } from "../store/product.store";
@@ -9,6 +9,7 @@ const useAssetsTableFilterStore = createFilterStore();
 
 export function useAssetsTable(assets: ProductTable[]) {
   const { onlyAvailable } = useProductStore();
+  const prevOnlyAvailableRef = useRef(onlyAvailable);
 
   const filters = useAssetsTableFilterStore((s) => s.filters);
   const setOnFiltersChange = useAssetsTableFilterStore(
@@ -36,23 +37,15 @@ export function useAssetsTable(assets: ProductTable[]) {
   }, [setOnFiltersChange, resetToFirstPage]);
 
   useEffect(() => {
-    resetToFirstPage();
-  }, [onlyAvailable]);
+    if (prevOnlyAvailableRef.current !== onlyAvailable) {
+      resetToFirstPage();
+      prevOnlyAvailableRef.current = onlyAvailable;
+    }
+  }, [onlyAvailable, resetToFirstPage]);
 
   const filteredAssets = useMemo(() => {
-    let availableAssets = assets;
-    if (onlyAvailable) {
-      availableAssets = assets
-        .map((asset) => ({
-          ...asset,
-          products: asset.products.filter(
-            (product) => product.status === "Available" && !product.deleted
-          ),
-        }))
-        .filter((asset) => asset.products.length > 0);
-    }
-
-    const filtered = availableAssets.filter((asset) => {
+    // Primero aplicar filtros de la tabla sobre todos los assets
+    const tableFiltered = assets.filter((asset) => {
       return Object.entries(filters).every(([column, filterValues]) => {
         if (filterValues.length === 0) return true;
 
@@ -60,6 +53,7 @@ export function useAssetsTable(assets: ProductTable[]) {
           case "category":
             return filterValues.some((value) => asset.category === value);
           case "name":
+            // Usar el primer producto del asset original para el filtro de nombre
             const product = asset.products[0];
             const brand = product.attributes.find(
               (attr) => attr.key === "brand"
@@ -82,13 +76,40 @@ export function useAssetsTable(assets: ProductTable[]) {
               groupName = groupName.trim();
             }
             return filterValues.some((value) => groupName === value);
+          case "stock":
+            return filterValues.some((value) => {
+              const total = asset.products.length;
+              return total === parseInt(value);
+            });
           default:
             return true;
         }
       });
     });
 
-    return filtered;
+    // Luego aplicar el filtro "only available"
+    let finalFiltered = tableFiltered;
+    if (onlyAvailable) {
+      finalFiltered = tableFiltered
+        .map((asset) => {
+          const availableProducts = asset.products.filter(
+            (product) => product.status === "Available" && !product.deleted
+          );
+
+          // Solo incluir assets que tengan productos disponibles
+          if (availableProducts.length === 0) return null;
+
+          return {
+            ...asset,
+            // Mantener el total original en products, pero agregar availableProducts para la subtabla
+            products: asset.products,
+            availableProducts: availableProducts,
+          };
+        })
+        .filter((asset) => asset !== null) as ProductTable[];
+    }
+
+    return finalFiltered;
   }, [assets, filters, onlyAvailable]);
 
   const paginatedAssets = useMemo(() => {

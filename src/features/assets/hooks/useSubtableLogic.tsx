@@ -20,22 +20,29 @@ export function useSubtableLogic() {
   };
 
   const renderSubComponent = (row: Row<ProductTable>) => {
-    const products = row.original.products.filter(
-      (product) => product.status !== "Deprecated"
-    );
+    // Usar availableProducts si está disponible (cuando onlyAvailable está activado)
+    const products =
+      row.original.availableProducts ||
+      row.original.products.filter(
+        (product) => product.status !== "Deprecated"
+      );
+
+    // Crear un ID único para esta subtabla basado en la fila
+    const tableId = getRowId(row.original);
 
     return (
       <div className="bg-white w-full">
         <ProductsDetailsTable
           products={products}
           useFilterStore={useSubtableFilterStore}
+          tableId={tableId}
         />
       </div>
     );
   };
 
   const handleClearSubtableFilters = () => {
-    useSubtableFilterStore.getState().clearFilters();
+    useSubtableFilterStore.getState().clearFiltersForTable("all");
   };
 
   return {

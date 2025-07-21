@@ -18,6 +18,7 @@ interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
   data: TData[];
   useFilterStore: ReturnType<typeof createFilterStore>;
+  tableId?: string; // ID único para esta tabla (opcional, para compatibilidad)
   rowHeight?: number;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
   getRowCanExpand?: (row: Row<TData>) => boolean;
@@ -40,6 +41,7 @@ export function DataTable<TData>({
   columns,
   data,
   useFilterStore,
+  tableId,
   rowHeight = 70,
   scrollContainerRef,
   getRowCanExpand,
@@ -50,6 +52,18 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   const expandedRows = useFilterStore((s) => s.expandedRows);
   const setExpandedRows = useFilterStore((s) => s.setExpandedRows);
+
+  // Usar la nueva lógica de filtros por tabla ID si se proporciona
+  const getFiltersForTable = useFilterStore((s) => s.getFiltersForTable);
+  const setFilterForTable = useFilterStore((s) => s.setFilterForTable);
+  const legacyFilters = useFilterStore((s) => s.filters);
+  const legacySetFilter = useFilterStore((s) => s.setFilter);
+
+  const filters = tableId ? getFiltersForTable(tableId) : legacyFilters;
+  const handleSetFilter = tableId
+    ? (column: string, values: string[]) =>
+        setFilterForTable(tableId, column, values)
+    : legacySetFilter;
 
   const table = useReactTable({
     data,
@@ -70,9 +84,6 @@ export function DataTable<TData>({
     },
     getRowId: getRowId ? (row) => getRowId(row) : undefined,
   });
-
-  const filters = useFilterStore((s) => s.filters);
-  const setFilter = useFilterStore((s) => s.setFilter);
 
   // Determinar las clases CSS para la altura
   const containerHeightClass = adaptiveHeight
@@ -127,7 +138,7 @@ export function DataTable<TData>({
                           }
                           value={filters[header.column.id] || []}
                           onChange={(values) =>
-                            setFilter(header.column.id, values)
+                            handleSetFilter(header.column.id, values)
                           }
                         />
                       )}
@@ -144,7 +155,11 @@ export function DataTable<TData>({
           style={!adaptiveHeight ? { height: "60vh" } : undefined}
         >
           {table.getRowModel().rows.length === 0 ? (
-            <div className="flex justify-center items-center h-full min-h-[60vh]">
+            <div
+              className={`flex justify-center items-center ${
+                adaptiveHeight ? "py-8" : "h-full min-h-[60vh]"
+              }`}
+            >
               <div className="flex flex-col items-center gap-2 text-gray-500">
                 <svg
                   className="w-12 h-12 text-gray-300"

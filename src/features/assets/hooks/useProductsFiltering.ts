@@ -4,9 +4,12 @@ import { type Product } from "@/features/assets";
 
 export function useProductsFiltering(
   products: Product[],
-  useFilterStore: UseBoundStore<any>
+  useFilterStore: UseBoundStore<any>,
+  tableId?: string
 ) {
-  const filters = useFilterStore((s: any) => s.filters);
+  const getFiltersForTable = useFilterStore((s: any) => s.getFiltersForTable);
+  const legacyFilters = useFilterStore((s: any) => s.filters);
+  const filters = tableId ? getFiltersForTable(tableId) : legacyFilters;
 
   const filteredProducts = useMemo(() => {
     let availableProducts = products.filter(
