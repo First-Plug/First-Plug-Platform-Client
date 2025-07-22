@@ -24,6 +24,7 @@ export function useProductsInnerTableColumns({
       {
         accessorKey: "serialNumber",
         header: "Serial",
+        size: 150,
         meta: {
           hasFilter: true,
           filterOptions: (() => {
@@ -67,17 +68,16 @@ export function useProductsInnerTableColumns({
         cell: ({ getValue }) => <FormatedDate date={getValue<string>()} />,
       },
       {
-        accessorKey: "assignedMember",
-        size: 250,
-        header: "Currently with",
+        accessorKey: "location",
+        header: "Location",
+        size: 160,
         meta: {
           hasFilter: true,
           filterOptions: (() => {
             const options = new Set<string>();
             allProducts.forEach((product) => {
-              if (product.assignedMember) {
-                options.add(product.assignedMember);
-              }
+              const location = product.location || "No Data";
+              options.add(location);
             });
             return Array.from(options)
               .sort()
@@ -85,6 +85,41 @@ export function useProductsInnerTableColumns({
                 label: option,
                 value: option,
               }));
+          })(),
+        },
+        cell: ({ getValue }) => (
+          <ProductLocation location={getValue<string>() as any} />
+        ),
+      },
+      {
+        accessorKey: "assignedMember",
+        size: 250,
+        header: "Currently with",
+        meta: {
+          hasFilter: true,
+          filterOptions: (() => {
+            const options = new Set<string>();
+            let hasEmpty = false;
+            allProducts.forEach((product) => {
+              if (product.assignedMember) {
+                options.add(product.assignedMember);
+              } else {
+                hasEmpty = true;
+              }
+            });
+            const filterData = Array.from(options)
+              .sort()
+              .map((option) => ({
+                label: option,
+                value: option,
+              }));
+            if (hasEmpty) {
+              filterData.unshift({
+                label: "FP Wareh./Office",
+                value: "No Data",
+              });
+            }
+            return filterData;
           })(),
         },
         cell: ({ row }) => {
@@ -146,33 +181,9 @@ export function useProductsInnerTableColumns({
         },
       },
       {
-        accessorKey: "location",
-        header: "Location",
-        size: 190,
-        meta: {
-          hasFilter: true,
-          filterOptions: (() => {
-            const options = new Set<string>();
-            allProducts.forEach((product) => {
-              const location = product.location || "No Data";
-              options.add(location);
-            });
-            return Array.from(options)
-              .sort()
-              .map((option) => ({
-                label: option,
-                value: option,
-              }));
-          })(),
-        },
-        cell: ({ getValue }) => (
-          <ProductLocation location={getValue<string>() as any} />
-        ),
-      },
-      {
         accessorFn: (row) => row.status,
         header: "Actions",
-        size: 170,
+        size: 120,
         cell: ({ row }) => {
           return <ActionButton product={row.original} />;
         },

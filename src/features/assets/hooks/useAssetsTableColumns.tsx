@@ -94,39 +94,14 @@ export function useAssetsTableColumns({ assets }: { assets: ProductTable[] }) {
         header: "Stock",
         size: 300,
         meta: {
-          hasFilter: true,
-          filterOptions: (() => {
-            const options = new Set<string>();
-            const filterData: { label: string; value: string }[] = [];
-
-            assets.forEach((row) => {
-              const products = row.products.filter(
-                (p) => p.status !== "Deprecated"
-              );
-              const total = products.length;
-              const label = `${total} Total`;
-
-              if (!options.has(label)) {
-                options.add(label);
-                filterData.push({ label, value: total.toString() });
-              }
-            });
-
-            return filterData.sort(
-              (a, b) => parseInt(b.value) - parseInt(a.value)
-            );
-          })(),
+          hasFilter: false,
         },
         cell: ({ getValue, row }) => {
           const products = getValue<Product[]>().filter(
             (product) => product.status !== "Deprecated"
           );
-
-          // Si hay availableProducts (cuando onlyAvailable está activado), usar esos para el conteo
-          const displayProducts = row.original.availableProducts || products;
-
-          const total = products.length; // Siempre mostrar el total original
-          const available = displayProducts.filter(
+          const total = products.length;
+          const available = products.filter(
             (product) => product.status === "Available"
           ).length;
 

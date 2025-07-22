@@ -76,18 +76,12 @@ export function useAssetsTable(assets: ProductTable[]) {
               groupName = groupName.trim();
             }
             return filterValues.some((value) => groupName === value);
-          case "stock":
-            return filterValues.some((value) => {
-              const total = asset.products.length;
-              return total === parseInt(value);
-            });
           default:
             return true;
         }
       });
     });
 
-    // Luego aplicar el filtro "only available"
     let finalFiltered = tableFiltered;
     if (onlyAvailable) {
       finalFiltered = tableFiltered
@@ -96,14 +90,11 @@ export function useAssetsTable(assets: ProductTable[]) {
             (product) => product.status === "Available" && !product.deleted
           );
 
-          // Solo incluir assets que tengan productos disponibles
           if (availableProducts.length === 0) return null;
 
           return {
             ...asset,
-            // Mantener el total original en products, pero agregar availableProducts para la subtabla
-            products: asset.products,
-            availableProducts: availableProducts,
+            products: availableProducts,
           };
         })
         .filter((asset) => asset !== null) as ProductTable[];

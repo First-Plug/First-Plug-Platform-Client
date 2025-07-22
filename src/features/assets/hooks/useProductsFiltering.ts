@@ -43,6 +43,9 @@ export function useProductsFiltering(
 
             case "assignedMember":
               const assignedMember = product.assignedMember || "No Data";
+              if (filterValues.includes("empty")) {
+                return assignedMember === "";
+              }
               return filterValues.includes(assignedMember);
 
             case "status + productCondition":
