@@ -6,6 +6,7 @@ const countryCodes: Record<string, string> = {
   Belize: "BZ",
   Bolivia: "BO",
   Brazil: "BR",
+  Brasil: "BR",
   Canada: "CA",
   Chile: "CL",
   Colombia: "CO",
@@ -259,6 +260,36 @@ export function getNormalizedCountryName(countryName: string): string | null {
   }
 
   return null;
+}
+
+// Función específica para normalizar países para filtros
+// Esta función agrupa variaciones del mismo país bajo un nombre estándar
+export function getCountryNameForFilter(countryName: string): string | null {
+  if (!countryName) return null;
+
+  // Mapeo específico para variaciones de nombres de países
+  const countryVariations: Record<string, string> = {
+    brasil: "Brazil",
+    brazil: "Brazil",
+    argentina: "Argentina",
+    chile: "Chile",
+    colombia: "Colombia",
+    mexico: "Mexico",
+    "estados unidos": "United States",
+    "united states": "United States",
+    canada: "Canada",
+    // Agregar más variaciones según sea necesario
+  };
+
+  const normalizedInput = normalizeText(countryName);
+
+  // Buscar en las variaciones
+  if (countryVariations[normalizedInput]) {
+    return countryVariations[normalizedInput];
+  }
+
+  // Si no se encuentra en las variaciones, usar la función original
+  return getNormalizedCountryName(countryName);
 }
 
 // Función original para emojis (mantenida por compatibilidad)

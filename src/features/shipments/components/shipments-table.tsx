@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+"use client";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   useReactTable,
@@ -241,10 +242,43 @@ export const ShipmentsTable = () => {
     pageCount: totalCount,
   });
 
+  // Ref para el row expandido y el contenedor scrollable
+  const expandedRowRef = useRef<HTMLTableRowElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const isExpandedShipmentInData = shipments.some(
+      (s) => s._id === expandedShipmentId
+    );
+
+    if (
+      expandedShipmentId &&
+      isExpandedShipmentInData &&
+      !isLoading &&
+      initialLoadDone
+    ) {
+      const timeoutId = setTimeout(() => {
+        const row = expandedRowRef.current;
+        if (row) {
+          row.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "nearest",
+          });
+        }
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [expandedShipmentId, shipments, isLoading, initialLoadDone]);
+
   return (
     <>
       <div className="relative flex flex-col flex-grow gap-1 h-full">
-        <div className="mx-auto border rounded-md w-full max-h-[85%] overflow-y-auto scrollbar-custom">
+        <div
+          className="mx-auto border rounded-md w-full max-h-[85%] overflow-y-auto scrollbar-custom"
+          ref={scrollContainerRef}
+        >
           <Table className="m-0 w-full border-collapse">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -292,6 +326,11 @@ export const ShipmentsTable = () => {
                 table.getRowModel().rows.map((row) => (
                   <React.Fragment key={row.id}>
                     <TableRow
+                      ref={
+                        expandedShipmentId === row.original._id
+                          ? expandedRowRef
+                          : undefined
+                      }
                       className={`text-black border-b text-md border-gray-200 text-left ${
                         expandedShipmentId === row.original._id
                           ? "border-l-2 border-l-blue bg-blue/10 transition-colors"
