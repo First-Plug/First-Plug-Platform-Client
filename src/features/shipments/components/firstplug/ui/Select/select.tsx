@@ -1,3 +1,4 @@
+"use client";
 import React, { useMemo } from "react";
 import { useRef } from "react";
 import { SelectContext } from "./context/select-context";

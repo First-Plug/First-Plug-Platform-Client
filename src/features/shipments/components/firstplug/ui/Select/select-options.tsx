@@ -1,3 +1,4 @@
+"use client";
 import type React from "react";
 import { useRef } from "react";
 import { useSelect } from "./context/select-context";
@@ -33,7 +34,7 @@ export function SelectOptions({
           ))}
         </>
       ) : (
-        <li className="py-2 px-4 text-gray-500 italic">{emptyMessage}</li>
+        <li className="px-4 py-2 text-gray-500 italic">{emptyMessage}</li>
       )}
     </ul>
   );

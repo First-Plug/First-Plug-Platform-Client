@@ -1,3 +1,4 @@
+"use client";
 import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
 import { useRef } from "react";
@@ -62,7 +63,7 @@ export function SelectTrigger({
         onClick={toggleDropdown}
         onChange={handleSearch}
         className={clsx(
-          "w-full pl-4 pr-12 rounded-md border text-black py-3 font-sans focus:outline-none",
+          "py-3 pr-12 pl-4 border rounded-md focus:outline-none w-full font-sans text-black",
           className,
           {
             "border-gray-300": color === "grey" || color === "normal",
@@ -78,7 +79,7 @@ export function SelectTrigger({
         autoComplete="off"
       />
       <div
-        className={clsx("absolute right-3 top-1/2 transform -translate-y-1/2", {
+        className={clsx("top-1/2 right-3 absolute -translate-y-1/2 transform", {
           "cursor-default": disabled,
           "cursor-pointer": !disabled,
         })}
