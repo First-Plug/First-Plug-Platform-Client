@@ -24,7 +24,9 @@ export function useProductsInnerTableColumns({
       {
         accessorKey: "serialNumber",
         header: "Serial",
-        size: 150,
+        size: 120,
+        minSize: 100,
+        maxSize: 150,
         meta: {
           hasFilter: true,
           filterOptions: (() => {
@@ -45,7 +47,9 @@ export function useProductsInnerTableColumns({
       {
         accessorKey: "acquisitionDate",
         header: "Acquisition Date",
-        size: 180,
+        size: 140,
+        minSize: 120,
+        maxSize: 160,
         meta: {
           hasFilter: true,
           filterOptions: (() => {
@@ -70,7 +74,9 @@ export function useProductsInnerTableColumns({
       {
         accessorKey: "location",
         header: "Location",
-        size: 160,
+        size: 130,
+        minSize: 110,
+        maxSize: 150,
         meta: {
           hasFilter: true,
           filterOptions: (() => {
@@ -93,7 +99,9 @@ export function useProductsInnerTableColumns({
       },
       {
         accessorKey: "assignedMember",
-        size: 250,
+        size: 200,
+        minSize: 180,
+        maxSize: 250,
         header: "Currently with",
         meta: {
           hasFilter: true,
@@ -128,7 +136,9 @@ export function useProductsInnerTableColumns({
       },
       {
         id: "status + productCondition",
-        size: 250,
+        size: 180,
+        minSize: 160,
+        maxSize: 220,
         accessorFn: (row) => ({
           status: row.status,
           productCondition: row.productCondition as
@@ -184,6 +194,8 @@ export function useProductsInnerTableColumns({
         accessorFn: (row) => row.status,
         header: "Actions",
         size: 120,
+        minSize: 100,
+        maxSize: 140,
         cell: ({ row }) => {
           return <ActionButton product={row.original} />;
         },
@@ -191,6 +203,9 @@ export function useProductsInnerTableColumns({
       },
       {
         id: "actions",
+        size: 80,
+        minSize: 80,
+        maxSize: 80,
         header: "",
         cell: ({ row }) => {
           return (
