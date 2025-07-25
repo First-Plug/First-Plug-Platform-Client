@@ -29,7 +29,7 @@ export default function MyTeam() {
 
   return (
     <PageLayout>
-      {isLoadingMembers && <BarLoader />}
+      {isLoadingMembers && !members && <BarLoader />}
 
       {members && members.length > 0 ? (
         <div className="flex flex-col h-full max-h-full">
@@ -66,9 +66,9 @@ export default function MyTeam() {
             />
           </div>
         </div>
-      ) : (
+      ) : members && members.length === 0 ? (
         <EmptyMembers />
-      )}
+      ) : null}
     </PageLayout>
   );
 }

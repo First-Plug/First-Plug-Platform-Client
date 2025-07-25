@@ -186,6 +186,7 @@ export function DataTable<TData>({
                 {table.getRowModel().rows.map((row, index) => (
                   <React.Fragment key={row.id}>
                     <tr
+                      data-row-id={getRowId ? getRowId(row.original) : row.id}
                       className={`z-10 border-gray-200 border-b ${
                         index !== 0 ? "border-t" : ""
                       } ${rowSnapClass} ${

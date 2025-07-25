@@ -1,9 +1,9 @@
 import { EmptyCard, EmptyCardLayout } from "@/shared";
 
-export default function EmptyShipments() {
+export const EmptyShipments = () => {
   return (
     <EmptyCardLayout>
       <EmptyCard type="shipments" />
     </EmptyCardLayout>
   );
-}
+};

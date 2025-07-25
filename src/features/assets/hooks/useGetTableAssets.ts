@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getTableAssets } from "@/features/assets";
 import { ProductTable } from "@/features/assets";
 
@@ -11,5 +11,6 @@ export const useGetTableAssets = () => {
     // refetchOnWindowFocus: true,
     // refetchOnReconnect: true,
     refetchOnMount: true,
+    placeholderData: keepPreviousData,
   });
 };

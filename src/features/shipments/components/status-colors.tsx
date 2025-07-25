@@ -25,4 +25,9 @@ export const ShipmentStateColors: Record<ShipmentStatus, StatusColor> = {
   Unavailable: "unavailable",
   "In Transit": "transit",
   "In Transit - Missing Data": "transitWarn",
+  "In Preparation": "preparing",
+  "On The Way": "info",
+  Received: "success",
+  Cancelled: "error",
+  "On Hold - Missing Data": "warn",
 } as const;

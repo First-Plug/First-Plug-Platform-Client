@@ -16,10 +16,11 @@ import {
   TruckIcon,
 } from "@/shared";
 import { usePathname } from "next/navigation";
-// import { usePrefetchAssets } from "@/assets/hooks";
+import { usePrefetchAssets } from "@/features/assets";
 import { usePrefetchMembers } from "@/features/members";
 import { usePrefetchLatestActivity } from "@/features/activity";
 import Link from "next/link";
+import { usePrefetchShipments } from "@/features/shipments";
 
 export const Sidebar = () => {
   const path = usePathname();
@@ -27,9 +28,10 @@ export const Sidebar = () => {
   const [showLogo, setShowLogo] = useState<boolean>(true);
   const [isSidebarSmall, setIsSidebarSmall] = useState<boolean>(false);
 
-  // const { prefetchAssets } = usePrefetchAssets();
+  const { prefetchAssets } = usePrefetchAssets();
   const prefetchMembers = usePrefetchMembers();
   const prefetchLatestActivity = usePrefetchLatestActivity();
+  const { prefetchShipments } = usePrefetchShipments();
 
   const toggleSidebarSize = () => {
     setIsSidebarSmall(!isSidebarSmall);
@@ -38,30 +40,43 @@ export const Sidebar = () => {
 
   return (
     <aside
-      className={` min-h-screen  flex flex-col shadow-sm shadow-grey transition-all ${
+      className={`min-h-screen flex flex-col shadow-sm shadow-grey transition-all duration-300 ease-in-out ${
         isSidebarSmall ? "w-20" : "w-64"
       }`}
     >
-      <header className={`py-8 flex flex-[-1] h-[8vh] mx-6`}>
-        <div>
-          <Link href="/home/dashboard">
-            {isSidebarSmall ? (
-              <Image
-                src="/Isotipo.png"
-                alt="Logo small"
-                width={280}
-                height={98}
-                className="w-10"
-              />
-            ) : (
+      <header className={`py-8 flex flex-[-1] h-[8vh] mx-6 overflow-hidden`}>
+        <div className="flex justify-center items-center w-full">
+          <Link
+            href="/home/dashboard"
+            className="flex justify-center items-center"
+          >
+            <div className="relative flex justify-center items-center w-full">
+              {/* Logo grande - se desvanece suavemente */}
               <Image
                 src="/logo1.png"
                 alt="Logo"
                 width={144.2}
                 height={48}
                 priority
+                className={`transition-all duration-300 ease-in-out ${
+                  isSidebarSmall
+                    ? "opacity-0 scale-75 absolute"
+                    : "opacity-100 scale-100"
+                }`}
               />
-            )}
+              {/* Logo pequeño - aparece suavemente */}
+              <Image
+                src="/Isotipo.png"
+                alt="Logo small"
+                width={280}
+                height={98}
+                className={`w-10 transition-all duration-300 ease-in-out ${
+                  isSidebarSmall
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-75 absolute"
+                }`}
+              />
+            </div>
           </Link>
         </div>
       </header>
@@ -79,7 +94,7 @@ export const Sidebar = () => {
           }
           onClick={toggleSidebarSize}
           variant="outline"
-          className={`w-10 h-10 bg-white border border-grey rounded-full  relative bottom-5 ${
+          className={`w-10 h-10 bg-white border border-grey rounded-full relative bottom-5 transition-all duration-300 ease-in-out ${
             isSidebarSmall ? "left-[70%]" : "left-[90%]"
           }`}
         />
@@ -94,7 +109,7 @@ export const Sidebar = () => {
           isActive={pathArray.includes("dashboard")}
           onMouseEnter={() => {
             prefetchMembers();
-            // prefetchAssets();
+            prefetchAssets();
           }}
         />
         <SidebarLink
@@ -115,7 +130,7 @@ export const Sidebar = () => {
           href="/home/my-stock"
           isActive={pathArray.includes("my-stock")}
           onMouseEnter={() => {
-            // prefetchAssets();
+            prefetchAssets();
           }}
         />
 
@@ -125,6 +140,9 @@ export const Sidebar = () => {
           title="Shipments"
           href="/home/shipments"
           isActive={pathArray.includes("shipments")}
+          onMouseEnter={() => {
+            prefetchShipments();
+          }}
         />
 
         <SidebarLink
