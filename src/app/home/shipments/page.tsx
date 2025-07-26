@@ -90,7 +90,7 @@ export default function Shipments() {
               onClick={handleClearAllFilters}
               variant="secondary"
               size="small"
-              className="mr-2 w-[120px]"
+              className="w-32"
             >
               Clear All Filters
             </Button>
