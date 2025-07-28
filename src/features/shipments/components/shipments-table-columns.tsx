@@ -33,20 +33,34 @@ export const useShipmentsTableColumns = ({
     () => [
       {
         accessorKey: "order_id",
-        id: "order_id", // Asegurar que el ID coincida
+        id: "order_id",
         header: "Order ID",
         size: 120,
         maxSize: 120,
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(new Set(shipments?.map((s) => s.order_id)))
-            .map((orderId) => ({ label: orderId, value: orderId }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: (() => {
+            const orderIdToDateMap = new Map<string, Date>();
+            shipments?.forEach((s) => {
+              if (!orderIdToDateMap.has(s.order_id)) {
+                orderIdToDateMap.set(s.order_id, new Date(s.order_date));
+              }
+            });
+
+            return Array.from(new Set(shipments?.map((s) => s.order_id)))
+              .map((orderId) => ({
+                label: orderId,
+                value: orderId,
+                date: orderIdToDateMap.get(orderId) || new Date(0),
+              }))
+              .sort((a, b) => b.date.getTime() - a.date.getTime())
+              .map(({ label, value }) => ({ label, value }));
+          })(),
         },
       },
       {
         accessorKey: "order_date",
-        id: "order_date", // Asegurar que el ID coincida
+        id: "order_date",
         header: "Order Date",
         size: 120,
         maxSize: 120,
@@ -60,24 +74,49 @@ export const useShipmentsTableColumns = ({
         },
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(
-              shipments?.map((s) =>
-                new Date(s.order_date).toLocaleDateString("es-AR", {
+          filterOptions: (() => {
+            const formattedDateToRealDateMap = new Map<string, Date>();
+            shipments?.forEach((s) => {
+              const formattedDate = new Date(s.order_date).toLocaleDateString(
+                "es-AR",
+                {
                   day: "2-digit",
                   month: "2-digit",
                   year: "numeric",
-                })
+                }
+              );
+              if (!formattedDateToRealDateMap.has(formattedDate)) {
+                formattedDateToRealDateMap.set(
+                  formattedDate,
+                  new Date(s.order_date)
+                );
+              }
+            });
+
+            return Array.from(
+              new Set(
+                shipments?.map((s) =>
+                  new Date(s.order_date).toLocaleDateString("es-AR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
+                )
               )
             )
-          )
-            .map((date) => ({ label: date, value: date }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+              .map((date) => ({
+                label: date,
+                value: date,
+                realDate: formattedDateToRealDateMap.get(date) || new Date(0),
+              }))
+              .sort((a, b) => b.realDate.getTime() - a.realDate.getTime())
+              .map(({ label, value }) => ({ label, value }));
+          })(),
         },
       },
       {
         accessorKey: "quantity_products",
-        id: "quantity_products", // Asegurar que el ID coincida
+        id: "quantity_products",
         header: "Quantity Products",
         size: 140,
         maxSize: 140,
@@ -92,7 +131,7 @@ export const useShipmentsTableColumns = ({
       },
       {
         accessorKey: "shipment_type",
-        id: "shipment_type", // Asegurar que el ID coincida
+        id: "shipment_type",
         header: "Type",
         size: 80,
         maxSize: 80,
@@ -107,7 +146,7 @@ export const useShipmentsTableColumns = ({
       },
       {
         accessorKey: "shipment_status",
-        id: "shipment_status", // Asegurar que el ID coincida
+        id: "shipment_status",
         header: "Status",
         size: 160,
         maxSize: 160,
@@ -148,7 +187,7 @@ export const useShipmentsTableColumns = ({
       },
       {
         accessorKey: "price",
-        id: "price", // Asegurar que el ID coincida
+        id: "price",
         header: "Price",
         size: 80,
         maxSize: 80,
