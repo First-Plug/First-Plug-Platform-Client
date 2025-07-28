@@ -116,6 +116,7 @@ export const SettingsForm = () => {
         }
 
         queryClient.invalidateQueries({ queryKey: ["assets"] });
+        queryClient.invalidateQueries({ queryKey: ["shipments"] });
       } catch (error) {
         console.error(error);
         setAlert("errorUpdateTeam");
