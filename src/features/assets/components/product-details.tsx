@@ -174,6 +174,7 @@ const MembersList = function MembersList({
 
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["shipments"] });
 
       setRelocateResult("success");
       setRelocateStauts("success");

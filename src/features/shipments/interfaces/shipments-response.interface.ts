@@ -1,11 +1,5 @@
 import type { AsapOrDateValue } from "../components/ShipmentWithFp/asap-or-date";
 
-export interface ShipmentsResponse {
-  data: Shipment[];
-  totalCount: number;
-  totalPages: number;
-}
-
 export interface Shipment {
   _id: string;
   order_id: string;
@@ -27,6 +21,7 @@ export interface Shipment {
   createdAt: Date;
   updatedAt: Date;
   __v: number;
+  trackingURL?: string;
 }
 
 export interface Details {
@@ -60,6 +55,11 @@ export enum ShipmentStatus {
   Unavailable = "Unavailable",
   "In Transit" = "In Transit",
   "In Transit - Missing Data" = "In Transit - Missing Data",
+  "In Preparation" = "In Preparation",
+  "On The Way" = "On The Way",
+  Received = "Received",
+  Cancelled = "Cancelled",
+  "On Hold - Missing Data" = "On Hold - Missing Data",
 }
 
 export interface Snapshot {
