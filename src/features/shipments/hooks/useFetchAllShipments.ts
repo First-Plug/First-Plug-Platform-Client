@@ -7,8 +7,7 @@ export const useFetchAllShipments = () => {
     queryFn: async () => {
       return await ShipmentServices.getAll();
     },
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     placeholderData: keepPreviousData,
   });
 };
