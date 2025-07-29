@@ -10,18 +10,33 @@ export function useTenantWebSocket(tenantId: string) {
   useEffect(() => {
     if (!tenantId) return;
 
-    socket = io(process.env.NEXT_PUBLIC_API || "", {
-      query: { tenantId },
-    });
+    try {
+      socket = io(process.env.NEXT_PUBLIC_API || "", {
+        query: { tenantId },
+        timeout: 20000,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
 
-    socket.on("data-changed", () => {
-      queryClient.invalidateQueries();
-      queryClient.refetchQueries();
-    });
+      socket.on("data-changed", () => {
+        queryClient.invalidateQueries();
+        queryClient.refetchQueries();
+      });
 
-    return () => {
-      socket?.disconnect();
-      socket = null;
-    };
-  }, [tenantId]);
+      socket.on("shipments-update", (data) => {
+        queryClient.invalidateQueries();
+        queryClient.refetchQueries();
+      });
+
+      return () => {
+        if (socket) {
+          socket.disconnect();
+          socket = null;
+        }
+      };
+    } catch (error) {
+      console.error("Error setting up websocket:", error);
+    }
+  }, [tenantId, queryClient]);
 }
