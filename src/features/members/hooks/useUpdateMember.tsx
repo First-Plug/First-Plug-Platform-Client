@@ -53,7 +53,7 @@ export const useUpdateMember = () => {
 
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
 
     onSettled: (data, error, variables) => {
@@ -61,7 +61,6 @@ export const useUpdateMember = () => {
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
-      queryClient.invalidateQueries({ queryKey: ["shipments"] });
     },
   });
 
