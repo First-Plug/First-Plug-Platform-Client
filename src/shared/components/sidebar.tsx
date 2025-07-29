@@ -50,32 +50,48 @@ export const Sidebar = () => {
             href="/home/dashboard"
             className="flex justify-center items-center"
           >
-            <div className="relative flex justify-center items-center w-full">
+            <div className="relative flex justify-center items-center w-full h-full">
               {/* Logo grande - se desvanece suavemente */}
-              <Image
-                src="/logo1.png"
-                alt="Logo"
-                width={144.2}
-                height={48}
-                priority
-                className={`transition-all duration-300 ease-in-out ${
+              <div
+                className={`flex items-center justify-center transition-all duration-300 ease-in-out ${
                   isSidebarSmall
                     ? "opacity-0 scale-75 absolute"
                     : "opacity-100 scale-100"
                 }`}
-              />
+              >
+                <Image
+                  src="/logo1.png"
+                  alt="Logo"
+                  width={144}
+                  height={48}
+                  priority
+                  className="object-contain"
+                  style={{
+                    width: "144px",
+                    height: "48px",
+                  }}
+                />
+              </div>
               {/* Logo pequeño - aparece suavemente */}
-              <Image
-                src="/Isotipo.png"
-                alt="Logo small"
-                width={280}
-                height={98}
-                className={`w-10 transition-all duration-300 ease-in-out ${
+              <div
+                className={`flex items-center justify-center transition-all duration-300 ease-in-out ${
                   isSidebarSmall
                     ? "opacity-100 scale-100"
                     : "opacity-0 scale-75 absolute"
                 }`}
-              />
+              >
+                <Image
+                  src="/Isotipo.png"
+                  alt="Logo small"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                  }}
+                />
+              </div>
             </div>
           </Link>
         </div>
