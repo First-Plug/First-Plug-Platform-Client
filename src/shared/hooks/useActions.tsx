@@ -41,6 +41,8 @@ export default function useActions() {
         updatedProduct
       );
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["shipments"] });
       return response;
     } catch (error) {
       console.error(`Error relocating product ${product._id}:`, error);
@@ -85,6 +87,7 @@ export default function useActions() {
       );
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["shipments"] });
       return response;
     } catch (error) {
       console.error("Error unassigning product:", error);

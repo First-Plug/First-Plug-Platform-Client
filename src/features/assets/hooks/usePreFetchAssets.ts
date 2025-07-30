@@ -1,16 +1,17 @@
+"use client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRef } from "react";
 import { getTableAssets } from "@/features/assets";
 
 import { ProductTable } from "@/features/assets";
 
 export const usePrefetchAssets = () => {
   const queryClient = useQueryClient();
-
-  let isPrefetching = false;
+  const isPrefetchingRef = useRef(false);
 
   const prefetchAssets = async () => {
-    if (isPrefetching) return;
-    isPrefetching = true;
+    if (isPrefetchingRef.current) return;
+    isPrefetchingRef.current = true;
 
     try {
       let assets = queryClient.getQueryData<ProductTable[]>(["assets"]);
@@ -24,6 +25,8 @@ export const usePrefetchAssets = () => {
       }
     } catch (error) {
       console.error("Error prefetching assets:", error);
+    } finally {
+      isPrefetchingRef.current = false;
     }
   };
 

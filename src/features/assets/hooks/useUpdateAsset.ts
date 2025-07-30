@@ -84,6 +84,11 @@ export const useUpdateAsset = () => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
 
+      // Invalidar la query de shipments si se creó uno nuevo
+      if (!isProduct(response) && "shipment" in response) {
+        queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      }
+
       return response; // Retornamos directamente la respuesta sin envolverla en un objeto
     },
   });

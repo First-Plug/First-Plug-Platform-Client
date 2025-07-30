@@ -51,6 +51,7 @@ export const useUpdateMember = () => {
 
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
 
     onSettled: (data, error, variables) => {

@@ -14,7 +14,7 @@ import {
 } from "@/features/assets";
 
 export default function MyAssets() {
-  const { data: assets = [], isLoading } = useGetTableAssets();
+  const { data: assets, isLoading } = useGetTableAssets();
 
   const {
     pageIndex,
@@ -46,7 +46,7 @@ export default function MyAssets() {
     <PageLayout>
       {isLoading && <BarLoader />}
 
-      {assets && assets.length > 0 ? (
+      {!isLoading && assets && assets.length > 0 ? (
         <div className="flex flex-col h-full max-h-full">
           <div className="flex items-center mb-4 max-h-[50%]">
             <Button
@@ -86,9 +86,9 @@ export default function MyAssets() {
             />
           </div>
         </div>
-      ) : (
+      ) : !isLoading && assets && assets.length === 0 ? (
         <EmptyStock />
-      )}
+      ) : null}
     </PageLayout>
   );
 }
