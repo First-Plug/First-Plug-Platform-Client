@@ -12,11 +12,10 @@ export function useSubtableLogic() {
   };
 
   const getRowId = (row: ProductTable) => {
-    const firstProduct = row.products[0];
-    if (firstProduct) {
-      return `${row.category}-${firstProduct._id}`;
+    if (!row.products?.[0]) {
+      return `${row.category}-empty`;
     }
-    return `${row.category}-${row.products.length}`;
+    return `${row.category}-${row.products[0]._id}`;
   };
 
   const renderSubComponent = (row: Row<ProductTable>) => {
