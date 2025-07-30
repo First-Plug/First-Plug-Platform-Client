@@ -8,12 +8,12 @@ const useSubtableFilterStore = createFilterStore();
 
 export function useSubtableLogic() {
   const getRowCanExpand = (row: Row<ProductTable>) => {
-    return row.original.products && row.original.products.length > 0;
+    return row.original.products?.[0] && !row.original.products[0].deleted;
   };
 
   const getRowId = (row: ProductTable) => {
     if (!row.products?.[0]) {
-      return `${row.category}-empty`;
+      return undefined; // Esto hará que la tabla ignore esta fila
     }
     return `${row.category}-${row.products[0]._id}`;
   };
