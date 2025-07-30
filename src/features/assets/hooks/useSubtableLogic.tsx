@@ -31,7 +31,7 @@ export function useSubtableLogic() {
     const tableId = getRowId(row.original);
 
     return (
-      <div className="bg-white w-full">
+      <div className="bg-white border-gray-200 border-b w-full">
         <ProductsDetailsTable
           products={products}
           useFilterStore={useSubtableFilterStore}
