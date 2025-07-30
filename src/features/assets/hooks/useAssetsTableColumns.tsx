@@ -39,53 +39,61 @@ export function useAssetsTableColumns({ assets }: { assets: ProductTable[] }) {
             const filterData: { label: string; value: string }[] = [];
 
             assets.forEach((row) => {
-              row.products.forEach((product) => {
-                const brand = product.attributes.find(
-                  (attr) => attr.key === "brand"
-                )?.value;
-                const model = product.attributes.find(
-                  (attr) => attr.key === "model"
-                )?.value;
-                const name = (product.name || "").trim();
-                const color =
-                  product.attributes.find((attr) => attr.key === "color")
-                    ?.value || "";
+              if (
+                row?.products &&
+                Array.isArray(row.products) &&
+                row.products.length > 0
+              ) {
+                row.products.forEach((product) => {
+                  if (!product || !product.attributes) return;
 
-                let label = "No Data";
-                let filterValue = "No Data";
+                  const brand = product.attributes.find(
+                    (attr) => attr.key === "brand"
+                  )?.value;
+                  const model = product.attributes.find(
+                    (attr) => attr.key === "model"
+                  )?.value;
+                  const name = (product.name || "").trim();
+                  const color =
+                    product.attributes.find((attr) => attr.key === "color")
+                      ?.value || "";
 
-                if (product.category === "Merchandising") {
-                  label = color ? `${name} (${color})` : name || "No Data";
-                  filterValue = color
-                    ? `${name} (${color})`
-                    : name || "No Data";
-                } else {
-                  if (brand && model) {
-                    if (model === "Other") {
-                      label = `${brand} Other ${name}`.trim();
-                      filterValue = `${brand} Other ${name}`.trim();
-                    } else {
-                      label = `${brand} ${model}`.trim();
-                      filterValue = `${brand} ${model}`.trim();
-                    }
+                  let label = "No Data";
+                  let filterValue = "No Data";
+
+                  if (product.category === "Merchandising") {
+                    label = color ? `${name} (${color})` : name || "No Data";
+                    filterValue = color
+                      ? `${name} (${color})`
+                      : name || "No Data";
                   } else {
-                    label = "No Data";
-                    filterValue = "No Data";
+                    if (brand && model) {
+                      if (model === "Other") {
+                        label = `${brand} Other ${name}`.trim();
+                        filterValue = `${brand} Other ${name}`.trim();
+                      } else {
+                        label = `${brand} ${model}`.trim();
+                        filterValue = `${brand} ${model}`.trim();
+                      }
+                    } else {
+                      label = "No Data";
+                      filterValue = "No Data";
+                    }
                   }
-                }
 
-                if (!options.has(label)) {
-                  options.add(label);
-                  filterData.push({ label, value: filterValue });
-                }
-              });
+                  if (!options.has(label)) {
+                    options.add(label);
+                    filterData.push({ label, value: filterValue });
+                  }
+                });
+              }
             });
 
             return filterData;
           })(),
         },
         cell: ({ row }) => (
-          <PrdouctModelDetail product={row.original.products[0]} />
+          <PrdouctModelDetail product={row.original.products?.[0]} />
         ),
       },
       {
@@ -97,11 +105,13 @@ export function useAssetsTableColumns({ assets }: { assets: ProductTable[] }) {
           hasFilter: false,
         },
         cell: ({ getValue, row }) => {
-          const products = getValue<Product[]>().filter(
-            (product) => product.status !== "Deprecated"
+          const products = getValue<Product[]>() || [];
+          const filteredProducts = products.filter(
+            (product) =>
+              product && product.status && product.status !== "Deprecated"
           );
-          const total = products.length;
-          const available = products.filter(
+          const total = filteredProducts.length;
+          const available = filteredProducts.filter(
             (product) => product.status === "Available"
           ).length;
 
