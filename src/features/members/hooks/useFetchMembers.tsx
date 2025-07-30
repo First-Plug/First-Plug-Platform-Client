@@ -11,5 +11,6 @@ export const useFetchMembers = () => {
     },
     staleTime: 1000 * 60 * 30,
     placeholderData: keepPreviousData,
+    refetchOnMount: true,
   });
 };
