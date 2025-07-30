@@ -73,7 +73,7 @@ export default function Shipments() {
 
   const renderSubComponent = (row: any) => {
     return (
-      <div className="bg-white w-full">
+      <div className="bg-white border-gray-200 border-b w-full">
         <ShipmentDetailsTable data={row.original} />
       </div>
     );
