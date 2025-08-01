@@ -14,6 +14,7 @@ export function useActivityTable() {
   const activityId = searchParams.get("activityId");
 
   const { selectedDates, setSelectedDates } = useDateFilterStore();
+  const previousDatesRef = useRef(selectedDates);
 
   const handleDateChange = (dates: { startDate: Date; endDate: Date }) => {
     setSelectedDates(dates);
@@ -34,12 +35,33 @@ export function useActivityTable() {
 
   const currentPage = pageIndex + 1;
 
-  // Resetear a la página 1 cuando cambian las fechas
+  // Resetear a la página 1 solo cuando las fechas cambian por acción del usuario
   useEffect(() => {
-    if (pageIndex > 0) {
+    const currentDates = {
+      startDate: selectedDates.startDate,
+      endDate: selectedDates.endDate,
+    };
+
+    const previousDates = previousDatesRef.current;
+
+    // Solo resetear si las fechas realmente cambiaron (no por navegación)
+    if (
+      previousDates &&
+      (previousDates.startDate.getTime() !== currentDates.startDate.getTime() ||
+        previousDates.endDate.getTime() !== currentDates.endDate.getTime()) &&
+      pageIndex > 0
+    ) {
       resetToFirstPage();
     }
-  }, [selectedDates.startDate, selectedDates.endDate]);
+
+    // Actualizar la referencia
+    previousDatesRef.current = currentDates;
+  }, [
+    selectedDates.startDate,
+    selectedDates.endDate,
+    pageIndex,
+    resetToFirstPage,
+  ]);
 
   const { data, isLoading } = useFetchLatestActivity(
     currentPage,
