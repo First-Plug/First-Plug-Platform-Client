@@ -23,7 +23,8 @@ type EmptyCardType =
   | "loginerror"
   | "registererror"
   | "noStockMember"
-  | "actionHistory";
+  | "actionHistory"
+  | "noResultsWithFilters";
 
 type TConfig = {
   image: string;
@@ -122,6 +123,12 @@ const Config: Record<EmptyCardType, TConfig> = {
   actionHistory: {
     image: "/office.svg",
     paragraph: "You don't have any actions in your history.",
+  },
+  noResultsWithFilters: {
+    image: "/office.svg",
+    paragraph: "No results found for the selected date range.",
+    paragraph2:
+      "Try adjusting your filters or selecting a different time period.",
   },
 };
 

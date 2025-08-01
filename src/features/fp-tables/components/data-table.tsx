@@ -9,7 +9,6 @@ import {
   useReactTable,
   RowData,
   Row,
-  ExpandedState,
 } from "@tanstack/react-table";
 
 import { createFilterStore, ColumnFilterPopover } from "@/features/fp-tables";
@@ -18,15 +17,14 @@ interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
   data: TData[];
   useFilterStore: ReturnType<typeof createFilterStore>;
-  tableId?: string; // ID único para esta tabla (opcional, para compatibilidad)
+  tableId?: string;
   rowHeight?: number;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
   getRowCanExpand?: (row: Row<TData>) => boolean;
   renderSubComponent?: (row: Row<TData>) => React.ReactNode;
   getRowId?: (row: TData) => string;
-  // Props condicionales simplificadas
-  adaptiveHeight?: boolean; // true = se adapta al contenido, false = altura fija como antes
-  enableSnapScroll?: boolean; // true = habilita snap scroll, false = scroll normal
+  adaptiveHeight?: boolean;
+  enableSnapScroll?: boolean;
 }
 
 declare module "@tanstack/react-table" {
@@ -53,7 +51,6 @@ export function DataTable<TData>({
   const expandedRows = useFilterStore((s) => s.expandedRows);
   const setExpandedRows = useFilterStore((s) => s.setExpandedRows);
 
-  // Usar la nueva lógica de filtros por tabla ID si se proporciona
   const getFiltersForTable = useFilterStore((s) => s.getFiltersForTable);
   const setFilterForTable = useFilterStore((s) => s.setFilterForTable);
   const legacyFilters = useFilterStore((s) => s.filters);
@@ -85,7 +82,6 @@ export function DataTable<TData>({
     getRowId: getRowId ? (row) => getRowId(row) : undefined,
   });
 
-  // Determinar las clases CSS para la altura
   const containerHeightClass = adaptiveHeight
     ? "h-auto min-h-0"
     : "h-full max-h-full";
@@ -94,7 +90,6 @@ export function DataTable<TData>({
     ? "h-auto min-h-0"
     : "min-h-[60vh] max-h-[60vh]";
 
-  // Determinar las clases CSS para el snap scroll
   const snapScrollClasses = enableSnapScroll ? "snap-mandatory snap-y" : "";
 
   const rowSnapClass = enableSnapScroll ? "snap-start" : "";
@@ -105,11 +100,11 @@ export function DataTable<TData>({
         <table className="w-full text-xs border-collapse table-fixed">
           <thead className="top-0 z-9 sticky bg-[#F7F7F9] border-gray-200 border-b">
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="relative bg-[#F7F7F9]">
+              <tr key={headerGroup.id} className="relative bg-[#F7F7F9] h-12">
                 {headerGroup.headers.map((header, index) => (
                   <th
                     key={header.id}
-                    className="relative bg-[#F7F7F9] py-1 pl-2 font-medium text-left"
+                    className="relative bg-[#F7F7F9] py-1 pl-2 h-12 font-medium text-left"
                     style={{
                       width:
                         header.getSize() !== 150
@@ -120,7 +115,7 @@ export function DataTable<TData>({
                     {index < headerGroup.headers.length - 1 && (
                       <span className="top-0 right-0 absolute bg-[#D9DBDE] w-[1px] h-full" />
                     )}
-                    <div className="flex justify-between items-center w-full">
+                    <div className="flex justify-between items-center w-full h-full">
                       <span className="ml-2">
                         {header.isPlaceholder
                           ? null
@@ -217,7 +212,6 @@ export function DataTable<TData>({
                         </td>
                       ))}
                     </tr>
-                    {/* Renderizar contenido expandido */}
                     {row.getIsExpanded() && renderSubComponent && (
                       <tr>
                         <td
