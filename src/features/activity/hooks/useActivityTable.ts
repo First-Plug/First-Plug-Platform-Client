@@ -34,6 +34,13 @@ export function useActivityTable() {
 
   const currentPage = pageIndex + 1;
 
+  // Resetear a la página 1 cuando cambian las fechas
+  useEffect(() => {
+    if (pageIndex > 0) {
+      resetToFirstPage();
+    }
+  }, [selectedDates.startDate, selectedDates.endDate]);
+
   const { data, isLoading } = useFetchLatestActivity(
     currentPage,
     pageSize,
