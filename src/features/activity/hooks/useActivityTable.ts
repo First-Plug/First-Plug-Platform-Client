@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useEffect, useRef, useState } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { createFilterStore, usePagination } from "@/features/fp-tables";
 import { useFetchLatestActivity } from "./useFetchLatestActivity";
-import { endOfDay, format, parseISO, startOfDay, subDays } from "date-fns";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useDateFilterStore } from "../store/dateFilter.store";
 
 const useActivityTableFilterStore = createFilterStore();
 
@@ -13,48 +13,10 @@ export function useActivityTable() {
   const router = useRouter();
   const activityId = searchParams.get("activityId");
 
-  const startParam = searchParams.get("startDate");
-  const endParam = searchParams.get("endDate");
-
-  const [selectedDates, setSelectedDates] = useState<{
-    startDate: Date;
-    endDate: Date;
-  }>(() => {
-    const defaultStart = startOfDay(subDays(new Date(), 6));
-    const defaultEnd = endOfDay(new Date());
-
-    const parsedStart = startParam
-      ? parseISO(`${startParam}T00:00:00`)
-      : defaultStart;
-    const parsedEnd = endParam ? parseISO(`${endParam}T23:59:59`) : defaultEnd;
-
-    return {
-      startDate: parsedStart,
-      endDate: parsedEnd,
-    };
-  });
-
-  useEffect(() => {
-    const defaultStart = startOfDay(subDays(new Date(), 6));
-    const defaultEnd = endOfDay(new Date());
-
-    const parsedStart = startParam
-      ? parseISO(`${startParam}T00:00:00`)
-      : defaultStart;
-    const parsedEnd = endParam ? parseISO(`${endParam}T23:59:59`) : defaultEnd;
-
-    setSelectedDates({
-      startDate: parsedStart,
-      endDate: parsedEnd,
-    });
-  }, [startParam, endParam]);
+  const { selectedDates, setSelectedDates } = useDateFilterStore();
 
   const handleDateChange = (dates: { startDate: Date; endDate: Date }) => {
     setSelectedDates(dates);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("startDate", format(dates.startDate, "yyyy-MM-dd"));
-    params.set("endDate", format(dates.endDate, "yyyy-MM-dd"));
-    router.replace(`?${params.toString()}`);
   };
 
   const {
@@ -123,8 +85,6 @@ export function useActivityTable() {
     tableData,
     totalCount,
     isLoading,
-    selectedDates,
-    setSelectedDates: handleDateChange,
     tableContainerRef,
     useActivityTableFilterStore,
     activityId,

@@ -14,6 +14,8 @@ import {
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+import { useDateFilterStore } from "../../store/dateFilter.store";
+import { useSearchParams } from "next/navigation";
 
 const predefinedRanges = [
   {
@@ -50,7 +52,11 @@ const predefinedRanges = [
   { label: "Custom", value: "custom", range: [null, null] },
 ];
 
-const DateRangeDropdown = ({ selectedDates, setSelectedDates }: any) => {
+const DateRangeDropdown = () => {
+  const { selectedDates, setSelectedDates } = useDateFilterStore();
+  const searchParams = useSearchParams();
+  const activityId = searchParams.get("activityId");
+
   const [selectedOption, setSelectedOption] = useState(predefinedRanges[0]);
   const [open, setOpen] = useState(false);
 
@@ -61,6 +67,96 @@ const DateRangeDropdown = ({ selectedDates, setSelectedDates }: any) => {
     startDate: startOfDay(subDays(new Date(), 7)),
     endDate: endOfDay(new Date()),
   });
+
+  // Inicializar el estado cuando se monta el componente
+  useEffect(() => {
+    if (activityId) {
+      // Si hay activityId, forzar "Last 7 days"
+      setSelectedOption(predefinedRanges[0]);
+      setSelectedDates({
+        startDate: predefinedRanges[0].range[0],
+        endDate: predefinedRanges[0].range[1],
+      });
+    } else {
+      // Si no hay activityId, sincronizar con las fechas actuales del store
+      if (selectedDates.startDate && selectedDates.endDate) {
+        const matchingOption = predefinedRanges.find((option) => {
+          if (option.value === "custom") return false;
+
+          const optionStart = startOfDay(option.range[0]);
+          const optionEnd = endOfDay(option.range[1]);
+          const selectedStart = startOfDay(selectedDates.startDate);
+          const selectedEnd = endOfDay(selectedDates.endDate);
+
+          return (
+            optionStart.getTime() === selectedStart.getTime() &&
+            optionEnd.getTime() === selectedEnd.getTime()
+          );
+        });
+
+        if (matchingOption) {
+          setSelectedOption(matchingOption);
+        } else {
+          setSelectedOption({
+            label: `(${format(selectedDates.startDate, "dd MMM")} - ${format(
+              selectedDates.endDate,
+              "dd MMM"
+            )})`,
+            value: "custom",
+            range: [selectedDates.startDate, selectedDates.endDate],
+          });
+        }
+      }
+    }
+
+    // Actualizar el rango interno para el calendario
+    setInternalRange({
+      startDate: selectedDates.startDate,
+      endDate: selectedDates.endDate,
+    });
+  }, [
+    activityId,
+    selectedDates.startDate,
+    selectedDates.endDate,
+    setSelectedDates,
+  ]);
+
+  // Sincronizar cuando cambian las fechas (solo cuando NO hay activityId)
+  useEffect(() => {
+    if (!activityId && selectedDates.startDate && selectedDates.endDate) {
+      const matchingOption = predefinedRanges.find((option) => {
+        if (option.value === "custom") return false;
+
+        const optionStart = startOfDay(option.range[0]);
+        const optionEnd = endOfDay(option.range[1]);
+        const selectedStart = startOfDay(selectedDates.startDate);
+        const selectedEnd = endOfDay(selectedDates.endDate);
+
+        return (
+          optionStart.getTime() === selectedStart.getTime() &&
+          optionEnd.getTime() === selectedEnd.getTime()
+        );
+      });
+
+      if (matchingOption) {
+        setSelectedOption(matchingOption);
+      } else {
+        setSelectedOption({
+          label: `(${format(selectedDates.startDate, "dd MMM")} - ${format(
+            selectedDates.endDate,
+            "dd MMM"
+          )})`,
+          value: "custom",
+          range: [selectedDates.startDate, selectedDates.endDate],
+        });
+      }
+
+      setInternalRange({
+        startDate: selectedDates.startDate,
+        endDate: selectedDates.endDate,
+      });
+    }
+  }, [selectedDates.startDate, selectedDates.endDate, activityId]);
 
   const handleSelect = (value: string) => {
     const option = predefinedRanges.find((o) => o.value === value);
@@ -122,7 +218,7 @@ const DateRangeDropdown = ({ selectedDates, setSelectedDates }: any) => {
   return (
     <div className="relative">
       <select
-        className="border rounded p-2 w-full bg-white text-sm"
+        className="bg-white p-2 border rounded w-full text-sm"
         onChange={(e) => handleSelect(e.target.value)}
         onClick={() => {
           if (selectedOption.value === "custom") {
@@ -154,7 +250,7 @@ const DateRangeDropdown = ({ selectedDates, setSelectedDates }: any) => {
 
       {selectedOption.value === "custom" && open && (
         <div
-          className="absolute z-50 bg-white p-4 shadow-lg"
+          className="z-50 absolute bg-white shadow-lg p-4"
           style={{
             top: "100%",
             left: leftPosition,
@@ -175,7 +271,7 @@ const DateRangeDropdown = ({ selectedDates, setSelectedDates }: any) => {
           <div className="flex justify-end mt-2">
             <button
               onClick={handleAccept}
-              className="bg-blue text-white px-4 py-2 rounded text-sm"
+              className="bg-blue px-4 py-2 rounded text-white text-sm"
             >
               Accept
             </button>

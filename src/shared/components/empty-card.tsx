@@ -125,7 +125,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     paragraph: "You don't have any actions in your history.",
   },
   noResultsWithFilters: {
-    image: "/offcice.svg",
+    image: "/office.svg",
     paragraph: "No results found for the selected date range.",
     paragraph2:
       "Try adjusting your filters or selecting a different time period.",

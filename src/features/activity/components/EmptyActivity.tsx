@@ -1,17 +1,25 @@
 import { EmptyCard, EmptyCardLayout } from "@/shared";
-import { useSearchParams } from "next/navigation";
+import { useDateFilterStore } from "../store/dateFilter.store";
 
 export const EmptyActivity = function EmptyActivity() {
-  const searchParams = useSearchParams();
-  const startDate = searchParams.get("startDate");
-  const endDate = searchParams.get("endDate");
+  const { selectedDates } = useDateFilterStore();
 
-  const hasDateFilters = startDate && endDate;
+  // Verificar si las fechas son diferentes a las por defecto (Last 7 days)
+  const defaultStart = new Date();
+  defaultStart.setDate(defaultStart.getDate() - 6);
+  defaultStart.setHours(0, 0, 0, 0);
+
+  const defaultEnd = new Date();
+  defaultEnd.setHours(23, 59, 59, 999);
+
+  const hasCustomDateFilters =
+    selectedDates.startDate.getTime() !== defaultStart.getTime() ||
+    selectedDates.endDate.getTime() !== defaultEnd.getTime();
 
   return (
     <EmptyCardLayout>
       <EmptyCard
-        type={hasDateFilters ? "noResultsWithFilters" : "actionHistory"}
+        type={hasCustomDateFilters ? "noResultsWithFilters" : "actionHistory"}
       />
     </EmptyCardLayout>
   );
