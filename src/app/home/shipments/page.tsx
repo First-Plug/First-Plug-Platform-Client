@@ -111,7 +111,7 @@ export default function Shipments() {
             />
           </div>
 
-          <div className="mt-2">
+          <div className="mt-2 pt-6">
             <PaginationAdvanced
               pageIndex={pageIndex}
               pageCount={totalPages}
