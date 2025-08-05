@@ -25,6 +25,10 @@ interface DataTableProps<TData> {
   getRowId?: (row: TData) => string;
   adaptiveHeight?: boolean;
   enableSnapScroll?: boolean;
+  viewMoreRow?: {
+    text: string;
+    onClick: () => void;
+  };
 }
 
 declare module "@tanstack/react-table" {
@@ -47,6 +51,7 @@ export function DataTable<TData>({
   getRowId,
   adaptiveHeight = false,
   enableSnapScroll = true,
+  viewMoreRow,
 }: DataTableProps<TData>) {
   const expandedRows = useFilterStore((s) => s.expandedRows);
   const setExpandedRows = useFilterStore((s) => s.setExpandedRows);
@@ -88,16 +93,16 @@ export function DataTable<TData>({
 
   const scrollContainerHeightClass = adaptiveHeight
     ? "h-auto min-h-0"
-    : "min-h-[60vh] max-h-[60vh]";
+    : "flex-1 min-h-0";
 
   const snapScrollClasses = enableSnapScroll ? "snap-mandatory snap-y" : "";
 
   const rowSnapClass = enableSnapScroll ? "snap-start" : "";
 
   return (
-    <div className={`relative flex flex-col flex-grow ${containerHeightClass}`}>
-      <div className="mx-auto border border-gray-200 rounded-md w-full overflow-hidden">
-        <table className="w-full text-xs border-collapse table-fixed">
+    <div className={`relative flex flex-col ${containerHeightClass}`}>
+      <div className="flex flex-col mx-auto border border-gray-200 rounded-md w-full overflow-hidden overflow-x-hidden">
+        <table className="w-full min-w-0 text-xs border-collapse table-fixed">
           <thead className="top-0 z-9 sticky bg-[#F7F7F9] border-gray-200 border-b">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="relative bg-[#F7F7F9] h-12">
@@ -116,7 +121,7 @@ export function DataTable<TData>({
                       <span className="top-0 right-0 absolute bg-[#D9DBDE] w-[1px] h-full" />
                     )}
                     <div className="flex justify-between items-center w-full h-full">
-                      <span className="ml-2">
+                      <span className="mr-6 ml-2">
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -146,13 +151,12 @@ export function DataTable<TData>({
         </table>
         <div
           ref={scrollContainerRef}
-          className={`${scrollContainerHeightClass} overflow-y-auto ${snapScrollClasses}`}
-          style={!adaptiveHeight ? { height: "60vh" } : undefined}
+          className={`${scrollContainerHeightClass} overflow-y-auto overflow-x-hidden ${snapScrollClasses}`}
         >
           {table.getRowModel().rows.length === 0 ? (
             <div
               className={`flex justify-center items-center ${
-                adaptiveHeight ? "py-8" : "h-full min-h-[60vh]"
+                adaptiveHeight ? "py-8" : "flex-1"
               }`}
             >
               <div className="flex flex-col items-center gap-2 text-gray-500">
@@ -176,7 +180,7 @@ export function DataTable<TData>({
               </div>
             </div>
           ) : (
-            <table className="w-full text-xs table-fixed">
+            <table className="w-full min-w-0 text-xs table-fixed">
               <tbody>
                 {table.getRowModel().rows.map((row, index) => (
                   <React.Fragment key={row.id}>
@@ -191,7 +195,7 @@ export function DataTable<TData>({
                       {row.getVisibleCells().map((cell, cellIndex) => (
                         <td
                           key={cell.id}
-                          className={`px-4 ${
+                          className={`px-4 pr-6 ${
                             cellIndex === 0 && row.getIsExpanded()
                               ? "border-l-2 border-black"
                               : ""
@@ -224,6 +228,23 @@ export function DataTable<TData>({
                     )}
                   </React.Fragment>
                 ))}
+                {viewMoreRow && (
+                  <tr
+                    className="z-10 hover:bg-blue border-gray-200 border-b transition-colors duration-200 cursor-pointer"
+                    onClick={viewMoreRow.onClick}
+                  >
+                    <td
+                      colSpan={columns.length}
+                      className="px-4 py-3 font-semibold text-blue-600 hover:text-white text-center transition-colors duration-200"
+                      style={{
+                        paddingTop: `${rowHeight / 2 - 8}px`,
+                        paddingBottom: `${rowHeight / 2 - 8}px`,
+                      }}
+                    >
+                      {viewMoreRow.text}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           )}
