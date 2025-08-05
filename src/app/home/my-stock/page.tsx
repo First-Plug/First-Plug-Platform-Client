@@ -66,7 +66,7 @@ export default function MyAssets() {
               columns={columns}
               data={paginatedAssets}
               useFilterStore={useAssetsTableFilterStore}
-              rowHeight={46}
+              rowHeight={56}
               scrollContainerRef={tableContainerRef}
               getRowCanExpand={getRowCanExpand}
               renderSubComponent={renderSubComponent}
@@ -76,7 +76,7 @@ export default function MyAssets() {
             />
           </div>
 
-          <div className="mt-2">
+          <div className="mt-2 pt-6">
             <PaginationAdvanced
               pageIndex={pageIndex}
               pageCount={totalPages}

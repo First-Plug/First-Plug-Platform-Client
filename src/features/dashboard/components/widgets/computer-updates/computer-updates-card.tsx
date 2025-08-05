@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { ProgressCircle, ComputerUpgradeTable } from "@/features/dashboard";
+import { ProgressCircle, ComputerUpdatesTable } from "@/features/dashboard";
 
 import { UserServices } from "@/features/settings";
 
@@ -106,9 +106,9 @@ export const ComputerUpdateCard = ({
         />
       </div>
 
-      <div className="flex-grow mt-4 w-full overflow-y-auto scrollbar-custom">
+      <div className="flex-grow mt-4 w-full overflow-hidden">
         {computersToUpgrade.length > 0 ? (
-          <ComputerUpgradeTable
+          <ComputerUpdatesTable
             products={computersToUpgrade}
             email={user?.email}
             tenantName={user?.tenantName}

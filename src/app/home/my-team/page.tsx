@@ -51,12 +51,12 @@ export default function MyTeam() {
               columns={columns}
               data={paginatedMembers}
               useFilterStore={useMembersTableFilterStore}
-              rowHeight={53.4}
+              rowHeight={56.2}
               scrollContainerRef={tableContainerRef}
             />
           </div>
 
-          <div className="mt-2">
+          <div className="mt-2 pt-6">
             <PaginationAdvanced
               pageIndex={pageIndex}
               pageCount={totalPages}

@@ -57,7 +57,7 @@ export default function ActionHistoryPage() {
                     columns={columns}
                     data={tableData}
                     useFilterStore={useActivityTableFilterStore}
-                    rowHeight={46}
+                    rowHeight={60}
                     scrollContainerRef={tableContainerRef}
                     getRowCanExpand={getRowCanExpand}
                     renderSubComponent={renderSubComponent}
@@ -67,7 +67,7 @@ export default function ActionHistoryPage() {
                   />
                 </div>
 
-                <div className="">
+                <div className="mt-2 pt-6">
                   <PaginationAdvanced
                     pageIndex={pageIndex}
                     pageCount={totalPages}
