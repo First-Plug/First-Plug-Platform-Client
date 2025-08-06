@@ -69,7 +69,7 @@ const authOptions: NextAuthOptions = {
           return null;
         }
 
-        return res.data;
+        return res.data.user;
       },
     }),
   ],

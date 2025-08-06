@@ -4,12 +4,9 @@ import { BASE_URL } from "@/config/axios.config";
 
 export const updateDashboard = async (widgets: Widget[]) => {
   try {
-    const response = await HTTPRequests.patch(
-      `${BASE_URL}/api/user/update-dashboard`,
-      {
-        widgets,
-      }
-    );
+    const response = await HTTPRequests.patch(`${BASE_URL}/api/users/widgets`, {
+      widgets,
+    });
     return response.data;
   } catch (error) {
     console.error("Error updating dashboard", error);
