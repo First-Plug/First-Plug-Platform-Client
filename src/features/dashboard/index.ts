@@ -14,8 +14,10 @@ export * from "./components/widgets/computer-updates/computer-updates-card";
 export * from "./components/widgets/computer-updates/computer-age-chart";
 export * from "./components/widgets/computer-updates/progress-circle";
 export * from "./components/widgets/computer-updates/computer-updates-tables";
+export * from "./components/widgets/computer-updates/computer-updates-table";
 
 export * from "./components/widgets/latest-activity-widget/latest-activity-widget";
+export * from "./components/widgets/latest-activity-widget/latest-activity-table";
 
 export * from "./components/widgets/member-by-country/member-by-country-widget";
 export * from "./components/widgets/member-by-country/ops-by-country-chart";

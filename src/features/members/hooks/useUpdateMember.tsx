@@ -1,8 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateMember } from "@/features/members";
-import { Member } from "@/features/members";
+import { updateMember, Member, handleApiError } from "@/features/members";
 import { useAlertStore } from "@/shared";
-import { handleApiError } from "@/features/members";
 
 interface UpdateMemberProps {
   id: string;
@@ -53,6 +51,7 @@ export const useUpdateMember = () => {
 
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
 
     onSettled: (data, error, variables) => {

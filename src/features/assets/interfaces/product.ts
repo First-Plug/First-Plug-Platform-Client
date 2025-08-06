@@ -124,6 +124,7 @@ export interface Product {
 export interface ProductTable {
   category: string;
   products: Product[];
+  availableProducts?: Product[];
   status?: ProductStatus;
   productCondition?: ProductCondition;
 }

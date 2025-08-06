@@ -1,5 +1,3 @@
-export * from "./components/data-members";
-export * from "./components/members-table";
 export * from "./components/empty-members";
 export * from "./components/AddMember/member-form";
 export * from "./components/AddMember/employee-data";

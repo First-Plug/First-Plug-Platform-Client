@@ -7,6 +7,7 @@ import { ActionsTableMembers } from "@/features/members";
 import { FormatedDate } from "@/shared/components/Tables";
 import {
   getCountryDisplay,
+  getCountryNameForFilter,
   months,
 } from "@/features/members/utils/countryUtils";
 
@@ -41,13 +42,32 @@ export const useMembersTableColumns = ({
         header: "Country",
         meta: {
           hasFilter: true,
-          filterOptions: [
-            ...Array.from(new Set(members?.map((m: Member) => m.country || "")))
-              .filter((name): name is string => !!name)
-              .map((name) => ({ label: name, value: name }))
-              .sort((a, b) => a.label.localeCompare(b.label)),
-            { label: "No Data", value: "no-data" },
-          ],
+          filterOptions: (() => {
+            // Crear un mapeo de países normalizados
+            const countryMapping = new Map<string, string[]>();
+
+            members?.forEach((m: Member) => {
+              if (m.country) {
+                const normalizedName = getCountryNameForFilter(m.country);
+                if (normalizedName) {
+                  if (!countryMapping.has(normalizedName)) {
+                    countryMapping.set(normalizedName, []);
+                  }
+                  countryMapping.get(normalizedName)!.push(m.country);
+                }
+              }
+            });
+
+            // Crear opciones de filtro con nombres normalizados
+            const filterOptions = Array.from(countryMapping.entries())
+              .map(([normalizedName, originalNames]) => ({
+                label: normalizedName,
+                value: originalNames.join("|"), // Usar pipe como separador para múltiples valores
+              }))
+              .sort((a, b) => a.label.localeCompare(b.label));
+
+            return [...filterOptions, { label: "No Data", value: "no-data" }];
+          })(),
         },
         cell: ({ getValue }) => {
           const country = getValue<string>();

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getAllMembers } from "@/features/members";
 
 export const useFetchMembers = () => {
@@ -10,5 +10,7 @@ export const useFetchMembers = () => {
       return members;
     },
     staleTime: 1000 * 60 * 30,
+    placeholderData: keepPreviousData,
+    refetchOnMount: true,
   });
 };

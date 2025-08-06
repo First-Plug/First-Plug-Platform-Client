@@ -35,6 +35,8 @@ export const useReassignAssets = () => {
     onSuccess: () => {
       setAlert("assignedProductSuccess");
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["shipments"] });
     },
   });
 };

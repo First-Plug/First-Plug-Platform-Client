@@ -69,7 +69,7 @@ export const TeamHomeCard = function ({ members }: { members: Member[] }) {
     <div className="flex gap-2 p-2 w-full h-full">
       <section className="relative flex w-full h-full">
         <div className="absolute flex flex-col gap-2 w-full h-full">
-          <div className="flex flex-col gap-1 w-full overflow-y-auto">
+          <div className="flex flex-col flex-1 gap-1 w-full min-h-0 overflow-hidden">
             {membersWithBirthdate.length === 0 ? (
               <div className="flex flex-col justify-center items-center mt-10 h-full overflow-hidden">
                 <Cake />
@@ -104,7 +104,9 @@ export const TeamHomeCard = function ({ members }: { members: Member[] }) {
                 </p>
               </div>
             ) : (
-              <BirthdayTable members={upcomingBirthdays} />
+              <div className="flex-1 min-h-0">
+                <BirthdayTable members={upcomingBirthdays} />
+              </div>
             )}
           </div>
         </div>

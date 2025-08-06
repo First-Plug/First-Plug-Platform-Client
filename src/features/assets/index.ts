@@ -1,4 +1,3 @@
-export { DataStock } from "./components/data-stock";
 export { EmptyStock } from "./components/empty-stock";
 export { GenericAlertDialog } from "./components/generic-alert-dialog";
 export { ProductForm } from "./components/product-form";
@@ -20,6 +19,8 @@ export { PrdouctModelDetail } from "./components/product-model-details";
 export { ProductImage } from "./components/product-image";
 export { ProductDetail } from "./components/product-details";
 export { ProductConditionCard } from "./components/product-condition-card";
+export { TableStockActions } from "./components/table-stock-actions";
+export { ProductsDetailsTable } from "./components/products-details-table";
 
 export {
   BulkCreateValidator,
@@ -54,6 +55,11 @@ export * from "./hooks/usePreFetchAsset";
 export * from "./hooks/useGetTableAssets";
 export * from "./hooks/usePreFetchAssignData";
 export * from "./hooks/useUpdateEntityAsset";
+export * from "./hooks/useAssetsTable";
+export * from "./hooks/useAssetsTableColumns";
+export * from "./hooks/useProductsInnerTableColumns";
+export * from "./hooks/useSubtableLogic";
+export * from "./hooks/useProductsFiltering";
 
 export * from "./api/createAssets";
 export * from "./api/updateAssets";

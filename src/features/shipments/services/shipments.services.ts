@@ -1,16 +1,14 @@
 import {
-  ShipmentsResponse,
+  Shipment,
   UpdateShipment,
 } from "../interfaces/shipments-response.interface";
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 
 export class ShipmentServices {
-  static async getAll(pageIndex: number, pageSize: number) {
-    const response = await HTTPRequests.get(
-      `${BASE_URL}/api/shipments?page=${pageIndex}&size=${pageSize}`
-    );
+  static async getAll() {
+    const response = await HTTPRequests.get(`${BASE_URL}/api/shipments`);
 
-    return response.data as ShipmentsResponse;
+    return response.data as Shipment[];
   }
 
   static async cancel(shipmentId: string) {

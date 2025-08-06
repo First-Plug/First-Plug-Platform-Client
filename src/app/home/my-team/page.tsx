@@ -29,7 +29,7 @@ export default function MyTeam() {
 
   return (
     <PageLayout>
-      {isLoadingMembers && <BarLoader />}
+      {isLoadingMembers && !members && <BarLoader />}
 
       {members && members.length > 0 ? (
         <div className="flex flex-col h-full max-h-full">
@@ -51,12 +51,12 @@ export default function MyTeam() {
               columns={columns}
               data={paginatedMembers}
               useFilterStore={useMembersTableFilterStore}
-              rowHeight={53.4}
+              rowHeight={56.2}
               scrollContainerRef={tableContainerRef}
             />
           </div>
 
-          <div className="mt-2">
+          <div className="mt-2 pt-6">
             <PaginationAdvanced
               pageIndex={pageIndex}
               pageCount={totalPages}
@@ -66,9 +66,9 @@ export default function MyTeam() {
             />
           </div>
         </div>
-      ) : (
+      ) : members && members.length === 0 ? (
         <EmptyMembers />
-      )}
+      ) : null}
     </PageLayout>
   );
 }

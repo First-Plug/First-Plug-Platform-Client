@@ -3,6 +3,7 @@ export * from "./components/column-filter-popover";
 export * from "./components/pagination";
 
 export * from "./hooks/usePagination";
+export * from "./hooks/useTableFilters";
 
 export * from "./store/createFilterStore";
 
