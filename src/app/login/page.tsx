@@ -20,12 +20,14 @@ import {
   useToast,
 } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLogisticUser } from "@/shared/hooks/useLogisticUser";
 
 export default function Login() {
   const queryClient = useQueryClient();
   const emailInput = useInput("", "email");
   const passWordInput = useInput("", "password");
   const [isLoading, setIsLoading] = useState(false);
+  const { isLogisticUser } = useLogisticUser();
   const { toast } = useToast();
   const router = useRouter();
   const handleSumbit = async (e: FormEvent) => {
@@ -49,7 +51,11 @@ export default function Login() {
 
       queryClient.clear();
 
-      router.push("/home/dashboard");
+      if (isLogisticUser) {
+        router.push("/home/logistics");
+      } else {
+        router.push("/home/dashboard");
+      }
     } catch (error) {
       toast({
         variant: "destructive",

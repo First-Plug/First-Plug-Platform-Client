@@ -14,6 +14,7 @@ import {
   DashboardIcon,
   ClockIcon,
   TruckIcon,
+  WarehouseIcon,
 } from "@/shared";
 import { usePathname } from "next/navigation";
 import { usePrefetchAssets } from "@/features/assets";
@@ -21,6 +22,7 @@ import { usePrefetchMembers } from "@/features/members";
 import { usePrefetchLatestActivity } from "@/features/activity";
 import Link from "next/link";
 import { usePrefetchShipments } from "@/features/shipments";
+import { useLogisticUser } from "@/shared/hooks/useLogisticUser";
 
 export const Sidebar = () => {
   const path = usePathname();
@@ -32,6 +34,7 @@ export const Sidebar = () => {
   const prefetchMembers = usePrefetchMembers();
   const prefetchLatestActivity = usePrefetchLatestActivity();
   const { prefetchShipments } = usePrefetchShipments();
+  const { isLogisticUser } = useLogisticUser();
 
   const toggleSidebarSize = () => {
     setIsSidebarSmall(!isSidebarSmall);
@@ -117,84 +120,93 @@ export const Sidebar = () => {
       </div>
 
       <section className="flex flex-col flex-[2] gap-4">
-        <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<DashboardIcon />}
-          title="Dashboard"
-          href="/home/dashboard"
-          isActive={pathArray.includes("dashboard")}
-          onMouseEnter={() => {
-            prefetchMembers();
-            prefetchAssets();
-          }}
-        />
-        <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<PersonsGroupIcon />}
-          title="My Team"
-          href="/home/my-team"
-          isActive={pathArray.includes("my-team")}
-          onMouseEnter={() => {
-            prefetchMembers();
-          }}
-        />
+        {isLogisticUser ? (
+          <SidebarLink
+            isSmall={isSidebarSmall}
+            icon={<WarehouseIcon />}
+            title="Logistics"
+            href="/home/logistics"
+            isActive={pathArray.includes("logistics")}
+            onMouseEnter={() => {}}
+          />
+        ) : (
+          <>
+            <SidebarLink
+              isSmall={isSidebarSmall}
+              icon={<DashboardIcon />}
+              title="Dashboard"
+              href="/home/dashboard"
+              isActive={pathArray.includes("dashboard")}
+              onMouseEnter={() => {
+                prefetchMembers();
+                prefetchAssets();
+              }}
+            />
+            <SidebarLink
+              isSmall={isSidebarSmall}
+              icon={<PersonsGroupIcon />}
+              title="My Team"
+              href="/home/my-team"
+              isActive={pathArray.includes("my-team")}
+              onMouseEnter={() => {
+                prefetchMembers();
+              }}
+            />
 
-        <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<ComputerIcon />}
-          title="My Assets"
-          href="/home/my-stock"
-          isActive={pathArray.includes("my-stock")}
-          onMouseEnter={() => {
-            prefetchAssets();
-          }}
-        />
+            <SidebarLink
+              isSmall={isSidebarSmall}
+              icon={<ComputerIcon />}
+              title="My Assets"
+              href="/home/my-stock"
+              isActive={pathArray.includes("my-stock")}
+              onMouseEnter={() => {
+                prefetchAssets();
+              }}
+            />
 
-        <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<TruckIcon />}
-          title="Shipments"
-          href="/home/shipments"
-          isActive={pathArray.includes("shipments")}
-          onMouseEnter={() => {
-            prefetchShipments();
-          }}
-        />
+            <SidebarLink
+              isSmall={isSidebarSmall}
+              icon={<TruckIcon />}
+              title="Shipments"
+              href="/home/shipments"
+              isActive={pathArray.includes("shipments")}
+              onMouseEnter={() => {
+                prefetchShipments();
+              }}
+            />
 
-        <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<ClockIcon />}
-          title="Activity"
-          href="/home/activity"
-          isActive={pathArray.includes("activity")}
-          onMouseEnter={() => {
-            prefetchLatestActivity();
-          }}
-        />
-
-        {/* <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<NotebookOrdersIcon />}
-          title="Orders"
-          href="/orders"
-          isActive={pathArray.includes("orders")}
-        /> */}
+            <SidebarLink
+              isSmall={isSidebarSmall}
+              icon={<ClockIcon />}
+              title="Activity"
+              href="/home/activity"
+              isActive={pathArray.includes("activity")}
+              onMouseEnter={() => {
+                prefetchLatestActivity();
+              }}
+            />
+          </>
+        )}
       </section>
 
-      <hr className="my-2" />
+      {!isLogisticUser && (
+        <>
+          <hr className="my-2" />
 
-      <section className="flex flex-col flex-[-1] gap-4 my-4 h-12">
-        <SidebarLink
-          isSmall={isSidebarSmall}
-          icon={<SettingsIcon />}
-          title="Settings"
-          href="/home/settings"
-          isActive={pathArray.includes("settings")}
-          onMouseEnter={() => {
-            // prefetchAssets();
-          }}
-        />
-      </section>
+          <section className="flex flex-col flex-[-1] gap-4 my-4 h-12">
+            <SidebarLink
+              isSmall={isSidebarSmall}
+              icon={<SettingsIcon />}
+              title="Settings"
+              href="/home/settings"
+              isActive={pathArray.includes("settings")}
+              onMouseEnter={() => {
+                // prefetchAssets();
+              }}
+            />
+          </section>
+        </>
+      )}
     </aside>
   );
 };
