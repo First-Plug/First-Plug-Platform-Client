@@ -14,7 +14,7 @@ export const middleware: NextMiddleware = async (req) => {
   }
 
   const userEmail = (session as any)?.user?.email || session.email;
-  const isLogisticUser = userEmail === "nahuelr.developer2@gmail.com";
+  const isLogisticUser = userEmail === "hola@firstplug.com";
 
   if (isLogisticUser) {
     if (req.nextUrl.pathname !== "/home/logistics") {

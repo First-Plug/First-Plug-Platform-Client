@@ -12,7 +12,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "FP Warehouse",
     products: "Samsung Galaxy S23, Samsung EP-TA300",
     shipmentType: "Internal",
-    trackingURL: "Enter value",
+    trackingURL: "https://www.google.com",
     destinationDetails: "Fecha: 19/1/2024",
   },
   {
@@ -26,7 +26,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "Ruben Walker",
     products: "669966675fdf40f5ee7ab760",
     shipmentType: "Courrier",
-    trackingURL: "Enter value",
+    trackingURL: "https://www.google.com",
     destinationDetails: "Avenida Libertador 4444, Buenos",
   },
   {
@@ -40,7 +40,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "Ryan Rezen...",
     products: "688a1c0e6f3c3bc19042012e",
     shipmentType: "TBC",
-    trackingURL: "Enter value",
+    trackingURL: "https://www.google.com",
     destinationDetails: "Guemes 2030 Rosario, 1236, Arge",
   },
   {
@@ -54,7 +54,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "Our office",
     products: "669966675fdf40f5ee7ab760",
     shipmentType: "Internal",
-    trackingURL: "Enter value",
+    trackingURL: "https://www.google.com",
     destinationDetails: "Jaramillo 2596 9A, Saavedra, 1429",
   },
   {
@@ -68,7 +68,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "Abigail Smith",
     products: "688a1c0e6f3c3bc19042012e",
     shipmentType: "Courrier",
-    trackingURL: "Enter value",
+    trackingURL: "https://www.google.com",
     destinationDetails: " , , , Tel: - DNI:",
   },
   {
@@ -82,7 +82,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "FP warehou...",
     products: "669966675fdf40f5ee7ab760",
     shipmentType: "Internal",
-    trackingURL: "Enter value",
+    trackingURL: "https://www.google.com",
     destinationDetails: "Calle Principal 123, Buenos Aires, 1001",
   },
   {
@@ -96,7 +96,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "John Doe",
     products: "688a1c0e6f3c3bc19042012e",
     shipmentType: "Courrier",
-    trackingURL: "Enter value",
+    trackingURL: "https://www.google.com",
     destinationDetails: "Main Street 456, New York, 10001",
   },
   {
@@ -110,7 +110,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "John Doe",
     products: "688a1c0e6f3c3bc19042012e",
     shipmentType: "Courrier",
-    trackingURL: "Enter value",
+    trackingURL: "https://www.google.com",
     destinationDetails: "Main Street 456, New York, 10001",
   },
   {
@@ -124,7 +124,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "John Doe",
     products: "688a1c0e6f3c3bc19042012e",
     shipmentType: "Courrier",
-    trackingURL: "Enter value",
+    trackingURL: "https://www.google.com",
     destinationDetails: "Main Street 456, New York, 10001",
   },
   {
@@ -152,7 +152,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "John Doe",
     products: "688a1c0e6f3c3bc19042012e",
     shipmentType: "Courrier",
-    trackingURL: "Enter value",
+    trackingURL: "https://www.google.com",
     destinationDetails: "Main Street 456, New York, 10001",
   },
 ];

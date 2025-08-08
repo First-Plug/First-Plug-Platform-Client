@@ -13,6 +13,7 @@ import {
 } from "./aside-contents";
 
 import { ShipmentAside } from "@/features/shipments";
+import { EditLogisticsShipmentAside } from "@/features/logistics";
 
 export var AsideContent = function () {
   const { type } = useAsideStore();
@@ -39,5 +40,7 @@ export var AsideContent = function () {
       return <ChangePassword />;
     case "UpdateShipment":
       return <ShipmentAside />;
+    case "EditLogisticsShipment":
+      return <EditLogisticsShipmentAside />;
   }
 };

@@ -34,5 +34,7 @@ export const AsideTitle = () => {
       return `Change Password `;
     case "UpdateShipment":
       return `Update Shipment`;
+    case "EditLogisticsShipment":
+      return `Edit Shipment`;
   }
 };

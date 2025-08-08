@@ -52,7 +52,7 @@ export default function Logistics() {
                 columns={columns}
                 data={paginatedData}
                 useFilterStore={useLogisticsTableFilterStore}
-                rowHeight={56}
+                rowHeight={59}
                 scrollContainerRef={tableContainerRef}
                 getRowCanExpand={getRowCanExpand}
                 renderSubComponent={renderSubComponent}

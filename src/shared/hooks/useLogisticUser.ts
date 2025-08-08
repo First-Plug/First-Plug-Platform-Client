@@ -4,7 +4,7 @@ export const useLogisticUser = () => {
   const { data: session } = useSession();
   const userEmail = session?.user?.email;
 
-  const isLogisticUser = userEmail === "nahuelr.developer2@gmail.com";
+  const isLogisticUser = userEmail === "hola@firstplug.com";
 
   return {
     isLogisticUser,

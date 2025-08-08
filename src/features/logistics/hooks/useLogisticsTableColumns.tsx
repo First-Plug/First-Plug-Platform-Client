@@ -50,12 +50,16 @@ import {
 import { Badge, Button, PenIcon } from "@/shared";
 import { DetailsButton } from "@/shared/components/Tables";
 import { useMemo } from "react";
+import { useAsideStore } from "@/shared";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useLogisticsTableColumns = ({
   data,
 }: {
   data: LogisticOrder[];
 }): ColumnDef<LogisticOrder>[] => {
+  const { setAside } = useAsideStore();
+  const queryClient = useQueryClient();
   const filterOptions = useMemo(() => {
     const tenants = Array.from(new Set(data.map((item) => item.tenant))).sort();
     const orderIds = Array.from(
@@ -209,14 +213,18 @@ export const useLogisticsTableColumns = ({
       header: "Actions",
       size: 70,
       cell: ({ row }) => {
+        const handleEdit = () => {
+          // Guardar el envío seleccionado en el caché
+          queryClient.setQueryData(["selectedLogisticsShipment"], row.original);
+          // Abrir la aside de edición
+          setAside("EditLogisticsShipment");
+        };
+
         return (
           <div className="flex justify-center">
             <Button
               variant="text"
-              onClick={() => {
-                // TODO: Implement edit functionality
-                console.log("Edit order:", row.original.orderId);
-              }}
+              onClick={handleEdit}
               className="hover:bg-transparent p-1"
             >
               <PenIcon

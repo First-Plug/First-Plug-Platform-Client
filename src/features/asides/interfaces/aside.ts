@@ -12,6 +12,7 @@ export const ASIDE_TYPES = [
   "RelocateProducts",
   "ChangePassword",
   "UpdateShipment",
+  "EditLogisticsShipment",
 ] as const;
 
 export type AsideType = (typeof ASIDE_TYPES)[number];
