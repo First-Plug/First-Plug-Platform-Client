@@ -45,30 +45,34 @@ export class AuthV2Services {
     } catch (error: any) {
       console.error("Login error:", error);
 
-      // PRIMERO: Verificar mensaje específico de sin tenant (independiente del código)
+      // CASO 1: Usuario sin tenant asignado (credenciales correctas)
       if (
-        error?.response?.data?.message?.includes("sin tenant") ||
-        error?.response?.data?.message?.includes("no tenant") ||
-        error?.response?.data?.message?.includes("NO_TENANT") ||
-        error?.response?.data?.message?.includes("Usuario sin tenant asignado")
+        error?.response?.status === 401 &&
+        error?.response?.data?.message ===
+          "Usuario sin tenant asignado. Contacte al administrador."
       ) {
         throw {
           type: "NO_TENANT",
           message: "Usuario sin tenant asignado. Contacte al administrador.",
-          user: error?.response?.data?.user || null, // Incluir datos del usuario si están disponibles
+          user: error?.response?.data?.user || null,
           originalError: error,
         };
       }
 
-      // SEGUNDO: Verificar si son credenciales inválidas
+      // CASO 2 y 3: Credenciales inválidas (password incorrecto o email incorrecto)
       if (
-        error?.response?.status === 401 ||
-        error?.response?.status === 403 ||
-        error?.response?.data?.message?.includes("Invalid credentials") ||
-        error?.response?.data?.message?.includes("invalid credentials") ||
-        error?.response?.data?.message?.includes("Wrong password") ||
-        error?.response?.data?.message?.includes("User not found")
+        error?.response?.status === 401 &&
+        error?.response?.data?.message === "Credenciales inválidas"
       ) {
+        throw {
+          type: "INVALID_CREDENTIALS",
+          message: "Invalid username or password. Please try again.",
+          originalError: error,
+        };
+      }
+
+      // Fallback para otros errores 401
+      if (error?.response?.status === 401) {
         throw {
           type: "INVALID_CREDENTIALS",
           message: "Invalid username or password. Please try again.",
