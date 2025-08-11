@@ -8,9 +8,9 @@ import { SecuritySettings } from "./security-settings";
 
 export const SettingsLayout = () => {
   return (
-    <div className="w-full max-w-6xl mx-auto p-6">
+    <div className="w-full px-6 py-4">
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-4 mb-4">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <svg
               className="h-4 w-4"
