@@ -7,7 +7,10 @@ import {
   useLogisticsTable,
   useLogisticsTableColumns,
   useLogisticsSubtableLogic,
+  useExportLogisticsCsv,
 } from "@/features/logistics";
+import { DownloadIcon } from "@/shared";
+import { TruckIcon } from "lucide-react";
 
 export default function Logistics() {
   const {
@@ -29,6 +32,16 @@ export default function Logistics() {
   const { getRowCanExpand, getRowId, renderSubComponent } =
     useLogisticsSubtableLogic();
 
+  const exportCsvMutation = useExportLogisticsCsv();
+
+  const handleExportCsv = async () => {
+    try {
+      await exportCsvMutation.mutateAsync();
+    } catch (error) {
+      console.error("Failed to export CSV:", error);
+    }
+  };
+
   return (
     <>
       <PageLayout>
@@ -36,7 +49,7 @@ export default function Logistics() {
 
         {!isLoading && data && data.length > 0 ? (
           <div className="flex flex-col h-full max-h-full">
-            <div className="flex items-center mb-6">
+            <div className="flex justify-between items-center mb-6">
               <Button
                 onClick={handleClearAllFilters}
                 variant="secondary"
@@ -45,6 +58,26 @@ export default function Logistics() {
               >
                 Clear Filters
               </Button>
+
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={handleExportCsv}
+                  variant="secondary"
+                  size="small"
+                  icon={<DownloadIcon />}
+                  className="w-32"
+                  disabled={exportCsvMutation.isPending}
+                >
+                  Export CSV
+                </Button>
+
+                <div className="flex items-center gap-2 text-gray-500">
+                  <TruckIcon className="w-4 h-4" />
+                  <span className="text-sm">
+                    {data.length} total shipments | {paginatedData.length} shown
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div className="flex-1 min-h-0">

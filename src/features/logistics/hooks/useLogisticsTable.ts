@@ -47,6 +47,8 @@ export const useLogisticsTable = () => {
             return filterValues.some((value) => order.orderId === value);
           case "orderDate":
             return filterValues.some((value) => order.orderDate === value);
+          case "updatedAt":
+            return filterValues.some((value) => order.updatedAt === value);
           case "quantity":
             return filterValues.some(
               (value) => order.quantity.toString() === value

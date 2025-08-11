@@ -65,9 +65,57 @@ export const useLogisticsTableColumns = ({
     const orderIds = Array.from(
       new Set(data.map((item) => item.orderId))
     ).sort();
-    const dates = Array.from(
-      new Set(data.map((item) => item.orderDate))
-    ).sort();
+
+    const dates = Array.from(new Set(data.map((item) => item.orderDate)))
+      .filter((dateString) => dateString && dateString.trim() !== "")
+      .map((dateString) => {
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) {
+          return null;
+        }
+        return {
+          original: dateString,
+          parsed: date,
+          formatted: date.toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }),
+        };
+      })
+      .filter((item) => item !== null)
+      .sort((a, b) => b!.parsed.getTime() - a!.parsed.getTime())
+      .map((item) => ({
+        label: item!.formatted,
+        value: item!.original,
+      }));
+
+    const updatedDates = Array.from(new Set(data.map((item) => item.updatedAt)))
+      .filter((dateString) => dateString && dateString.trim() !== "")
+      .map((dateString) => {
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) {
+          return null;
+        }
+        return {
+          original: dateString,
+          parsed: date,
+          formatted: date.toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+      })
+      .filter((item) => item !== null)
+      .sort((a, b) => b!.parsed.getTime() - a!.parsed.getTime())
+      .map((item) => ({
+        label: item!.formatted,
+        value: item!.original,
+      }));
+
     const quantities = Array.from(
       new Set(data.map((item) => item.quantity))
     ).sort((a, b) => a - b);
@@ -86,7 +134,8 @@ export const useLogisticsTableColumns = ({
     return {
       tenants: tenants.map((tenant) => ({ label: tenant, value: tenant })),
       orderIds: orderIds.map((id) => ({ label: id, value: id })),
-      dates: dates.map((date) => ({ label: date, value: date })),
+      dates: dates,
+      updatedDates: updatedDates,
       quantities: quantities.map((qty) => ({
         label: qty.toString(),
         value: qty.toString(),
@@ -141,9 +190,22 @@ export const useLogisticsTableColumns = ({
         hasFilter: true,
         filterOptions: filterOptions.dates,
       },
-      cell: ({ row }) => (
-        <div className="text-gray-900">{row.getValue("orderDate")}</div>
-      ),
+      sortingFn: (rowA, rowB) => {
+        const dateA = new Date(rowA.original.orderDate);
+        const dateB = new Date(rowB.original.orderDate);
+        return dateA.getTime() - dateB.getTime();
+      },
+      cell: ({ row }) => {
+        const dateString = row.getValue("orderDate") as string;
+        const date = new Date(dateString);
+        const formattedDate = date.toLocaleDateString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+
+        return <div className="text-gray-900">{formattedDate}</div>;
+      },
     },
     {
       accessorKey: "quantity",
@@ -197,16 +259,31 @@ export const useLogisticsTableColumns = ({
     },
 
     {
-      accessorKey: "orderDate",
+      accessorKey: "updatedAt",
       header: "Updated",
       size: 90,
       meta: {
         hasFilter: true,
-        filterOptions: filterOptions.dates,
+        filterOptions: filterOptions.updatedDates,
       },
-      cell: ({ row }) => (
-        <div className="text-gray-900">{row.getValue("orderDate")}</div>
-      ),
+      sortingFn: (rowA, rowB) => {
+        const dateA = new Date(rowA.original.updatedAt);
+        const dateB = new Date(rowB.original.updatedAt);
+        return dateA.getTime() - dateB.getTime();
+      },
+      cell: ({ row }) => {
+        const dateString = row.getValue("updatedAt") as string;
+        const date = new Date(dateString);
+        const formattedDate = date.toLocaleDateString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        return <div className="text-gray-900">{formattedDate}</div>;
+      },
     },
     {
       id: "actions",
@@ -214,9 +291,7 @@ export const useLogisticsTableColumns = ({
       size: 70,
       cell: ({ row }) => {
         const handleEdit = () => {
-          // Guardar el envío seleccionado en el caché
           queryClient.setQueryData(["selectedLogisticsShipment"], row.original);
-          // Abrir la aside de edición
           setAside("EditLogisticsShipment");
         };
 

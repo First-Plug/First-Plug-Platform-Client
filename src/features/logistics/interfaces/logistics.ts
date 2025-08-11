@@ -11,6 +11,7 @@ export interface LogisticOrder {
   shipmentType: ShipmentType;
   trackingURL: string;
   destinationDetails: string;
+  updatedAt: string;
 }
 
 export type ShipmentStatus =

@@ -87,7 +87,7 @@ export const MemberModalProvider = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-medium text-gray-700 text-base">
-                    ID
+                    DNI/Passport
                   </span>
                   <span className="text-gray-900 text-sm">12345678</span>
                 </div>
@@ -102,9 +102,17 @@ export const MemberModalProvider = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-medium text-gray-700 text-base">
-                    Postal Code
+                    Zip Code
                   </span>
                   <span className="text-gray-900 text-sm">1426</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-700 text-base">
+                    Assigned Email
+                  </span>
+                  <span className="text-gray-900 text-sm">
+                    alan.cassin@firstplug.com
+                  </span>
                 </div>
                 <div className="flex flex-col">
                   <span className="font-medium text-gray-700 text-base">

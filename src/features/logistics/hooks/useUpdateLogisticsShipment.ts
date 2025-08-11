@@ -11,20 +11,17 @@ interface UpdateLogisticsShipmentData {
   trackingURL: string;
 }
 
-// Función para actualizar el envío (simulada por ahora)
 const updateLogisticsShipment = async (
   shipmentId: string,
   data: UpdateLogisticsShipmentData
 ): Promise<LogisticOrder> => {
-  // Simular una llamada a la API
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Por ahora solo retornamos los datos actualizados
   return {
     orderId: shipmentId,
-    tenant: "Empresa A", // Estos datos vendrían de la API
+    tenant: "Empresa A",
     quantity: 2,
-    orderDate: "6/8/2025",
+    orderDate: "2025-08-06T00:00:00Z",
     shipmentStatus: data.shipmentStatus as any,
     price: `${data.price.amount} ${data.price.currency}`,
     origin: "Alan David Cassin",
@@ -33,6 +30,7 @@ const updateLogisticsShipment = async (
     shipmentType: data.shipmentType as any,
     trackingURL: data.trackingURL,
     destinationDetails: "Fecha: 19/1/2024",
+    updatedAt: new Date().toISOString(),
   };
 };
 
@@ -48,7 +46,6 @@ export const useUpdateLogisticsShipment = () => {
       data: UpdateLogisticsShipmentData;
     }) => updateLogisticsShipment(shipmentId, data),
     onSuccess: () => {
-      // Invalidar las consultas relacionadas para refrescar los datos
       queryClient.invalidateQueries({ queryKey: ["logistics"] });
     },
   });
