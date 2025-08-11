@@ -39,7 +39,7 @@ export const SettingsForm = () => {
     defaultValues: user
       ? {
           ...user,
-          computerExpiration: user.computerExpiration,
+          computerExpiration: (user as any).computerExpiration,
           isRecoverableConfig: user.isRecoverableConfig
             ? Object.fromEntries(
                 Object.entries(user.isRecoverableConfig).map(([key, value]) => [
@@ -189,7 +189,7 @@ export const SettingsForm = () => {
                           )
                         )
                       : {},
-                    computerExpiration: user.computerExpiration,
+                    computerExpiration: (user as any).computerExpiration,
                   });
                 }}
               >

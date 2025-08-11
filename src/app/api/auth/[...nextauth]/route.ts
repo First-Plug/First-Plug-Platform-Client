@@ -29,7 +29,10 @@ const authOptions: NextAuthOptions = {
           name: profile.preferred_username,
           email: profile.email,
           image: "",
+          _id: profile.sub,
           accountProvider: "azure-ad" as const,
+          isRecoverableConfig: {},
+          widgets: [],
         };
 
         // TODO: Add to the profile photo when we have file management in the back
@@ -87,6 +90,8 @@ const authOptions: NextAuthOptions = {
             tenantName: loginResponse.user.tenantName,
             accountProvider: loginResponse.user.accountProvider,
             access_token: loginResponse.access_token,
+            isRecoverableConfig: {},
+            widgets: [],
           };
         } catch (error: any) {
           console.error("Login authorization failed:", error);
@@ -110,6 +115,8 @@ const authOptions: NextAuthOptions = {
               tenantName: null, // Sin tenant
               accountProvider: "credentials",
               access_token: null,
+              isRecoverableConfig: {},
+              widgets: [],
             };
           }
 
@@ -182,7 +189,16 @@ const authOptions: NextAuthOptions = {
         };
 
         const res = await AuthServices.getBackendTokens(payload);
-        session.user = res.user;
+        session.user = {
+          ...res.user,
+          // Asegurar propiedades requeridas
+          name: res.user.name || token.name || "",
+          email: res.user.email || token.email || "",
+          _id: res.user._id || "",
+          accountProvider: res.user.accountProvider || "google",
+          isRecoverableConfig: res.user.isRecoverableConfig || {},
+          widgets: res.user.widgets || [],
+        };
         session.backendTokens = res.backendTokens;
       }
 

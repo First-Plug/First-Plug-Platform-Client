@@ -7,22 +7,31 @@ declare module "next-auth" {
    */
   interface User {
     id: string;
-    name?: string | null;
-    email?: string | null;
+    name: string;
+    email: string;
     image?: string | null;
     // Propiedades personalizadas de nuestro sistema
-    _id?: string;
+    _id: string;
     firstName?: string;
     lastName?: string;
     role?: string;
     tenantId?: string;
     tenantName?: string;
-    accountProvider?: "credentials" | "google" | "azure-ad";
+    accountProvider: "credentials" | "google" | "azure-ad";
     access_token?: string;
     // Propiedades de compatibilidad con el sistema anterior
     password?: string | null;
-    isRecoverableConfig?: Record<string, boolean>;
-    widgets?: Array<{ id: string; order: number }>;
+    isRecoverableConfig: Record<string, boolean>;
+    widgets: Array<{ id: string; order: number }>;
+    // Propiedades adicionales para compatibilidad con LoggedInUser
+    phone?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipCode?: string;
+    address?: string;
+    apartment?: string;
+    computerExpiration?: number;
   }
 
   /**

@@ -53,7 +53,7 @@ export const ComputerExpirationForm = ({ form }: { form: any }) => {
       <Controller
         name="computerExpiration"
         control={control}
-        defaultValue={user.computerExpiration}
+        defaultValue={(user as any).computerExpiration}
         render={({ field }) => (
           <div className="flex flex-col items-start">
             <div className="flex items-center p-4 border rounded-xl h-14 text-black">
