@@ -85,12 +85,6 @@ export const MemberModalProvider = () => {
                     +54 11 4567-8901
                   </span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-medium text-gray-700 text-base">
-                    DNI/Passport
-                  </span>
-                  <span className="text-gray-900 text-sm">12345678</span>
-                </div>
               </div>
 
               <div className="space-y-4">
@@ -121,6 +115,12 @@ export const MemberModalProvider = () => {
                   <span className="text-gray-900 text-sm">
                     alan.cassin@email.com
                   </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-700 text-base">
+                    DNI/Passport
+                  </span>
+                  <span className="text-gray-900 text-sm">12345678</span>
                 </div>
               </div>
             </div>
