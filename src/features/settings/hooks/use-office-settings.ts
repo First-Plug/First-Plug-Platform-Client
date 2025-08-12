@@ -25,6 +25,7 @@ export const useOfficeSettings = () => {
       OfficeServices.updateDefaultOffice(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["officeDefault"] });
+      queryClient.invalidateQueries({ queryKey: ["shipments"] });
       setAlert("dataUpdatedSuccessfully");
     },
     onError: (error) => {

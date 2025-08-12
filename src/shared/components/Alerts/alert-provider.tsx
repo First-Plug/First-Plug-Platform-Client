@@ -160,6 +160,7 @@ export const AlertProvider = () => {
       closeAction: async () => {
         queryClient.invalidateQueries({ queryKey: ["members"] });
         queryClient.invalidateQueries({ queryKey: ["assets"] });
+        queryClient.invalidateQueries({ queryKey: ["shipments"] });
         // await fetchStock();
         setAside(undefined);
         setAlert(undefined);
