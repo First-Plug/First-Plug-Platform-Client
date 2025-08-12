@@ -12,7 +12,6 @@ export default function Register() {
   const { toast } = useToast();
   const router = useRouter();
 
-  // Using useInput hooks like the original pattern
   const firstNameInput = useInput("", "userName");
   const lastNameInput = useInput("", "userName");
   const emailInput = useInput("", "email");
@@ -75,7 +74,6 @@ export default function Register() {
     }
   };
 
-  // Validation for submit button (like the original pattern)
   const submitValidation = () => {
     return (
       firstNameInput.error !== null ||
@@ -105,7 +103,6 @@ export default function Register() {
       <article className="flex justify-center w-[50%] h-screen">
         <AuthForm title="Welcome!" register onSubmit={handleSubmit}>
           <div className="space-y-2">
-            {/* First Name y Last Name en la misma línea */}
             <div className="flex gap-4">
               <div className="flex-1">
                 <Input
