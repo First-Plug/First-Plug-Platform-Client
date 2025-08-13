@@ -17,11 +17,25 @@ export const middleware: NextMiddleware = async (req) => {
   const isLogisticUser = userEmail === "hola@firstplug.com";
 
   if (isLogisticUser) {
-    if (req.nextUrl.pathname !== "/home/logistics") {
+    const allowedPaths = ["/home/logistics", "/home/unassigned-users"];
+    const currentPath = req.nextUrl.pathname;
+
+    if (allowedPaths.includes(currentPath)) {
+      return NextResponse.next();
+    }
+
+    if (currentPath === "/" || currentPath === "/login") {
       const url = req.nextUrl.clone();
       url.pathname = `/home/logistics`;
       return NextResponse.redirect(url);
     }
+
+    if (currentPath.startsWith("/home/")) {
+      const url = req.nextUrl.clone();
+      url.pathname = `/home/logistics`;
+      return NextResponse.redirect(url);
+    }
+
     return NextResponse.next();
   }
 
