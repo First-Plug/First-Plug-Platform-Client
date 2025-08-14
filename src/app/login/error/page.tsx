@@ -1,6 +1,8 @@
 import { EmptyCard, EmptyCardLayout } from "@/shared";
 import { Navbar } from "@/shared";
 
+export const dynamic = "force-dynamic";
+
 export default function SuccessRegister() {
   return (
     <>

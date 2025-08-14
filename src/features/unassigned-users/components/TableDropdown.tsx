@@ -30,6 +30,7 @@ export const TableDropdown = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const toggleDropdown = () => {
+    if (disabled) return;
     setIsOpen(!isOpen);
     if (!isOpen) {
       setSearchTerm(selectedOption || "");
@@ -38,6 +39,7 @@ export const TableDropdown = ({
   };
 
   const handleOptionClick = (option: string) => {
+    if (disabled) return;
     onChange(option);
     setSearchTerm(option);
     setIsOpen(false);
@@ -57,21 +59,20 @@ export const TableDropdown = ({
     str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (searchable) {
-      const inputValue = event.target.value;
-      setSearchTerm(inputValue);
+    if (disabled || !searchable) return;
+    const inputValue = event.target.value;
+    setSearchTerm(inputValue);
 
-      const matchingOptions = options.filter((option) =>
-        normalizeString(option)
-          .toLowerCase()
-          .includes(normalizeString(inputValue).toLowerCase())
-      );
+    const matchingOptions = options.filter((option) =>
+      normalizeString(option)
+        .toLowerCase()
+        .includes(normalizeString(inputValue).toLowerCase())
+    );
 
-      setFilteredOptions(matchingOptions);
+    setFilteredOptions(matchingOptions);
 
-      if (!isOpen) {
-        setIsOpen(true);
-      }
+    if (!isOpen) {
+      setIsOpen(true);
     }
   };
 
@@ -101,11 +102,12 @@ export const TableDropdown = ({
           type="text"
           value={searchable ? searchTerm : selectedOption || ""}
           placeholder={placeholder}
-          readOnly={!searchable}
+          readOnly={!searchable || disabled}
           onClick={disabled ? undefined : toggleDropdown}
           onChange={handleSearch}
+          disabled={disabled}
           className={`py-1 pr-8 pl-2 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-full h-8 font-sans text-black text-xs cursor-pointer ${
-            disabled ? "opacity-50" : ""
+            disabled ? "opacity-50 bg-gray-100" : ""
           }`}
           autoComplete="off"
         />
@@ -120,7 +122,7 @@ export const TableDropdown = ({
 
         <ul
           className={`absolute z-50 top-full left-0 w-full border border-gray-300 bg-white rounded-lg shadow-lg overflow-y-auto max-h-32 ${
-            isOpen ? "block" : "hidden"
+            isOpen && !disabled ? "block" : "hidden"
           }`}
         >
           {filteredOptions.map((option) => (
