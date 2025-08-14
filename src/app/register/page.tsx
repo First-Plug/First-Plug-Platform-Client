@@ -1,17 +1,19 @@
 "use client";
 
-import { Button, LoaderSpinner, AuthForm } from "@/shared";
-
+import { Button, LoaderSpinner, AuthForm, useToast } from "@/shared";
 import Image from "next/image";
+import { Input } from "../login/Input";
+import useInput from "@/shared/hooks/useInput";
+import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { AuthServices } from "@/features/auth";
-import useInput from "@/shared/hooks/useInput";
-import { FormEvent, useState } from "react";
-import { useToast } from "@/shared";
-import { Input } from "../login/Input";
 
 export default function Register() {
-  const nameInput = useInput("", "userName");
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const firstNameInput = useInput("", "userName");
+  const lastNameInput = useInput("", "userName");
   const emailInput = useInput("", "email");
   const passwordInput = useInput("", "password");
   const confirmPasswordInput = useInput(
@@ -20,39 +22,51 @@ export default function Register() {
     false,
     passwordInput.value
   );
-  const [isLoading, setIsLoading] = useState(false);
 
-  const router = useRouter();
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    emailInput.setExternalError(null);
 
     try {
+      // Usar el servicio original que ya funcionaba
       await AuthServices.register({
-        name: nameInput.value,
-        email: emailInput.value,
+        name: `${firstNameInput.value} ${lastNameInput.value}`,
+        email: emailInput.value.toLowerCase(),
         password: passwordInput.value,
         tenantName: "",
         accountProvider: "credentials",
       });
-      router.push("/login");
+
+      toast({
+        variant: "success",
+        title: "Registration Successful!",
+        description: "Your account has been created.",
+      });
+
+      // Redirect to success page como era antes
+      router.push("/register/success");
     } catch (error: any) {
-      console.error(error);
+      console.error("Registration error:", error);
 
       if (
         error?.response?.data?.message === "Email Already in Use" ||
         error?.message === "Email Already in Use"
       ) {
         emailInput.setExternalError("Email Already in Use");
+        toast({
+          variant: "destructive",
+          title: "Email Already in Use",
+          description:
+            "This email is already registered. Please use a different email or try logging in.",
+        });
       } else {
         toast({
-          title: "Error",
+          variant: "destructive",
+          title: "Registration Failed",
           description:
             "An error occurred during registration. Please try again.",
-          variant: "destructive",
         });
       }
     } finally {
@@ -60,14 +74,20 @@ export default function Register() {
     }
   };
 
-  const sumbtiValidation =
-    !nameInput.value ||
-    nameInput.error !== null ||
-    !emailInput.value ||
-    emailInput.error !== null ||
-    !passwordInput.value ||
-    passwordInput.error !== null ||
-    confirmPasswordInput.value !== passwordInput.value;
+  const submitValidation = () => {
+    return (
+      firstNameInput.error !== null ||
+      lastNameInput.error !== null ||
+      emailInput.error !== null ||
+      passwordInput.error !== null ||
+      confirmPasswordInput.error !== null ||
+      !firstNameInput.value ||
+      !lastNameInput.value ||
+      !emailInput.value ||
+      !passwordInput.value ||
+      !confirmPasswordInput.value
+    );
+  };
 
   return (
     <section className="flex">
@@ -81,11 +101,31 @@ export default function Register() {
       />
 
       <article className="flex justify-center w-[50%] h-screen">
-        <AuthForm title="Welcome !" register onSubmit={handleSubmit}>
-          <div>
-            <Input title="Full Name" placeholder="Full Name" {...nameInput} />
+        <AuthForm title="Welcome!" register onSubmit={handleSubmit}>
+          <div className="space-y-2">
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Input
+                  title="First Name"
+                  placeholder="First Name"
+                  {...firstNameInput}
+                />
+              </div>
+              <div className="flex-1">
+                <Input
+                  title="Last Name"
+                  placeholder="Last Name"
+                  {...lastNameInput}
+                />
+              </div>
+            </div>
 
-            <Input title="Email" placeholder="user@mail.com" {...emailInput} />
+            <Input
+              title="Email"
+              placeholder="user@mail.com"
+              type="email"
+              {...emailInput}
+            />
 
             <Input
               title="Password"
@@ -103,10 +143,9 @@ export default function Register() {
           </div>
 
           <Button
-            disabled={sumbtiValidation}
+            disabled={submitValidation() || isLoading}
             variant={isLoading ? "text" : "primary"}
             className="rounded-md"
-            size="big"
             type="submit"
           >
             {isLoading && <LoaderSpinner />}

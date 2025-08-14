@@ -27,9 +27,8 @@ export * from "./utils/handleApiError";
 export * from "./utils/formatAcquisitionDate";
 export * from "./utils/countryUtils";
 
-import personalData from "./components/AddMember/JSON/personaldata.json";
-import shipmentData from "./components/AddMember/JSON/shipmentdata.json";
-export { personalData, shipmentData };
+export { personalData } from "./components/AddMember/data/personaldata";
+export { shipmentData } from "./components/AddMember/data/shipmentdata";
 
 export * from "./schemas/members.zod";
 

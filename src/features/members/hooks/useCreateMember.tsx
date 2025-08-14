@@ -84,6 +84,9 @@ export const useCreateMember = () => {
       await queryClient.refetchQueries({
         queryKey: ["assets"],
       });
+      await queryClient.refetchQueries({
+        queryKey: ["shipments"],
+      });
     },
   });
   return mutation;
