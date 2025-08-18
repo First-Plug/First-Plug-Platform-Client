@@ -36,5 +36,7 @@ export const AsideTitle = () => {
       return `Update Shipment`;
     case "EditLogisticsShipment":
       return `Edit Shipment`;
+    case "EditAssignedUser":
+      return `Edit Assigned User`;
   }
 };

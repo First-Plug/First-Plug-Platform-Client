@@ -10,6 +10,7 @@ import {
   MemberAsideDetails,
   EditMemberAside,
   CreateTeamAside,
+  EditAssignedUser,
 } from "./aside-contents";
 
 import { ShipmentAside } from "@/features/shipments";
@@ -42,5 +43,7 @@ export var AsideContent = function () {
       return <ShipmentAside />;
     case "EditLogisticsShipment":
       return <EditLogisticsShipmentAside />;
+    case "EditAssignedUser":
+      return <EditAssignedUser />;
   }
 };

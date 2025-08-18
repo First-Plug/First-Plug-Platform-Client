@@ -28,19 +28,6 @@ const getShipmentTypeColor = (type: ShipmentType) => {
   }
 };
 
-const getTenantColor = (tenant: string) => {
-  switch (tenant) {
-    case "Empresa A":
-      return "bg-blue-100 text-blue-800";
-    case "Empresa B":
-      return "bg-green-100 text-green-800";
-    case "Empresa C":
-      return "bg-purple-100 text-purple-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
-
 import { ColumnDef } from "@tanstack/react-table";
 import {
   LogisticOrder,
@@ -165,7 +152,7 @@ export const useLogisticsTableColumns = ({
       },
       cell: ({ row }) => {
         const tenant = row.getValue("tenant") as string;
-        return <Badge className={getTenantColor(tenant)}>{tenant}</Badge>;
+        return tenant;
       },
     },
     {

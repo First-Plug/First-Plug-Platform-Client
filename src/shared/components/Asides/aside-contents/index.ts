@@ -9,6 +9,7 @@ export * from "./LoadAside";
 export * from "./MemberAsideDetails";
 export * from "./edit-member-aside";
 export * from "./CreateTeamAside";
+export * from "./EditAssignedUser";
 
 export * from "./EditProductAside";
 export * from "./LoadAside";

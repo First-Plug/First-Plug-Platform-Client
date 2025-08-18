@@ -17,7 +17,11 @@ export const middleware: NextMiddleware = async (req) => {
   const isLogisticUser = userEmail === "hola@firstplug.com";
 
   if (isLogisticUser) {
-    const allowedPaths = ["/home/logistics", "/home/unassigned-users"];
+    const allowedPaths = [
+      "/home/logistics",
+      "/home/unassigned-users",
+      "/home/assigned-users",
+    ];
     const currentPath = req.nextUrl.pathname;
 
     if (allowedPaths.includes(currentPath)) {
