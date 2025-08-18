@@ -24,6 +24,48 @@ export const useUnassignedUsersTableColumns = ({
   users,
   updateUserField,
 }: UseUnassignedUsersTableColumnsProps) => {
+  // Generar opciones de filtro dinámicamente basándose en los datos filtrados
+  const filterOptions = useMemo(() => {
+    const dates = Array.from(
+      new Set(
+        users.map((user) =>
+          new Date(user.creationDate).toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })
+        )
+      )
+    )
+      .sort((a, b) => {
+        const dateA = new Date(a.split("/").reverse().join("-"));
+        const dateB = new Date(b.split("/").reverse().join("-"));
+        return dateB.getTime() - dateA.getTime();
+      })
+      .map((date) => ({
+        label: date,
+        value: date,
+      }));
+
+    const names = Array.from(new Set(users.map((user) => user.name))).sort();
+
+    const emails = Array.from(new Set(users.map((user) => user.email))).sort();
+
+    const roles = Array.from(new Set(users.map((user) => user.role))).sort();
+
+    const tenants = Array.from(
+      new Set(users.map((user) => user.tenant))
+    ).sort();
+
+    return {
+      dates,
+      names: names.map((name) => ({ label: name, value: name })),
+      emails: emails.map((email) => ({ label: email, value: email })),
+      roles: roles.map((role) => ({ label: role, value: role })),
+      tenants: tenants.map((tenant) => ({ label: tenant, value: tenant })),
+    };
+  }, [users]);
+
   const columns = useMemo<ColumnDef<UnassignedUser>[]>(
     () => [
       {
@@ -32,30 +74,7 @@ export const useUnassignedUsersTableColumns = ({
         size: 150,
         meta: {
           hasFilter: true,
-          filterOptions: (() => {
-            const dates = Array.from(
-              new Set(
-                mockUnassignedUsers.map((user) =>
-                  new Date(user.creationDate).toLocaleDateString("es-ES", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })
-                )
-              )
-            )
-              .sort((a, b) => {
-                const dateA = new Date(a.split("/").reverse().join("-"));
-                const dateB = new Date(b.split("/").reverse().join("-"));
-                return dateB.getTime() - dateA.getTime();
-              })
-              .map((date) => ({
-                label: date,
-                value: date,
-              }));
-
-            return dates;
-          })(),
+          filterOptions: filterOptions.dates,
         },
         cell: ({ getValue }) => {
           const date = new Date(getValue<string>());
@@ -76,11 +95,7 @@ export const useUnassignedUsersTableColumns = ({
         size: 200,
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(mockUnassignedUsers.map((user) => user.name))
-          )
-            .map((name) => ({ label: name, value: name }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: filterOptions.names,
         },
         cell: ({ getValue }) => (
           <span className="font-semibold text-blue-500">
@@ -94,11 +109,7 @@ export const useUnassignedUsersTableColumns = ({
         size: 250,
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(mockUnassignedUsers.map((user) => user.email))
-          )
-            .map((email) => ({ label: email, value: email }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: filterOptions.emails,
         },
         cell: ({ getValue }) => (
           <span className="text-gray-700 text-sm">{getValue<string>()}</span>
@@ -109,11 +120,8 @@ export const useUnassignedUsersTableColumns = ({
         header: "Role",
         size: 150,
         meta: {
-          hasFilter: false,
-          filterOptions: availableRoles.map((role) => ({
-            label: role,
-            value: role,
-          })),
+          hasFilter: true,
+          filterOptions: filterOptions.roles,
         },
         cell: ({ row, getValue }) => {
           const role = getValue<string>();
@@ -146,11 +154,8 @@ export const useUnassignedUsersTableColumns = ({
         header: "Tenant",
         size: 180,
         meta: {
-          hasFilter: false,
-          filterOptions: availableTenants.map((tenant) => ({
-            label: tenant,
-            value: tenant,
-          })),
+          hasFilter: true,
+          filterOptions: filterOptions.tenants,
         },
         cell: ({ row, getValue }) => {
           const tenant = getValue<string>();
@@ -184,7 +189,7 @@ export const useUnassignedUsersTableColumns = ({
         cell: ({ row }) => <UnassignedUsersTableActions user={row.original} />,
       },
     ],
-    [users, updateUserField]
+    [users, updateUserField, filterOptions]
   );
 
   return columns;

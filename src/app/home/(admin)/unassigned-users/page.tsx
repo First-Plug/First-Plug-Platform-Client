@@ -20,10 +20,11 @@ export default function UnassignedUsersPage() {
     tableContainerRef,
     updateUserField,
     useUnassignedUsersTableFilterStore,
+    filteredDataForColumns,
   } = useUnassignedUsersTable();
 
   const columns = useUnassignedUsersTableColumns({
-    users: paginatedUsers,
+    users: filteredDataForColumns, // Usar datos filtrados para filtros dinámicos
     updateUserField,
   });
 

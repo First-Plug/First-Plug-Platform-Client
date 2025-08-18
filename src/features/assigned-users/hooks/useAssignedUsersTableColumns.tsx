@@ -18,6 +18,30 @@ export const useAssignedUsersTableColumns = ({
   const { setAside } = useAsideStore();
   const queryClient = useQueryClient();
 
+  // Generar opciones de filtro dinámicamente basándose en los datos filtrados
+  const filterOptions = useMemo(() => {
+    const tenants = Array.from(
+      new Set(
+        users.map((user) =>
+          user.assignedTenant === "" ? "Internal FP" : user.assignedTenant
+        )
+      )
+    ).sort();
+
+    const names = Array.from(new Set(users.map((user) => user.name))).sort();
+
+    const emails = Array.from(new Set(users.map((user) => user.email))).sort();
+
+    const roles = Array.from(new Set(users.map((user) => user.role))).sort();
+
+    return {
+      tenants: tenants.map((tenant) => ({ label: tenant, value: tenant })),
+      names: names.map((name) => ({ label: name, value: name })),
+      emails: emails.map((email) => ({ label: email, value: email })),
+      roles: roles.map((role) => ({ label: role, value: role })),
+    };
+  }, [users]);
+
   const columns = useMemo<ColumnDef<AssignedUser>[]>(() => {
     const cols = [
       {
@@ -26,15 +50,7 @@ export const useAssignedUsersTableColumns = ({
         size: 160,
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(
-              mockAssignedUsers.map((user) =>
-                user.assignedTenant === "" ? "Internal FP" : user.assignedTenant
-              )
-            )
-          )
-            .map((tenant) => ({ label: tenant, value: tenant }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: filterOptions.tenants,
         },
         cell: ({ getValue }) => {
           const tenant = getValue();
@@ -49,11 +65,7 @@ export const useAssignedUsersTableColumns = ({
         size: 180,
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(mockAssignedUsers.map((user) => user.name))
-          )
-            .map((name) => ({ label: name, value: name }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: filterOptions.names,
         },
         cell: ({ getValue }) => (
           <span className="font-semibold text-blue-500">{getValue()}</span>
@@ -65,11 +77,7 @@ export const useAssignedUsersTableColumns = ({
         size: 220,
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(mockAssignedUsers.map((user) => user.email))
-          )
-            .map((email) => ({ label: email, value: email }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: filterOptions.emails,
         },
         cell: ({ getValue }) => (
           <span className="text-gray-700 text-sm">{getValue()}</span>
@@ -81,11 +89,7 @@ export const useAssignedUsersTableColumns = ({
         size: 140,
         meta: {
           hasFilter: true,
-          filterOptions: Array.from(
-            new Set(mockAssignedUsers.map((user) => user.role))
-          )
-            .map((role) => ({ label: role, value: role }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
+          filterOptions: filterOptions.roles,
         },
         cell: ({ getValue }) => {
           const role = getValue();
@@ -135,7 +139,7 @@ export const useAssignedUsersTableColumns = ({
     ];
 
     return cols;
-  }, [users]);
+  }, [users, filterOptions, setAside, queryClient]);
 
   return columns;
 };

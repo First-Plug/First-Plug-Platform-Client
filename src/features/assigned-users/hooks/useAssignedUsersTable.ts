@@ -111,5 +111,7 @@ export function useAssignedUsersTable() {
     paginatedUsers,
     tableContainerRef,
     useAssignedUsersTableFilterStore,
+    // Pasar los datos filtrados para que los filtros se adapten dinámicamente
+    filteredDataForColumns: filteredUsers,
   };
 }

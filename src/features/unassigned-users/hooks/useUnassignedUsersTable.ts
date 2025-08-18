@@ -130,5 +130,7 @@ export function useUnassignedUsersTable() {
     tableContainerRef,
     updateUserField,
     useUnassignedUsersTableFilterStore,
+    // Pasar los datos filtrados para que los filtros se adapten dinámicamente
+    filteredDataForColumns: filteredUsers,
   };
 }

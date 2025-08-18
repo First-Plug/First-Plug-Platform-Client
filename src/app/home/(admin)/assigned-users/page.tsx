@@ -18,10 +18,11 @@ export default function AssignedUsersPage() {
     paginatedUsers,
     tableContainerRef,
     useAssignedUsersTableFilterStore,
+    filteredDataForColumns,
   } = useAssignedUsersTable();
 
   const columns = useAssignedUsersTableColumns({
-    users: paginatedUsers,
+    users: filteredDataForColumns, // Usar datos filtrados para filtros dinámicos
   });
 
   return (
