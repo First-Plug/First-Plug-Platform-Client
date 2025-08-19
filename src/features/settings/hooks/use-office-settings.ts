@@ -30,7 +30,7 @@ export const useOfficeSettings = () => {
     },
     onError: (error) => {
       console.error("Error updating office:", error);
-      setAlert("errorUpdateTeam");
+      setAlert("errorUpdateOffice");
     },
   });
 
