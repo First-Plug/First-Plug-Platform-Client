@@ -46,7 +46,17 @@ export const ProfileSettings = () => {
   }, [profile, form]);
 
   const onSubmit = (data: ProfileFormData) => {
-    updateProfile(data);
+    // Filtrar campos vacíos para no enviarlos al backend
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([key, value]) => {
+        // Mantener firstName y lastName siempre (son requeridos)
+        if (key === "firstName" || key === "lastName") return true;
+        // Para otros campos, solo incluir si no están vacíos
+        return value !== "" && value !== null && value !== undefined;
+      })
+    );
+
+    updateProfile(filteredData);
   };
 
   if (isLoading) {
