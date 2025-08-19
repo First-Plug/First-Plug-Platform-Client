@@ -22,7 +22,12 @@ export const profileSchema = z.object({
 
   personalEmail: z
     .string()
-    .email("Please enter a valid email address")
+    .refine(
+      (value) => value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+      {
+        message: "Please enter a valid email address",
+      }
+    )
     .optional()
     .or(z.literal("")),
 

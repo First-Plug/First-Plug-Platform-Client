@@ -28,7 +28,7 @@ export const useProfileSettings = () => {
     },
     onError: (error) => {
       console.error("Error updating profile:", error);
-      setAlert("errorUpdateTeam");
+      setAlert("errorUpdateProfile");
     },
   });
 

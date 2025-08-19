@@ -263,6 +263,15 @@ export const AlertProvider = () => {
         setAlert(undefined);
       },
     },
+    errorUpdateProfile: {
+      title: " Error",
+      type: "error",
+      description:
+        " There was an error updating the profile. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     errorEmailInUse: {
       title: " Error",
       type: "error",
