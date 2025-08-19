@@ -75,6 +75,25 @@ export const ProfileForm = ({ form }: ProfileFormProps) => {
           )}
         />
 
+        {/* Personal Email */}
+        <FormField
+          control={form.control}
+          name="personalEmail"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Personal Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="personal@email.com"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {/* Country */}
         <FormField
           control={form.control}
@@ -166,7 +185,7 @@ export const ProfileForm = ({ form }: ProfileFormProps) => {
           control={form.control}
           name="apartment"
           render={({ field }) => (
-            <FormItem className="md:col-span-2">
+            <FormItem>
               <FormLabel>Apartment, Suite, etc.</FormLabel>
               <FormControl>
                 <Input placeholder="Apartment, suite, unit, etc." {...field} />

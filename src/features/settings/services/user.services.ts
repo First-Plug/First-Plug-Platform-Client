@@ -52,6 +52,19 @@ export class UserServices {
     }
   }
 
+  static async updateCompanyName(tenantName: string, name: string) {
+    try {
+      const response = await HTTPRequests.patch(
+        `${BASE_URL}/api/tenants/update-name/${tenantName}`,
+        { name }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error al actualizar el nombre de la empresa", error);
+      throw error;
+    }
+  }
+
   static async getRecoverableConfig(tenantName?: string) {
     try {
       const response = await HTTPRequests.get(`${BASE_URL}/api/tenants/config`);

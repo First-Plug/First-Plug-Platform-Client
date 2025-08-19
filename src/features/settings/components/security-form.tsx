@@ -158,9 +158,15 @@ export const SecurityForm = ({ form }: SecurityFormProps) => {
                 </div>
               </FormControl>
               <FormMessage />
+              {/* Password Requirements */}
               <div className="text-xs text-gray-500 mt-1">
-                Password must be at least 6 characters long and contain at least
-                one uppercase letter, one lowercase letter, and one number.
+                Password must contain:
+                <ul className="list-disc list-inside mt-1 space-y-0.5">
+                  <li>At least 6 characters</li>
+                  <li>One uppercase letter</li>
+                  <li>One lowercase letter</li>
+                  <li>One number</li>
+                </ul>
               </div>
             </FormItem>
           )}
