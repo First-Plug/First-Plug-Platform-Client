@@ -10,6 +10,9 @@ export * from "./MemberAsideDetails";
 export * from "./edit-member-aside";
 export * from "./CreateTeamAside";
 export * from "./EditAssignedUser";
+export * from "./UpdateTenant";
+export * from "./UpdateOffice";
+export * from "./CreateTenant";
 
 export * from "./EditProductAside";
 export * from "./LoadAside";

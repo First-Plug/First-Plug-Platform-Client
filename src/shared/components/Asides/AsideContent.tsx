@@ -11,6 +11,9 @@ import {
   EditMemberAside,
   CreateTeamAside,
   EditAssignedUser,
+  UpdateTenant,
+  UpdateOffice,
+  CreateTenant,
 } from "./aside-contents";
 
 import { ShipmentAside } from "@/features/shipments";
@@ -45,5 +48,11 @@ export var AsideContent = function () {
       return <EditLogisticsShipmentAside />;
     case "EditAssignedUser":
       return <EditAssignedUser />;
+    case "UpdateTenant":
+      return <UpdateTenant />;
+    case "UpdateOffice":
+      return <UpdateOffice />;
+    case "CreateTenant":
+      return <CreateTenant />;
   }
 };

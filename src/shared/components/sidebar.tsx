@@ -15,6 +15,7 @@ import {
   ClockIcon,
   TruckIcon,
   WarehouseIcon,
+  BuildingIcon,
 } from "@/shared";
 import { usePathname } from "next/navigation";
 import { usePrefetchAssets } from "@/features/assets";
@@ -147,6 +148,16 @@ export const Sidebar = () => {
               title="Assigned Users"
               href="/home/assigned-users"
               isActive={pathArray.includes("assigned-users")}
+              onMouseEnter={() => {
+                // prefetchAssets();
+              }}
+            />
+            <SidebarLink
+              isSmall={isSidebarSmall}
+              icon={<BuildingIcon />}
+              title="Tenants"
+              href="/home/tenants"
+              isActive={pathArray.includes("tenants")}
               onMouseEnter={() => {
                 // prefetchAssets();
               }}

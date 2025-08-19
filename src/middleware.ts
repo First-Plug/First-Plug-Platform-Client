@@ -21,6 +21,7 @@ export const middleware: NextMiddleware = async (req) => {
       "/home/logistics",
       "/home/unassigned-users",
       "/home/assigned-users",
+      "/home/tenants",
     ];
     const currentPath = req.nextUrl.pathname;
 
