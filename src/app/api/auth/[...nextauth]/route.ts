@@ -3,7 +3,6 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthServices, type RegisterUserPlatforms } from "@/features/auth";
 import { AuthV2Services } from "@/features/auth/services/auth-v2.services";
-import { JWTUser } from "@/features/auth/interfaces/auth-types";
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -23,7 +22,7 @@ const authOptions: NextAuthOptions = {
         params: { scope: "openid profile User.Read User.Read.All email" },
       },
       idToken: true,
-      async profile(profile, tokens) {
+      async profile(profile) {
         const profileObject = {
           id: profile.sub,
           name: profile.preferred_username,
@@ -65,7 +64,7 @@ const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
 
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
 
         try {
@@ -89,7 +88,13 @@ const authOptions: NextAuthOptions = {
             tenantId: loginResponse.user.tenantId,
             tenantName: loginResponse.user.tenantName,
             accountProvider: loginResponse.user.accountProvider,
-            access_token: loginResponse.access_token,
+            // Usar la nueva estructura de backendTokens
+            access_token:
+              (loginResponse as any).backendTokens?.accessToken ||
+              loginResponse.access_token,
+            refresh_token: (loginResponse as any).backendTokens?.refreshToken,
+            expires_at: (loginResponse as any).backendTokens?.expiresIn,
+            backendTokens: (loginResponse as any).backendTokens,
             isRecoverableConfig: {},
             widgets: [],
           };
@@ -133,117 +138,137 @@ const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account }) {
-      const authenticatedUser: RegisterUserPlatforms = {
-        email: user.email,
-        image: user.image,
-        name: user.name,
-        tenantName: "",
-        accountProvider: account.provider as
-          | "credentials"
-          | "google"
-          | "azure-ad",
-      };
-
       if (account.provider === "google" || account.provider === "azure-ad") {
-        await AuthServices.registerByProviders(authenticatedUser);
+        try {
+          // Intentar obtener tokens primero (para usuarios existentes)
+          const payload: RegisterUserPlatforms = {
+            email: user.email,
+            image: user.image,
+            name: user.name,
+            tenantName: "",
+            accountProvider: account.provider as
+              | "credentials"
+              | "google"
+              | "azure-ad",
+          };
+
+          await AuthServices.getBackendTokens(payload);
+        } catch (error: any) {
+          // Si el usuario no existe, registrarlo
+          if (
+            error.response?.status === 404 ||
+            error.message?.includes("not found")
+          ) {
+            const authenticatedUser: RegisterUserPlatforms = {
+              email: user.email,
+              image: user.image,
+              name: user.name,
+              tenantName: "",
+              accountProvider: account.provider as
+                | "credentials"
+                | "google"
+                | "azure-ad",
+            };
+
+            await AuthServices.registerByProviders(authenticatedUser);
+          } else {
+            // Si es otro error, permitir continuar (se manejará en session callback)
+            console.error("Error en signIn callback:", error.message);
+          }
+        }
       }
 
       return true;
     },
 
+    async jwt({ token, user, account }) {
+      // Si es el primer login (user existe), guardar datos en el token
+      if (user && account) {
+        if (account.provider === "google" || account.provider === "azure-ad") {
+          try {
+            const payload: RegisterUserPlatforms = {
+              email: user.email,
+              image: user.image,
+              name: user.name,
+              tenantName: "",
+              accountProvider: account.provider as
+                | "credentials"
+                | "google"
+                | "azure-ad",
+            };
+
+            const res = await AuthServices.getBackendTokens(payload);
+
+            // Guardar todos los datos del backend en el token
+            token._id = res.user._id;
+            token.firstName = res.user.firstName;
+            token.lastName = res.user.lastName;
+            token.role = res.user.role;
+            token.tenantId = res.user.tenantId;
+            token.tenantName = res.user.tenantName;
+            token.accountProvider = res.user.accountProvider;
+            token.backendTokens = res.backendTokens;
+          } catch (error) {
+            console.error("Error in JWT callback:", error);
+          }
+        } else if (account.provider === "credentials") {
+          // Para credentials, los datos ya vienen en user
+          token._id = user._id;
+          token.firstName = user.firstName;
+          token.lastName = user.lastName;
+          token.role = user.role;
+          token.tenantId = user.tenantId;
+          token.tenantName = user.tenantName;
+          token.accountProvider = user.accountProvider;
+          token.access_token = user.access_token;
+          token.refresh_token = (user as any).refresh_token;
+          token.expires_at = (user as any).expires_at;
+          token.backendTokens = (user as any).backendTokens;
+        }
+      }
+
+      return token;
+    },
+
     async session({ token, session }) {
+      // Construir session.user desde el token (que ya tiene todos los datos)
+      session.user = {
+        _id: token._id as string,
+        name: token.name as string,
+        email: token.email as string,
+        firstName: token.firstName as string,
+        lastName: token.lastName as string,
+        role: token.role as string,
+        tenantId: token.tenantId as string,
+        tenantName: token.tenantName as string,
+        accountProvider: token.accountProvider as any,
+        // Campos requeridos por compatibilidad
+        password: null,
+        isRecoverableConfig: {},
+        widgets: [],
+      };
+
+      // Asignar backendTokens
       if (token.access_token) {
-        // Para usuarios autenticados con credentials (nueva estructura)
-        session.user = {
-          _id: token._id as string,
-          name: token.name as string,
-          email: token.email as string,
-          firstName: token.firstName as string,
-          lastName: token.lastName as string,
-          role: token.role as string,
-          tenantId: token.tenantId as string,
-          tenantName: token.tenantName as string,
-          accountProvider: token.accountProvider as any,
-          // Campos requeridos por compatibilidad
-          password: null,
-          isRecoverableConfig: {},
-          widgets: [],
-        };
+        // Para usuarios de credentials (nueva estructura)
         session.backendTokens = {
           accessToken: token.access_token as string,
           refreshToken: token.refresh_token as string,
           expiresIn: token.expires_at as number,
         };
       } else if (token.backendTokens) {
-        // Mantener compatibilidad con estructura anterior
-        session.user = token.user;
+        // Para usuarios de Google/Azure
         session.backendTokens = token.backendTokens;
       } else {
-        // Para providers externos (Google, Azure)
-        const payload: RegisterUserPlatforms = {
-          name: token.name,
-          email: token.email,
-          image: token.picture,
-          tenantName: "",
-          accountProvider: "google",
+        // Fallback - crear backendTokens vacío para evitar errores
+        session.backendTokens = {
+          accessToken: "",
+          refreshToken: "",
+          expiresIn: 0,
         };
-
-        const res = await AuthServices.getBackendTokens(payload);
-        session.user = {
-          ...res.user,
-          // Asegurar propiedades requeridas
-          name: res.user.name || token.name || "",
-          email: res.user.email || token.email || "",
-          _id: res.user._id || "",
-          accountProvider: res.user.accountProvider || "google",
-          isRecoverableConfig: res.user.isRecoverableConfig || {},
-          widgets: res.user.widgets || [],
-        };
-        session.backendTokens = res.backendTokens;
       }
 
       return session;
-    },
-
-    async jwt({ token, user, trigger, session }) {
-      if (trigger === "update") {
-        return {
-          ...token,
-          user: session?.user || token.user,
-          backendTokens: session?.backendTokens || token.backendTokens,
-        };
-      }
-
-      // Si hay un usuario (login exitoso), almacenar sus datos en el token
-      if (user) {
-        const customUser = user as any; // Cast para acceder a propiedades personalizadas
-        return {
-          ...token,
-          // Datos del JWT
-          _id: customUser._id,
-          firstName: customUser.firstName,
-          lastName: customUser.lastName,
-          role: customUser.role,
-          tenantId: customUser.tenantId,
-          tenantName: customUser.tenantName,
-          accountProvider: customUser.accountProvider,
-          access_token: customUser.access_token,
-          // Mantener campos estándar de Next-Auth
-          name: user.name,
-          email: user.email,
-        };
-      }
-
-      // Manejo de refresh token (mantener compatibilidad)
-      if (token.backendTokens && token.backendTokens.expiresIn) {
-        if (new Date().getTime() < token.backendTokens.expiresIn) return token;
-
-        return await AuthServices.refreshToken(
-          token.backendTokens.refreshToken
-        );
-      }
-
-      return token;
     },
   },
   pages: {

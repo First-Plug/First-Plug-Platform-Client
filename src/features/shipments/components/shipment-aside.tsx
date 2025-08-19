@@ -170,22 +170,23 @@ export const ShipmentAside = () => {
     closeAside();
   };
 
-  const filteredMembers = members.filter((member) => {
-    if (
-      shipment.originDetails?.assignedEmail &&
-      shipment.originDetails.assignedEmail === member.email
-    ) {
-      return false;
-    }
+  const filteredMembers =
+    members?.filter((member) => {
+      if (
+        shipment.originDetails?.assignedEmail &&
+        shipment.originDetails.assignedEmail === member.email
+      ) {
+        return false;
+      }
 
-    const fullName = `${member.firstName} ${member.lastName}`.toLowerCase();
-    const email = member.email?.toLowerCase() || "";
-    return fullName.includes(searchTerm) || email.includes(searchTerm);
-  });
+      const fullName = `${member.firstName} ${member.lastName}`.toLowerCase();
+      const email = member.email?.toLowerCase() || "";
+      return fullName.includes(searchTerm) || email.includes(searchTerm);
+    }) || [];
 
   const selectedMember =
     destination.type === "employee"
-      ? members.find((m) => m.email === destination.assignedEmail)
+      ? members?.find((m) => m.email === destination.assignedEmail)
       : null;
 
   const filteredLocations = LOCATION.filter(
