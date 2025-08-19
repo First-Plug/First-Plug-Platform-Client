@@ -52,7 +52,7 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Office Email *</FormLabel>
+              <FormLabel>Office Email</FormLabel>
               <FormControl>
                 <Input
                   type="email"

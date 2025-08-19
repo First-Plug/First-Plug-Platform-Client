@@ -5,6 +5,7 @@ export interface UserProfile {
   firstName: string;
   lastName: string;
   phone: string;
+  personalEmail?: string;
   address: string;
   apartment: string;
   city: string;
@@ -19,6 +20,7 @@ export interface UpdateUserProfile {
   firstName?: string;
   lastName?: string;
   phone?: string;
+  personalEmail?: string;
   address?: string;
   apartment?: string;
   city?: string;
@@ -31,14 +33,14 @@ export interface UpdateUserProfile {
 export interface Office {
   _id: string;
   name: string;
-  email: string;
-  phone: string;
-  address: string;
-  apartment: string;
-  city: string;
-  state: string;
-  country: string;
-  zipCode: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  apartment?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
   isDefault: boolean;
 }
 
@@ -63,6 +65,7 @@ export interface TenantConfig {
 }
 
 export interface UpdateTenantConfig {
+  name?: string;
   isRecoverableConfig?: Record<string, boolean>;
   computerExpiration?: number;
 }

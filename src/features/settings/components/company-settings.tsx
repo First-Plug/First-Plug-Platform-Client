@@ -2,7 +2,17 @@
 
 import { useForm } from "react-hook-form";
 import { useCompanySettings } from "../hooks/use-company-settings";
-import { Button, LoaderSpinner, Form } from "@/shared";
+import {
+  Button,
+  LoaderSpinner,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Input,
+} from "@/shared";
 import { RecoverableConfigForm } from "./recoverable-config-form";
 import { ComputerExpirationConfig } from "./computer-expiration-config";
 import { useEffect } from "react";
@@ -13,6 +23,7 @@ export const CompanySettings = () => {
 
   const form = useForm({
     defaultValues: {
+      name: "",
       isRecoverableConfig: {},
       computerExpiration: 2,
     },
@@ -21,6 +32,7 @@ export const CompanySettings = () => {
   useEffect(() => {
     if (tenantConfig) {
       form.reset({
+        name: tenantConfig.name || "",
         isRecoverableConfig: tenantConfig.isRecoverableConfig || {},
         computerExpiration: tenantConfig.computerExpiration || 2,
       });
@@ -29,6 +41,7 @@ export const CompanySettings = () => {
 
   const onSubmit = (data: any) => {
     updateConfig({
+      name: data.name,
       isRecoverableConfig: data.isRecoverableConfig,
       computerExpiration: data.computerExpiration,
     });
@@ -47,15 +60,19 @@ export const CompanySettings = () => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="border rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Company Information</h2>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Company Name
-            </label>
-            <input
-              type="text"
-              value={tenantConfig?.tenantName || ""}
-              disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
+          <div className="mb-6 max-w-md">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company Name *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter company name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
         </div>

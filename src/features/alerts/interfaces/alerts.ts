@@ -17,6 +17,7 @@ export const ALERTS_TYPES = [
   "errorDeleteTeam",
   "updateTeam",
   "errorUpdateTeam",
+  "errorUpdateOffice",
   "assignedProductSuccess",
   "errorAssignedProduct",
   "errorCreateMember",

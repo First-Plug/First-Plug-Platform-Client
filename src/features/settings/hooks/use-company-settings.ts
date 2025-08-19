@@ -53,9 +53,26 @@ export const useCompanySettings = () => {
     },
   });
 
+  // Update company name mutation
+  const updateNameMutation = useMutation({
+    mutationFn: (name: string) =>
+      UserServices.updateCompanyName(tenantConfig?.tenantName || "", name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tenantConfig"] });
+      setAlert("dataUpdatedSuccessfully");
+    },
+    onError: (error) => {
+      console.error("Error updating company name:", error);
+      setAlert("errorUpdateTeam");
+    },
+  });
+
   const updateConfig = (data: UpdateTenantConfig) => {
     const promises = [];
 
+    if (data.name) {
+      promises.push(updateNameMutation.mutateAsync(data.name));
+    }
     if (data.isRecoverableConfig) {
       promises.push(
         updateRecoverableMutation.mutateAsync(data.isRecoverableConfig)
@@ -67,7 +84,7 @@ export const useCompanySettings = () => {
       );
     }
 
-    // Ejecutar ambas mutaciones si hay datos para actualizar
+    // Ejecutar todas las mutaciones si hay datos para actualizar
     if (promises.length > 0) {
       Promise.all(promises).catch(console.error);
     }
@@ -79,6 +96,8 @@ export const useCompanySettings = () => {
     error,
     updateConfig,
     isUpdating:
-      updateRecoverableMutation.isPending || updateExpirationMutation.isPending,
+      updateRecoverableMutation.isPending ||
+      updateExpirationMutation.isPending ||
+      updateNameMutation.isPending,
   };
 };

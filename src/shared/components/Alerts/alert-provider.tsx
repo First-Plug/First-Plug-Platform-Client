@@ -255,6 +255,14 @@ export const AlertProvider = () => {
         setAlert(undefined);
       },
     },
+    errorUpdateOffice: {
+      title: " Error",
+      type: "error",
+      description: " There was an error updating the office. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     errorEmailInUse: {
       title: " Error",
       type: "error",
