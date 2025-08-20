@@ -23,9 +23,10 @@ export const TenantProvider = ({ children }: Props) => {
     return;
   }
 
-  sessionStorage.setItem("accessToken", session.data.backendTokens.accessToken);
-  if (sessionStorage.getItem("accessToken")) {
-    setAuthInterceptor(sessionStorage.getItem("accessToken"));
+  const accessToken = session.data.backendTokens?.accessToken;
+  if (accessToken) {
+    sessionStorage.setItem("accessToken", accessToken);
+    setAuthInterceptor(accessToken);
   }
 
   return <>{children}</>;

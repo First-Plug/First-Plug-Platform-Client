@@ -30,9 +30,11 @@ export default function Login() {
   const { isLogisticUser } = useLogisticUser();
   const { toast } = useToast();
   const router = useRouter();
+
   const handleSumbit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
     try {
       const res = await signIn("credentials", {
         email: emailInput.value.toLowerCase(),
@@ -40,8 +42,14 @@ export default function Login() {
         redirect: false,
       });
 
-      if (!res.ok) {
-        throw new Error(res.error);
+      if (!res?.ok) {
+        // Usar el mismo mensaje de error que antes
+        toast({
+          variant: "destructive",
+          title: "Invalid Credential",
+          description: "Invalid username or password. Please try again.",
+        });
+        return;
       }
 
       if (typeof window !== "undefined") {
@@ -80,7 +88,7 @@ export default function Login() {
 
       <article className="flex justify-center w-[50%] h-screen">
         <AuthForm title="Welcome Back!" login onSubmit={handleSumbit}>
-          <div className="text-md">
+          <div className="space-y-3 text-md">
             <Input
               title="Email"
               placeholder="user@mail.com"

@@ -83,12 +83,12 @@ export function ReturnProduct({
     }
 
     const sessionUserData = {
-      country: session?.user?.country,
-      city: session?.user?.city,
-      state: session?.user?.state,
-      zipCode: session?.user?.zipCode,
-      address: session?.user?.address,
-      phone: session?.user?.phone,
+      country: (session?.user as any)?.country,
+      city: (session?.user as any)?.city,
+      state: (session?.user as any)?.state,
+      zipCode: (session?.user as any)?.zipCode,
+      address: (session?.user as any)?.address,
+      phone: (session?.user as any)?.phone,
     };
     const allMembers = queryClient.getQueryData<Member[]>(["members"]);
 

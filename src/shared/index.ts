@@ -48,6 +48,7 @@ export * from "./components/ui/pagination-with-links";
 export * from "./components/ui/checkbox";
 export * from "./components/ui/dropdown-menu";
 export * from "./components/ui/toaster";
+export * from "./components/ui/tabs";
 export * from "./components/ui/label";
 export * from "./components/ui/scroll-area";
 export * from "./components/ui/command";

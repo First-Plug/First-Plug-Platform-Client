@@ -25,9 +25,11 @@ interface ProductStatusValidatorProps {
   setAside: (view: string) => void;
 }
 
-const validateBillingInfo = (user: User): boolean => {
+const validateBillingInfo = (user: Partial<User>): boolean => {
   const requiredFields = ["country", "city", "state", "zipCode", "address"];
-  const result = requiredFields.every((field) => user[field]?.trim() !== "");
+  const result = requiredFields.every(
+    (field) => (user as any)[field]?.trim() !== ""
+  );
   return result;
 };
 

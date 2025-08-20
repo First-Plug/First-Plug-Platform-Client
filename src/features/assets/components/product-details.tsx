@@ -89,11 +89,11 @@ const MembersList = function MembersList({
     if (!selectedMember) return;
 
     const sessionUserData = {
-      country: sessionUser?.country,
-      city: sessionUser?.city,
-      state: sessionUser?.state,
-      zipCode: sessionUser?.zipCode,
-      address: sessionUser?.address,
+      country: (sessionUser as any)?.country,
+      city: (sessionUser as any)?.city,
+      state: (sessionUser as any)?.state,
+      zipCode: (sessionUser as any)?.zipCode,
+      address: (sessionUser as any)?.address,
     };
 
     const currentHolder = members.find(

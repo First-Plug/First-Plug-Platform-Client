@@ -4,13 +4,39 @@ import { NextMiddleware, NextResponse } from "next/server";
 export const middleware: NextMiddleware = async (req) => {
   const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  if (!session) {
-    if (req.nextUrl.pathname !== "/login") {
+  if (req.nextUrl.pathname === "/login") {
+    if (session) {
+      if (session.tenantName) {
+        const url = req.nextUrl.clone();
+        url.pathname = `/home/dashboard`;
+        return NextResponse.redirect(url);
+      } else {
+        const url = req.nextUrl.clone();
+        url.pathname = `/waiting`;
+        return NextResponse.redirect(url);
+      }
+    }
+    return NextResponse.next();
+  }
+
+  if (req.nextUrl.pathname === "/waiting") {
+    if (!session) {
       const url = req.nextUrl.clone();
       url.pathname = `/login`;
       return NextResponse.redirect(url);
     }
+    if (session.tenantName) {
+      const url = req.nextUrl.clone();
+      url.pathname = `/home/dashboard`;
+      return NextResponse.redirect(url);
+    }
     return NextResponse.next();
+  }
+
+  if (!session) {
+    const url = req.nextUrl.clone();
+    url.pathname = `/login`;
+    return NextResponse.redirect(url);
   }
 
   const userEmail = (session as any)?.user?.email || session.email;
@@ -50,15 +76,18 @@ export const middleware: NextMiddleware = async (req) => {
     return NextResponse.redirect(url);
   }
 
-  if (req.nextUrl.pathname === "/login") {
-    const url = req.nextUrl.clone();
-    url.pathname = `/home/dashboard`;
-    return NextResponse.redirect(url);
+  if (req.nextUrl.pathname.startsWith("/home")) {
+    if (!session.tenantName) {
+      const url = req.nextUrl.clone();
+      url.pathname = `/waiting`;
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
   }
 
   return NextResponse.next();
 };
 
 export const config = {
-  matcher: ["/home/:path*", "/login", "/"],
+  matcher: ["/home/:path*", "/login", "/waiting", "/"],
 };

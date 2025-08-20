@@ -160,6 +160,7 @@ export const AlertProvider = () => {
       closeAction: async () => {
         queryClient.invalidateQueries({ queryKey: ["members"] });
         queryClient.invalidateQueries({ queryKey: ["assets"] });
+        queryClient.invalidateQueries({ queryKey: ["shipments"] });
         // await fetchStock();
         setAside(undefined);
         setAlert(undefined);
@@ -250,6 +251,23 @@ export const AlertProvider = () => {
       title: " Error",
       type: "error",
       description: " There was an error updating the team. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorUpdateOffice: {
+      title: " Error",
+      type: "error",
+      description: " There was an error updating the office. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorUpdateProfile: {
+      title: " Error",
+      type: "error",
+      description:
+        " There was an error updating the profile. Please try again.",
       closeAction: () => {
         setAlert(undefined);
       },
