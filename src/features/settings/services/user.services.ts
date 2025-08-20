@@ -54,10 +54,19 @@ export class UserServices {
 
   static async updateCompanyName(tenantName: string, name: string) {
     try {
+      console.log("🔧 UPDATE COMPANY NAME - Request:", {
+        url: `${BASE_URL}/api/tenants/update-name/${tenantName}`,
+        payload: { name },
+        nameValue: name,
+        nameType: typeof name,
+      });
+
       const response = await HTTPRequests.patch(
         `${BASE_URL}/api/tenants/update-name/${tenantName}`,
         { name }
       );
+
+      console.log("🔧 UPDATE COMPANY NAME - Response:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error al actualizar el nombre de la empresa", error);
