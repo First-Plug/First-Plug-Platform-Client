@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useEffect, useRef } from "react";
-import { createFilterStore, usePagination } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
+import { usePagination } from "@/features/fp-tables";
 import { type ProductTable } from "../interfaces/product";
 import { useProductStore } from "../store/product.store";
 

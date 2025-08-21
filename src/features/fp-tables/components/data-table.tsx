@@ -11,7 +11,8 @@ import {
   Row,
 } from "@tanstack/react-table";
 
-import { createFilterStore, ColumnFilterPopover } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
+import { ColumnFilterPopover } from "@/features/fp-tables";
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];

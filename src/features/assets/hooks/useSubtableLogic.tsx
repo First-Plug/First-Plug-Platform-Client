@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { type Row } from "@tanstack/react-table";
-import { createFilterStore } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 import { ProductsDetailsTable, type ProductTable } from "@/features/assets";
 
 const useSubtableFilterStore = createFilterStore();
