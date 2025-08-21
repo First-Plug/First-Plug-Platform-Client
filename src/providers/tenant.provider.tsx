@@ -26,14 +26,6 @@ export const TenantProvider = ({ children }: Props) => {
   const isLogisticUser = adminEmails.includes(userEmail);
   const isSuperAdmin = userRole === "superadmin";
 
-  console.log("🔍 TENANT PROVIDER - Session data:", {
-    userEmail,
-    userRole,
-    tenantName: session.data.user.tenantName,
-    isLogisticUser,
-    isSuperAdmin,
-  });
-
   // Solo redirigir a waiting si NO es admin y NO tiene tenant
   if (!session.data.user.tenantName && !isLogisticUser && !isSuperAdmin) {
     router.push("/waiting");

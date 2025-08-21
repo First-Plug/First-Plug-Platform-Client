@@ -45,15 +45,6 @@ export const middleware: NextMiddleware = async (req) => {
   const isLogisticUser = adminEmails.includes(userEmail);
   const isSuperAdmin = userRole === "superadmin";
 
-  console.log("🔍 MIDDLEWARE - Session data:", {
-    userEmail,
-    userRole,
-    tenantName: session.tenantName,
-    isLogisticUser,
-    isSuperAdmin,
-    currentPath: req.nextUrl.pathname,
-  });
-
   // Manejar usuarios admin (por email o por role)
   if (isLogisticUser || isSuperAdmin) {
     const allowedPaths = [

@@ -98,12 +98,6 @@ export const useLoginV2 = () => {
         sessionStorage.clear();
       }
 
-      console.log("🔍 LOGIN SUCCESS - User data:", {
-        role: data?.user?.role,
-        email: data?.user?.email,
-        tenantName: data?.user?.tenantName,
-      });
-
       // Redirigir según el rol del usuario
       const userRole = data?.user?.role;
       const userEmail = data?.user?.email;
