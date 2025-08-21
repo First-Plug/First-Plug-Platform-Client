@@ -70,7 +70,7 @@ export const useCompanySettings = () => {
   const updateConfig = (data: UpdateTenantConfig) => {
     const promises = [];
 
-    if (data.name) {
+    if (data.name !== undefined) {
       promises.push(updateNameMutation.mutateAsync(data.name));
     }
     if (data.isRecoverableConfig) {

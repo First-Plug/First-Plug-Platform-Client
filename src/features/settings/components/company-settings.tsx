@@ -40,11 +40,19 @@ export const CompanySettings = () => {
   }, [tenantConfig, form]);
 
   const onSubmit = (data: any) => {
-    updateConfig({
-      name: data.name,
+    // Procesar datos para permitir borrado de campos opcionales
+    const processedData: any = {
       isRecoverableConfig: data.isRecoverableConfig,
       computerExpiration: data.computerExpiration,
-    });
+    };
+
+    // Solo incluir name si no está vacío, o enviarlo como string vacío para borrarlo
+    if (data.name !== undefined) {
+      processedData.name = data.name || "";
+    }
+
+    console.log("🔧 COMPANY UPDATE - Sending data:", processedData);
+    updateConfig(processedData);
   };
 
   if (isLoading) {
@@ -66,7 +74,7 @@ export const CompanySettings = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Company Name *</FormLabel>
+                  <FormLabel>Company Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter company name" {...field} />
                   </FormControl>

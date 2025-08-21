@@ -123,7 +123,7 @@ const MembersList = function MembersList({
       };
     }
 
-    const missingMessages = validateAfterAction(source, destination);
+    const missingMessages = await validateAfterAction(source, destination);
 
     if (missingMessages.length > 0) {
       const formattedMessages = missingMessages

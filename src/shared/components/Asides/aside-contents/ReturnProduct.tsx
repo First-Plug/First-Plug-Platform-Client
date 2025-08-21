@@ -106,7 +106,7 @@ export function ReturnProduct({
     );
 
     // Always validate the source (Current Holder)
-    const missingMessagesForSource = validateAfterAction(source, null);
+    const missingMessagesForSource = await validateAfterAction(source, null);
 
     if (missingMessagesForSource.length > 0) {
       const formattedMessages = missingMessagesForSource
@@ -129,7 +129,7 @@ export function ReturnProduct({
     }
 
     if (location === "Our office") {
-      const missingMessages = validateAfterAction(source, destination);
+      const missingMessages = await validateAfterAction(source, destination);
 
       if (missingMessages.length > 0) {
         const formattedMessages = missingMessages

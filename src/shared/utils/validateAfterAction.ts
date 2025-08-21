@@ -2,6 +2,8 @@ import { Product } from "@/features/assets";
 import { User } from "@/features/auth";
 import { QueryClient } from "@tanstack/react-query";
 import { Member } from "@/features/members";
+import { OfficeServices } from "@/features/settings/services/office.services";
+import { Office } from "@/features/settings/types/settings.types";
 
 const capitalizeAndSeparateCamelCase = (text: string): string => {
   const separated = text.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -35,34 +37,38 @@ const getMissingFields = (selectedMember: any): string[] => {
   return missingFields;
 };
 
-const validateBillingInfo = (
-  user: Partial<User> | null | undefined
-): { isValid: boolean; missingFields: string } => {
-  if (!user || typeof user !== "object") {
-    return { isValid: false, missingFields: "User data is missing" };
+const validateOfficeInfo = async (): Promise<{
+  isValid: boolean;
+  missingFields: string;
+}> => {
+  try {
+    const office = await OfficeServices.getDefaultOffice();
+
+    const requiredFields = [
+      "country",
+      "city",
+      "state",
+      "zipCode",
+      "address",
+      "phone",
+    ] as const;
+
+    const missingFieldsArray = requiredFields.filter((field) => {
+      const value = office[field];
+      return typeof value !== "string" || value.trim() === "";
+    });
+
+    return {
+      isValid: missingFieldsArray.length === 0,
+      missingFields: missingFieldsArray.join(", "),
+    };
+  } catch (error) {
+    console.error("Error fetching office data:", error);
+    return { isValid: false, missingFields: "Office data unavailable" };
   }
-
-  const requiredFields = [
-    "country",
-    "city",
-    "state",
-    "zipCode",
-    "address",
-    "phone",
-  ] as const;
-
-  const missingFieldsArray = requiredFields.filter((field) => {
-    const value = user[field];
-    return typeof value !== "string" || value.trim() === "";
-  });
-
-  return {
-    isValid: missingFieldsArray.length === 0,
-    missingFields: missingFieldsArray.join(", "),
-  };
 };
 
-export const validateAfterAction = (
+export const validateAfterAction = async (
   source: {
     type: "member" | "office" | "warehouse";
     data: Member | Partial<User>;
@@ -71,10 +77,10 @@ export const validateAfterAction = (
     type: "member" | "office" | "warehouse";
     data: Member | Partial<User>;
   } | null
-): string[] => {
+): Promise<string[]> => {
   const missingMessages: string[] = [];
 
-  const validateEntity = (
+  const validateEntity = async (
     entity: { type: "member" | "office" | "warehouse"; data: any },
     role: "Current holder" | "Assigned member" | "Assigned location"
   ) => {
@@ -87,14 +93,13 @@ export const validateAfterAction = (
     }
 
     if (entity.type === "office" && entity.data.location === "Our office") {
-      const billingValidation = validateBillingInfo(
-        entity.data as Partial<User>
-      );
+      // Usar la nueva función que obtiene datos de la oficina
+      const officeValidation = await validateOfficeInfo();
 
-      if (!billingValidation.isValid) {
+      if (!officeValidation.isValid) {
         missingMessages.push(
           `${role} (${entity.data.location || "Office"}) is missing: ${
-            billingValidation.missingFields
+            officeValidation.missingFields
           }`
         );
       }
@@ -124,11 +129,11 @@ export const validateAfterAction = (
   }
 
   if (source) {
-    validateEntity(source, "Current holder");
+    await validateEntity(source, "Current holder");
   }
 
   if (destination) {
-    validateEntity(
+    await validateEntity(
       destination,
       destination?.type === "office" ? "Assigned location" : "Assigned member"
     );
@@ -207,7 +212,7 @@ interface ValidationResult {
   formattedMessages: string | null;
 }
 
-export const validateProductAssignment = (
+export const validateProductAssignment = async (
   product: Product,
   finalAssignedEmail: string | undefined,
   selectedMember: Member | null,
@@ -216,7 +221,7 @@ export const validateProductAssignment = (
   setShowErrorDialog: (show: boolean) => void,
   sessionUser: Partial<User>,
   noneOption: string | null
-): ValidationResult => {
+): Promise<ValidationResult> => {
   const allMembers = queryClient.getQueryData<Member[]>(["members"]);
 
   const { source, destination } = buildValidationEntities(
@@ -227,7 +232,7 @@ export const validateProductAssignment = (
     noneOption
   );
 
-  const missingMessages = validateAfterAction(source, destination);
+  const missingMessages = await validateAfterAction(source, destination);
 
   if (missingMessages.length > 0) {
     const formattedMessages = missingMessages
@@ -286,10 +291,11 @@ export const validateOnCreate = async (
       );
     }
   } else if (noneOption === "Our office") {
-    const billingValidation = validateBillingInfo(sessionUser);
-    if (!billingValidation.isValid) {
+    // Usar la nueva función que obtiene datos de la oficina
+    const officeValidation = await validateOfficeInfo();
+    if (!officeValidation.isValid) {
       missingMessages.push(
-        `Assigned location (<strong>${noneOption}</strong>) is missing: ${billingValidation.missingFields}`
+        `Assigned location (<strong>${noneOption}</strong>) is missing: ${officeValidation.missingFields}`
       );
     }
   }
