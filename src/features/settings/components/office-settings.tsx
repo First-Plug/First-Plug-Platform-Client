@@ -43,17 +43,15 @@ export const OfficeSettings = () => {
   }, [office, form]);
 
   const onSubmit = (data: OfficeFormData) => {
-    // Filtrar campos vacíos para no enviarlos al backend
-    const filteredData = Object.fromEntries(
-      Object.entries(data).filter(([key, value]) => {
-        // Mantener el name siempre (es requerido)
-        if (key === "name") return true;
-        // Para otros campos, solo incluir si no están vacíos
-        return value !== "" && value !== null && value !== undefined;
+    // Enviar todos los campos, incluyendo los vacíos para permitir borrado
+    const processedData = Object.fromEntries(
+      Object.entries(data).map(([key, value]) => {
+        // Convertir valores null/undefined a string vacío para permitir borrado
+        return [key, value ?? ""];
       })
     );
 
-    updateOffice(filteredData);
+    updateOffice(processedData);
   };
 
   if (isLoading) {

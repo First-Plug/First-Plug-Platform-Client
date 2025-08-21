@@ -46,17 +46,15 @@ export const ProfileSettings = () => {
   }, [profile, form]);
 
   const onSubmit = (data: ProfileFormData) => {
-    // Filtrar campos vacíos para no enviarlos al backend
-    const filteredData = Object.fromEntries(
-      Object.entries(data).filter(([key, value]) => {
-        // Mantener firstName y lastName siempre (son requeridos)
-        if (key === "firstName" || key === "lastName") return true;
-        // Para otros campos, solo incluir si no están vacíos
-        return value !== "" && value !== null && value !== undefined;
+    // Solo enviar campos que han cambiado (incluyendo los que se borraron)
+    const processedData = Object.fromEntries(
+      Object.entries(data).map(([key, value]) => {
+        // Convertir valores null/undefined a string vacío para permitir borrado
+        return [key, value ?? ""];
       })
     );
 
-    updateProfile(filteredData);
+    updateProfile(processedData);
   };
 
   if (isLoading) {

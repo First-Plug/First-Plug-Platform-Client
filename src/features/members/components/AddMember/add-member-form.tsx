@@ -216,7 +216,10 @@ export const AddMemberForm = ({
         },
         {
           onSuccess: async (response: BackendResponse) => {
-            const missingMessages = validateAfterAction(source, destination);
+            const missingMessages = await validateAfterAction(
+              source,
+              destination
+            );
 
             if (missingMessages.length > 0) {
               const formattedMessages = missingMessages
