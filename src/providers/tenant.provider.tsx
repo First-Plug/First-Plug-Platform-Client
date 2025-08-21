@@ -18,7 +18,24 @@ export const TenantProvider = ({ children }: Props) => {
   useTenantWebSocket(session.data?.user?.tenantName);
 
   if (!session.data) return null;
-  if (!session.data.user.tenantName) {
+
+  // Verificar si es usuario admin (por email o por role)
+  const userEmail = session.data?.user?.email;
+  const userRole = session.data?.user?.role;
+  const adminEmails = ["hola@firstplug.com", "superadmin@mail.com"];
+  const isLogisticUser = adminEmails.includes(userEmail);
+  const isSuperAdmin = userRole === "superadmin";
+
+  console.log("🔍 TENANT PROVIDER - Session data:", {
+    userEmail,
+    userRole,
+    tenantName: session.data.user.tenantName,
+    isLogisticUser,
+    isSuperAdmin,
+  });
+
+  // Solo redirigir a waiting si NO es admin y NO tiene tenant
+  if (!session.data.user.tenantName && !isLogisticUser && !isSuperAdmin) {
     router.push("/waiting");
     return;
   }

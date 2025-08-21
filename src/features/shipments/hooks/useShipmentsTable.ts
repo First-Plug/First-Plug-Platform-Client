@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useEffect, useRef, useState } from "react";
-import { createFilterStore, usePagination } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
+import { usePagination } from "@/features/fp-tables";
 import { type Shipment } from "../interfaces/shipments-response.interface";
 import { useShipmentStore } from "../store/useShipmentStore";
 

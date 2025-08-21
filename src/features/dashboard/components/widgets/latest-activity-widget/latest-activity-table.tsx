@@ -4,7 +4,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/shared";
-import { DataTable, createFilterStore } from "@/features/fp-tables";
+import { DataTable } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 import { endOfDay, startOfDay, subDays } from "date-fns";
 
 interface LatestActivityTableProps {

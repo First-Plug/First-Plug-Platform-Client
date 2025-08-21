@@ -7,7 +7,14 @@ export const axiosInstance = axios.create({ baseURL: BASE_URL });
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.log("🔍 AXIOS INTERCEPTOR - Error:", {
+      status: error.status,
+      url: error.config?.url,
+      message: error.message,
+    });
+
     if (error.status && error.status === 401) {
+      console.log("🚨 AXIOS INTERCEPTOR - 401 detected, signing out");
       signOut({ redirect: true });
     }
 

@@ -91,13 +91,29 @@ export const useLoginV2 = () => {
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Limpiar cache y redirigir
       if (typeof window !== "undefined") {
         localStorage.clear();
         sessionStorage.clear();
       }
-      router.push("/home/dashboard");
+
+      console.log("🔍 LOGIN SUCCESS - User data:", {
+        role: data?.user?.role,
+        email: data?.user?.email,
+        tenantName: data?.user?.tenantName,
+      });
+
+      // Redirigir según el rol del usuario
+      const userRole = data?.user?.role;
+      const userEmail = data?.user?.email;
+      const adminEmails = ["hola@firstplug.com", "superadmin@mail.com"];
+
+      if (userRole === "superadmin" || adminEmails.includes(userEmail)) {
+        router.push("/home/logistics");
+      } else {
+        router.push("/home/dashboard");
+      }
     },
   });
 

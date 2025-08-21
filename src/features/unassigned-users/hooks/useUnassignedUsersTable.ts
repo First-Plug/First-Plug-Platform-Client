@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useEffect } from "react";
-import { createFilterStore, usePagination } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
+import { usePagination } from "@/features/fp-tables";
 
 import { mockUnassignedUsers } from "../data/mockData";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

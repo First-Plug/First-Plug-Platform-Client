@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useEffect, useRef } from "react";
-import { createFilterStore, usePagination } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
+import { usePagination } from "@/features/fp-tables";
 import { useFetchLatestActivity } from "./useFetchLatestActivity";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useDateFilterStore } from "../store/dateFilter.store";

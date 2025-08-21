@@ -40,9 +40,22 @@ export const middleware: NextMiddleware = async (req) => {
   }
 
   const userEmail = (session as any)?.user?.email || session.email;
-  const isLogisticUser = userEmail === "hola@firstplug.com";
+  const userRole = (session as any)?.user?.role || session.role;
+  const adminEmails = ["hola@firstplug.com", "superadmin@mail.com"];
+  const isLogisticUser = adminEmails.includes(userEmail);
+  const isSuperAdmin = userRole === "superadmin";
 
-  if (isLogisticUser) {
+  console.log("🔍 MIDDLEWARE - Session data:", {
+    userEmail,
+    userRole,
+    tenantName: session.tenantName,
+    isLogisticUser,
+    isSuperAdmin,
+    currentPath: req.nextUrl.pathname,
+  });
+
+  // Manejar usuarios admin (por email o por role)
+  if (isLogisticUser || isSuperAdmin) {
     const allowedPaths = [
       "/home/logistics",
       "/home/unassigned-users",
@@ -70,14 +83,20 @@ export const middleware: NextMiddleware = async (req) => {
     return NextResponse.next();
   }
 
-  if (req.nextUrl.pathname === "/home/logistics") {
+  // Solo redirigir usuarios normales de logistics a dashboard
+  if (
+    req.nextUrl.pathname === "/home/logistics" &&
+    !isLogisticUser &&
+    !isSuperAdmin
+  ) {
     const url = req.nextUrl.clone();
     url.pathname = `/home/dashboard`;
     return NextResponse.redirect(url);
   }
 
   if (req.nextUrl.pathname.startsWith("/home")) {
-    if (!session.tenantName) {
+    // Solo validar tenant para usuarios normales (no admin)
+    if (!session.tenantName && !isLogisticUser && !isSuperAdmin) {
       const url = req.nextUrl.clone();
       url.pathname = `/waiting`;
       return NextResponse.redirect(url);
