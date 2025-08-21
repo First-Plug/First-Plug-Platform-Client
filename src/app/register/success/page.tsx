@@ -1,11 +1,12 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import Image from "next/image";
 import { Button } from "@/shared";
 import { useRouter } from "next/navigation";
 import { CheckCircleIcon } from "lucide-react";
 
-export default function RegisterSuccess() {
+export default function SuccessRegister() {
   const router = useRouter();
 
   return (
@@ -20,28 +21,28 @@ export default function RegisterSuccess() {
       />
 
       <article className="flex justify-center items-center w-[50%] h-screen">
-        <div className="max-w-md w-full space-y-8 text-center">
+        <div className="space-y-8 w-full max-w-md text-center">
           {/* Success Icon */}
           <div className="flex justify-center">
-            <CheckCircleIcon className="h-16 w-16 text-success" />
+            <CheckCircleIcon className="w-16 h-16 text-success" />
           </div>
 
           {/* Title */}
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="font-bold text-gray-900 text-3xl">
               Account Created Successfully!
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-gray-600 text-sm">
               Your registration has been completed.
             </p>
           </div>
 
           {/* Warning Card */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="bg-yellow-50 p-6 border border-yellow-200 rounded-lg">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-5 w-5 text-yellow-400"
+                  className="w-5 h-5 text-yellow-400"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -53,10 +54,10 @@ export default function RegisterSuccess() {
                 </svg>
               </div>
               <div className="ml-3 text-left">
-                <h3 className="text-sm font-medium text-yellow-800">
+                <h3 className="font-medium text-yellow-800 text-sm">
                   Important Note
                 </h3>
-                <div className="mt-2 text-sm text-yellow-700">
+                <div className="mt-2 text-yellow-700 text-sm">
                   <p>
                     You won&apos;t be able to login until a company is assigned
                     to your account. If you try to login now, you&apos;ll see a
@@ -68,14 +69,14 @@ export default function RegisterSuccess() {
           </div>
 
           {/* Contact Information */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-            <h3 className="text-sm font-medium text-gray-800 mb-2">
+          <div className="bg-gray-50 p-6 border border-gray-200 rounded-lg">
+            <h3 className="mb-2 font-medium text-gray-800 text-sm">
               Need Help?
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-gray-600 text-sm">
               If you have questions about your account status, please contact:
             </p>
-            <p className="text-sm font-medium text-gray-800 mt-1">
+            <p className="mt-1 font-medium text-gray-800 text-sm">
               hola@firstplug.co
             </p>
           </div>
@@ -85,7 +86,7 @@ export default function RegisterSuccess() {
             <Button
               onClick={() => router.push("/login")}
               variant="primary"
-              className="w-full rounded-md"
+              className="rounded-md w-full"
             >
               Go to Login
             </Button>
@@ -93,14 +94,14 @@ export default function RegisterSuccess() {
             <Button
               onClick={() => router.push("/register")}
               variant="outline"
-              className="w-full rounded-md"
+              className="rounded-md w-full"
             >
               Register Another Account
             </Button>
           </div>
 
           {/* Footer */}
-          {/* <div className="text-xs text-gray-500">
+          {/* <div className="text-gray-500 text-xs">
             <p>
               This is the new registration flow. Users are created without
               tenant assignment and must wait for Super Admin approval.

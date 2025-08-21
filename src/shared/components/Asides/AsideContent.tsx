@@ -10,9 +10,14 @@ import {
   MemberAsideDetails,
   EditMemberAside,
   CreateTeamAside,
+  EditAssignedUser,
+  UpdateTenant,
+  UpdateOffice,
+  CreateTenant,
 } from "./aside-contents";
 
 import { ShipmentAside } from "@/features/shipments";
+import { EditLogisticsShipmentAside } from "@/features/logistics";
 
 export var AsideContent = function () {
   const { type } = useAsideStore();
@@ -39,5 +44,15 @@ export var AsideContent = function () {
       return <ChangePassword />;
     case "UpdateShipment":
       return <ShipmentAside />;
+    case "EditLogisticsShipment":
+      return <EditLogisticsShipmentAside />;
+    case "EditAssignedUser":
+      return <EditAssignedUser />;
+    case "UpdateTenant":
+      return <UpdateTenant />;
+    case "UpdateOffice":
+      return <UpdateOffice />;
+    case "CreateTenant":
+      return <CreateTenant />;
   }
 };

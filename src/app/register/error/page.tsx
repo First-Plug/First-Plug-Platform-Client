@@ -1,7 +1,9 @@
 import { EmptyCard, EmptyCardLayout } from "@/shared";
 import { Navbar } from "@/shared";
 
-export default function ErrorRegistration() {
+export const dynamic = "force-dynamic";
+
+export default function ErrorRegister() {
   return (
     <>
       <Navbar title="logo" />

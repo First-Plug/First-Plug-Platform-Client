@@ -60,7 +60,6 @@ export * from "./icons/icons";
 export * from "./stores/alerts.store";
 export * from "./stores/aside.store";
 
-export * from "./utils/formateDate";
 export * from "./utils/dataTransformUtil";
 export * from "./utils/isProductCompleted";
 export * from "./utils/parseMembers";

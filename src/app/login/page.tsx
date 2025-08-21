@@ -20,12 +20,14 @@ import {
   useToast,
 } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLogisticUser } from "@/shared/hooks/useLogisticUser";
 
 export default function Login() {
   const queryClient = useQueryClient();
   const emailInput = useInput("", "email");
   const passWordInput = useInput("", "password");
   const [isLoading, setIsLoading] = useState(false);
+  const { isLogisticUser } = useLogisticUser();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -56,7 +58,12 @@ export default function Login() {
       }
 
       queryClient.clear();
-      router.push("/home/dashboard");
+
+      if (isLogisticUser) {
+        router.push("/home/logistics");
+      } else {
+        router.push("/home/dashboard");
+      }
     } catch (error) {
       toast({
         variant: "destructive",
@@ -81,7 +88,7 @@ export default function Login() {
 
       <article className="flex justify-center w-[50%] h-screen">
         <AuthForm title="Welcome Back!" login onSubmit={handleSumbit}>
-          <div className="text-md space-y-3">
+          <div className="space-y-3 text-md">
             <Input
               title="Email"
               placeholder="user@mail.com"

@@ -22,6 +22,10 @@ const Titles = {
   activity: "Activity",
   orders: "Orders",
   shipments: "Shipments",
+  logistics: "Logistics",
+  "unassigned-users": "Unassigned Users",
+  "assigned-users": "Assigned Users",
+  tenants: "Tenants",
 } as const;
 
 export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
