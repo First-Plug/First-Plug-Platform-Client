@@ -46,13 +46,21 @@ export const ProfileSettings = () => {
   }, [profile, form]);
 
   const onSubmit = (data: ProfileFormData) => {
-    // Solo enviar campos que han cambiado (incluyendo los que se borraron)
-    const processedData = Object.fromEntries(
-      Object.entries(data).map(([key, value]) => {
-        // Convertir valores null/undefined a string vacío para permitir borrado
-        return [key, value ?? ""];
-      })
-    );
+    // Procesar datos para el backend
+    const processedData: any = {};
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === "personalEmail") {
+        // Para personalEmail: solo incluir si tiene valor, omitir si está vacío
+        if (value && value.trim() !== "") {
+          processedData[key] = value.trim();
+        }
+        // Si está vacío, no incluir el campo (el backend lo interpretará como "borrar")
+      } else {
+        // Para otros campos: convertir null/undefined a string vacío
+        processedData[key] = value ?? "";
+      }
+    });
 
     updateProfile(processedData);
   };

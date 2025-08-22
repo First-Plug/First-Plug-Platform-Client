@@ -80,64 +80,109 @@ export const validateAfterAction = async (
 ): Promise<string[]> => {
   const missingMessages: string[] = [];
 
-  const validateEntity = async (
-    entity: { type: "member" | "office" | "warehouse"; data: any },
-    role: "Current holder" | "Assigned member" | "Assigned location"
-  ) => {
-    if (!entity || !entity.data) {
-      return;
+  // Función para validar members (síncrona) - RETORNA mensajes
+  const validateMember = (
+    entity: { type: "member"; data: Member },
+    role: "Current holder" | "Assigned member"
+  ): string[] => {
+    const memberMessages: string[] = [];
+    const missingFields = getMissingFields(entity.data);
+
+    if (missingFields.length > 0) {
+      const fullName =
+        `${entity.data.firstName || ""} ${entity.data.lastName || ""}`.trim() ||
+        "Unknown";
+
+      memberMessages.push(
+        `${role} (${fullName}) is missing: ${missingFields
+          .map((field) => capitalizeAndSeparateCamelCase(field))
+          .join(", ")}`
+      );
     }
 
-    if (entity.type === "warehouse") {
-      return;
-    }
-
-    if (entity.type === "office" && entity.data.location === "Our office") {
-      // Usar la nueva función que obtiene datos de la oficina
-      const officeValidation = await validateOfficeInfo();
-
-      if (!officeValidation.isValid) {
-        missingMessages.push(
-          `${role} (${entity.data.location || "Office"}) is missing: ${
-            officeValidation.missingFields
-          }`
-        );
-      }
-      return;
-    }
-
-    if (entity.type === "member") {
-      const missingFields = getMissingFields(entity.data as Member);
-
-      if (missingFields.length > 0) {
-        const fullName =
-          `${entity.data.firstName || ""} ${
-            entity.data.lastName || ""
-          }`.trim() || "Unknown";
-
-        missingMessages.push(
-          `${role} (${fullName}) is missing: ${missingFields
-            .map((field) => capitalizeAndSeparateCamelCase(field))
-            .join(", ")}`
-        );
-      }
-    }
+    return memberMessages;
   };
+
+  // Función para validar office (asíncrona) - RETORNA mensajes
+  const validateOffice = async (
+    entity: { type: "office"; data: any },
+    role: "Assigned location"
+  ): Promise<string[]> => {
+    const officeMessages: string[] = [];
+    const officeValidation = await validateOfficeInfo();
+
+    if (!officeValidation.isValid) {
+      officeMessages.push(
+        `${role} (${entity.data.location || "Office"}) is missing: ${
+          officeValidation.missingFields
+        }`
+      );
+    }
+
+    return officeMessages;
+  };
+
   if (!source) {
     console.error("Source entity is undefined. Validation skipped.");
-    return;
+    return missingMessages;
   }
 
+  // Recopilar TODOS los mensajes de validación
+  const allValidationPromises: Promise<string[]>[] = [];
+
+  // Validar SOURCE
   if (source) {
-    await validateEntity(source, "Current holder");
+    if (source.type === "member") {
+      // Member validation es síncrona, la convertimos a Promise
+      const memberMessages = validateMember(
+        source as { type: "member"; data: Member },
+        "Current holder"
+      );
+      allValidationPromises.push(Promise.resolve(memberMessages));
+    } else if (
+      source.type === "office" &&
+      (source.data as any).location === "Our office"
+    ) {
+      // Office validation es asíncrona
+      allValidationPromises.push(
+        validateOffice(
+          source as { type: "office"; data: any },
+          "Assigned location"
+        )
+      );
+    }
   }
 
+  // Validar DESTINATION
   if (destination) {
-    await validateEntity(
-      destination,
-      destination?.type === "office" ? "Assigned location" : "Assigned member"
-    );
+    if (destination.type === "member") {
+      // Member validation es síncrona, la convertimos a Promise
+      const memberMessages = validateMember(
+        destination as { type: "member"; data: Member },
+        "Assigned member"
+      );
+      allValidationPromises.push(Promise.resolve(memberMessages));
+    } else if (
+      destination.type === "office" &&
+      (destination.data as any).location === "Our office"
+    ) {
+      // Office validation es asíncrona
+      allValidationPromises.push(
+        validateOffice(
+          destination as { type: "office"; data: any },
+          "Assigned location"
+        )
+      );
+    }
   }
+
+  // Esperar a que TODAS las validaciones terminen
+  const allResults = await Promise.all(allValidationPromises);
+
+  // Combinar TODOS los mensajes en un solo array
+  allResults.forEach((messages) => {
+    missingMessages.push(...messages);
+  });
 
   return missingMessages;
 };
