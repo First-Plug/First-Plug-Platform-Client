@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { InputProductForm } from "@/features/assets";
 import { useAsideStore, useAlertStore, Button } from "@/shared";
-import { Tenant } from "@/features/tenants";
+import { Tenant, useUpdateTenant } from "@/features/tenants";
 import { useQueryClient } from "@tanstack/react-query";
 import { MinusIcon, AddIcon } from "@/shared";
 import { Controller } from "react-hook-form";
@@ -22,8 +22,8 @@ import { InfoCircle } from "@/shared";
 import { useState, useEffect } from "react";
 
 const updateTenantSchema = z.object({
-  name: z.string().min(1, "Tenant name is required"),
-  computerExpirationYears: z
+  name: z.string().min(1, "Company name is required"),
+  computerExpiration: z
     .number()
     .min(0.5, "Computer expiration years must be at least 0.5")
     .max(10, "Computer expiration years cannot exceed 10"),
@@ -40,13 +40,18 @@ export const UpdateTenant = () => {
   const { setAlert } = useAlertStore();
   const queryClient = useQueryClient();
   const selectedTenant = queryClient.getQueryData<Tenant>(["selectedTenant"]);
+  const updateTenantMutation = useUpdateTenant();
 
   const methods = useForm<UpdateTenantFormData>({
     resolver: zodResolver(updateTenantSchema),
     defaultValues: {
       name: selectedTenant?.name || "",
-      computerExpirationYears: 3,
-      recoverableCategories: ["Computer", "Monitor", "Peripherals"],
+      computerExpiration: selectedTenant?.computerExpirationYears || 3,
+      recoverableCategories: selectedTenant?.recoverableConfig
+        ? Object.keys(selectedTenant.recoverableConfig).filter(
+            (key) => selectedTenant.recoverableConfig[key]
+          )
+        : ["Computer", "Monitor", "Peripherals"],
       image: "",
     },
   });
@@ -63,7 +68,7 @@ export const UpdateTenant = () => {
   // Valores por defecto para comparar
   const defaultValues = {
     name: selectedTenant?.name || "",
-    computerExpirationYears: 3,
+    computerExpiration: 3,
     recoverableCategories: ["Computer", "Monitor", "Peripherals"],
     image: "",
   };
@@ -73,8 +78,7 @@ export const UpdateTenant = () => {
     const currentValues = getValues();
     return (
       currentValues.name === defaultValues.name &&
-      currentValues.computerExpirationYears ===
-        defaultValues.computerExpirationYears &&
+      currentValues.computerExpiration === defaultValues.computerExpiration &&
       JSON.stringify(currentValues.recoverableCategories.sort()) ===
         JSON.stringify(defaultValues.recoverableCategories.sort()) &&
       currentValues.image === defaultValues.image
@@ -94,13 +98,28 @@ export const UpdateTenant = () => {
   }, [watch]);
 
   const onSubmit = async (data: UpdateTenantFormData) => {
+    if (!selectedTenant) return;
+
     try {
-      console.log("Form data:", data);
-      setAlert("dataUpdatedSuccessfully");
+      const updateData = {
+        name: data.name,
+        computerExpiration: data.computerExpiration,
+        isRecoverableConfig: data.recoverableCategories.reduce(
+          (acc, category) => {
+            acc[category] = true;
+            return acc;
+          },
+          {} as Record<string, boolean>
+        ),
+      };
+
+      await updateTenantMutation.mutateAsync({
+        id: selectedTenant.id,
+        data: updateData,
+      });
       setAside(null);
     } catch (error) {
       console.error("Error updating tenant:", error);
-      setAlert("errorUpdateTeam");
     }
   };
 
@@ -110,9 +129,30 @@ export const UpdateTenant = () => {
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pr-4">
             <div className="mt-8">
+              <div className="relative">
+                <label className="block ml-2 font-sans text-dark-grey">
+                  Tenant Name (ID)
+                </label>
+                <input
+                  name="tenantName"
+                  type="text"
+                  value={selectedTenant?.tenantName || ""}
+                  onChange={() => {}} // No-op since it's disabled
+                  placeholder="Tenant identifier"
+                  className="w-full h-14 py-2 rounded-xl border p-4 font-sans focus:outline-none bg-gray-100 text-gray-500 cursor-not-allowed"
+                  disabled={true}
+                  readOnly={true}
+                />
+              </div>
+              <p className="mt-1 text-gray-500 text-xs">
+                Tenant name cannot be modified
+              </p>
+            </div>
+
+            <div className="mt-6">
               <InputProductForm
-                title="Tenant Name"
-                placeholder="Enter tenant name"
+                title="Company Name"
+                placeholder="Enter company name"
                 value={watch("name")}
                 onChange={(e) => {
                   setValue("name", e.target.value);
@@ -136,7 +176,7 @@ export const UpdateTenant = () => {
               </div>
 
               <Controller
-                name="computerExpirationYears"
+                name="computerExpiration"
                 control={methods.control}
                 render={({ field }) => (
                   <div className="flex flex-col items-start">
@@ -144,8 +184,11 @@ export const UpdateTenant = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          const newValue = Math.max(0.5, field.value - 0.5);
-                          setValue("computerExpirationYears", newValue);
+                          const newValue = Math.max(
+                            0.5,
+                            Number(field.value) - 0.5
+                          );
+                          setValue("computerExpiration", newValue);
                         }}
                         className="hover:bg-gray-100 p-1 px-2 rounded"
                       >
@@ -160,8 +203,11 @@ export const UpdateTenant = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          const newValue = Math.min(10, field.value + 0.5);
-                          setValue("computerExpirationYears", newValue);
+                          const newValue = Math.min(
+                            10,
+                            Number(field.value) + 0.5
+                          );
+                          setValue("computerExpiration", newValue);
                         }}
                         className="hover:bg-gray-100 p-1 px-2 rounded"
                       >
@@ -171,9 +217,9 @@ export const UpdateTenant = () => {
                   </div>
                 )}
               />
-              {errors.computerExpirationYears && (
+              {errors.computerExpiration && (
                 <p className="mt-1 text-red-600 text-sm">
-                  {errors.computerExpirationYears.message}
+                  {errors.computerExpiration.message}
                 </p>
               )}
             </div>

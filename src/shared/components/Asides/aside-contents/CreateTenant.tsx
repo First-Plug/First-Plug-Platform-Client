@@ -3,23 +3,28 @@
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAsideStore, useAlertStore, Button } from "@/shared";
+import { useAsideStore, Button } from "@/shared";
 import { InputProductForm } from "@/features/assets";
+import { useCreateTenant } from "@/features/tenants";
 
 const createTenantSchema = z.object({
-  name: z.string().min(1, "Tenant name is required"),
+  tenantName: z.string().min(1, "Tenant name is required"),
+  name: z.string().min(1, "Company name is required"),
+  image: z.string().optional(),
 });
 
 type CreateTenantFormData = z.infer<typeof createTenantSchema>;
 
 export const CreateTenant = () => {
   const { setAside } = useAsideStore();
-  const { setAlert } = useAlertStore();
+  const createTenantMutation = useCreateTenant();
 
   const methods = useForm<CreateTenantFormData>({
     resolver: zodResolver(createTenantSchema),
     defaultValues: {
+      tenantName: "",
       name: "",
+      image: "",
     },
   });
 
@@ -27,17 +32,21 @@ export const CreateTenant = () => {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors, isDirty, isSubmitting },
+    formState: { errors, isSubmitting },
   } = methods;
 
   const onSubmit = async (data: CreateTenantFormData) => {
     try {
-      console.log("Creating tenant:", data);
-      setAlert("createTeam"); // Usar alerta de creación exitosa
+      // Transform data to match API expectations
+      const createData = {
+        tenantName: data.tenantName,
+        name: data.name,
+        image: data.image || undefined, // Only send if not empty
+      };
+      await createTenantMutation.mutateAsync(createData);
       setAside(null);
     } catch (error) {
       console.error("Error creating tenant:", error);
-      setAlert("errorCreateTeam");
     }
   };
 
@@ -48,8 +57,25 @@ export const CreateTenant = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pr-4">
             <div className="mt-8">
               <InputProductForm
-                title="Tenant Name"
-                placeholder="Enter tenant name"
+                title="Tenant Name (ID)"
+                placeholder="Enter unique tenant identifier (e.g., company-name)"
+                value={watch("tenantName")}
+                onChange={(e) => {
+                  setValue("tenantName", e.target.value);
+                }}
+                name="tenantName"
+              />
+              {errors.tenantName && (
+                <p className="mt-1 text-red-600 text-sm">
+                  {errors.tenantName.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mt-6">
+              <InputProductForm
+                title="Company Name"
+                placeholder="Enter company display name"
                 value={watch("name")}
                 onChange={(e) => {
                   setValue("name", e.target.value);

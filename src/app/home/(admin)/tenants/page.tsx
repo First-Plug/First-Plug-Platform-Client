@@ -6,6 +6,7 @@ import {
   PageLayout,
   PaginationAdvanced,
   useAsideStore,
+  BarLoader,
 } from "@/shared";
 
 import { DataTable } from "@/features/fp-tables";
@@ -30,6 +31,8 @@ export default function TenantsPage() {
     tableContainerRef,
     useTenantsTableFilterStore,
     filteredDataForColumns,
+    isLoading,
+    error,
   } = useTenantsTable();
 
   const columns = useTenantsTableColumns({
@@ -42,6 +45,24 @@ export default function TenantsPage() {
   const handleClearAllFiltersExtended = () => {
     handleClearAllFilters();
   };
+
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <BarLoader />
+      </PageLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-red-600">Error loading tenants: {error.message}</p>
+        </div>
+      </PageLayout>
+    );
+  }
 
   if (paginatedTenants.length === 0 && pageIndex === 0) {
     return <EmptyTenants />;
