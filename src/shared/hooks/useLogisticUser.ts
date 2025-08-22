@@ -3,11 +3,22 @@ import { useSession } from "next-auth/react";
 export const useLogisticUser = () => {
   const { data: session } = useSession();
   const userEmail = session?.user?.email;
+  const userRole = session?.user?.role;
 
-  const isLogisticUser = userEmail === "hola@firstplug.com";
+  // Verificar por email hardcodeado O por role
+  const adminEmails = ["hola@firstplug.com", "superadmin@mail.com"];
+  const isLogisticUser =
+    adminEmails.includes(userEmail) || userRole === "superadmin";
+
+  console.log("🔍 useLogisticUser - Data:", {
+    userEmail,
+    userRole,
+    isLogisticUser,
+  });
 
   return {
     isLogisticUser,
     userEmail,
+    userRole,
   };
 };

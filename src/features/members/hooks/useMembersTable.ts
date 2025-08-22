@@ -1,7 +1,8 @@
 "use client";
 import { useMemo, useEffect } from "react";
 import { Member } from "@/features/members";
-import { usePagination, createFilterStore } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
+import { usePagination } from "@/features/fp-tables";
 
 const useMembersTableFilterStore = createFilterStore();
 

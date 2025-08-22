@@ -3,7 +3,8 @@ import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { Product } from "@/features/assets";
-import { DataTable, createFilterStore } from "@/features/fp-tables";
+import { DataTable } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 
 interface ComputerStatus {
   brandModel: string;

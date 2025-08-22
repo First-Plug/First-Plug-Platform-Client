@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { mockTenants } from "../data/mockData";
 import { Tenant } from "../interfaces/tenant.interface";
-import { createFilterStore, usePagination } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
+import { usePagination } from "@/features/fp-tables";
 
 const useTenantsTableFilterStore = createFilterStore();
 
