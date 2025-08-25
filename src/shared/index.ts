@@ -69,6 +69,14 @@ export * from "./utils/date";
 export * from "./utils/parseProducts";
 export * from "./utils/validateAfterAction";
 export * from "./utils/utils";
+export {
+  exportToCsv,
+  formatPrice,
+  formatDate,
+  type CsvColumnConfig,
+  type CsvExportOptions,
+  createLogisticsCsvConfig,
+} from "./utils/csvExport";
 
 export * from "./interfaces/csv";
 export * from "./interfaces/tables";

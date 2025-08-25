@@ -2,11 +2,12 @@
 export * from "./interfaces/logistics";
 
 // Hooks
+export * from "./hooks/useFetchAllLogisticsShipments";
 export * from "./hooks/useLogisticsTable";
 export * from "./hooks/useLogisticsTableColumns";
 export * from "./hooks/useLogisticsSubtableLogic";
-export * from "./hooks/useUpdateLogisticsShipment";
-export * from "./hooks/useExportLogisticsCsv";
+
+export * from "./hooks/useCompleteUpdateShipment";
 
 // Components
 export * from "./components/EmptyLogistics";

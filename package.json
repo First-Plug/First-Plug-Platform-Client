@@ -13,6 +13,7 @@
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.1",
     "@hookform/resolvers": "^3.6.0",
+    "@next/swc-darwin-arm64": "^15.5.0",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-checkbox": "^1.2.2",
     "@radix-ui/react-dialog": "^1.0.5",

@@ -15,21 +15,29 @@ export const ExpandedRowContent = React.memo<ExpandedRowContentProps>(
     const handleOriginClick = React.useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (order.origin !== "FP Warehouse") {
-          openModal(order.origin);
+        if (order.origin !== "FP warehouse") {
+          openModal(
+            order.originDetails,
+            order.origin !== "Our office",
+            order.origin
+          );
         }
       },
-      [order.origin, openModal]
+      [order.origin, openModal, order.originDetails]
     );
 
     const handleDestinationClick = React.useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (order.destination !== "FP Warehouse") {
-          openModal(order.destination);
+        if (order.destination !== "FP warehouse") {
+          openModal(
+            order.destinationDetails,
+            order.destination !== "Our office",
+            order.destination
+          );
         }
       },
-      [order.destination, openModal]
+      [order.destination, openModal, order.destinationDetails]
     );
 
     return (
@@ -44,12 +52,14 @@ export const ExpandedRowContent = React.memo<ExpandedRowContentProps>(
                 Origin / Pickup Date:
               </h4>
               <div className="bg-white p-3 border rounded-md">
-                <div className="text-gray-600 text-sm">Date: 15/1/2024</div>
+                <div className="text-gray-600 text-sm">
+                  Date: {order.originDetails.desirableDate}
+                </div>
                 <div className="text-gray-600 text-sm">
                   From:{" "}
                   <span
                     className={`${
-                      order.origin !== "FP Warehouse"
+                      order.origin !== "FP warehouse"
                         ? "text-blue hover:text-blue-800 bg-blue-100 rounded cursor-pointer"
                         : "text-gray-600"
                     }`}
@@ -66,12 +76,14 @@ export const ExpandedRowContent = React.memo<ExpandedRowContentProps>(
                 Destination / Delivery Date:
               </h4>
               <div className="bg-white p-3 border rounded-md">
-                <div className="text-gray-600 text-sm">Date: 19/1/2024</div>
+                <div className="text-gray-600 text-sm">
+                  Date: {order.destinationDetails.desirableDate}
+                </div>
                 <div className="text-gray-600 text-sm">
                   To:{" "}
                   <span
                     className={`${
-                      order.destination !== "FP Warehouse"
+                      order.destination !== "FP warehouse"
                         ? "text-blue hover:text-blue-800 bg-blue-100 rounded cursor-pointer"
                         : "text-gray-600"
                     }`}
@@ -89,54 +101,61 @@ export const ExpandedRowContent = React.memo<ExpandedRowContentProps>(
               Products to Send:
             </h4>
             <div className="space-y-3">
-              <div className="bg-white p-3 border rounded-md">
-                <div className="flex flex-wrap gap-4">
-                  <div className="text-gray-600 text-sm">
-                    <span className="font-medium text-gray-700">Category:</span>{" "}
-                    Electronics
+              {order.snapshots && order.snapshots.length > 0 ? (
+                order.snapshots.map((snapshot, index) => (
+                  <div key={index} className="bg-white p-3 border rounded-md">
+                    <div className="flex flex-wrap gap-4">
+                      {snapshot.name && (
+                        <div className="text-gray-600 text-sm">
+                          <span className="font-medium text-gray-700">
+                            Name:
+                          </span>{" "}
+                          {snapshot.name}
+                        </div>
+                      )}
+
+                      {snapshot.attributes && snapshot.attributes.length > 0 ? (
+                        snapshot.attributes
+                          .filter(
+                            (attr) => attr.value && attr.value.trim() !== ""
+                          )
+                          .map((attr, attrIndex) => (
+                            <div
+                              key={attrIndex}
+                              className="text-gray-600 text-sm"
+                            >
+                              <span className="font-medium text-gray-700">
+                                {attr.key.charAt(0).toUpperCase() +
+                                  attr.key.slice(1)}
+                                :
+                              </span>{" "}
+                              {attr.value}
+                            </div>
+                          ))
+                      ) : (
+                        <div className="text-gray-500 text-sm">
+                          No attributes available
+                        </div>
+                      )}
+
+                      {snapshot.serialNumber && (
+                        <div className="text-gray-600 text-sm">
+                          <span className="font-medium text-gray-700">
+                            Serial Number:
+                          </span>{" "}
+                          {snapshot.serialNumber}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-gray-600 text-sm">
-                    <span className="font-medium text-gray-700">Brand:</span>{" "}
-                    Samsung
-                  </div>
-                  <div className="text-gray-600 text-sm">
-                    <span className="font-medium text-gray-700">Model:</span>{" "}
-                    Galaxy S23
-                  </div>
-                  <div className="text-gray-600 text-sm">
-                    <span className="font-medium text-gray-700">Name:</span>{" "}
-                    Smartphone
-                  </div>
-                  <div className="text-gray-600 text-sm">
-                    <span className="font-medium text-gray-700">Serial:</span>{" "}
-                    SN001234
+                ))
+              ) : (
+                <div className="bg-white p-3 border rounded-md">
+                  <div className="text-gray-500 text-sm text-center">
+                    No product details available
                   </div>
                 </div>
-              </div>
-              <div className="bg-white p-3 border rounded-md">
-                <div className="flex flex-wrap gap-4">
-                  <div className="text-gray-600 text-sm">
-                    <span className="font-medium text-gray-700">Category:</span>{" "}
-                    Accessories
-                  </div>
-                  <div className="text-gray-600 text-sm">
-                    <span className="font-medium text-gray-700">Brand:</span>{" "}
-                    Samsung
-                  </div>
-                  <div className="text-gray-600 text-sm">
-                    <span className="font-medium text-gray-700">Model:</span>{" "}
-                    EP-TA300
-                  </div>
-                  <div className="text-gray-600 text-sm">
-                    <span className="font-medium text-gray-700">Name:</span>{" "}
-                    Charger
-                  </div>
-                  <div className="text-gray-600 text-sm">
-                    <span className="font-medium text-gray-700">Serial:</span>{" "}
-                    SN001235
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

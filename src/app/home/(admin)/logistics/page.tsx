@@ -1,18 +1,26 @@
 "use client";
 
-import { PageLayout, BarLoader, Button, PaginationAdvanced } from "@/shared";
+import {
+  PageLayout,
+  BarLoader,
+  Button,
+  PaginationAdvanced,
+  DownloadIcon,
+} from "@/shared";
 import { DataTable } from "@/features/fp-tables";
 import {
   EmptyLogistics,
   useLogisticsTable,
   useLogisticsTableColumns,
   useLogisticsSubtableLogic,
-  useExportLogisticsCsv,
+  useFetchAllLogisticsShipments,
 } from "@/features/logistics";
-import { DownloadIcon } from "@/shared";
 import { TruckIcon } from "lucide-react";
+import { exportToCsv, createLogisticsCsvConfig } from "@/shared";
 
 export default function Logistics() {
+  const { data: shipments, isLoading, error } = useFetchAllLogisticsShipments();
+
   const {
     data,
     paginatedData,
@@ -24,22 +32,24 @@ export default function Logistics() {
     handleClearAllFilters,
     useLogisticsTableFilterStore,
     tableContainerRef,
-    isLoading,
-  } = useLogisticsTable();
+  } = useLogisticsTable(shipments, isLoading);
 
   const columns = useLogisticsTableColumns({ data: data || [] });
 
   const { getRowCanExpand, getRowId, renderSubComponent } =
     useLogisticsSubtableLogic();
 
-  const exportCsvMutation = useExportLogisticsCsv();
-
-  const handleExportCsv = async () => {
-    try {
-      await exportCsvMutation.mutateAsync();
-    } catch (error) {
-      console.error("Failed to export CSV:", error);
+  const handleExportCsv = () => {
+    if (!shipments || shipments.length === 0) {
+      console.warn("No hay datos para exportar");
+      return;
     }
+
+    const csvConfig = createLogisticsCsvConfig();
+    exportToCsv(shipments, csvConfig, {
+      filename: "logistics-shipments",
+      includeTimestamp: true,
+    });
   };
 
   return (
@@ -47,7 +57,30 @@ export default function Logistics() {
       <PageLayout>
         {isLoading && <BarLoader />}
 
-        {!isLoading && data && data.length > 0 ? (
+        {error && (
+          <div className="flex flex-col justify-center items-center h-full min-h-[400px] text-center">
+            <div className="flex justify-center items-center bg-red-100 mb-4 rounded-full w-16 h-16">
+              <TruckIcon className="w-8 h-8 text-red-500" />
+            </div>
+            <h3 className="mb-2 font-semibold text-red-900 text-lg">
+              Error loading logistics data
+            </h3>
+            <p className="max-w-md text-red-600">
+              There was an error loading the logistics data. Please try again
+              later.
+            </p>
+            <Button
+              onClick={() => window.location.reload()}
+              variant="secondary"
+              size="small"
+              className="mt-4"
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {!isLoading && !error && shipments && shipments.length > 0 ? (
           <div className="flex flex-col h-full max-h-full">
             <div className="flex justify-between items-center mb-6">
               <Button
@@ -56,7 +89,7 @@ export default function Logistics() {
                 size="small"
                 className="w-32"
               >
-                Clear Filters
+                Clear All Filters
               </Button>
 
               <div className="flex items-center gap-4">
@@ -66,7 +99,6 @@ export default function Logistics() {
                   size="small"
                   icon={<DownloadIcon />}
                   className="w-32"
-                  disabled={exportCsvMutation.isPending}
                 >
                   Export CSV
                 </Button>
@@ -74,7 +106,8 @@ export default function Logistics() {
                 <div className="flex items-center gap-2 text-gray-500">
                   <TruckIcon className="w-4 h-4" />
                   <span className="text-sm">
-                    {data.length} total shipments | {paginatedData.length} shown
+                    {shipments.length} total shipments | {paginatedData.length}{" "}
+                    shown
                   </span>
                 </div>
               </div>
@@ -105,7 +138,7 @@ export default function Logistics() {
               />
             </div>
           </div>
-        ) : !isLoading && data && data.length === 0 ? (
+        ) : !isLoading && !error && shipments && shipments.length === 0 ? (
           <EmptyLogistics />
         ) : null}
       </PageLayout>
