@@ -1,163 +1,165 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/shared";
-import { InputProductForm, DropdownInputProductForm } from "@/features/assets";
-import { useAsideStore, useAlertStore } from "@/shared";
-import { AssignedUser } from "@/features/assigned-users";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAsideStore } from "@/shared";
+import { Button } from "@/shared";
+import { InputProductForm } from "@/features/assets";
+import {
+  useUpdateAssignedUser,
+  AVAILABLE_ROLES,
+} from "@/features/assigned-users";
+import type {
+  AssignedUser,
+  UpdateAssignedUserRequest,
+} from "@/features/assigned-users";
 
+// Validation schema
 const editAssignedUserSchema = z.object({
-  assignedTenant: z.string(),
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email format"),
-  role: z.enum(["User", "Admin", "Super Admin"]),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  role: z.enum(AVAILABLE_ROLES, {
+    errorMap: () => ({ message: "Please select a valid role" }),
+  }),
 });
 
 type EditAssignedUserFormData = z.infer<typeof editAssignedUserSchema>;
 
 export const EditAssignedUser = () => {
-  const { setAside } = useAsideStore();
-  const { setAlert } = useAlertStore();
+  const { closeAside } = useAsideStore();
   const queryClient = useQueryClient();
 
+  // Get selected user from query cache
   const selectedUser = queryClient.getQueryData<AssignedUser>([
     "selectedAssignedUser",
   ]);
 
+  const { mutate: updateUser, isPending } = useUpdateAssignedUser();
+
   const methods = useForm<EditAssignedUserFormData>({
     resolver: zodResolver(editAssignedUserSchema),
     defaultValues: {
-      assignedTenant: selectedUser?.assignedTenant || "Tenant",
-      name: selectedUser?.name || "",
-      email: selectedUser?.email || "",
-      role: (selectedUser?.role as "User" | "Admin" | "Super Admin") || "User",
+      firstName: selectedUser?.firstName || "",
+      lastName: selectedUser?.lastName || "",
+      role: selectedUser?.role || "user",
     },
   });
 
   const {
     handleSubmit,
-    formState: { isSubmitting, errors, isDirty },
-    watch,
-    setValue,
-    reset,
+    formState: { errors },
   } = methods;
 
-  const watchedRole = watch("role");
+  const onSubmit = (data: EditAssignedUserFormData) => {
+    if (!selectedUser) return;
 
-  useEffect(() => {
-    if (watchedRole === "Super Admin") {
-      setValue("assignedTenant", "", { shouldDirty: false });
-    } else if (watch("assignedTenant") === "") {
-      setValue("assignedTenant", "", { shouldDirty: false });
-    }
-  }, [watchedRole, setValue, watch]);
-
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [needsPadding, setNeedsPadding] = useState(false);
-
-  useEffect(() => {
-    const checkForScroll = () => {
-      if (contentRef.current) {
-        const element = contentRef.current;
-        const hasScroll = element.scrollHeight > element.clientHeight;
-        setNeedsPadding(hasScroll);
-      }
+    const updateData: UpdateAssignedUserRequest = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      role: data.role,
     };
 
-    checkForScroll();
-    window.addEventListener("resize", checkForScroll);
-
-    return () => window.removeEventListener("resize", checkForScroll);
-  }, []);
-
-  const closeAside = () => {
-    setAside(undefined);
-    queryClient.removeQueries({ queryKey: ["selectedAssignedUser"] });
-  };
-
-  const onSubmit = async (data: EditAssignedUserFormData) => {
-    try {
-      console.log("Updating user:", data);
-
-      setAlert("dataUpdatedSuccessfully");
-      closeAside();
-    } catch (error) {
-      console.error("Error updating user:", error);
-      setAlert("errorUpdateTeam");
-    }
+    updateUser(
+      { userId: selectedUser._id, data: updateData },
+      {
+        onSuccess: () => {
+          closeAside();
+        },
+      }
+    );
   };
 
   if (!selectedUser) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <p className="text-gray-500">Selected user not found</p>
+      <div className="flex flex-col h-full">
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-gray-500">No user selected</p>
+        </div>
       </div>
     );
   }
 
+  const roleOptions = AVAILABLE_ROLES.map((role) => ({
+    label: role.charAt(0).toUpperCase() + role.slice(1),
+    value: role,
+  }));
+
   return (
     <div className="flex flex-col h-full">
-      <div
-        ref={contentRef}
-        className={`flex-1 overflow-y-auto scrollbar-custom ${
-          needsPadding ? "pb-20" : ""
-        }`}
-      >
+      <div className="flex-1 overflow-y-auto">
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pr-4">
+            {/* First Name */}
             <div className="mt-8">
               <InputProductForm
-                title="Name"
-                placeholder="Enter full name"
-                value={watch("name")}
-                onChange={(e) => {
-                  setValue("name", e.target.value, { shouldDirty: true });
-                }}
-                name="name"
+                title="First Name"
+                placeholder="Enter first name"
+                value={methods.watch("firstName")}
+                onChange={(e) => methods.setValue("firstName", e.target.value)}
+                name="firstName"
               />
-              {errors.name && (
+              {errors.firstName && (
                 <p className="mt-1 text-red-600 text-sm">
-                  {errors.name.message}
+                  {errors.firstName.message}
                 </p>
               )}
             </div>
 
+            {/* Last Name */}
+            <div>
+              <InputProductForm
+                title="Last Name"
+                placeholder="Enter last name"
+                value={methods.watch("lastName")}
+                onChange={(e) => methods.setValue("lastName", e.target.value)}
+                name="lastName"
+              />
+              {errors.lastName && (
+                <p className="mt-1 text-red-600 text-sm">
+                  {errors.lastName.message}
+                </p>
+              )}
+            </div>
+
+            {/* Email (Disabled) */}
             <div>
               <InputProductForm
                 title="Email"
-                placeholder="Enter email address"
-                type="email"
-                value={watch("email")}
-                onChange={(e) => {
-                  setValue("email", e.target.value, { shouldDirty: true });
-                }}
+                placeholder="Email address"
+                value={selectedUser.email}
+                onChange={() => {}} // No-op since it's disabled
                 name="email"
+                disabled={true}
+                className="bg-gray-100 text-gray-500 cursor-not-allowed"
               />
-              {errors.email && (
-                <p className="mt-1 text-red-600 text-sm">
-                  {errors.email.message}
-                </p>
-              )}
+              <p className="mt-1 text-gray-500 text-xs">
+                Email cannot be modified
+              </p>
             </div>
 
+            {/* Role */}
             <div>
-              <DropdownInputProductForm
-                title="Role"
-                placeholder="Select role"
-                options={["User", "Admin", "Super Admin"]}
-                selectedOption={watch("role")}
-                onChange={(value) => {
-                  setValue("role", value as "User" | "Admin" | "Super Admin", {
-                    shouldDirty: true,
-                  });
-                }}
-                name="role"
-                searchable={false}
-              />
+              <label className="block ml-2 font-sans text-dark-grey mb-2">
+                Role
+              </label>
+              <select
+                value={methods.watch("role")}
+                onChange={(e) =>
+                  methods.setValue(
+                    "role",
+                    e.target.value as "user" | "admin" | "superadmin"
+                  )
+                }
+                className="w-full h-14 py-2 rounded-xl border p-4 font-sans focus:outline-none"
+              >
+                {roleOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
               {errors.role && (
                 <p className="mt-1 text-red-600 text-sm">
                   {errors.role.message}
@@ -165,56 +167,45 @@ export const EditAssignedUser = () => {
               )}
             </div>
 
+            {/* Tenant (Disabled) */}
             <div>
-              <DropdownInputProductForm
+              <InputProductForm
                 title="Assigned Tenant"
-                placeholder="Select tenant"
-                options={["Tenant"]}
-                selectedOption={
-                  watchedRole === "Super Admin"
-                    ? "Internal FP"
-                    : watch("assignedTenant") || "Select tenant"
-                }
-                onChange={(value) => {
-                  setValue("assignedTenant", value, {
-                    shouldDirty: true,
-                  });
-                }}
-                name="assignedTenant"
-                disabled={watchedRole === "Super Admin"}
-                searchable={false}
+                placeholder="Tenant name"
+                value={selectedUser.tenantId?.name || "Internal FP"}
+                onChange={() => {}} // No-op since it's disabled
+                name="tenant"
+                disabled={true}
+                className="bg-gray-100 text-gray-500 cursor-not-allowed"
               />
-              {errors.assignedTenant && (
-                <p className="mt-1 text-red-600 text-sm">
-                  {errors.assignedTenant.message}
-                </p>
-              )}
+              <p className="mt-1 text-gray-500 text-xs">
+                Tenant assignment cannot be modified
+              </p>
             </div>
-
-            {watchedRole === "Super Admin" && (
-              <div className="bg-blue-50 p-3 border border-blue-200 rounded-md">
-                <p className="text-blue-700 text-sm">
-                  Super Admin users are automatically assigned to Internal FP
-                  tenant.
-                </p>
-              </div>
-            )}
           </form>
         </FormProvider>
       </div>
 
-      <aside className="bottom-0 left-0 absolute bg-slate-50 py-2 border-t w-full">
-        <div className="flex justify-end gap-2 mx-auto py-2 w-5/6">
+      {/* Footer with buttons */}
+      <div className="border-t pt-4 mt-6">
+        <div className="flex justify-end space-x-3">
           <Button
-            variant="primary"
-            className="px-8"
-            onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting || !isDirty}
+            type="button"
+            variant="secondary"
+            onClick={closeAside}
+            disabled={isPending}
           >
-            {isSubmitting ? "Saving..." : "Save"}
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            onClick={handleSubmit(onSubmit)}
+            disabled={isPending}
+          >
+            {isPending ? "Updating..." : "Update User"}
           </Button>
         </div>
-      </aside>
+      </div>
     </div>
   );
 };

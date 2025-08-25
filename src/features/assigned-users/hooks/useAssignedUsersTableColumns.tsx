@@ -2,14 +2,13 @@
 
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { AssignedUser } from "../interfaces/assigned-user.interface";
-import { mockAssignedUsers } from "../data/mockData";
-import { Badge, Button, PenIcon } from "@/shared";
+import { Button, PenIcon } from "@/shared";
 import { useAsideStore } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
+import type { AssignedUser } from "../interfaces/assignedUser.interface";
 
 interface UseAssignedUsersTableColumnsProps {
-  users: AssignedUser[];
+  users: any[]; // Using any for now since we're transforming the data
 }
 
 export const useAssignedUsersTableColumns = ({
@@ -42,11 +41,24 @@ export const useAssignedUsersTableColumns = ({
     };
   }, [users]);
 
-  const columns = useMemo<ColumnDef<AssignedUser>[]>(() => {
+  const columns = useMemo<ColumnDef<any>[]>(() => {
     const cols = [
       {
+        accessorKey: "tenantName",
+        header: "Tenant Name",
+        size: 140,
+        meta: {
+          hasFilter: true,
+          filterOptions: filterOptions.tenants,
+        },
+        cell: ({ getValue }) => {
+          const tenantName = getValue();
+          return tenantName || "N/A";
+        },
+      },
+      {
         accessorKey: "assignedTenant",
-        header: "Assigned Tenant",
+        header: "Company Name",
         size: 160,
         meta: {
           hasFilter: true,
@@ -94,20 +106,59 @@ export const useAssignedUsersTableColumns = ({
         cell: ({ getValue }) => {
           const role = getValue();
 
-          const getRoleColor = (role: string) => {
+          const getRoleLabel = (role: string) => {
             switch (role) {
-              case "Super Admin":
-                return "bg-red-100 text-red-800 border border-red-200";
-              case "Admin":
-                return "bg-orange-100 text-orange-800 border border-orange-200";
-              case "User":
-                return "bg-green-100 text-green-800 border border-green-200";
+              case "superadmin":
+                return "Super Admin";
+              case "admin":
+                return "Admin";
+              case "user":
+                return "User";
               default:
-                return "bg-gray-100 text-gray-800 border border-gray-200";
+                return role;
             }
           };
 
-          return <Badge className={getRoleColor(role)}>{role}</Badge>;
+          const label = getRoleLabel(role);
+
+          // Inline styles as fallback to ensure colors work
+          const getInlineStyles = (role: string) => {
+            switch (role) {
+              case "superadmin":
+                return {
+                  backgroundColor: "#fef2f2",
+                  color: "#991b1b",
+                  border: "1px solid #fca5a5",
+                };
+              case "admin":
+                return {
+                  backgroundColor: "#fff7ed",
+                  color: "#9a3412",
+                  border: "1px solid #fdba74",
+                };
+              case "user":
+                return {
+                  backgroundColor: "#f0fdf4",
+                  color: "#14532d",
+                  border: "2px solid #86efac",
+                };
+              default:
+                return {
+                  backgroundColor: "#f9fafb",
+                  color: "#374151",
+                  border: "1px solid #d1d5db",
+                };
+            }
+          };
+
+          return (
+            <div
+              className="px-2 py-1 rounded-full text-xs font-medium inline-block"
+              style={getInlineStyles(role)}
+            >
+              {label}
+            </div>
+          );
         },
       },
       {
