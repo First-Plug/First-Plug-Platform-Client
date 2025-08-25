@@ -53,7 +53,24 @@ export const EditAssignedUser = () => {
   } = methods;
 
   const onSubmit = (data: EditAssignedUserFormData) => {
-    if (!selectedUser) return;
+    if (!selectedUser) {
+      console.error("❌ No selected user found!");
+      return;
+    }
+
+    console.log("🔍 Selected user object:", selectedUser);
+    console.log("🔍 User ID (_id):", selectedUser._id);
+    console.log("🔍 User ID (id):", (selectedUser as any).id);
+
+    // Use id from transformed data (frontend) or _id from original data (backend)
+    const userId = (selectedUser as any).id || selectedUser._id;
+
+    if (!userId) {
+      console.error("❌ User ID is missing!", selectedUser);
+      return;
+    }
+
+    console.log("✅ Using userId:", userId);
 
     const updateData: UpdateAssignedUserRequest = {
       firstName: data.firstName,
@@ -61,8 +78,10 @@ export const EditAssignedUser = () => {
       role: data.role,
     };
 
+    console.log("📤 Sending update data:", updateData);
+
     updateUser(
-      { userId: selectedUser._id, data: updateData },
+      { userId, data: updateData },
       {
         onSuccess: () => {
           closeAside();
@@ -125,15 +144,21 @@ export const EditAssignedUser = () => {
 
             {/* Email (Disabled) */}
             <div>
-              <InputProductForm
-                title="Email"
-                placeholder="Email address"
-                value={selectedUser.email}
-                onChange={() => {}} // No-op since it's disabled
-                name="email"
-                disabled={true}
-                className="bg-gray-100 text-gray-500 cursor-not-allowed"
-              />
+              <div className="relative">
+                <label className="block ml-2 font-sans text-dark-grey">
+                  Email
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  value={selectedUser.email}
+                  onChange={() => {}} // No-op since it's disabled
+                  placeholder="Email address"
+                  className="w-full h-14 py-2 rounded-xl border p-4 font-sans focus:outline-none bg-gray-100 text-gray-500 cursor-not-allowed"
+                  disabled={true}
+                  readOnly={true}
+                />
+              </div>
               <p className="mt-1 text-gray-500 text-xs">
                 Email cannot be modified
               </p>
@@ -169,15 +194,21 @@ export const EditAssignedUser = () => {
 
             {/* Tenant (Disabled) */}
             <div>
-              <InputProductForm
-                title="Assigned Tenant"
-                placeholder="Tenant name"
-                value={selectedUser.tenantId?.name || "Internal FP"}
-                onChange={() => {}} // No-op since it's disabled
-                name="tenant"
-                disabled={true}
-                className="bg-gray-100 text-gray-500 cursor-not-allowed"
-              />
+              <div className="relative">
+                <label className="block ml-2 font-sans text-dark-grey">
+                  Assigned Tenant
+                </label>
+                <input
+                  name="tenant"
+                  type="text"
+                  value={selectedUser.tenantId?.name || "Internal FP"}
+                  onChange={() => {}} // No-op since it's disabled
+                  placeholder="Tenant name"
+                  className="w-full h-14 py-2 rounded-xl border p-4 font-sans focus:outline-none bg-gray-100 text-gray-500 cursor-not-allowed"
+                  disabled={true}
+                  readOnly={true}
+                />
+              </div>
               <p className="mt-1 text-gray-500 text-xs">
                 Tenant assignment cannot be modified
               </p>
