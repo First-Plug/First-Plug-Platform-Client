@@ -16,7 +16,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "FP warehouse",
     products: ["Samsung Galaxy S23", "Samsung EP-TA300"],
     shipment_type: "Internal",
-    trackingUrl: "https://www.google.com",
+    trackingURL: "https://www.google.com",
     destinationDetails: {
       address: "Avenida Libertador 4444, Buenos Aires",
       city: "Buenos Aires",
@@ -87,7 +87,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "Ruben Walker",
     products: ["MacBook Pro 14", "AirPods Pro", "iPhone 15"],
     shipment_type: "Courrier",
-    trackingUrl: "https://www.google.com",
+    trackingURL: "https://www.google.com",
     destinationDetails: {
       address: "Avenida Libertador 4444, Buenos Aires",
       city: "Buenos Aires",
@@ -170,7 +170,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "Ryan Rezen",
     products: ["Dell XPS 15 Laptop"],
     shipment_type: "TBC",
-    trackingUrl: "",
+    trackingURL: "",
     destinationDetails: {
       address: "Guemes 2030 Rosario, 1236, Argentina",
       city: "Rosario",
@@ -231,7 +231,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "Our office",
     products: ["Logitech MX Master 3", "Logitech MX Keys"],
     shipment_type: "Internal",
-    trackingUrl: "https://www.google.com",
+    trackingURL: "https://www.google.com",
     destinationDetails: {
       address: "Jaramillo 2596 9A, Saavedra, 1429",
       city: "Saavedra",
@@ -302,7 +302,7 @@ export const mockLogisticOrders: LogisticOrder[] = [
     destination: "Abigail Smith",
     products: ["iPad Pro 12.9", "Apple Pencil 2nd Gen"],
     shipment_type: "Courrier",
-    trackingUrl: "https://www.google.com",
+    trackingURL: "https://www.google.com",
     destinationDetails: {
       address: "Main Street, New York",
       city: "New York",
