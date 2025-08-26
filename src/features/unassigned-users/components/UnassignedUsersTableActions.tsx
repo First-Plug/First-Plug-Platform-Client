@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/shared";
 import { useAssignUserToTenant } from "../hooks/useAssignUserToTenant";
 import { useAlertStore } from "@/shared";
 import { useFetchTenants } from "@/features/tenants";
+import { GenericAlertDialog } from "@/features/assets/components/generic-alert-dialog";
 
 interface UnassignedUsersTableActionsProps {
   user: any; // Using any for now since we're transforming the data
@@ -14,28 +15,21 @@ export const UnassignedUsersTableActions = ({
   const assignUserMutation = useAssignUserToTenant();
   const { setAlert } = useAlertStore();
   const { data: tenants } = useFetchTenants();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  const handleAssign = async () => {
+  const handleAssign = () => {
+    // Show confirmation dialog instead of window.confirm
+    setShowConfirmDialog(true);
+  };
+
+  const executeAssignment = async () => {
     console.log("🔄 Attempting to assign user:", {
       userId: user.id,
       role: user.role,
       tenant: user.tenant,
     });
 
-    // Show confirmation alert
-    const confirmationMessage = `El usuario ${user.firstName} ${
-      user.lastName
-    } con email ${
-      user.email
-    } será asignado al rol de ${user.role.toUpperCase()} para el tenant ${
-      user.tenant
-    }. ¿Estás seguro que los datos son correctos?`;
-
-    const confirmed = window.confirm(confirmationMessage);
-
-    if (!confirmed) {
-      return;
-    }
+    setShowConfirmDialog(false);
 
     // Find the tenant ID from the tenant name
     const selectedTenant = tenants?.find((t) => t.tenantName === user.tenant);
@@ -91,16 +85,37 @@ export const UnassignedUsersTableActions = ({
   };
 
   return (
-    <div className="flex justify-center">
-      <Button
-        variant="primary"
-        size="small"
-        onClick={handleAssign}
-        disabled={assignUserMutation.isPending || !isFormComplete()}
-        className="px-3 py-1"
-      >
-        {assignUserMutation.isPending ? "Assigning..." : "Assign"}
-      </Button>
-    </div>
+    <>
+      <div className="flex justify-center">
+        <Button
+          variant="primary"
+          size="small"
+          onClick={handleAssign}
+          disabled={assignUserMutation.isPending || !isFormComplete()}
+          className="px-3 py-1"
+        >
+          {assignUserMutation.isPending ? "Assigning..." : "Assign"}
+        </Button>
+      </div>
+
+      <GenericAlertDialog
+        open={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        title="Confirmar Asignación"
+        description={`El usuario <strong>${user.firstName} ${
+          user.lastName
+        }</strong> con email ${
+          user.email
+        } será asignado al rol de <strong>${user.role?.toUpperCase()}</strong> para el tenant <strong>${
+          user.tenant
+        }</strong>. ¿Estás seguro que los datos son correctos?`}
+        isHtml={true}
+        buttonText="Asignar"
+        onButtonClick={executeAssignment}
+        showCancelButton={true}
+        cancelButtonText="Cancelar"
+        onCancel={() => setShowConfirmDialog(false)}
+      />
+    </>
   );
 };

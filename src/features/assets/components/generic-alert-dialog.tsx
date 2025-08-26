@@ -55,21 +55,25 @@ export const GenericAlertDialog: React.FC<GenericAlertDialogProps> = ({
             <p className="mt-4 text-gray-600 text-base">{additionalMessage}</p>
           )}
 
-          <div
-            className={`mt-6 flex ${
-              showCancelButton ? "justify-between" : "justify-end"
-            }`}
-          >
+          <div className="mt-6 flex justify-end gap-3">
             {showCancelButton && (
               <Dialog.Close asChild>
-                <Button variant="secondary" className="px-7" onClick={onCancel}>
+                <Button
+                  variant="secondary"
+                  className="px-6 min-w-[100px]"
+                  onClick={onCancel}
+                >
                   {cancelButtonText}
                 </Button>
               </Dialog.Close>
             )}
 
             <Dialog.Close asChild>
-              <Button variant="primary" onClick={onButtonClick}>
+              <Button
+                variant="primary"
+                className="px-6 min-w-[100px]"
+                onClick={onButtonClick}
+              >
                 {buttonText}
               </Button>
             </Dialog.Close>
