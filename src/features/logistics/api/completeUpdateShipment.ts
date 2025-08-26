@@ -1,13 +1,13 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 
 export interface CompleteUpdateShipmentData {
-  shipmentStatus: string;
+  shipment_status: string;
   price: {
     amount: number;
     currency: string;
   };
-  shipmentType: string;
-  trackingUrl?: string;
+  shipment_type: string;
+  trackingURL?: string;
 }
 
 export interface CompleteUpdateShipmentResponse {

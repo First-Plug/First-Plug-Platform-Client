@@ -50,8 +50,6 @@ export const useLogisticsTable = (
   const filteredData = useMemo(() => {
     if (isLoading || !validShipments) return [];
 
-    console.log(validShipments);
-
     return validShipments.filter((order) => {
       return Object.entries(filters).every(([column, filterValues]) => {
         if (filterValues.length === 0) return true;

@@ -15,7 +15,7 @@ export interface LogisticOrder {
   destination: string;
   products: string[];
   shipment_type: ShipmentType;
-  trackingUrl?: string;
+  trackingURL?: string;
   destinationDetails: Details;
   originDetails: Details;
   snapshots: any[];

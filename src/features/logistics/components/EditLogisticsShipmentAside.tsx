@@ -30,7 +30,7 @@ const editLogisticsShipmentSchema = z
       currency: z.string(),
     }),
     shipmentType: z.enum(["Courrier", "Internal", "TBC"]),
-    trackingUrl: z
+    trackingURL: z
       .string()
       .url("Invalid tracking URL")
       .optional()
@@ -88,7 +88,7 @@ const editLogisticsShipmentSchema = z
           data.shipmentStatus === "Received") &&
         data.shipmentType === "Courrier"
       ) {
-        return data.trackingUrl && data.trackingUrl.trim() !== "";
+        return data.trackingURL && data.trackingURL.trim() !== "";
       }
 
       return true;
@@ -96,7 +96,7 @@ const editLogisticsShipmentSchema = z
     {
       message:
         "Tracking URL is required for Courrier shipments when status is 'On The Way' or 'Received'",
-      path: ["trackingUrl"],
+      path: ["trackingURL"],
     }
   );
 
@@ -134,8 +134,6 @@ export const EditLogisticsShipmentAside = () => {
     "selectedLogisticsShipment",
   ]);
 
-  console.log(selectedShipment);
-
   const updateShipmentMutation = useCompleteUpdateShipment();
 
   const methods = useForm<EditLogisticsShipmentFormData>({
@@ -150,7 +148,7 @@ export const EditLogisticsShipmentAside = () => {
             : selectedShipment?.price?.currencyCode || "USD",
       },
       shipmentType: selectedShipment?.shipment_type || "Internal",
-      trackingUrl: selectedShipment?.trackingUrl || "",
+      trackingURL: selectedShipment?.trackingURL || "",
     },
   });
 
@@ -164,6 +162,7 @@ export const EditLogisticsShipmentAside = () => {
   const isUpdating = updateShipmentMutation.isPending;
   const isOnHold =
     selectedShipment?.shipment_status === "On Hold - Missing Data";
+  const isCancelled = selectedShipment?.shipment_status === "Cancelled";
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [needsPadding, setNeedsPadding] = useState(false);
@@ -196,19 +195,19 @@ export const EditLogisticsShipmentAside = () => {
         return;
       }
 
-      // await updateShipmentMutation.mutateAsync({
-      //   tenantName: selectedShipment.tenant,
-      //   shipmentId: selectedShipment._id,
-      //   data: {
-      //     shipmentStatus: data.shipmentStatus,
-      //     price: {
-      //       amount: Number(data.price.amount),
-      //       currency: data.price.currency || "",
-      //     },
-      //     shipmentType: data.shipmentType,
-      //     trackingUrl: data.trackingUrl,
-      //   },
-      // });
+      await updateShipmentMutation.mutateAsync({
+        tenantName: selectedShipment.tenant,
+        shipmentId: selectedShipment._id,
+        data: {
+          shipment_status: data.shipmentStatus,
+          price: {
+            amount: Number(data.price.amount),
+            currency: data.price.currency || "",
+          },
+          shipment_type: data.shipmentType,
+          trackingURL: data.trackingURL,
+        },
+      });
 
       setAlert("dataUpdatedSuccessfully");
       closeAside();
@@ -261,7 +260,8 @@ export const EditLogisticsShipmentAside = () => {
                 name="shipmentStatus"
                 searchable={false}
                 disabled={
-                  selectedShipment.shipment_status === "On Hold - Missing Data"
+                  selectedShipment.shipment_status ===
+                    "On Hold - Missing Data" || isCancelled
                 }
               />
               {errors.shipmentStatus && (
@@ -273,6 +273,11 @@ export const EditLogisticsShipmentAside = () => {
                 "On Hold - Missing Data" && (
                 <p className="mt-1 ml-2 text-amber-600 text-sm">
                   Status cannot be changed while shipment is on hold
+                </p>
+              )}
+              {isCancelled && (
+                <p className="mt-1 ml-2 text-red-600 text-sm">
+                  Shipment is cancelled and cannot be modified
                 </p>
               )}
             </div>
@@ -293,7 +298,7 @@ export const EditLogisticsShipmentAside = () => {
                       });
                     }}
                     name="price.amount"
-                    disabled={isOnHold}
+                    disabled={isOnHold || isCancelled}
                   />
                   {errors.price?.amount && (
                     <p className="mt-1 text-red-500 text-sm">
@@ -318,7 +323,7 @@ export const EditLogisticsShipmentAside = () => {
                     }}
                     name="price.currency"
                     searchable={false}
-                    disabled={isOnHold}
+                    disabled={isOnHold || isCancelled}
                   />
                   {errors.price?.currency && (
                     <p className="mt-1 text-red-500 text-sm">
@@ -343,7 +348,7 @@ export const EditLogisticsShipmentAside = () => {
                 }}
                 name="shipmentType"
                 searchable={false}
-                disabled={isOnHold}
+                disabled={isOnHold || isCancelled}
               />
               {errors.shipmentType && (
                 <p className="mt-1 text-red-500 text-sm">
@@ -358,18 +363,18 @@ export const EditLogisticsShipmentAside = () => {
                 title="Tracking URL"
                 placeholder="https://tracking.example.com"
                 type="url"
-                value={watch("trackingUrl")}
+                value={watch("trackingURL")}
                 onChange={(e) => {
-                  setValue("trackingUrl", e.target.value, {
+                  setValue("trackingURL", e.target.value, {
                     shouldDirty: true,
                   });
                 }}
-                name="trackingUrl"
-                disabled={isOnHold}
+                name="trackingURL"
+                disabled={isOnHold || isCancelled}
               />
-              {errors.trackingUrl && (
+              {errors.trackingURL && (
                 <p className="mt-1 text-red-500 text-sm">
-                  {errors.trackingUrl.message}
+                  {errors.trackingURL.message}
                 </p>
               )}
             </div>
@@ -384,7 +389,7 @@ export const EditLogisticsShipmentAside = () => {
             variant="primary"
             className="px-8"
             onClick={handleSubmit(onSubmit)}
-            disabled={isUpdating || !isDirty || isOnHold}
+            disabled={isUpdating || !isDirty || isOnHold || isCancelled}
           >
             {isUpdating ? "Saving..." : "Save"}
           </Button>
