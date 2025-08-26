@@ -1,8 +1,16 @@
 import React from "react";
-import { BuildingIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import {
+  BuildingIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ToggleLeftIcon,
+  ToggleRightIcon,
+  UsersIcon,
+} from "lucide-react";
 import { Tenant } from "../interfaces/tenant.interface";
 import { Button, PenIcon, useAsideStore } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
+import { useToggleTenantStatus } from "../hooks/useUpdateTenant";
 
 interface TenantsTableActionsProps {
   tenant: Tenant;
@@ -17,6 +25,7 @@ export const TenantsTableActions: React.FC<TenantsTableActionsProps> = ({
 }) => {
   const { setAside } = useAsideStore();
   const queryClient = useQueryClient();
+  const toggleStatusMutation = useToggleTenantStatus();
 
   const handleUpdateTenant = () => {
     queryClient.setQueryData(["selectedTenant"], tenant);
@@ -26,6 +35,13 @@ export const TenantsTableActions: React.FC<TenantsTableActionsProps> = ({
   const handleUpdateOffice = () => {
     queryClient.setQueryData(["selectedTenant"], tenant);
     setAside("UpdateOffice");
+  };
+
+  const handleToggleStatus = () => {
+    toggleStatusMutation.mutate({
+      id: tenant.id,
+      isActive: !tenant.isActive,
+    });
   };
 
   return (

@@ -12,7 +12,11 @@ export const useTenantsTableColumns = ({
   tenants,
 }: UseTenantsTableColumnsProps) => {
   const filterOptions = useMemo(() => {
-    const names = Array.from(
+    const tenantNames = Array.from(
+      new Set(tenants.map((tenant) => tenant.tenantName))
+    ).sort();
+
+    const companyNames = Array.from(
       new Set(tenants.map((tenant) => tenant.name))
     ).sort();
 
@@ -22,7 +26,8 @@ export const useTenantsTableColumns = ({
     );
 
     return {
-      names: names.map((name) => ({ label: name, value: name })),
+      tenantNames: tenantNames.map((name) => ({ label: name, value: name })),
+      companyNames: companyNames.map((name) => ({ label: name, value: name })),
       userCounts: uniqueUserCounts.map((count) => ({
         label: count === 1 ? `${count} user` : `${count} users`,
         value: count.toString(),
@@ -33,11 +38,24 @@ export const useTenantsTableColumns = ({
   const columns = useMemo<ColumnDef<Tenant>[]>(() => {
     const cols = [
       {
-        accessorKey: "name",
-        header: "Name",
+        accessorKey: "tenantName",
+        header: "Tenant Name",
         meta: {
           hasFilter: true,
-          filterOptions: filterOptions.names,
+          filterOptions: filterOptions.tenantNames,
+        },
+        cell: ({ row }) => (
+          <div className="font-mono text-sm text-gray-600">
+            {row.getValue("tenantName")}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "name",
+        header: "Company Name",
+        meta: {
+          hasFilter: true,
+          filterOptions: filterOptions.companyNames,
         },
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue("name")}</div>

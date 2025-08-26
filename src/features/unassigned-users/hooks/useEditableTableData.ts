@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { UnassignedUser } from "../interfaces/unassigned-user.interface";
-
-export const useEditableTableData = (initialUsers: UnassignedUser[]) => {
-  const [editableUsers, setEditableUsers] =
-    useState<UnassignedUser[]>(initialUsers);
+// Using any type for flexibility with transformed data
+export const useEditableTableData = (initialUsers: any[]) => {
+  const [editableUsers, setEditableUsers] = useState<any[]>(initialUsers);
 
   const updateUserField = useCallback(
-    (userId: string, field: keyof UnassignedUser, value: string) => {
+    (userId: string, field: string, value: string) => {
       setEditableUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === userId ? { ...user, [field]: value } : user

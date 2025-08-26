@@ -1,14 +1,14 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { UnassignedUsersServices } from "../services/unassigned-users.services";
-import { UnassignedUser } from "../interfaces/unassigned-user.interface";
+import { UnassignedUsersServices } from "../services/unassignedUsers.services";
+import { UnassignedUser } from "../interfaces/unassignedUser.interface";
 import { useAlertStore } from "@/shared";
 
 interface AssignUserData {
   userId: string;
   tenant: string;
-  role: string;
+  role: "user" | "admin" | "superadmin";
 }
 
 export const useAssignUnassignedUser = () => {
@@ -17,7 +17,10 @@ export const useAssignUnassignedUser = () => {
 
   return useMutation({
     mutationFn: ({ userId, tenant, role }: AssignUserData) =>
-      UnassignedUsersServices.assignUser(userId, { tenant, role }),
+      UnassignedUsersServices.assignUserToTenant(userId, {
+        tenantId: tenant,
+        role,
+      }),
 
     onMutate: async ({ userId }: AssignUserData) => {
       // Cancelar queries en curso
@@ -31,13 +34,13 @@ export const useAssignUnassignedUser = () => {
       // Actualización optimista: remover el usuario de la lista
       queryClient.setQueryData<UnassignedUser[]>(
         ["unassignedUsers"],
-        (oldUsers = []) => oldUsers.filter((user) => user.id !== userId)
+        (oldUsers = []) => oldUsers.filter((user) => user._id !== userId)
       );
 
       return { previousUsers };
     },
 
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       console.error("Error assigning user:", error);
 
       // Restaurar el estado anterior en caso de error
@@ -48,7 +51,7 @@ export const useAssignUnassignedUser = () => {
       setAlert("errorAssignedProduct");
     },
 
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, _variables) => {
       // Usuario asignado exitosamente
       setAlert("assignedProductSuccess");
 

@@ -4,7 +4,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAsideStore, useAlertStore, Button } from "@/shared";
-import { Tenant } from "@/features/tenants";
+import { Tenant, useUpdateTenantOffice } from "@/features/tenants";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   FormControl,
@@ -44,19 +44,20 @@ export const UpdateOffice = () => {
   const { setAlert } = useAlertStore();
   const queryClient = useQueryClient();
   const selectedTenant = queryClient.getQueryData<Tenant>(["selectedTenant"]);
+  const updateOfficeMutation = useUpdateTenantOffice();
 
   const methods = useForm<UpdateOfficeFormData>({
     resolver: zodResolver(updateOfficeSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      country: "",
-      state: "",
-      city: "",
-      zipCode: "",
-      address: "",
-      apartment: "",
+      name: selectedTenant?.office?.name || "",
+      email: selectedTenant?.office?.email || "",
+      phone: selectedTenant?.office?.phone || "",
+      country: selectedTenant?.office?.country || "",
+      state: selectedTenant?.office?.state || "",
+      city: selectedTenant?.office?.city || "",
+      zipCode: selectedTenant?.office?.zipCode || "",
+      address: selectedTenant?.office?.address || "",
+      apartment: selectedTenant?.office?.apartment || "",
     },
   });
 
@@ -66,13 +67,16 @@ export const UpdateOffice = () => {
   } = methods;
 
   const onSubmit = async (data: UpdateOfficeFormData) => {
+    if (!selectedTenant) return;
+
     try {
-      console.log("Form data:", data);
-      setAlert("dataUpdatedSuccessfully");
+      await updateOfficeMutation.mutateAsync({
+        tenantId: selectedTenant.id,
+        data,
+      });
       setAside(null);
     } catch (error) {
       console.error("Error updating office:", error);
-      setAlert("errorUpdateTeam");
     }
   };
 

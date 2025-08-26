@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 
 interface TableDropdownProps {
@@ -26,11 +27,27 @@ export const TableDropdown = ({
   const [filteredOptions, setFilteredOptions] = useState<string[]>([
     ...options,
   ]);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const buttonContainerRef = useRef<HTMLDivElement>(null);
 
   const toggleDropdown = () => {
     if (disabled) return;
+
+    if (!isOpen && buttonContainerRef.current) {
+      const rect = buttonContainerRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+
     setIsOpen(!isOpen);
     if (!isOpen) {
       setSearchTerm(selectedOption || "");
@@ -46,12 +63,16 @@ export const TableDropdown = ({
   };
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
-      setIsOpen(false);
-      setSearchTerm(selectedOption || "");
+    const target = event.target as Node;
+
+    // Check if click is outside the dropdown container
+    if (dropdownRef.current && !dropdownRef.current.contains(target)) {
+      // Also check if click is not on the portal dropdown
+      const portalDropdown = document.querySelector("[data-dropdown-portal]");
+      if (!portalDropdown || !portalDropdown.contains(target)) {
+        setIsOpen(false);
+        setSearchTerm(selectedOption || "");
+      }
     }
   };
 
@@ -96,7 +117,7 @@ export const TableDropdown = ({
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
-      <div className="relative">
+      <div className="relative" ref={buttonContainerRef}>
         <input
           ref={inputRef}
           type="text"
@@ -119,23 +140,36 @@ export const TableDropdown = ({
             strokeWidth={2}
           />
         </div>
-
-        <ul
-          className={`absolute z-50 top-full left-0 w-full border border-gray-300 bg-white rounded-lg shadow-lg overflow-y-auto max-h-32 ${
-            isOpen && !disabled ? "block" : "hidden"
-          }`}
-        >
-          {filteredOptions.map((option) => (
-            <li
-              key={option}
-              onClick={() => handleOptionClick(option)}
-              className="hover:bg-gray-100 px-2 py-1 text-xs cursor-pointer"
-            >
-              {option}
-            </li>
-          ))}
-        </ul>
       </div>
+
+      {/* Portal for dropdown to render outside table container */}
+      {isOpen &&
+        !disabled &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <ul
+            data-dropdown-portal
+            className="absolute z-[9999] border border-gray-300 bg-white rounded-lg shadow-lg overflow-y-auto max-h-32"
+            style={{
+              position: "absolute",
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+              zIndex: 9999,
+            }}
+          >
+            {filteredOptions.map((option) => (
+              <li
+                key={option}
+                onClick={() => handleOptionClick(option)}
+                className="hover:bg-gray-100 px-2 py-1 text-xs cursor-pointer"
+              >
+                {option}
+              </li>
+            ))}
+          </ul>,
+          document.body
+        )}
     </div>
   );
 };

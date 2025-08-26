@@ -1,22 +1,32 @@
-import { useState, useMemo, useEffect } from "react";
-import { mockTenants } from "../data/mockData";
-import { Tenant } from "../interfaces/tenant.interface";
+import { useMemo, useEffect } from "react";
 import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 import { usePagination } from "@/features/fp-tables";
+import { useFetchTenants } from "./useFetchTenants";
 
 const useTenantsTableFilterStore = createFilterStore();
 
 export { useTenantsTableFilterStore };
 
 export function useTenantsTable() {
-  const processedTenants = useMemo(() => {
-    return mockTenants.map((tenant) => ({
-      ...tenant,
-      numberOfActiveUsers: tenant.users.length,
-    }));
-  }, []);
+  // Fetch real data from API
+  const { data: apiTenants, isLoading, error } = useFetchTenants();
 
-  const [tenants, setTenants] = useState<Tenant[]>(processedTenants);
+  // Process API data when available
+  const processedTenants = useMemo(() => {
+    if (!apiTenants) return []; // Return empty array while loading
+
+    console.log("🔄 Processing tenants data:", apiTenants);
+    return apiTenants.map((tenant) => ({
+      ...tenant,
+      // Use the numberOfActiveUsers calculated by backend (already filtered for active users only)
+      numberOfActiveUsers: tenant.numberOfActiveUsers || 0,
+    }));
+  }, [apiTenants]);
+
+  // Use processedTenants directly instead of useState
+  const tenants = processedTenants;
+
+  console.log("📊 Final tenants for table:", tenants.length, tenants);
 
   const filters = useTenantsTableFilterStore((s) => s.filters);
   const setOnFiltersChange = useTenantsTableFilterStore(
@@ -52,6 +62,8 @@ export function useTenantsTable() {
         if (filterValues.length === 0) return true;
 
         switch (column) {
+          case "tenantName":
+            return filterValues.some((value) => tenant.tenantName === value);
           case "name":
             return filterValues.some((value) => tenant.name === value);
 
@@ -92,5 +104,7 @@ export function useTenantsTable() {
     tableContainerRef,
     useTenantsTableFilterStore,
     filteredDataForColumns: filteredTenants,
+    isLoading,
+    error,
   };
 }

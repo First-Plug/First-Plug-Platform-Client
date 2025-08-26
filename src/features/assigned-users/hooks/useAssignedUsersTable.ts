@@ -3,20 +3,37 @@
 import { useMemo, useEffect } from "react";
 import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 import { usePagination } from "@/features/fp-tables";
-
-import { mockAssignedUsers } from "../data/mockData";
-import { useQuery } from "@tanstack/react-query";
+import { useFetchAssignedUsers } from "./useFetchAssignedUsers";
+import type { AssignedUser } from "../interfaces/assignedUser.interface";
 
 const useAssignedUsersTableFilterStore = createFilterStore();
 
 export { useAssignedUsersTableFilterStore };
 
 export function useAssignedUsersTable() {
-  const { data: users = mockAssignedUsers } = useQuery({
-    queryKey: ["assignedUsers"],
-    queryFn: () => mockAssignedUsers,
-    initialData: mockAssignedUsers,
-  });
+  // Fetch real data from API
+  const { data: apiUsers } = useFetchAssignedUsers();
+
+  // Process API data when available
+  const users = useMemo(() => {
+    if (!apiUsers) return [];
+
+    console.log("🔄 Processing assigned users data:", apiUsers);
+    // Transform backend data to match frontend interface
+    return apiUsers.map((user: AssignedUser) => ({
+      id: user._id,
+      name: `${user.firstName} ${user.lastName}`,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      assignedTenant: user.tenantId?.name || "Internal FP",
+      tenantName: user.tenantId?.tenantName || "N/A",
+      tenantId: user.tenantId?._id,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+    }));
+  }, [apiUsers]);
 
   const filters = useAssignedUsersTableFilterStore((s) => s.filters);
   const setOnFiltersChange = useAssignedUsersTableFilterStore(
@@ -112,7 +129,7 @@ export function useAssignedUsersTable() {
     paginatedUsers,
     tableContainerRef,
     useAssignedUsersTableFilterStore,
-    // Pasar los datos filtrados para que los filtros se adapten dinámicamente
+
     filteredDataForColumns: filteredUsers,
   };
 }

@@ -2,28 +2,22 @@
 
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { UnassignedUser } from "../interfaces/unassigned-user.interface";
-import {
-  mockUnassignedUsers,
-  availableTenants,
-  availableRoles,
-} from "../data/mockData";
 import { UnassignedUsersTableActions } from "../components/UnassignedUsersTableActions";
 import { TableDropdown } from "../components/TableDropdown";
+import { useFetchTenants } from "@/features/tenants";
+import { AVAILABLE_ROLES } from "../interfaces/unassignedUser.interface";
 
 interface UseUnassignedUsersTableColumnsProps {
-  users: UnassignedUser[];
-  updateUserField: (
-    userId: string,
-    field: keyof UnassignedUser,
-    value: string
-  ) => void;
+  users: any[]; // Using any for now since we're transforming the data
+  updateUserField: (userId: string, field: string, value: string) => void;
 }
 
 export const useUnassignedUsersTableColumns = ({
   users,
   updateUserField,
 }: UseUnassignedUsersTableColumnsProps) => {
+  // Fetch tenants for dropdown options
+  const { data: tenants } = useFetchTenants();
   // Generar opciones de filtro dinámicamente basándose en los datos filtrados
   const filterOptions = useMemo(() => {
     const dates = Array.from(
@@ -53,20 +47,30 @@ export const useUnassignedUsersTableColumns = ({
 
     const roles = Array.from(new Set(users.map((user) => user.role))).sort();
 
-    const tenants = Array.from(
-      new Set(users.map((user) => user.tenant))
-    ).sort();
+    // Prepare tenant options from real data
+    const tenantOptions = tenants
+      ? tenants.map((tenant) => ({
+          label: tenant.tenantName, // Show tenantName (slug) instead of company name
+          value: tenant.tenantName,
+        }))
+      : [];
+
+    // Prepare role options
+    const roleOptions = AVAILABLE_ROLES.map((role) => ({
+      label: role.charAt(0).toUpperCase() + role.slice(1),
+      value: role,
+    }));
 
     return {
       dates,
       names: names.map((name) => ({ label: name, value: name })),
       emails: emails.map((email) => ({ label: email, value: email })),
-      roles: roles.map((role) => ({ label: role, value: role })),
-      tenants: tenants.map((tenant) => ({ label: tenant, value: tenant })),
+      roles: roleOptions,
+      tenants: tenantOptions,
     };
-  }, [users]);
+  }, [users, tenants]);
 
-  const columns = useMemo<ColumnDef<UnassignedUser>[]>(
+  const columns = useMemo<ColumnDef<any>[]>(
     () => [
       {
         accessorKey: "creationDate",
@@ -118,7 +122,7 @@ export const useUnassignedUsersTableColumns = ({
       {
         accessorKey: "role",
         header: "Role",
-        size: 150,
+        size: 180,
         meta: {
           hasFilter: true,
           filterOptions: filterOptions.roles,
@@ -129,7 +133,7 @@ export const useUnassignedUsersTableColumns = ({
           return (
             <div className="w-full">
               <TableDropdown
-                options={availableRoles}
+                options={filterOptions.roles.map((r) => r.label)}
                 selectedOption={role}
                 onChange={(value) => {
                   updateUserField(
@@ -152,7 +156,7 @@ export const useUnassignedUsersTableColumns = ({
       {
         accessorKey: "tenant",
         header: "Tenant",
-        size: 180,
+        size: 150,
         meta: {
           hasFilter: true,
           filterOptions: filterOptions.tenants,
@@ -165,7 +169,7 @@ export const useUnassignedUsersTableColumns = ({
           return (
             <div className="w-full">
               <TableDropdown
-                options={availableTenants}
+                options={filterOptions.tenants.map((t) => t.label)}
                 selectedOption={tenant}
                 onChange={(value) => {
                   updateUserField(row.original.id, "tenant", value);
@@ -189,7 +193,7 @@ export const useUnassignedUsersTableColumns = ({
         cell: ({ row }) => <UnassignedUsersTableActions user={row.original} />,
       },
     ],
-    [users, updateUserField, filterOptions]
+    [updateUserField, filterOptions]
   );
 
   return columns;
