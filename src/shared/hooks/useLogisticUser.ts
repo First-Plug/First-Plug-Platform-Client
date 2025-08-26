@@ -10,12 +10,6 @@ export const useLogisticUser = () => {
   const isLogisticUser =
     adminEmails.includes(userEmail) || userRole === "superadmin";
 
-  console.log("🔍 useLogisticUser - Data:", {
-    userEmail,
-    userRole,
-    isLogisticUser,
-  });
-
   return {
     isLogisticUser,
     userEmail,

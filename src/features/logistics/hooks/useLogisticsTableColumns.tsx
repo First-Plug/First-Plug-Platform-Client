@@ -36,7 +36,7 @@ import {
 } from "../interfaces/logistics";
 import { Badge, Button, PenIcon } from "@/shared";
 import { DetailsButton } from "@/shared/components/Tables";
-import { useMemo } from "react";
+
 import { useAsideStore } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -47,99 +47,6 @@ export const useLogisticsTableColumns = ({
 }): ColumnDef<LogisticOrder>[] => {
   const { setAside } = useAsideStore();
   const queryClient = useQueryClient();
-  const filterOptions = useMemo(() => {
-    const tenants = Array.from(new Set(data.map((item) => item.tenant))).sort();
-    const orderIds = Array.from(
-      new Set(data.map((item) => item.orderId))
-    ).sort();
-
-    const dates = Array.from(new Set(data.map((item) => item.orderDate)))
-      .filter((dateString) => dateString && dateString.trim() !== "")
-      .map((dateString) => {
-        const date = new Date(dateString);
-        if (Number.isNaN(date.getTime())) {
-          return null;
-        }
-        return {
-          original: dateString,
-          parsed: date,
-          formatted: date.toLocaleDateString("es-ES", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          }),
-        };
-      })
-      .filter((item) => item !== null)
-      .sort((a, b) => b!.parsed.getTime() - a!.parsed.getTime())
-      .map((item) => ({
-        label: item!.formatted,
-        value: item!.original,
-      }));
-
-    const updatedDates = Array.from(new Set(data.map((item) => item.updatedAt)))
-      .filter((dateString) => dateString && dateString.trim() !== "")
-      .map((dateString) => {
-        const date = new Date(dateString);
-        if (Number.isNaN(date.getTime())) {
-          return null;
-        }
-        return {
-          original: dateString,
-          parsed: date,
-          formatted: date.toLocaleDateString("es-ES", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        };
-      })
-      .filter((item) => item !== null)
-      .sort((a, b) => b!.parsed.getTime() - a!.parsed.getTime())
-      .map((item) => ({
-        label: item!.formatted,
-        value: item!.original,
-      }));
-
-    const quantities = Array.from(
-      new Set(data.map((item) => item.quantity))
-    ).sort((a, b) => a - b);
-    const prices = Array.from(new Set(data.map((item) => item.price))).sort();
-    const origins = Array.from(new Set(data.map((item) => item.origin))).sort();
-    const destinations = Array.from(
-      new Set(data.map((item) => item.destination))
-    ).sort();
-    const shipmentTypes = Array.from(
-      new Set(data.map((item) => item.shipmentType))
-    ).sort();
-    const shipmentStatuses = Array.from(
-      new Set(data.map((item) => item.shipmentStatus))
-    ).sort();
-
-    return {
-      tenants: tenants.map((tenant) => ({ label: tenant, value: tenant })),
-      orderIds: orderIds.map((id) => ({ label: id, value: id })),
-      dates: dates,
-      updatedDates: updatedDates,
-      quantities: quantities.map((qty) => ({
-        label: qty.toString(),
-        value: qty.toString(),
-      })),
-      prices: prices.map((price) => ({ label: price, value: price })),
-      origins: origins.map((origin) => ({ label: origin, value: origin })),
-      destinations: destinations.map((dest) => ({ label: dest, value: dest })),
-      shipmentTypes: shipmentTypes.map((type) => ({
-        label: type,
-        value: type,
-      })),
-      shipmentStatuses: shipmentStatuses.map((status) => ({
-        label: status,
-        value: status,
-      })),
-    };
-  }, [data]);
 
   return [
     {
@@ -148,7 +55,12 @@ export const useLogisticsTableColumns = ({
       size: 100,
       meta: {
         hasFilter: true,
-        filterOptions: filterOptions.tenants,
+        filterOptions: Array.from(new Set(data.map((item) => item.tenant))).map(
+          (tenant) => ({
+            label: tenant,
+            value: tenant,
+          })
+        ),
       },
       cell: ({ row }) => {
         const tenant = row.getValue("tenant") as string;
@@ -156,34 +68,49 @@ export const useLogisticsTableColumns = ({
       },
     },
     {
-      accessorKey: "orderId",
+      accessorKey: "order_id",
       header: "Order ID",
       size: 90,
       meta: {
         hasFilter: true,
-        filterOptions: filterOptions.orderIds,
+        filterOptions: Array.from(
+          new Set(data.map((item) => item.order_id))
+        ).map((orderId) => ({
+          label: orderId,
+          value: orderId,
+        })),
       },
-      cell: ({ row }) => (
-        <div className="font-medium text-gray-900">
-          {row.getValue("orderId")}
-        </div>
-      ),
+      cell: ({ row }) => {
+        return (
+          <div className="font-medium text-gray-900">
+            {row.getValue("order_id")}
+          </div>
+        );
+      },
     },
     {
-      accessorKey: "orderDate",
+      accessorKey: "createdAt",
       header: "Date",
       size: 85,
       meta: {
         hasFilter: true,
-        filterOptions: filterOptions.dates,
-      },
-      sortingFn: (rowA, rowB) => {
-        const dateA = new Date(rowA.original.orderDate);
-        const dateB = new Date(rowB.original.orderDate);
-        return dateA.getTime() - dateB.getTime();
+        filterOptions: Array.from(
+          new Set(
+            data.map((item) =>
+              new Date(item.createdAt).toLocaleDateString("es-ES", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            )
+          )
+        ).map((dateString) => ({
+          label: dateString,
+          value: dateString,
+        })),
       },
       cell: ({ row }) => {
-        const dateString = row.getValue("orderDate") as string;
+        const dateString = row.original.createdAt;
         const date = new Date(dateString);
         const formattedDate = date.toLocaleDateString("es-ES", {
           day: "2-digit",
@@ -195,40 +122,70 @@ export const useLogisticsTableColumns = ({
       },
     },
     {
-      accessorKey: "quantity",
+      accessorKey: "quantity_products",
       header: "Quantity",
       size: 90,
       meta: {
         hasFilter: true,
-        filterOptions: filterOptions.quantities,
+        filterOptions: Array.from(
+          new Set(data.map((item) => item.quantity_products))
+        ).map((quantity) => ({
+          label: quantity.toString(),
+          value: quantity.toString(),
+        })),
       },
-      cell: ({ row }) => (
-        <div className="text-center">{row.getValue("quantity")}</div>
-      ),
+      cell: ({ row }) => {
+        const quantity = row.getValue("quantity_products") as number;
+        return <div className="text-center">{quantity}</div>;
+      },
     },
     {
-      accessorKey: "shipmentType",
+      accessorKey: "shipment_type",
       header: "Type",
       size: 85,
       meta: {
         hasFilter: true,
-        filterOptions: filterOptions.shipmentTypes,
+        filterOptions: Array.from(
+          new Set(data.map((item) => item.shipment_type))
+        ).map((type) => ({
+          label: type,
+          value: type,
+        })),
       },
       cell: ({ row }) => {
-        const type = row.getValue("shipmentType") as ShipmentType;
+        const type = row.getValue("shipment_type") as ShipmentType;
         return <Badge className={getShipmentTypeColor(type)}>{type}</Badge>;
       },
     },
     {
-      accessorKey: "shipmentStatus",
+      accessorKey: "shipment_status",
       header: "Status",
       size: 140,
       meta: {
         hasFilter: true,
-        filterOptions: filterOptions.shipmentStatuses,
+        filterOptions: (() => {
+          const statusOrder: ShipmentStatus[] = [
+            "On Hold - Missing Data",
+            "In Preparation",
+            "On The Way",
+            "Received",
+            "Cancelled",
+          ];
+
+          const availableStatuses = Array.from(
+            new Set(data.map((item) => item.shipment_status))
+          );
+
+          return statusOrder
+            .filter((status) => availableStatuses.includes(status))
+            .map((status) => ({
+              label: status,
+              value: status,
+            }));
+        })(),
       },
       cell: ({ row }) => {
-        const status = row.getValue("shipmentStatus") as ShipmentStatus;
+        const status = row.getValue("shipment_status") as ShipmentStatus;
         return <Badge className={getStatusColor(status)}>{status}</Badge>;
       },
     },
@@ -238,11 +195,37 @@ export const useLogisticsTableColumns = ({
       size: 110,
       meta: {
         hasFilter: true,
-        filterOptions: filterOptions.prices,
+        filterOptions: (() => {
+          const priceOptions = new Set<string>();
+
+          data.forEach((item) => {
+            const price = item.price;
+            if (price.amount === null || price.amount === undefined) {
+              // Si no hay amount, solo mostrar currencyCode (ej: "TBC")
+              priceOptions.add(price.currencyCode);
+            } else {
+              // Si hay amount, mostrar currencyCode + amount
+              priceOptions.add(`${price.currencyCode} ${price.amount}`);
+            }
+          });
+
+          return Array.from(priceOptions).map((priceString: string) => ({
+            label: priceString,
+            value: priceString,
+          }));
+        })(),
       },
-      cell: ({ row }) => (
-        <div className="font-medium text-gray-900">{row.getValue("price")}</div>
-      ),
+      cell: ({ row }) => {
+        const price = row.getValue("price") as {
+          amount: number;
+          currencyCode: string;
+        };
+        return (
+          <div className="font-medium text-gray-900">
+            {price.currencyCode} {price.amount}
+          </div>
+        );
+      },
     },
 
     {
@@ -250,16 +233,10 @@ export const useLogisticsTableColumns = ({
       header: "Updated",
       size: 90,
       meta: {
-        hasFilter: true,
-        filterOptions: filterOptions.updatedDates,
-      },
-      sortingFn: (rowA, rowB) => {
-        const dateA = new Date(rowA.original.updatedAt);
-        const dateB = new Date(rowB.original.updatedAt);
-        return dateA.getTime() - dateB.getTime();
+        hasFilter: false,
       },
       cell: ({ row }) => {
-        const dateString = row.getValue("updatedAt") as string;
+        const dateString = row.original.updatedAt;
         const date = new Date(dateString);
         const formattedDate = date.toLocaleDateString("es-ES", {
           day: "2-digit",

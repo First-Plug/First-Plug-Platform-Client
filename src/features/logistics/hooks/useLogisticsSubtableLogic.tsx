@@ -11,7 +11,7 @@ export function useLogisticsSubtableLogic() {
   };
 
   const getRowId = (row: LogisticOrder) => {
-    return row.orderId;
+    return row.order_id;
   };
 
   const renderSubComponent = useMemo(() => {

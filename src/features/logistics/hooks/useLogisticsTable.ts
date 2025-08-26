@@ -3,11 +3,22 @@ import { useMemo, useEffect, useRef } from "react";
 import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 import { usePagination } from "@/features/fp-tables";
 import { LogisticOrder } from "../interfaces/logistics";
-import { mockLogisticOrders } from "../data/mockData";
 
 const useLogisticsTableFilterStore = createFilterStore();
 
-export const useLogisticsTable = () => {
+export const useLogisticsTable = (
+  shipments: LogisticOrder[] = [],
+  isLoading: boolean = false
+) => {
+  // Validación adicional para asegurar que shipments sea un array
+  const validShipments = useMemo(() => {
+    if (!shipments || !Array.isArray(shipments)) {
+      console.warn("useLogisticsTable received invalid shipments:", shipments);
+      return [];
+    }
+    return shipments;
+  }, [shipments]);
+
   const filters = useLogisticsTableFilterStore((s) => s.filters);
   const setOnFiltersChange = useLogisticsTableFilterStore(
     (s) => s.setOnFiltersChange
@@ -37,35 +48,52 @@ export const useLogisticsTable = () => {
 
   // Aplicar filtros a los datos
   const filteredData = useMemo(() => {
-    return mockLogisticOrders.filter((order) => {
+    if (isLoading || !validShipments) return [];
+
+    return validShipments.filter((order) => {
       return Object.entries(filters).every(([column, filterValues]) => {
         if (filterValues.length === 0) return true;
 
         switch (column) {
           case "tenant":
             return filterValues.some((value) => order.tenant === value);
-          case "orderId":
-            return filterValues.some((value) => order.orderId === value);
-          case "orderDate":
-            return filterValues.some((value) => order.orderDate === value);
-          case "updatedAt":
-            return filterValues.some((value) => order.updatedAt === value);
-          case "quantity":
+          case "order_id":
+            return filterValues.some((value) => order.order_id === value);
+          case "order_date":
+            return filterValues.some((value) => order.order_date === value);
+          case "createdAt":
             return filterValues.some(
-              (value) => order.quantity.toString() === value
+              (value) =>
+                new Date(order.createdAt).toLocaleDateString("es-ES", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                }) === value
+            );
+          case "quantity_products":
+            return filterValues.some(
+              (value) => order.quantity_products.toString() === value
             );
           case "price":
-            return filterValues.some((value) => order.price === value);
-          case "shipmentType":
-            return filterValues.some((value) => order.shipmentType === value);
-          case "shipmentStatus":
-            return filterValues.some((value) => order.shipmentStatus === value);
+            return filterValues.some(
+              (value) => order.price.amount.toString() === value
+            );
+          case "shipment_type":
+            return filterValues.some((value) => order.shipment_type === value);
+          case "shipment_status":
+            return filterValues.some(
+              (value) => order.shipment_status === value
+            );
+          case "updatedAt":
+            return filterValues.some(
+              (value) => new Date(order.updatedAt).toISOString() === value
+            );
           default:
             return true;
         }
       });
     });
-  }, [filters]);
+  }, [filters, validShipments, isLoading]);
 
   // Calcular paginación
   const totalPages = Math.ceil(filteredData.length / pageSize);
@@ -90,6 +118,6 @@ export const useLogisticsTable = () => {
     handleClearAllFilters,
     useLogisticsTableFilterStore,
     tableContainerRef,
-    isLoading: false, // Mock data, siempre false
+    isLoading,
   };
 };

@@ -21,15 +21,15 @@ interface ProfileFormProps {
   form: UseFormReturn<ProfileFormData>;
 }
 
-// Obtener lista de países del JSON existente
-const COUNTRIES = shipmentData.fields[0].options;
-
 export const ProfileForm = ({ form }: ProfileFormProps) => {
-  return (
-    <div className="border rounded-lg p-6">
-      <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
+  // Obtener lista de países del JSON existente
+  const COUNTRIES = shipmentData?.fields?.[0]?.options || [];
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  return (
+    <div className="p-6 border rounded-lg">
+      <h2 className="mb-6 font-semibold text-xl">Personal Information</h2>
+
+      <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
         {/* First Name */}
         <FormField
           control={form.control}
@@ -107,7 +107,7 @@ export const ProfileForm = ({ form }: ProfileFormProps) => {
                     <SelectValue placeholder="Select a country" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="max-h-60 bg-white border border-gray-200 shadow-lg">
+                <SelectContent className="bg-white shadow-lg border border-gray-200 max-h-60">
                   {COUNTRIES.map((country) => (
                     <SelectItem key={country} value={country}>
                       {country}

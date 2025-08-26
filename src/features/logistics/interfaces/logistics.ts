@@ -1,17 +1,28 @@
+import type { Details } from "@/features/shipments";
+
 export interface LogisticOrder {
-  orderId: string;
+  _id: string;
+  order_id: string;
   tenant: string;
-  quantity: number;
-  orderDate: string;
-  shipmentStatus: ShipmentStatus;
-  price: string;
+  quantity_products: number;
+  order_date: string;
+  shipment_status: ShipmentStatus;
+  price: {
+    currencyCode: string;
+    amount: number;
+  };
   origin: string;
   destination: string;
-  products: string;
-  shipmentType: ShipmentType;
-  trackingURL: string;
-  destinationDetails: string;
-  updatedAt: string;
+  products: string[];
+  shipment_type: ShipmentType;
+  trackingURL?: string;
+  destinationDetails: Details;
+  originDetails: Details;
+  snapshots: any[];
+  statusColor: string;
+  typeColor: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type ShipmentStatus =
