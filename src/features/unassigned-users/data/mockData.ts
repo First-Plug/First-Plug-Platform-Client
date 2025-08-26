@@ -1,6 +1,14 @@
-import { UnassignedUser } from "../interfaces/unassigned-user.interface";
+// Mock data interface (different from API interface)
+interface MockUnassignedUser {
+  id: string;
+  creationDate: string;
+  name: string;
+  email: string;
+  tenant: string;
+  role: string;
+}
 
-export const mockUnassignedUsers: UnassignedUser[] = [
+export const mockUnassignedUsers: MockUnassignedUser[] = [
   {
     id: "1",
     creationDate: "2024-01-15T10:30:00Z",

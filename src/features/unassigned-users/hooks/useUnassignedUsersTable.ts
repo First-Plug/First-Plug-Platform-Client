@@ -3,21 +3,36 @@
 import { useMemo, useEffect } from "react";
 import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 import { usePagination } from "@/features/fp-tables";
-
-import { mockUnassignedUsers } from "../data/mockData";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useFetchUnassignedUsers } from "./useFetchUnassignedUsers";
 import { useEditableTableData } from "./useEditableTableData";
+import type { UnassignedUser } from "../interfaces/unassignedUser.interface";
 
 const useUnassignedUsersTableFilterStore = createFilterStore();
 
 export { useUnassignedUsersTableFilterStore };
 
 export function useUnassignedUsersTable() {
-  const { data: users = mockUnassignedUsers } = useQuery({
-    queryKey: ["unassignedUsers"],
-    queryFn: () => mockUnassignedUsers,
-    initialData: mockUnassignedUsers,
-  });
+  // Fetch real data from API
+  const { data: apiUsers } = useFetchUnassignedUsers();
+
+  // Process API data when available
+  const users = useMemo(() => {
+    if (!apiUsers) return [];
+
+    console.log("🔄 Processing unassigned users data:", apiUsers);
+    // Transform backend data to match frontend interface
+    return apiUsers.map((user: UnassignedUser) => ({
+      id: user._id,
+      name: `${user.firstName} ${user.lastName}`,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: "",
+      tenant: "",
+      creationDate: user.createdAt,
+      isActive: user.isActive,
+    }));
+  }, [apiUsers]);
 
   const { editableUsers, updateUserField, resetToInitial } =
     useEditableTableData(users);
@@ -131,7 +146,7 @@ export function useUnassignedUsersTable() {
     tableContainerRef,
     updateUserField,
     useUnassignedUsersTableFilterStore,
-    // Pasar los datos filtrados para que los filtros se adapten dinámicamente
+
     filteredDataForColumns: filteredUsers,
   };
 }
