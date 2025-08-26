@@ -5,7 +5,6 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button, PenIcon } from "@/shared";
 import { useAsideStore } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
-import type { AssignedUser } from "../interfaces/assignedUser.interface";
 
 interface UseAssignedUsersTableColumnsProps {
   users: any[]; // Using any for now since we're transforming the data
@@ -140,7 +139,7 @@ export const useAssignedUsersTableColumns = ({
                 return {
                   backgroundColor: "#f0fdf4",
                   color: "#14532d",
-                  border: "2px solid #86efac",
+                  border: "1px solid #86efac",
                 };
               default:
                 return {
