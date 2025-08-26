@@ -23,24 +23,15 @@ export const UnassignedUsersTableActions = ({
   };
 
   const executeAssignment = async () => {
-    console.log("🔄 Attempting to assign user:", {
-      userId: user.id,
-      role: user.role,
-      tenant: user.tenant,
-    });
-
     setShowConfirmDialog(false);
 
     // Find the tenant ID from the tenant name
     const selectedTenant = tenants?.find((t) => t.tenantName === user.tenant);
 
     if (!selectedTenant) {
-      console.error("❌ Tenant not found:", user.tenant);
       setAlert("errorUpdateTeam");
       return;
     }
-
-    console.log("✅ Found tenant:", selectedTenant);
 
     try {
       await assignUserMutation.mutateAsync({
@@ -51,36 +42,20 @@ export const UnassignedUsersTableActions = ({
         },
       });
     } catch (error) {
-      console.error("Error assigning user:", error);
       setAlert("errorUpdateTeam");
     }
   };
 
   const isFormComplete = () => {
-    console.log("🔍 Checking form completion:", {
-      role: user.role,
-      tenant: user.tenant,
-      roleLength: user.role?.length,
-      tenantLength: user.tenant?.length,
-      roleType: typeof user.role,
-      tenantType: typeof user.tenant,
-      isSuperadmin: user.role === "Superadmin",
-      fullUser: user,
-    });
-
     if (user.role === "Superadmin") {
-      const result = !!user.role;
-      console.log("✅ Superadmin check result:", result);
-      return result;
+      return !!user.role;
     } else {
       const hasRole = !!user.role && user.role.trim() !== "";
       const hasTenant =
         !!user.tenant &&
         user.tenant.trim() !== "" &&
         user.tenant !== "Unassigned";
-      const result = hasRole && hasTenant;
-      console.log("✅ Regular user check:", { hasRole, hasTenant, result });
-      return result;
+      return hasRole && hasTenant;
     }
   };
 

@@ -54,31 +54,21 @@ export const EditAssignedUser = () => {
 
   const onSubmit = (data: EditAssignedUserFormData) => {
     if (!selectedUser) {
-      console.error("❌ No selected user found!");
       return;
     }
-
-    console.log("🔍 Selected user object:", selectedUser);
-    console.log("🔍 User ID (_id):", selectedUser._id);
-    console.log("🔍 User ID (id):", (selectedUser as any).id);
 
     // Use id from transformed data (frontend) or _id from original data (backend)
     const userId = (selectedUser as any).id || selectedUser._id;
 
     if (!userId) {
-      console.error("❌ User ID is missing!", selectedUser);
       return;
     }
-
-    console.log("✅ Using userId:", userId);
 
     const updateData: UpdateAssignedUserRequest = {
       firstName: data.firstName,
       lastName: data.lastName,
       role: data.role,
     };
-
-    console.log("📤 Sending update data:", updateData);
 
     updateUser(
       { userId, data: updateData },

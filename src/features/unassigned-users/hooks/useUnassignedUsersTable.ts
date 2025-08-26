@@ -19,7 +19,6 @@ export function useUnassignedUsersTable() {
   const users = useMemo(() => {
     if (!apiUsers) return [];
 
-    console.log("🔄 Processing unassigned users data:", apiUsers);
     // Transform backend data to match frontend interface
     return apiUsers.map((user: UnassignedUser) => ({
       id: user._id,

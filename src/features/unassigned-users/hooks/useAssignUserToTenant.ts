@@ -15,12 +15,9 @@ export const useAssignUserToTenant = () => {
       userId: string;
       data: AssignUserToTenantRequest;
     }) => {
-      console.log("🔄 Assigning user to tenant:", userId, data);
       return UnassignedUsersServices.assignUserToTenant(userId, data);
     },
-    onSuccess: (assignedUser, _variables) => {
-      console.log("✅ User assigned successfully:", assignedUser);
-
+    onSuccess: (_assignedUser, _variables) => {
       // Show success alert
       setAlert("userUpdatedSuccesfully");
 
@@ -33,13 +30,8 @@ export const useAssignUserToTenant = () => {
       // Also invalidate tenants in case stats changed
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
     },
-    onError: (error: any) => {
-      console.error("❌ Error assigning user:", error);
-      console.error("Error details:", {
-        status: error?.response?.status,
-        message: error?.message,
-        data: error?.response?.data,
-      });
+    onError: (_error: any) => {
+      // Error handling is done in the component
     },
   });
 };
