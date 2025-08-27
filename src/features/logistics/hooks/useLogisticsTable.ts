@@ -75,9 +75,19 @@ export const useLogisticsTable = (
               (value) => order.quantity_products.toString() === value
             );
           case "price":
-            return filterValues.some(
-              (value) => order.price.amount.toString() === value
-            );
+            // Verificar si amount es null antes de llamar toString()
+            if (
+              order.price.amount === null ||
+              order.price.amount === undefined
+            ) {
+              // Si no hay amount, comparar solo con currencyCode (ej: "TBC")
+              return filterValues.some(
+                (value) => order.price.currencyCode === value
+              );
+            }
+            // Si tiene amount, comparar con el conjunto "currency amount" (ej: "USD 100")
+            const priceString = `${order.price.currencyCode} ${order.price.amount}`;
+            return filterValues.some((value) => priceString === value);
           case "shipment_type":
             return filterValues.some((value) => order.shipment_type === value);
           case "shipment_status":

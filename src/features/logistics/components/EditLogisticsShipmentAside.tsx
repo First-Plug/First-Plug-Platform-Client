@@ -114,14 +114,24 @@ const SHIPMENT_TYPE_OPTIONS: ShipmentType[] = ["Courrier", "Internal", "TBC"];
 
 const CURRENCY_OPTIONS = [
   "USD",
-  "EUR",
-  "GBP",
   "ARS",
+  "BOB",
   "BRL",
   "CLP",
   "COP",
+  "CRC",
+  "GTQ",
+  "HNL",
+  "ILS",
   "MXN",
+  "NIO",
+  "PAB",
   "PEN",
+  "PYG",
+  "EUR",
+  "UYU",
+  "VES",
+  "TBC",
 ];
 
 export const EditLogisticsShipmentAside = () => {
@@ -163,6 +173,8 @@ export const EditLogisticsShipmentAside = () => {
   const isOnHold =
     selectedShipment?.shipment_status === "On Hold - Missing Data";
   const isCancelled = selectedShipment?.shipment_status === "Cancelled";
+  const isReceived = selectedShipment?.shipment_status === "Received";
+  const isReadOnly = isOnHold || isCancelled || isReceived;
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [needsPadding, setNeedsPadding] = useState(false);
@@ -259,10 +271,7 @@ export const EditLogisticsShipmentAside = () => {
                 }}
                 name="shipmentStatus"
                 searchable={false}
-                disabled={
-                  selectedShipment.shipment_status ===
-                    "On Hold - Missing Data" || isCancelled
-                }
+                disabled={isReadOnly}
               />
               {errors.shipmentStatus && (
                 <p className="mt-1 text-red-500 text-sm">
@@ -278,6 +287,11 @@ export const EditLogisticsShipmentAside = () => {
               {isCancelled && (
                 <p className="mt-1 ml-2 text-red-600 text-sm">
                   Shipment is cancelled and cannot be modified
+                </p>
+              )}
+              {isReceived && (
+                <p className="mt-1 ml-2 text-[#008000] text-sm">
+                  Shipment is received and cannot be modified
                 </p>
               )}
             </div>
@@ -298,7 +312,7 @@ export const EditLogisticsShipmentAside = () => {
                       });
                     }}
                     name="price.amount"
-                    disabled={isOnHold || isCancelled}
+                    disabled={isReadOnly}
                   />
                   {errors.price?.amount && (
                     <p className="mt-1 text-red-500 text-sm">
@@ -323,7 +337,7 @@ export const EditLogisticsShipmentAside = () => {
                     }}
                     name="price.currency"
                     searchable={false}
-                    disabled={isOnHold || isCancelled}
+                    disabled={isReadOnly}
                   />
                   {errors.price?.currency && (
                     <p className="mt-1 text-red-500 text-sm">
@@ -348,7 +362,7 @@ export const EditLogisticsShipmentAside = () => {
                 }}
                 name="shipmentType"
                 searchable={false}
-                disabled={isOnHold || isCancelled}
+                disabled={isReadOnly}
               />
               {errors.shipmentType && (
                 <p className="mt-1 text-red-500 text-sm">
@@ -370,7 +384,7 @@ export const EditLogisticsShipmentAside = () => {
                   });
                 }}
                 name="trackingURL"
-                disabled={isOnHold || isCancelled}
+                disabled={isReadOnly}
               />
               {errors.trackingURL && (
                 <p className="mt-1 text-red-500 text-sm">
@@ -389,7 +403,7 @@ export const EditLogisticsShipmentAside = () => {
             variant="primary"
             className="px-8"
             onClick={handleSubmit(onSubmit)}
-            disabled={isUpdating || !isDirty || isOnHold || isCancelled}
+            disabled={isUpdating || !isDirty || isReadOnly}
           >
             {isUpdating ? "Saving..." : "Save"}
           </Button>

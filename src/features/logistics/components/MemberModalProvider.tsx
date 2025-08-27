@@ -139,14 +139,16 @@ export const MemberModalProvider = () => {
                     </div>
                   </>
                 ) : (
-                  <div className="flex flex-col">
-                    <span className="font-medium text-gray-700 text-base">
-                      Email
-                    </span>
-                    <span className="text-gray-900 text-sm">
-                      {orderDetails?.assignedEmail || "Not specified"}
-                    </span>
-                  </div>
+                  <>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-gray-700 text-base">
+                        Email
+                      </span>
+                      <span className="text-gray-900 text-sm">
+                        {orderDetails?.assignedEmail || "Not specified"}
+                      </span>
+                    </div>
+                  </>
                 )}
               </div>
             </div>

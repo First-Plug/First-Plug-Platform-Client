@@ -217,12 +217,12 @@ export const useLogisticsTableColumns = ({
       },
       cell: ({ row }) => {
         const price = row.getValue("price") as {
-          amount: number;
+          amount: number | null;
           currencyCode: string;
         };
         return (
           <div className="font-medium text-gray-900">
-            {price.currencyCode} {price.amount}
+            {price.currencyCode} {price.amount !== null ? price.amount : ""}
           </div>
         );
       },

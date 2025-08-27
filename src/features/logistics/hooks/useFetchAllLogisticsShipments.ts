@@ -1,14 +1,18 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { LogisticsServices } from "../services/logistics.services";
 
 export const useFetchAllLogisticsShipments = () => {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["logistics-shipments"],
     queryFn: async () => {
       return await LogisticsServices.getAllShipments();
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    gcTime: 1000 * 60 * 10,
     refetchOnWindowFocus: true,
-    placeholderData: keepPreviousData,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
   });
+
+  return query;
 };
