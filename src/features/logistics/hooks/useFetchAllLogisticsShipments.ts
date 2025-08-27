@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { LogisticsServices } from "../services/logistics.services";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export const useFetchAllLogisticsShipments = () => {
   const query = useQuery({
@@ -12,6 +13,7 @@ export const useFetchAllLogisticsShipments = () => {
     refetchOnWindowFocus: true,
     refetchOnMount: "always",
     refetchOnReconnect: true,
+    placeholderData: keepPreviousData,
   });
 
   return query;
