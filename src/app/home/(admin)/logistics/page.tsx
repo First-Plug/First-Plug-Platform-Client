@@ -19,7 +19,12 @@ import { TruckIcon } from "lucide-react";
 import { exportToCsv, createLogisticsCsvConfig } from "@/shared";
 
 export default function Logistics() {
-  const { data: shipments, isLoading, error } = useFetchAllLogisticsShipments();
+  const {
+    data: shipments,
+    isLoading,
+    error,
+    isFetching,
+  } = useFetchAllLogisticsShipments();
 
   const {
     data,
@@ -55,7 +60,7 @@ export default function Logistics() {
   return (
     <>
       <PageLayout>
-        {isLoading && <BarLoader />}
+        {isLoading || (isFetching && <BarLoader />)}
 
         {error && (
           <div className="flex flex-col justify-center items-center h-full min-h-[400px] text-center">

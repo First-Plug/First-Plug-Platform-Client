@@ -69,35 +69,6 @@ const editLogisticsShipmentSchema = z
         "Amount and Currency are required together when status is 'On The Way' or 'Received'",
       path: ["price"],
     }
-  )
-  .refine(
-    (data) => {
-      // Si está en "In Preparation", no hay validaciones
-      if (data.shipmentStatus === "In Preparation") {
-        return true;
-      }
-
-      // Si está "Cancelled", no hay validaciones
-      if (data.shipmentStatus === "Cancelled") {
-        return true;
-      }
-
-      // Si está "On The Way" o "Received" y es "Courrier", URL es requerida
-      if (
-        (data.shipmentStatus === "On The Way" ||
-          data.shipmentStatus === "Received") &&
-        data.shipmentType === "Courrier"
-      ) {
-        return data.trackingURL && data.trackingURL.trim() !== "";
-      }
-
-      return true;
-    },
-    {
-      message:
-        "Tracking URL is required for Courrier shipments when status is 'On The Way' or 'Received'",
-      path: ["trackingURL"],
-    }
   );
 
 type EditLogisticsShipmentFormData = z.infer<

@@ -74,12 +74,16 @@ const CreateShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
                 <TableCell className="px-4 py-2 border-r text-xs">
                   {shipment.origin || ""}
                   {" / "}
-                  {formatDate(shipment.originDetails.desirableDate) || ""}
+                  {shipment.originDetails.desirableDate === "ASAP"
+                    ? "ASAP"
+                    : formatDate(shipment.originDetails.desirableDate)}
                 </TableCell>
                 <TableCell className="px-4 py-2 text-xs">
                   {shipment.destination || ""}
                   {" / "}
-                  {formatDate(shipment.destinationDetails.desirableDate) || ""}
+                  {shipment.destinationDetails.desirableDate === "ASAP"
+                    ? "ASAP"
+                    : formatDate(shipment.destinationDetails.desirableDate)}
                 </TableCell>
               </TableRow>
             ))

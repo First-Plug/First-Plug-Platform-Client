@@ -54,9 +54,11 @@ export const ExpandedRowContent = React.memo<ExpandedRowContentProps>(
               <div className="bg-white p-3 border rounded-md">
                 <div className="text-gray-600 text-sm">
                   Date:{" "}
-                  {new Date(
-                    order.originDetails.desirableDate
-                  ).toLocaleDateString()}
+                  {order.originDetails.desirableDate === "ASAP"
+                    ? "ASAP"
+                    : new Date(
+                        order.originDetails.desirableDate
+                      ).toLocaleDateString()}
                 </div>
                 <div className="text-gray-600 text-sm">
                   From:{" "}
@@ -81,9 +83,11 @@ export const ExpandedRowContent = React.memo<ExpandedRowContentProps>(
               <div className="bg-white p-3 border rounded-md">
                 <div className="text-gray-600 text-sm">
                   Date:{" "}
-                  {new Date(
-                    order.destinationDetails.desirableDate
-                  ).toLocaleDateString()}
+                  {order.destinationDetails.desirableDate === "ASAP"
+                    ? "ASAP"
+                    : new Date(
+                        order.destinationDetails.desirableDate
+                      ).toLocaleDateString()}
                 </div>
                 <div className="text-gray-600 text-sm">
                   To:{" "}
