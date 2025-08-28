@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAsideStore } from "@/shared";
 import { Button } from "@/shared";
-import { InputProductForm } from "@/features/assets";
+import { GenericAlertDialog, InputProductForm } from "@/features/assets";
 import {
   useUpdateAssignedUser,
   AVAILABLE_ROLES,
@@ -15,6 +15,7 @@ import type {
   AssignedUser,
   UpdateAssignedUserRequest,
 } from "@/features/assigned-users";
+import { useState } from "react";
 
 // Validation schema
 const editAssignedUserSchema = z.object({
@@ -37,6 +38,11 @@ export const EditAssignedUser = () => {
   ]);
 
   const { mutate: updateUser, isPending } = useUpdateAssignedUser();
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] =
+    useState<UpdateAssignedUserRequest | null>(null);
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
 
   const methods = useForm<EditAssignedUserFormData>({
     resolver: zodResolver(editAssignedUserSchema),
@@ -70,6 +76,16 @@ export const EditAssignedUser = () => {
       role: data.role,
     };
 
+    const isPromotingToSuperadmin =
+      data.role === "superadmin" && selectedUser.role !== "superadmin";
+
+    if (isPromotingToSuperadmin) {
+      setPendingPayload(updateData);
+      setPendingUserId(userId);
+      setConfirmOpen(true);
+      return;
+    }
+
     updateUser(
       { userId, data: updateData },
       {
@@ -78,6 +94,33 @@ export const EditAssignedUser = () => {
         },
       }
     );
+  };
+
+  const confirmPromotion = () => {
+    if (!pendingPayload || !pendingUserId) {
+      setConfirmOpen(false);
+      return;
+    }
+    updateUser(
+      { userId: pendingUserId, data: pendingPayload },
+      {
+        onSuccess: () => {
+          setConfirmOpen(false);
+          setPendingPayload(null);
+          setPendingUserId(null);
+          closeAside();
+        },
+        onError: () => {
+          setConfirmOpen(false);
+        },
+      }
+    );
+  };
+
+  const cancelPromotion = () => {
+    setConfirmOpen(false);
+    setPendingPayload(null);
+    setPendingUserId(null);
   };
 
   if (!selectedUser) {
@@ -94,6 +137,13 @@ export const EditAssignedUser = () => {
     label: role.charAt(0).toUpperCase() + role.slice(1),
     value: role,
   }));
+
+  const displayTenantName =
+    (typeof selectedUser?.tenantId === "object"
+      ? selectedUser?.tenantId?.tenantName ?? selectedUser?.tenantId?.name
+      : undefined) ??
+    (selectedUser as any)?.tenantName ??
+    "Internal FP";
 
   return (
     <div className="flex flex-col h-full">
@@ -191,8 +241,8 @@ export const EditAssignedUser = () => {
                 <input
                   name="tenant"
                   type="text"
-                  value={selectedUser.tenantId?.name || "Internal FP"}
-                  onChange={() => {}} // No-op since it's disabled
+                  value={displayTenantName}
+                  onChange={() => {}}
                   placeholder="Tenant name"
                   className="w-full h-14 py-2 rounded-xl border p-4 font-sans focus:outline-none bg-gray-100 text-gray-500 cursor-not-allowed"
                   disabled={true}
@@ -227,6 +277,23 @@ export const EditAssignedUser = () => {
           </Button>
         </div>
       </div>
+
+      {/* Paso intermedio SOLO si se promueve a superadmin */}
+      <GenericAlertDialog
+        open={confirmOpen}
+        onClose={cancelPromotion}
+        title="Warning!"
+        description={
+          "Estás asignando un rol de <strong>superadmin</strong> a este usuario, " +
+          "lo que le dará acceso a información sensible. ¿Estás seguro de que deseas proceder?"
+        }
+        isHtml={true}
+        buttonText="Sí, asignar superadmin"
+        onButtonClick={confirmPromotion}
+        showCancelButton={true}
+        cancelButtonText="Cancelar"
+        onCancel={cancelPromotion}
+      />
     </div>
   );
 };

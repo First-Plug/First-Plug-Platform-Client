@@ -3,7 +3,8 @@
 import { useFormContext, Controller } from "react-hook-form";
 
 import { SectionTitle } from "@/shared";
-import { type Member, shipmentData } from "@/features/members";
+import { type Member } from "@/features/members";
+import { shipmentData } from "./data/shipmentdata";
 
 import { InputProductForm, DropdownInputProductForm } from "@/features/assets";
 

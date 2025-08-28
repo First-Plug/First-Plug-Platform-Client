@@ -6,7 +6,7 @@ import { useFetchTenants } from "@/features/tenants";
 import { GenericAlertDialog } from "@/features/assets/components/generic-alert-dialog";
 
 interface UnassignedUsersTableActionsProps {
-  user: any; // Using any for now since we're transforming the data
+  user: any;
 }
 
 export const UnassignedUsersTableActions = ({
@@ -17,19 +17,21 @@ export const UnassignedUsersTableActions = ({
   const { data: tenants } = useFetchTenants();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  const isSuperadmin = (user.role || "").toLowerCase() === "superadmin";
+
   const handleAssign = () => {
-    // Show confirmation dialog instead of window.confirm
     setShowConfirmDialog(true);
   };
 
   const executeAssignment = async () => {
     setShowConfirmDialog(false);
 
-    // Find the tenant ID from the tenant name
-    const selectedTenant = tenants?.find((t) => t.tenantName === user.tenant);
+    const selectedTenant = tenants?.find(
+      (t) => t.tenantName === user.tenant || t.name === user.tenant
+    );
 
     if (!selectedTenant) {
-      setAlert("errorUpdateTeam");
+      setAlert("errorUpdateUser");
       return;
     }
 
@@ -37,12 +39,25 @@ export const UnassignedUsersTableActions = ({
       await assignUserMutation.mutateAsync({
         userId: user.id,
         data: {
-          tenantId: selectedTenant.id, // Use the actual tenant ID
-          role: user.role.toLowerCase(), // Convert to lowercase for backend
+          role: (user.role ?? "").toLowerCase() as "user" | "admin",
+          tenantId: (selectedTenant as any).id ?? (selectedTenant as any)._id,
+          tenantName: selectedTenant.tenantName ?? selectedTenant.name,
         },
       });
     } catch (error) {
-      setAlert("errorUpdateTeam");
+      setAlert("errorUpdateUser");
+    }
+  };
+
+  const executeAssignmentSuperadmin = async () => {
+    try {
+      await assignUserMutation.mutateAsync({
+        userId: user.id,
+        data: { role: "superadmin" as const },
+      });
+      setShowConfirmDialog(false);
+    } catch (error) {
+      setAlert("errorUpdateUser");
     }
   };
 
@@ -76,17 +91,25 @@ export const UnassignedUsersTableActions = ({
       <GenericAlertDialog
         open={showConfirmDialog}
         onClose={() => setShowConfirmDialog(false)}
-        title="Confirmar Asignación"
-        description={`El usuario <strong>${user.firstName} ${
-          user.lastName
-        }</strong> con email ${
-          user.email
-        } será asignado al rol de <strong>${user.role?.toUpperCase()}</strong> para el tenant <strong>${
-          user.tenant
-        }</strong>. ¿Estás seguro que los datos son correctos?`}
+        title={isSuperadmin ? "Warning!" : "Confirmar Asignación"}
+        description={
+          isSuperadmin
+            ? `Estás asignando el rol de <strong>superadmin</strong> al usuario <strong>${user.firstName} ${user.lastName}</strong> , lo que le dará acceso a información sensible. ¿Estás seguro de que deseas proceder?`
+            : `El usuario <strong>${user.firstName} ${
+                user.lastName
+              }</strong> con email ${
+                user.email
+              } será asignado al rol de <strong>${(
+                user.role || ""
+              ).toUpperCase()}</strong> para el tenant <strong>${
+                user.tenant
+              }</strong>. ¿Estás seguro que los datos son correctos?`
+        }
         isHtml={true}
         buttonText="Asignar"
-        onButtonClick={executeAssignment}
+        onButtonClick={
+          isSuperadmin ? executeAssignmentSuperadmin : executeAssignment
+        }
         showCancelButton={true}
         cancelButtonText="Cancelar"
         onCancel={() => setShowConfirmDialog(false)}

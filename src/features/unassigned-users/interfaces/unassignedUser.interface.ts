@@ -10,10 +10,13 @@ export interface UnassignedUser {
   updatedAt?: string;
 }
 
-export interface AssignUserToTenantRequest {
-  tenantId: string;
-  role: "user" | "admin" | "superadmin";
-}
+export type AssignUserToTenantRequest =
+  | { role: "superadmin" }
+  | {
+      role: Exclude<UserRole, "superadmin">;
+      tenantId: string;
+      tenantName: string;
+    };
 
 export const AVAILABLE_ROLES = ["user", "admin", "superadmin"] as const;
 export type UserRole = (typeof AVAILABLE_ROLES)[number];
