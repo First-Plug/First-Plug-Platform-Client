@@ -24,7 +24,7 @@ export default function UnassignedUsersPage() {
   } = useUnassignedUsersTable();
 
   const columns = useUnassignedUsersTableColumns({
-    users: filteredDataForColumns, // Usar datos filtrados para filtros dinámicos
+    users: filteredDataForColumns,
     updateUserField,
   });
 

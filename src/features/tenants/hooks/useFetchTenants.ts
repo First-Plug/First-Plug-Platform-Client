@@ -1,29 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { TenantsServices } from "../services/tenants.services";
+import { sortTenants } from "@/features/tenants/hooks/sortTenants";
 
 export const useFetchTenants = () => {
   return useQuery({
     queryKey: ["tenants"],
     queryFn: async () => {
-      console.log("🔍 Fetching tenants from API...");
       try {
         const result = await TenantsServices.getAllTenants();
-        console.log("✅ API Response received:", result);
+
         return result;
       } catch (error: any) {
-        console.error("❌ API Error:", error);
-        console.error("Error details:", {
-          status: error?.response?.status,
-          message: error?.message,
-          url: error?.config?.url,
-        });
-        throw error; // Re-throw to let React Query handle it
+        throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 60 * 1000,
     refetchOnMount: true,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: "always",
+    refetchOnReconnect: true,
     retry: 2,
+    select: (list) => sortTenants(list),
   });
 };
 

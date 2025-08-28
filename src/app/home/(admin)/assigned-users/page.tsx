@@ -22,7 +22,7 @@ export default function AssignedUsersPage() {
   } = useAssignedUsersTable();
 
   const columns = useAssignedUsersTableColumns({
-    users: filteredDataForColumns, // Usar datos filtrados para filtros dinámicos
+    users: filteredDataForColumns,
   });
 
   return (

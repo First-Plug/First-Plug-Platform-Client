@@ -2,39 +2,35 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UnassignedUsersServices } from "../services/unassignedUsers.services";
-import { UnassignedUser } from "../interfaces/unassignedUser.interface";
+import {
+  AssignUserToTenantRequest,
+  UnassignedUser,
+} from "../interfaces/unassignedUser.interface";
 import { useAlertStore } from "@/shared";
 
-interface AssignUserData {
+type MutationVars = {
   userId: string;
-  tenant: string;
-  role: "user" | "admin" | "superadmin";
-}
+  data: AssignUserToTenantRequest;
+};
 
 export const useAssignUnassignedUser = () => {
   const queryClient = useQueryClient();
   const { setAlert } = useAlertStore();
 
   return useMutation({
-    mutationFn: ({ userId, tenant, role }: AssignUserData) =>
-      UnassignedUsersServices.assignUserToTenant(userId, {
-        tenantId: tenant,
-        role,
-      }),
+    mutationFn: ({ userId, data }: MutationVars) =>
+      UnassignedUsersServices.assignUserToTenant(userId, data),
 
-    onMutate: async ({ userId }: AssignUserData) => {
-      // Cancelar queries en curso
-      await queryClient.cancelQueries({ queryKey: ["unassignedUsers"] });
+    onMutate: async (vars: MutationVars) => {
+      await queryClient.cancelQueries({ queryKey: ["unassigned-users"] });
 
-      // Obtener el estado anterior
       const previousUsers = queryClient.getQueryData<UnassignedUser[]>([
         "unassignedUsers",
       ]);
 
-      // Actualización optimista: remover el usuario de la lista
       queryClient.setQueryData<UnassignedUser[]>(
-        ["unassignedUsers"],
-        (oldUsers = []) => oldUsers.filter((user) => user._id !== userId)
+        ["unassigned-users"],
+        (old = []) => old.filter((u) => u._id !== vars.userId)
       );
 
       return { previousUsers };
@@ -43,24 +39,29 @@ export const useAssignUnassignedUser = () => {
     onError: (error, _variables, context) => {
       console.error("Error assigning user:", error);
 
-      // Restaurar el estado anterior en caso de error
       if (context?.previousUsers) {
         queryClient.setQueryData(["unassignedUsers"], context.previousUsers);
       }
 
-      setAlert("errorAssignedProduct");
+      setAlert("errorAssignedTenant");
     },
 
-    onSuccess: (_data, _variables) => {
-      // Usuario asignado exitosamente
-      setAlert("assignedProductSuccess");
+    onSuccess: (_data, vars) => {
+      setAlert("assignedTenantSuccess");
 
-      // Invalidar queries para refrescar datos
-      queryClient.invalidateQueries({ queryKey: ["unassignedUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["unassigned-users"] });
+      queryClient.invalidateQueries({ queryKey: ["assigned-users"] });
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["tenants", "stats"] });
+
+      if ("tenantId" in vars.data) {
+        queryClient.invalidateQueries({
+          queryKey: ["tenant-users", vars.data.tenantId],
+        });
+      }
     },
 
     onSettled: () => {
-      // Siempre invalidar al final
       queryClient.invalidateQueries({ queryKey: ["unassignedUsers"] });
     },
   });

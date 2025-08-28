@@ -137,10 +137,58 @@ export const AlertProvider = () => {
         setAlert(undefined);
       },
     },
+    assignedTenantSuccess: {
+      title: "Success",
+      type: "succes",
+      description: " Tenant successfully assigned.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
     errorAssignedProduct: {
       title: "Error",
       type: "error",
       description: " An error occurred while assigning product",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorCreateTenant: {
+      title: "Error",
+      type: "error",
+      description: " An error occurred while creating tenant",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorUpdateUser: {
+      title: "Error",
+      type: "error",
+      description: " An error occurred while updating user",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorUpdateTenant: {
+      title: "Error",
+      type: "error",
+      description: " An error occurred while updating tenant",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorAssignedTenant: {
+      title: "Error",
+      type: "error",
+      description: " An error occurred while assigning tenant",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    createTenantSuccess: {
+      title: "Success",
+      type: "succes",
+      description: " Tenant successfully created.",
       closeAction: () => {
         setAlert(undefined);
       },
