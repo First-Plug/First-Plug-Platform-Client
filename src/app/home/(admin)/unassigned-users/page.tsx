@@ -32,7 +32,7 @@ export default function UnassignedUsersPage() {
 
   return (
     <PageLayout>
-      {isLoading || (isFetching && <BarLoader />)}
+      {(isLoading || isFetching) && <BarLoader />}
 
       <div className="flex flex-col h-full max-h-full">
         <div className="flex items-center mb-4 max-h-[50%]">

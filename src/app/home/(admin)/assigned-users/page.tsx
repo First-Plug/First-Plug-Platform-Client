@@ -19,6 +19,8 @@ export default function AssignedUsersPage() {
     tableContainerRef,
     useAssignedUsersTableFilterStore,
     filteredDataForColumns,
+    isLoading,
+    isFetching,
   } = useAssignedUsersTable();
 
   const columns = useAssignedUsersTableColumns({
@@ -27,6 +29,8 @@ export default function AssignedUsersPage() {
 
   return (
     <PageLayout>
+      {(isLoading || isFetching) && <BarLoader />}
+
       <div className="flex flex-col h-full max-h-full">
         <div className="flex items-center mb-4 max-h-[50%]">
           <Button

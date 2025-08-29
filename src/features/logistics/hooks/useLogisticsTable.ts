@@ -3,6 +3,7 @@ import { useMemo, useEffect, useRef } from "react";
 import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 import { usePagination } from "@/features/fp-tables";
 import { LogisticOrder } from "../interfaces/logistics";
+import { useLogisticsDateFilterStore } from "../store/dateFilter.store";
 
 const useLogisticsTableFilterStore = createFilterStore();
 
@@ -10,6 +11,9 @@ export const useLogisticsTable = (
   shipments: LogisticOrder[] = [],
   isLoading: boolean = false
 ) => {
+  const { selectedDates } = useLogisticsDateFilterStore();
+  const previousDatesRef = useRef(selectedDates);
+
   // Validación adicional para asegurar que shipments sea un array
   const validShipments = useMemo(() => {
     if (!shipments || !Array.isArray(shipments)) {
@@ -45,6 +49,34 @@ export const useLogisticsTable = (
       resetToFirstPage();
     });
   }, [setOnFiltersChange, resetToFirstPage]);
+
+  // Resetear a la página 1 cuando las fechas cambien
+  useEffect(() => {
+    const currentDates = {
+      startDate: selectedDates.startDate,
+      endDate: selectedDates.endDate,
+    };
+
+    const previousDates = previousDatesRef.current;
+
+    // Solo resetear si las fechas realmente cambiaron y no estamos en la primera página
+    if (
+      previousDates &&
+      (previousDates.startDate.getTime() !== currentDates.startDate.getTime() ||
+        previousDates.endDate.getTime() !== currentDates.endDate.getTime()) &&
+      pageIndex > 0
+    ) {
+      resetToFirstPage();
+    }
+
+    // Actualizar la referencia
+    previousDatesRef.current = currentDates;
+  }, [
+    selectedDates.startDate,
+    selectedDates.endDate,
+    pageIndex,
+    resetToFirstPage,
+  ]);
 
   // Aplicar filtros a los datos
   const filteredData = useMemo(() => {

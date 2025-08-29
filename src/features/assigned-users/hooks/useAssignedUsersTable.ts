@@ -12,7 +12,7 @@ export { useAssignedUsersTableFilterStore };
 
 export function useAssignedUsersTable() {
   // Fetch real data from API
-  const { data: apiUsers } = useFetchAssignedUsers();
+  const { data: apiUsers, isLoading, isFetching } = useFetchAssignedUsers();
 
   // Process API data when available
   const users = useMemo(() => {
@@ -120,6 +120,8 @@ export function useAssignedUsersTable() {
     pageIndex,
     pageSize,
     totalPages,
+    isLoading,
+    isFetching,
 
     handlePageChange,
     handlePageSizeChange,

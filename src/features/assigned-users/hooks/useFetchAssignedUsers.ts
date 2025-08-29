@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { AssignedUsersServices } from "../services/assignedUsers.services";
 
 export const useFetchAssignedUsers = () => {
@@ -20,9 +20,11 @@ export const useFetchAssignedUsers = () => {
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
-    retry: 2,
+    staleTime: 0,
+    gcTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
+    placeholderData: keepPreviousData,
   });
 };
