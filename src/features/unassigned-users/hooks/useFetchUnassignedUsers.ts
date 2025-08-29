@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { UnassignedUsersServices } from "../services/unassignedUsers.services";
 
 export const useFetchUnassignedUsers = () => {
@@ -7,9 +7,11 @@ export const useFetchUnassignedUsers = () => {
     queryFn: async () => {
       return await UnassignedUsersServices.getUnassignedUsers();
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
-    retry: 2,
+    staleTime: 0,
+    gcTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
+    placeholderData: keepPreviousData,
   });
 };

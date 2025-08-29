@@ -18,6 +18,8 @@ export default function UnassignedUsersPage() {
     handleClearAllFilters,
     paginatedUsers,
     tableContainerRef,
+    isLoading,
+    isFetching,
     updateUserField,
     useUnassignedUsersTableFilterStore,
     filteredDataForColumns,
@@ -30,6 +32,8 @@ export default function UnassignedUsersPage() {
 
   return (
     <PageLayout>
+      {isLoading || (isFetching && <BarLoader />)}
+
       <div className="flex flex-col h-full max-h-full">
         <div className="flex items-center mb-4 max-h-[50%]">
           <Button

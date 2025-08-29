@@ -13,7 +13,7 @@ export { useUnassignedUsersTableFilterStore };
 
 export function useUnassignedUsersTable() {
   // Fetch real data from API
-  const { data: apiUsers } = useFetchUnassignedUsers();
+  const { data: apiUsers, isLoading, isFetching } = useFetchUnassignedUsers();
 
   // Process API data when available
   const users = useMemo(() => {
@@ -147,5 +147,7 @@ export function useUnassignedUsersTable() {
     useUnassignedUsersTableFilterStore,
 
     filteredDataForColumns: filteredUsers,
+    isLoading,
+    isFetching,
   };
 }
