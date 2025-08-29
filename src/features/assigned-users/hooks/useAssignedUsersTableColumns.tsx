@@ -15,28 +15,28 @@ export const useAssignedUsersTableColumns = ({
 }: UseAssignedUsersTableColumnsProps) => {
   const { setAside } = useAsideStore();
   const queryClient = useQueryClient();
-
+  const INTERNAL_LABEL = "Internal FP";
+  const TENANTNAME_EMPTY_LABEL = "N/A";
   // Generar opciones de filtro dinámicamente basándose en los datos filtrados
   const filterOptions = useMemo(() => {
-    const tenants = Array.from(
-      new Set(
-        users.map((user) =>
-          user.assignedTenant === "" ? "Internal FP" : user.assignedTenant
-        )
-      )
+    const companyNames = Array.from(
+      new Set(users.map((u) => u.assignedTenant || INTERNAL_LABEL))
     ).sort();
 
-    const names = Array.from(new Set(users.map((user) => user.name))).sort();
+    const tenantNames = Array.from(
+      new Set(users.map((u) => u.tenantName || TENANTNAME_EMPTY_LABEL))
+    ).sort();
 
-    const emails = Array.from(new Set(users.map((user) => user.email))).sort();
-
-    const roles = Array.from(new Set(users.map((user) => user.role))).sort();
+    const names = Array.from(new Set(users.map((u) => u.name))).sort();
+    const emails = Array.from(new Set(users.map((u) => u.email))).sort();
+    const roles = Array.from(new Set(users.map((u) => u.role))).sort();
 
     return {
-      tenants: tenants.map((tenant) => ({ label: tenant, value: tenant })),
-      names: names.map((name) => ({ label: name, value: name })),
-      emails: emails.map((email) => ({ label: email, value: email })),
-      roles: roles.map((role) => ({ label: role, value: role })),
+      tenantsCompany: companyNames.map((v) => ({ label: v, value: v })),
+      tenantsSlug: tenantNames.map((v) => ({ label: v, value: v })),
+      names: names.map((v) => ({ label: v, value: v })),
+      emails: emails.map((v) => ({ label: v, value: v })),
+      roles: roles.map((v) => ({ label: v, value: v })),
     };
   }, [users]);
 
@@ -48,11 +48,11 @@ export const useAssignedUsersTableColumns = ({
         size: 140,
         meta: {
           hasFilter: true,
-          filterOptions: filterOptions.tenants,
+          filterOptions: filterOptions.tenantsSlug,
         },
         cell: ({ getValue }) => {
           const tenantName = getValue();
-          return tenantName || "N/A";
+          return tenantName || TENANTNAME_EMPTY_LABEL;
         },
       },
       {
@@ -61,14 +61,9 @@ export const useAssignedUsersTableColumns = ({
         size: 160,
         meta: {
           hasFilter: true,
-          filterOptions: filterOptions.tenants,
+          filterOptions: filterOptions.tenantsCompany,
         },
-        cell: ({ getValue }) => {
-          const tenant = getValue();
-          const isInternalFP = tenant === "" || tenant === "Internal FP";
-
-          return isInternalFP ? "Internal FP" : tenant;
-        },
+        cell: ({ getValue }) => getValue() || INTERNAL_LABEL,
       },
       {
         accessorKey: "name",

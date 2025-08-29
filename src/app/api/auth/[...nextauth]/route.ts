@@ -9,7 +9,7 @@ const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      encoding: "algop",
+      // encoding: "algop",
     }),
     {
       id: "azure-ad",
@@ -138,46 +138,36 @@ const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account }) {
+      if (!account) return true;
       if (account.provider === "google" || account.provider === "azure-ad") {
-        try {
-          // Intentar obtener tokens primero (para usuarios existentes)
-          const payload: RegisterUserPlatforms = {
-            email: user.email,
-            image: user.image,
-            name: user.name,
-            tenantName: "",
-            accountProvider: account.provider as
-              | "credentials"
-              | "google"
-              | "azure-ad",
-          };
+        const payload = {
+          email: user?.email ?? "",
+          image: user?.image ?? "",
+          name: user?.name ?? "",
+          accountProvider: account.provider,
+        } as const;
 
+        try {
           await AuthServices.getBackendTokens(payload);
         } catch (error: any) {
-          // Si el usuario no existe, registrarlo
-          if (
-            error.response?.status === 404 ||
-            error.message?.includes("not found")
-          ) {
-            const authenticatedUser: RegisterUserPlatforms = {
-              email: user.email,
-              image: user.image,
-              name: user.name,
-              tenantName: "",
-              accountProvider: account.provider as
-                | "credentials"
-                | "google"
-                | "azure-ad",
-            };
+          const status = error?.response?.status;
+          const msg = error?.response?.data?.message || error?.message || "";
+          const userNotFound =
+            status === 404 ||
+            /not\s*found/i.test(msg) ||
+            (status === 401 && /user\s*not\s*found/i.test(msg));
 
-            await AuthServices.registerByProviders(authenticatedUser);
+          if (userNotFound) {
+            // podés apuntar a /api/users/provider o al proxy /api/auth/register-providers
+            await AuthServices.registerByProviders(payload);
+            try {
+              await AuthServices.getBackendTokens(payload);
+            } catch (e) {}
           } else {
-            // Si es otro error, permitir continuar (se manejará en session callback)
-            console.error("Error en signIn callback:", error.message);
+            console.error("Error en signIn callback:", msg);
           }
         }
       }
-
       return true;
     },
 
