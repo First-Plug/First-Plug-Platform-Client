@@ -59,6 +59,9 @@ export function useAssignedUsersTable() {
     });
   }, [setOnFiltersChange, resetToFirstPage]);
 
+  const INTERNAL_LABEL = "Internal FP";
+  const TENANTNAME_EMPTY_LABEL = "N/A";
+
   const filteredUsers = useMemo(() => {
     if (Object.keys(filters).length === 0) {
       return users;
@@ -70,12 +73,17 @@ export function useAssignedUsersTable() {
 
         switch (column) {
           case "assignedTenant":
-            return filterValues.some((value) => {
-              if (value === "Internal FP") {
-                return user.assignedTenant === "";
-              }
-              return user.assignedTenant === value;
+            return filterValues.some((val: string) => {
+              if (val === INTERNAL_LABEL) return !user.tenantId;
+              return user.assignedTenant === val;
             });
+
+          case "tenantName": {
+            return filterValues.some((val: string) => {
+              if (val === TENANTNAME_EMPTY_LABEL) return !user.tenantId;
+              return (user.tenantName || TENANTNAME_EMPTY_LABEL) === val;
+            });
+          }
 
           case "name":
             return filterValues.some((value) =>
