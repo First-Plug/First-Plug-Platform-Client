@@ -8,17 +8,32 @@ import { useFetchTenants } from "@/features/tenants";
 import { AVAILABLE_ROLES } from "../interfaces/unassignedUser.interface";
 
 interface UseUnassignedUsersTableColumnsProps {
-  users: any[]; // Using any for now since we're transforming the data
+  users: any[];
   updateUserField: (userId: string, field: string, value: string) => void;
 }
+
+const normalizeRole = (r: string | undefined | null) =>
+  (r ?? "").toLowerCase().replace(/\s+/g, "");
+
+const isSuperadminRole = (r: string | undefined | null) =>
+  normalizeRole(r) === "superadmin";
+
+const roleToLabel = (r: string | undefined | null) => {
+  const n = normalizeRole(r);
+  if (n === "superadmin") return "Superadmin";
+  if (n === "admin") return "Admin";
+  if (n === "user") return "User";
+
+  if (!r) return "";
+  return r.charAt(0).toUpperCase() + r.slice(1);
+};
 
 export const useUnassignedUsersTableColumns = ({
   users,
   updateUserField,
 }: UseUnassignedUsersTableColumnsProps) => {
-  // Fetch tenants for dropdown options
   const { data: tenants } = useFetchTenants();
-  // Generar opciones de filtro dinámicamente basándose en los datos filtrados
+
   const filterOptions = useMemo(() => {
     const dates = Array.from(
       new Set(
@@ -47,15 +62,13 @@ export const useUnassignedUsersTableColumns = ({
 
     const roles = Array.from(new Set(users.map((user) => user.role))).sort();
 
-    // Prepare tenant options from real data
     const tenantOptions = tenants
       ? tenants.map((tenant) => ({
-          label: tenant.tenantName, // Show tenantName (slug) instead of company name
+          label: tenant.tenantName,
           value: tenant.tenantName,
         }))
       : [];
 
-    // Prepare role options
     const roleOptions = AVAILABLE_ROLES.map((role) => ({
       label: role.charAt(0).toUpperCase() + role.slice(1),
       value: role,
@@ -128,21 +141,20 @@ export const useUnassignedUsersTableColumns = ({
           filterOptions: filterOptions.roles,
         },
         cell: ({ row, getValue }) => {
-          const role = getValue<string>();
+          const roleRaw = getValue<string>();
+          const selectedLabel = roleToLabel(roleRaw);
 
           return (
             <div className="w-full">
               <TableDropdown
                 options={filterOptions.roles.map((r) => r.label)}
-                selectedOption={role}
-                onChange={(value) => {
-                  updateUserField(
-                    row.original.id,
-                    "role",
-                    value as "Admin" | "User" | "Super Admin" | ""
-                  );
+                selectedOption={selectedLabel}
+                onChange={(label) => {
+                  const n = normalizeRole(label);
 
-                  if (value === "Super Admin") {
+                  updateUserField(row.original.id, "role", label as string);
+
+                  if (n === "superadmin") {
                     updateUserField(row.original.id, "tenant", "");
                   }
                 }}
@@ -163,8 +175,8 @@ export const useUnassignedUsersTableColumns = ({
         },
         cell: ({ row, getValue }) => {
           const tenant = getValue<string>();
-          const role = row.original.role;
-          const isSuperAdmin = role === "Super Admin";
+          const roleRaw = row.original.role;
+          const disabled = isSuperadminRole(roleRaw);
 
           return (
             <div className="w-full">
@@ -174,7 +186,7 @@ export const useUnassignedUsersTableColumns = ({
                 onChange={(value) => {
                   updateUserField(row.original.id, "tenant", value);
                 }}
-                disabled={isSuperAdmin}
+                disabled={disabled}
                 placeholder="Select Tenant"
                 className="w-full"
               />
