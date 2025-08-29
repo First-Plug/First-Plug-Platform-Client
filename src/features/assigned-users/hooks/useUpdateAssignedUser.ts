@@ -6,27 +6,25 @@ export const useUpdateAssignedUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ 
-      userId, 
-      data 
-    }: { 
-      userId: string; 
-      data: UpdateAssignedUserRequest 
+    mutationFn: ({
+      userId,
+      data,
+    }: {
+      userId: string;
+      data: UpdateAssignedUserRequest;
     }) => {
       console.log("🔄 Updating assigned user:", userId, data);
       return AssignedUsersServices.updateAssignedUser(userId, data);
     },
     onSuccess: (updatedUser) => {
       console.log("✅ User updated successfully:", updatedUser);
-      
-      // Invalidate and refetch assigned users
+
       queryClient.invalidateQueries({ queryKey: ["assigned-users"] });
-      
-      // Optionally update the specific user in cache
+
       queryClient.setQueryData(["assigned-users"], (oldData: any) => {
         if (!oldData) return oldData;
-        
-        return oldData.map((user: any) => 
+
+        return oldData.map((user: any) =>
           user._id === updatedUser._id ? updatedUser : user
         );
       });
