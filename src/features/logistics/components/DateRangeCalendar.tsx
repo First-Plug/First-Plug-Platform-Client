@@ -259,7 +259,7 @@ const DateRangeDropdown = () => {
                 key: "selection",
               },
             ]}
-            maxDate={new Date()}
+            maxDate={endOfDay(new Date())}
             onChange={handleDateChange}
           />
           <div className="flex justify-end mt-2">
