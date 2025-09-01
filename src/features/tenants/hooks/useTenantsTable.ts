@@ -15,7 +15,6 @@ export function useTenantsTable() {
   const processedTenants = useMemo(() => {
     if (!apiTenants) return []; // Return empty array while loading
 
-    console.log("🔄 Processing tenants data:", apiTenants);
     return apiTenants.map((tenant) => ({
       ...tenant,
       // Use the numberOfActiveUsers calculated by backend (already filtered for active users only)
@@ -25,8 +24,6 @@ export function useTenantsTable() {
 
   // Use processedTenants directly instead of useState
   const tenants = processedTenants;
-
-  console.log("📊 Final tenants for table:", tenants.length, tenants);
 
   const filters = useTenantsTableFilterStore((s) => s.filters);
   const setOnFiltersChange = useTenantsTableFilterStore(
