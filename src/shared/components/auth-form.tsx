@@ -49,7 +49,8 @@ export const AuthForm = ({
           className="border-none rounded-full w-10 h-10"
         />
 
-        <Button
+        {/* Microsoft */}
+        {/* <Button
           onClick={(e) => {
             e.preventDefault();
             return signIn("azure-ad", {
@@ -59,7 +60,7 @@ export const AuthForm = ({
           variant="secondary"
           icon={<MicrosoftIcon className="w-7 h-7" />}
           className="border-none rounded-full w-10 h-10"
-        />
+        /> */}
       </div>
 
       <div className="flex justify-center items-center gap-2">
