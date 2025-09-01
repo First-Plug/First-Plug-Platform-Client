@@ -16,7 +16,7 @@ export const useOfficeSettings = () => {
   } = useQuery<Office>({
     queryKey: ["officeDefault"],
     queryFn: OfficeServices.getDefaultOffice,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   // Update office mutation

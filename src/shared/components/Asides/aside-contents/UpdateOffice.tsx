@@ -3,7 +3,7 @@
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAsideStore, useAlertStore, Button } from "@/shared";
+import { useAsideStore, Button } from "@/shared";
 import { Tenant, useUpdateTenantOffice } from "@/features/tenants";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -24,15 +24,15 @@ import {
 import fields from "@/features/members/components/AddMember/JSON/shipmentdata.json";
 
 const updateOfficeSchema = z.object({
-  name: z.string().min(1, "Office name is required"),
+  name: z.string().optional().or(z.literal("")),
   email: z.string().email("Invalid email format").optional().or(z.literal("")),
-  phone: z.string().optional(),
-  country: z.string().min(1, "Country is required"),
-  state: z.string().min(1, "State is required"),
-  city: z.string().min(1, "City is required"),
-  zipCode: z.string().min(1, "ZIP code is required"),
-  address: z.string().min(1, "Address is required"),
-  apartment: z.string().optional(),
+  phone: z.string().optional().or(z.literal("")),
+  country: z.string().optional().or(z.literal("")),
+  state: z.string().optional().or(z.literal("")),
+  city: z.string().optional().or(z.literal("")),
+  zipCode: z.string().optional().or(z.literal("")),
+  address: z.string().optional().or(z.literal("")),
+  apartment: z.string().optional().or(z.literal("")),
 });
 
 type UpdateOfficeFormData = z.infer<typeof updateOfficeSchema>;
@@ -41,7 +41,6 @@ const countryOptions = fields.fields[0].options;
 
 export const UpdateOffice = () => {
   const { setAside } = useAsideStore();
-  const { setAlert } = useAlertStore();
   const queryClient = useQueryClient();
   const selectedTenant = queryClient.getQueryData<Tenant>(["selectedTenant"]);
   const updateOfficeMutation = useUpdateTenantOffice();
@@ -69,10 +68,25 @@ export const UpdateOffice = () => {
   const onSubmit = async (data: UpdateOfficeFormData) => {
     if (!selectedTenant) return;
 
+    // Filter out empty strings and undefined values - only send fields with actual values
+    const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
+      if (value && value.trim() !== "") {
+        acc[key as keyof UpdateOfficeFormData] = value;
+      }
+      return acc;
+    }, {} as Partial<UpdateOfficeFormData>);
+
+    // Only proceed if there are actual changes to send
+    if (Object.keys(filteredData).length === 0) {
+      // No changes to save - just close the aside
+      setAside(null);
+      return;
+    }
+
     try {
       await updateOfficeMutation.mutateAsync({
         tenantId: selectedTenant.id,
-        data,
+        data: filteredData,
       });
       setAside(null);
     } catch (error) {
