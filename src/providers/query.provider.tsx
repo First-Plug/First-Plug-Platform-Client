@@ -18,6 +18,9 @@ export const QueryProvider = ({ children }: Props) => {
       defaultOptions: {
         queries: {
           gcTime: 1000 * 60 * 30,
+          refetchOnWindowFocus: true,
+          refetchOnMount: true,
+          refetchOnReconnect: true,
         },
       },
     });
