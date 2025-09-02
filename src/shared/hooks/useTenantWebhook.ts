@@ -29,6 +29,21 @@ export function useTenantWebSocket(tenantId: string) {
         queryClient.refetchQueries({ queryKey: ["shipments"] });
       });
 
+      socket.on("company-updated", (data) => {
+        queryClient.invalidateQueries({ queryKey: ["tenantConfig"] });
+        queryClient.refetchQueries({ queryKey: ["tenantConfig"] });
+      });
+
+      socket.on("office-updated", (data) => {
+        queryClient.invalidateQueries({ queryKey: ["officeDefault"] });
+        queryClient.refetchQueries({ queryKey: ["officeDefault"] });
+      });
+
+      socket.on("user-profile-updated", (data) => {
+        queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+        queryClient.refetchQueries({ queryKey: ["userProfile"] });
+      });
+
       return () => {
         if (socket) {
           socket.disconnect();

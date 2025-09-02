@@ -7,8 +7,13 @@ export class ProfileServices {
     return response.data;
   }
 
-  static async updateUserProfile(data: UpdateUserProfile): Promise<UserProfile> {
-    const response = await HTTPRequests.patch(`${BASE_URL}/api/users/profile`, data);
+  static async updateUserProfile(
+    data: UpdateUserProfile
+  ): Promise<UserProfile> {
+    const response = await HTTPRequests.patch(
+      `${BASE_URL}/api/users/profile`,
+      data
+    );
     return response.data;
   }
 }
