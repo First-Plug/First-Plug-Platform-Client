@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useCompanySettings } from "../hooks/use-company-settings";
 import {
   Button,
@@ -16,12 +17,14 @@ import {
 import { RecoverableConfigForm } from "./recoverable-config-form";
 import { ComputerExpirationConfig } from "./computer-expiration-config";
 import { useEffect } from "react";
+import { companySchema, CompanyFormData } from "../schemas/company.schema";
 
 export const CompanySettings = () => {
   const { tenantConfig, isLoading, updateConfig, isUpdating } =
     useCompanySettings();
 
-  const form = useForm({
+  const form = useForm<CompanyFormData>({
+    resolver: zodResolver(companySchema),
     defaultValues: {
       name: "",
       isRecoverableConfig: {},
@@ -38,6 +41,41 @@ export const CompanySettings = () => {
       });
     }
   }, [tenantConfig, form]);
+
+  // Función para verificar si el botón Save debe estar habilitado
+  const isSaveButtonEnabled = () => {
+    if (!form.formState.isDirty || isUpdating) return false;
+
+    const currentValues = form.getValues();
+    const originalValues = {
+      name: tenantConfig?.name || "",
+      isRecoverableConfig: tenantConfig?.isRecoverableConfig || {},
+      computerExpiration: tenantConfig?.computerExpiration || 2,
+    };
+
+    // Si el name está vacío, no permitir guardar
+    if (!currentValues.name?.trim()) return false;
+
+    // Verificar si hay cambios válidos (no solo borrar el name)
+    const hasNameChange = currentValues.name !== originalValues.name;
+    const hasRecoverableChange =
+      JSON.stringify(currentValues.isRecoverableConfig) !==
+      JSON.stringify(originalValues.isRecoverableConfig);
+    const hasExpirationChange =
+      currentValues.computerExpiration !== originalValues.computerExpiration;
+
+    // Si el único cambio es borrar el name (dejarlo vacío), no habilitar
+    if (
+      hasNameChange &&
+      !currentValues.name?.trim() &&
+      !hasRecoverableChange &&
+      !hasExpirationChange
+    ) {
+      return false;
+    }
+
+    return true;
+  };
 
   const onSubmit = (data: any) => {
     // Procesar datos para permitir borrado de campos opcionales
@@ -98,7 +136,7 @@ export const CompanySettings = () => {
           <Button
             type="submit"
             variant="primary"
-            disabled={isUpdating || !form.formState.isDirty}
+            disabled={!isSaveButtonEnabled()}
             className="w-40 whitespace-nowrap"
           >
             {isUpdating ? <LoaderSpinner /> : "Save Changes"}
