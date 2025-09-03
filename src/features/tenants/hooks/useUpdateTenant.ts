@@ -56,11 +56,13 @@ export const useUpdateTenantOffice = () => {
       data: UpdateTenantOfficeRequest;
     }) => TenantsServices.updateTenantOffice(tenantId, data),
     onSuccess: (updatedTenant: Tenant) => {
-      // Update the specific tenant in cache
+      // Update the specific tenant in cache (multiple possible keys)
       queryClient.setQueryData(["tenant", updatedTenant.id], updatedTenant);
+      queryClient.setQueryData(["selectedTenant"], updatedTenant);
 
-      // Invalidate and refetch tenants list
+      // Invalidate and refetch all tenant-related queries
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["tenant"] });
 
       // Show success alert
       setAlert("dataUpdatedSuccessfully");

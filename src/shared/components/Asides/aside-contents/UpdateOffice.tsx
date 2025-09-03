@@ -68,10 +68,25 @@ export const UpdateOffice = () => {
   const onSubmit = async (data: UpdateOfficeFormData) => {
     if (!selectedTenant) return;
 
-    // Filter out empty strings and undefined values - only send fields with actual values
+    // Send all fields that have been modified (including empty strings to clear fields)
+    // Compare with original values to detect changes
+    const originalData = {
+      name: selectedTenant?.office?.name || "",
+      email: selectedTenant?.office?.email || "",
+      phone: selectedTenant?.office?.phone || "",
+      country: selectedTenant?.office?.country || "",
+      state: selectedTenant?.office?.state || "",
+      city: selectedTenant?.office?.city || "",
+      zipCode: selectedTenant?.office?.zipCode || "",
+      address: selectedTenant?.office?.address || "",
+      apartment: selectedTenant?.office?.apartment || "",
+    };
+
     const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
-      if (value && value.trim() !== "") {
-        acc[key as keyof UpdateOfficeFormData] = value;
+      const originalValue = originalData[key as keyof typeof originalData];
+      // Include field if it has changed (including changes to empty string)
+      if (value !== originalValue) {
+        acc[key as keyof UpdateOfficeFormData] = value || ""; // Send empty string to clear field
       }
       return acc;
     }, {} as Partial<UpdateOfficeFormData>);
