@@ -24,7 +24,7 @@ import {
 import fields from "@/features/members/components/AddMember/JSON/shipmentdata.json";
 
 const updateOfficeSchema = z.object({
-  name: z.string().optional().or(z.literal("")),
+  name: z.string().min(1, "Office name is required"),
   email: z.string().email("Invalid email format").optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")),
   country: z.string().optional().or(z.literal("")),
@@ -65,8 +65,20 @@ export const UpdateOffice = () => {
     formState: { errors, isDirty, isSubmitting },
   } = methods;
 
+  // Función para verificar si el botón Save debe estar habilitado
+  const isSaveButtonEnabled = () => {
+    if (isSubmitting) return false;
+
+    // Permitir que el botón esté habilitado si hay cambios,
+    // la validación se hará en onSubmit para mostrar errores
+    return isDirty;
+  };
+
   const onSubmit = async (data: UpdateOfficeFormData) => {
     if (!selectedTenant) return;
+
+    // Let Zod validation handle the validation first
+    // If we reach here, the form should be valid according to Zod schema
 
     // Send all fields that have been modified (including empty strings to clear fields)
     // Compare with original values to detect changes
@@ -95,6 +107,18 @@ export const UpdateOffice = () => {
     if (Object.keys(filteredData).length === 0) {
       // No changes to save - just close the aside
       setAside(null);
+      return;
+    }
+
+    // Additional validation: if name is being changed to empty, don't allow it
+    if (
+      filteredData.name !== undefined &&
+      (!filteredData.name || filteredData.name.trim() === "")
+    ) {
+      console.log(
+        "❌ Validation failed: Office name is being changed to empty"
+      );
+      // Don't send the request, the validation should have been caught by Zod
       return;
     }
 
@@ -323,7 +347,7 @@ export const UpdateOffice = () => {
             variant="primary"
             className="px-8"
             onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting || !isDirty}
+            disabled={!isSaveButtonEnabled()}
           >
             {isSubmitting ? "Saving..." : "Save"}
           </Button>
