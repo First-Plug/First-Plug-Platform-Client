@@ -29,9 +29,15 @@ export const useUpdateTenant = () => {
         return sortTenants(list);
       });
 
-      // Invalidate and refetch tenants list
-      queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      queryClient.invalidateQueries({ queryKey: ["tenants", "stats"] });
+      // Force immediate refetch ignoring staleTime to ensure fresh data
+      queryClient.invalidateQueries({
+        queryKey: ["tenants"],
+        refetchType: "active",
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["tenants", "stats"],
+        refetchType: "active",
+      });
 
       // Show success alert
       setAlert("dataUpdatedSuccessfully");
@@ -56,13 +62,29 @@ export const useUpdateTenantOffice = () => {
       data: UpdateTenantOfficeRequest;
     }) => TenantsServices.updateTenantOffice(tenantId, data),
     onSuccess: (updatedTenant: Tenant) => {
-      // Update the specific tenant in cache (multiple possible keys)
+      // 1) Update the specific tenant in cache (multiple possible keys)
       queryClient.setQueryData(["tenant", updatedTenant.id], updatedTenant);
       queryClient.setQueryData(["selectedTenant"], updatedTenant);
 
-      // Invalidate and refetch all tenant-related queries
-      queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      queryClient.invalidateQueries({ queryKey: ["tenant"] });
+      // 2) Update the tenant in the tenants list cache optimistically
+      queryClient.setQueryData<Tenant[]>(["tenants"], (curr) => {
+        if (!curr) return curr;
+        const list = [...curr];
+        const i = list.findIndex((t) => t.id === updatedTenant.id);
+        if (i === -1) return curr; // tenant not found in current page
+        list[i] = updatedTenant;
+        return sortTenants(list);
+      });
+
+      // 3) Force immediate refetch ignoring staleTime to ensure fresh data
+      queryClient.invalidateQueries({
+        queryKey: ["tenants"],
+        refetchType: "active", // Force refetch even if stale
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["tenant"],
+        refetchType: "active",
+      });
 
       // Show success alert
       setAlert("dataUpdatedSuccessfully");
@@ -85,9 +107,25 @@ export const useToggleTenantStatus = () => {
       // Update the specific tenant in cache
       queryClient.setQueryData(["tenant", updatedTenant.id], updatedTenant);
 
-      // Invalidate and refetch tenants list
-      queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      queryClient.invalidateQueries({ queryKey: ["tenants", "stats"] });
+      // Update the tenant in the tenants list cache optimistically
+      queryClient.setQueryData<Tenant[]>(["tenants"], (curr) => {
+        if (!curr) return curr;
+        const list = [...curr];
+        const i = list.findIndex((t) => t.id === updatedTenant.id);
+        if (i === -1) return curr;
+        list[i] = updatedTenant;
+        return sortTenants(list);
+      });
+
+      // Force immediate refetch ignoring staleTime
+      queryClient.invalidateQueries({
+        queryKey: ["tenants"],
+        refetchType: "active",
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["tenants", "stats"],
+        refetchType: "active",
+      });
 
       // Show success alert
       setAlert("dataUpdatedSuccessfully");
