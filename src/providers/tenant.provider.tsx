@@ -15,7 +15,7 @@ export const TenantProvider = ({ children }: Props) => {
   const session = useSession();
   const router = useRouter();
 
-  useTenantWebSocket(session.data?.user?.tenantName);
+  useTenantWebSocket(session.data?.user?.tenantName || "superadmin");
 
   if (!session.data) return null;
 

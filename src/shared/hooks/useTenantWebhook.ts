@@ -1,18 +1,19 @@
 import { useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAsideStore } from "../stores/aside.store";
 
 let socket: Socket | null = null;
 
 export function useTenantWebSocket(tenantId: string) {
   const queryClient = useQueryClient();
-
+  const { closeAside } = useAsideStore();
   useEffect(() => {
     if (!tenantId) return;
 
     try {
       socket = io(process.env.NEXT_PUBLIC_API || "", {
-        query: { tenantId },
+        query: { tenantId: tenantId },
         timeout: 20000,
         reconnection: true,
         reconnectionAttempts: 5,
@@ -42,6 +43,13 @@ export function useTenantWebSocket(tenantId: string) {
       socket.on("user-profile-updated", (data) => {
         queryClient.invalidateQueries({ queryKey: ["userProfile"] });
         queryClient.refetchQueries({ queryKey: ["userProfile"] });
+      });
+
+      socket.on("superadmin", (data) => {
+        queryClient.invalidateQueries();
+        queryClient.refetchQueries().then(() => {
+          closeAside();
+        });
       });
 
       return () => {
