@@ -12,19 +12,14 @@ export class UserServices {
   static async updateRecoverableConfig(
     tenantName: string,
     config: Record<string, boolean>,
-    access_token: string
+    access_token?: string
   ) {
     try {
-      const response = await axios.patch(
-        `${BASE_URL}/api/user/update-recoverable`,
+      const response = await HTTPRequests.patch(
+        `${BASE_URL}/api/tenants/update-recoverable`,
         {
           tenantName,
           isRecoverableConfig: config,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
         }
       );
       return response.data;
@@ -40,17 +35,12 @@ export class UserServices {
   static async updateComputerExpiration(
     tenantName: string,
     computerExpiration: number,
-    access_token: string
+    access_token?: string
   ) {
     try {
-      const response = await axios.patch(
-        `${BASE_URL}/api/user/update-computer-expiration/${tenantName}`,
-        { computerExpiration },
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
+      const response = await HTTPRequests.patch(
+        `${BASE_URL}/api/tenants/update-computer-expiration/${tenantName}`,
+        { computerExpiration }
       );
       return response.data;
     } catch (error) {
@@ -62,14 +52,44 @@ export class UserServices {
     }
   }
 
-  static async getRecoverableConfig(tenantName: string) {
+  static async updateCompanyName(tenantName: string, name: string) {
     try {
-      const response = await HTTPRequests.get(
-        `${BASE_URL}/api/user/recoverable-config/${tenantName}`
+      console.log("🔧 UPDATE COMPANY NAME - Request:", {
+        url: `${BASE_URL}/api/tenants/update-name/${tenantName}`,
+        payload: { name },
+        nameValue: name,
+        nameType: typeof name,
+      });
+
+      const response = await HTTPRequests.patch(
+        `${BASE_URL}/api/tenants/update-name/${tenantName}`,
+        { name }
       );
+
+      console.log("🔧 UPDATE COMPANY NAME - Response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error al actualizar el nombre de la empresa", error);
+      throw error;
+    }
+  }
+
+  static async getRecoverableConfig(tenantName?: string) {
+    try {
+      const response = await HTTPRequests.get(`${BASE_URL}/api/tenants/config`);
       return response.data;
     } catch (error) {
       console.error("Error fetching recoverable config", error);
+      throw error;
+    }
+  }
+
+  static async getTenantConfig() {
+    try {
+      const response = await HTTPRequests.get(`${BASE_URL}/api/tenants/config`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching tenant config", error);
       throw error;
     }
   }

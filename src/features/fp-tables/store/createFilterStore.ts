@@ -81,8 +81,7 @@ export function createFilterStore() {
 
     // Nuevas funciones para manejar múltiples tablas
     setFilterForTable: (tableId, column, values) => {
-      // Por ahora, para las subtablas, usamos la tabla principal
-      // pero con un prefijo para evitar conflictos
+      // Para las tablas con tableId, usamos prefijos para evitar conflictos
       const prefixedColumn = tableId ? `${tableId}_${column}` : column;
       get().setFilter(prefixedColumn, values);
     },

@@ -4,6 +4,7 @@ import { type ReactNode } from "react";
 import { SessionProvider } from "next-auth/react";
 
 import { QueryProvider } from "./query.provider";
+import { MemberModalProvider } from "@/features/logistics";
 
 interface Props {
   children: ReactNode;
@@ -12,7 +13,10 @@ interface Props {
 export const Providers = ({ children }: Props) => {
   return (
     <SessionProvider>
-      <QueryProvider>{children}</QueryProvider>
+      <QueryProvider>
+        {children}
+        <MemberModalProvider />
+      </QueryProvider>
     </SessionProvider>
   );
 };

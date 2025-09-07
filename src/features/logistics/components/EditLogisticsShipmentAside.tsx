@@ -1,0 +1,514 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/shared";
+import { InputProductForm, DropdownInputProductForm } from "@/features/assets";
+import { useAsideStore, useAlertStore } from "@/shared";
+import {
+  LogisticOrder,
+  ShipmentStatus,
+  ShipmentType,
+} from "../interfaces/logistics";
+import { useCompleteUpdateShipment } from "../hooks/useCompleteUpdateShipment";
+
+// Schema de validación para el formulario
+const editLogisticsShipmentSchema = z
+  .object({
+    shipmentStatus: z.enum([
+      "On Hold - Missing Data",
+      "Received",
+      "Cancelled",
+      "On The Way",
+      "In Preparation",
+    ]),
+    price: z.object({
+      amount: z.string(),
+      currency: z.string(),
+    }),
+    shipmentType: z.enum(["Courrier", "Internal", "TBC"]),
+    trackingURL: z
+      .string()
+      .url("Invalid tracking URL")
+      .optional()
+      .or(z.literal("")),
+  })
+  .refine(
+    (data) => {
+      // Si está en "In Preparation", no hay validaciones
+      if (data.shipmentStatus === "In Preparation") {
+        return true;
+      }
+
+      // Si está "Cancelled", no hay validaciones
+      if (data.shipmentStatus === "Cancelled") {
+        return true;
+      }
+
+      // Si está "On The Way" o "Received", amount y currency son requeridos juntos
+      if (
+        data.shipmentStatus === "On The Way" ||
+        data.shipmentStatus === "Received"
+      ) {
+        const hasAmount = data.price.amount && data.price.amount.trim() !== "";
+        const hasCurrency =
+          data.price.currency && data.price.currency.trim() !== "";
+
+        if (!hasAmount || !hasCurrency) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+    {
+      message:
+        "Amount and Currency are required together when status is 'On The Way' or 'Received'",
+      path: ["price"],
+    }
+  );
+
+type EditLogisticsShipmentFormData = z.infer<
+  typeof editLogisticsShipmentSchema
+>;
+
+const SHIPMENT_STATUS_OPTIONS: ShipmentStatus[] = [
+  "On The Way",
+  "Received",
+  "Cancelled",
+];
+
+const SHIPMENT_TYPE_OPTIONS: ShipmentType[] = ["Courrier", "Internal", "TBC"];
+
+const CURRENCY_OPTIONS = [
+  "USD",
+  "AED",
+  "AFN",
+  "ALL",
+  "AMD",
+  "ANG",
+  "AOA",
+  "ARS",
+  "AUD",
+  "AWG",
+  "AZN",
+  "BAM",
+  "BBD",
+  "BDT",
+  "BGN",
+  "BHD",
+  "BIF",
+  "BMD",
+  "BND",
+  "BOB",
+  "BRL",
+  "BSD",
+  "BTN",
+  "BWP",
+  "BYN",
+  "BZD",
+  "CAD",
+  "CDF",
+  "CHF",
+  "CLP",
+  "CNY",
+  "COP",
+  "CRC",
+  "CUP",
+  "CVE",
+  "CZK",
+  "DJF",
+  "DKK",
+  "DOP",
+  "DZD",
+  "EGP",
+  "ERN",
+  "ETB",
+  "EUR",
+  "FJD",
+  "GBP",
+  "GEL",
+  "GHS",
+  "GMD",
+  "GNF",
+  "GTQ",
+  "GYD",
+  "HKD",
+  "HNL",
+  "HRK",
+  "HTG",
+  "HUF",
+  "IDR",
+  "ILS",
+  "INR",
+  "IQD",
+  "IRR",
+  "ISK",
+  "JMD",
+  "JOD",
+  "JPY",
+  "KES",
+  "KGS",
+  "KHR",
+  "KMF",
+  "KPW",
+  "KRW",
+  "KWD",
+  "KYD",
+  "KZT",
+  "LAK",
+  "LBP",
+  "LKR",
+  "LRD",
+  "LSL",
+  "LYD",
+  "MAD",
+  "MDL",
+  "MGA",
+  "MKD",
+  "MMK",
+  "MNT",
+  "MOP",
+  "MRU",
+  "MUR",
+  "MVR",
+  "MWK",
+  "MXN",
+  "MYR",
+  "MZN",
+  "NAD",
+  "NGN",
+  "NIO",
+  "NOK",
+  "NPR",
+  "NZD",
+  "OMR",
+  "PAB",
+  "PEN",
+  "PGK",
+  "PHP",
+  "PKR",
+  "PLN",
+  "PYG",
+  "QAR",
+  "RON",
+  "RSD",
+  "RUB",
+  "RWF",
+  "SAR",
+  "SBD",
+  "SCR",
+  "SDG",
+  "SEK",
+  "SGD",
+  "SLL",
+  "SOS",
+  "SRD",
+  "STN",
+  "SYP",
+  "SZL",
+  "THB",
+  "TJS",
+  "TMT",
+  "TND",
+  "TOP",
+  "TRY",
+  "TTD",
+  "TWD",
+  "TZS",
+  "UAH",
+  "UGX",
+  "UYU",
+  "UZS",
+  "VES",
+  "VND",
+  "VUV",
+  "WST",
+  "XAF",
+  "XCD",
+  "XOF",
+  "YER",
+  "ZAR",
+  "ZMW",
+  "ZWL",
+  "TBC",
+];
+
+export const EditLogisticsShipmentAside = () => {
+  const { setAside } = useAsideStore();
+  const { setAlert } = useAlertStore();
+  const queryClient = useQueryClient();
+
+  // Obtener el envío seleccionado del caché
+  const selectedShipment = queryClient.getQueryData<LogisticOrder>([
+    "selectedLogisticsShipment",
+  ]);
+
+  const updateShipmentMutation = useCompleteUpdateShipment();
+
+  const methods = useForm<EditLogisticsShipmentFormData>({
+    resolver: zodResolver(editLogisticsShipmentSchema),
+    defaultValues: {
+      shipmentStatus: selectedShipment?.shipment_status || "In Preparation",
+      price: {
+        amount: selectedShipment?.price?.amount?.toString() || "",
+        currency: selectedShipment?.price?.currencyCode,
+      },
+      shipmentType: selectedShipment?.shipment_type || "Internal",
+      trackingURL: selectedShipment?.trackingURL || "",
+    },
+  });
+
+  const {
+    handleSubmit,
+    formState: { isSubmitting, errors, isDirty },
+    watch,
+    setValue,
+  } = methods;
+
+  const isUpdating = updateShipmentMutation.isPending;
+  const isOnHold =
+    selectedShipment?.shipment_status === "On Hold - Missing Data";
+  const isCancelled = selectedShipment?.shipment_status === "Cancelled";
+  const isReceived = selectedShipment?.shipment_status === "Received";
+  const isReadOnly = isOnHold || isCancelled || isReceived;
+
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [needsPadding, setNeedsPadding] = useState(false);
+
+  useEffect(() => {
+    const checkForScroll = () => {
+      if (contentRef.current) {
+        const element = contentRef.current;
+        const hasScroll = element.scrollHeight > element.clientHeight;
+        setNeedsPadding(hasScroll);
+      }
+    };
+
+    checkForScroll();
+    window.addEventListener("resize", checkForScroll);
+
+    return () => window.removeEventListener("resize", checkForScroll);
+  }, []);
+
+  const closeAside = () => {
+    setAside(undefined);
+    queryClient.removeQueries({ queryKey: ["selectedLogisticsShipment"] });
+  };
+
+  const onSubmit = async (data: EditLogisticsShipmentFormData) => {
+    try {
+      // Prevenir actualización si está en "On Hold - Missing Data"
+      if (data.shipmentStatus === "On Hold - Missing Data") {
+        setAlert("errorUpdateTeam");
+        return;
+      }
+
+      await updateShipmentMutation.mutateAsync({
+        tenantName: selectedShipment.tenant,
+        shipmentId: selectedShipment._id,
+        data: {
+          shipment_status: data.shipmentStatus,
+          price: {
+            amount: Number(data.price.amount),
+            currency: data.price.currency || "",
+          },
+          shipment_type: data.shipmentType,
+          trackingURL: data.trackingURL,
+        },
+      });
+
+      setAlert("dataUpdatedSuccessfully");
+      closeAside();
+    } catch (error) {
+      console.error("Error al actualizar el envío:", error);
+      setAlert("errorUpdateTeam");
+    }
+  };
+
+  if (!selectedShipment) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <p className="text-gray-500">Selected shipment not found</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div
+        ref={contentRef}
+        className={`flex-1 overflow-y-auto scrollbar-custom ${
+          needsPadding ? "pb-20" : ""
+        }`}
+      >
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Shipment Identifier (read-only) */}
+            <div className="mb-4">
+              <p className="mt-4 mb-2 text-gray-600 text-sm">
+                Shipment Identifier
+              </p>
+              <p className="font-medium text-gray-900 text-lg">
+                {selectedShipment.order_id} - {selectedShipment.tenant}
+              </p>
+            </div>
+
+            {/* Shipment Status */}
+            <div>
+              <DropdownInputProductForm
+                title="Shipment Status"
+                placeholder="Select status"
+                options={SHIPMENT_STATUS_OPTIONS}
+                selectedOption={watch("shipmentStatus")}
+                onChange={(value) => {
+                  setValue("shipmentStatus", value as ShipmentStatus, {
+                    shouldDirty: true,
+                  });
+                }}
+                name="shipmentStatus"
+                searchable={false}
+                disabled={isReadOnly}
+              />
+              {errors.shipmentStatus && (
+                <p className="mt-1 text-red-500 text-sm">
+                  {errors.shipmentStatus.message}
+                </p>
+              )}
+              {selectedShipment.shipment_status ===
+                "On Hold - Missing Data" && (
+                <p className="mt-1 ml-2 text-amber-600 text-sm">
+                  Status cannot be changed while shipment is on hold
+                </p>
+              )}
+              {isCancelled && (
+                <p className="mt-1 ml-2 text-red-600 text-sm">
+                  Shipment is cancelled and cannot be modified
+                </p>
+              )}
+              {isReceived && (
+                <p className="mt-1 ml-2 text-[#008000] text-sm">
+                  Shipment is received and cannot be modified
+                </p>
+              )}
+            </div>
+
+            {/* Price */}
+            <div>
+              <h3 className="mb-4 font-semibold text-black text-lg">Price</h3>
+              <div className="gap-4 grid grid-cols-2">
+                <div>
+                  <InputProductForm
+                    title="Amount"
+                    placeholder="Enter amount"
+                    type="text"
+                    value={watch("price.amount")}
+                    onChange={(e) => {
+                      setValue("price.amount", e.target.value, {
+                        shouldDirty: true,
+                      });
+                    }}
+                    name="price.amount"
+                    disabled={isReadOnly}
+                  />
+                  {errors.price?.amount && (
+                    <p className="mt-1 text-red-500 text-sm">
+                      {errors.price.amount.message}
+                    </p>
+                  )}
+                  {/* Mensaje de error personalizado para validación de price */}
+                  {errors.price && (
+                    <p className="mt-1 text-red-500 text-sm">
+                      {errors.price.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <DropdownInputProductForm
+                    title="Currency"
+                    placeholder="Select currency"
+                    options={CURRENCY_OPTIONS}
+                    selectedOption={watch("price.currency")}
+                    onChange={(value) => {
+                      setValue("price.currency", value, { shouldDirty: true });
+                    }}
+                    name="price.currency"
+                    searchable={true}
+                    disabled={isReadOnly}
+                  />
+                  {errors.price?.currency && (
+                    <p className="mt-1 text-red-500 text-sm">
+                      {errors.price.currency.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Shipment Type */}
+            <div>
+              <DropdownInputProductForm
+                title="Shipment Type"
+                placeholder="Select type"
+                options={SHIPMENT_TYPE_OPTIONS}
+                selectedOption={watch("shipmentType")}
+                onChange={(value) => {
+                  setValue("shipmentType", value as ShipmentType, {
+                    shouldDirty: true,
+                  });
+                }}
+                name="shipmentType"
+                searchable={false}
+                disabled={isReadOnly}
+              />
+              {errors.shipmentType && (
+                <p className="mt-1 text-red-500 text-sm">
+                  {errors.shipmentType.message}
+                </p>
+              )}
+            </div>
+
+            {/* Tracking URL */}
+            <div>
+              <InputProductForm
+                title="Tracking URL"
+                placeholder="https://tracking.example.com"
+                type="url"
+                value={watch("trackingURL")}
+                onChange={(e) => {
+                  setValue("trackingURL", e.target.value, {
+                    shouldDirty: true,
+                  });
+                }}
+                name="trackingURL"
+                disabled={isReadOnly}
+              />
+              {errors.trackingURL && (
+                <p className="mt-1 text-red-500 text-sm">
+                  {errors.trackingURL.message}
+                </p>
+              )}
+            </div>
+          </form>
+        </FormProvider>
+      </div>
+
+      {/* Action buttons */}
+      <aside className="bottom-0 left-0 absolute bg-slate-50 py-2 border-t w-full">
+        <div className="flex justify-end gap-2 mx-auto py-2 w-5/6">
+          <Button
+            variant="primary"
+            className="px-8"
+            onClick={handleSubmit(onSubmit)}
+            disabled={isUpdating || !isDirty || isReadOnly}
+          >
+            {isUpdating ? "Saving..." : "Save"}
+          </Button>
+        </div>
+      </aside>
+    </div>
+  );
+};

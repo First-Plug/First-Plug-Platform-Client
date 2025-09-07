@@ -2,8 +2,13 @@
 import Image from "next/image";
 import notFound from "/public/svg/not-found.svg";
 import { CustomLink, Layout, Navbar } from "@/shared";
+import { useLogisticUser } from "@/shared/hooks/useLogisticUser";
 
 export default function NotFount() {
+  const { isLogisticUser } = useLogisticUser();
+
+  const homeRoute = isLogisticUser ? "/home/logistics" : "/home/dashboard";
+
   return (
     <Layout>
       <Navbar title="logo" />
@@ -18,7 +23,7 @@ export default function NotFount() {
           </p>
 
           <CustomLink
-            href="/home/dashboard"
+            href={homeRoute}
             variant="primary"
             className="place-items-center grid rounded-md w-32 h-12 text-lg"
           >

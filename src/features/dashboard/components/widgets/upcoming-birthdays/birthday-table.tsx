@@ -4,7 +4,8 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { Member } from "@/features/members";
 import { TeamCard, MiniCake, CountryFlag } from "@/shared";
-import { DataTable, createFilterStore } from "@/features/fp-tables";
+import { DataTable } from "@/features/fp-tables";
+import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 
 import { formatBirthDate, isBirthdayToday } from "@/features/dashboard";
 import { getCountryDisplay } from "@/features/members/utils/countryUtils";

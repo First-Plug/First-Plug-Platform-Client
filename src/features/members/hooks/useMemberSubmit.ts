@@ -87,6 +87,9 @@ export const useMemberSubmit = (initialData?: Member, isUpdate?: boolean) => {
       await queryClient.invalidateQueries({
         queryKey: ["members", initialData?._id],
       });
+      await queryClient.invalidateQueries({
+        queryKey: ["shipments"],
+      });
       await queryClient.refetchQueries({ queryKey: ["members"] });
       await queryClient.invalidateQueries({ queryKey: ["teams"] });
 

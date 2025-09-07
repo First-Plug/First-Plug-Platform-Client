@@ -20,17 +20,21 @@ import {
   useToast,
 } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLogisticUser } from "@/shared/hooks/useLogisticUser";
 
 export default function Login() {
   const queryClient = useQueryClient();
   const emailInput = useInput("", "email");
   const passWordInput = useInput("", "password");
   const [isLoading, setIsLoading] = useState(false);
+  const { isLogisticUser } = useLogisticUser();
   const { toast } = useToast();
   const router = useRouter();
+
   const handleSumbit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
     try {
       const res = await signIn("credentials", {
         email: emailInput.value.toLowerCase(),
@@ -38,8 +42,14 @@ export default function Login() {
         redirect: false,
       });
 
-      if (!res.ok) {
-        throw new Error(res.error);
+      if (!res?.ok) {
+        // Usar el mismo mensaje de error que antes
+        toast({
+          variant: "destructive",
+          title: "Invalid Credential",
+          description: "Invalid username or password. Please try again.",
+        });
+        return;
       }
 
       if (typeof window !== "undefined") {
@@ -49,7 +59,11 @@ export default function Login() {
 
       queryClient.clear();
 
-      router.push("/home/dashboard");
+      if (isLogisticUser) {
+        router.push("/home/logistics");
+      } else {
+        router.push("/home/dashboard");
+      }
     } catch (error) {
       toast({
         variant: "destructive",
@@ -74,7 +88,7 @@ export default function Login() {
 
       <article className="flex justify-center w-[50%] h-screen">
         <AuthForm title="Welcome Back!" login onSubmit={handleSumbit}>
-          <div className="text-md">
+          <div className="space-y-3 text-md">
             <Input
               title="Email"
               placeholder="user@mail.com"

@@ -144,16 +144,22 @@ export const DropdownInputProductForm = ({
             isOpen ? "block" : "hidden"
           }`}
         >
-          {filteredOptions.map((option, index) => (
-            <li
-              key={option}
-              ref={(el) => (optionRefs.current[index] = el)}
-              onClick={() => handleOptionClick(option)}
-              className={`py-2 px-4 cursor-pointer hover:bg-gray-100 ${optionClassName}`}
-            >
-              {option}
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((option, index) => (
+              <li
+                key={option}
+                ref={(el) => (optionRefs.current[index] = el)}
+                onClick={() => handleOptionClick(option)}
+                className={`py-2 px-4 cursor-pointer hover:bg-gray-100 ${optionClassName}`}
+              >
+                {option}
+              </li>
+            ))
+          ) : (
+            <li className="px-4 py-2 text-gray-500 italic cursor-default">
+              No matching options found
             </li>
-          ))}
+          )}
         </ul>
       </div>
     </div>

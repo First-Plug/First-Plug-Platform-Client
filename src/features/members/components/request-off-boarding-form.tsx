@@ -32,7 +32,7 @@ export interface Props {
   onFormStatusChange: (status: string) => void;
 }
 
-const validateBillingInfo = (user: User): boolean => {
+const validateBillingInfo = (user: Partial<User>): boolean => {
   const requiredFields = [
     "country",
     "city",
@@ -42,7 +42,7 @@ const validateBillingInfo = (user: User): boolean => {
     "phone",
   ] as const;
 
-  return requiredFields.every((field) => user[field]?.trim() !== "");
+  return requiredFields.every((field) => (user as any)[field]?.trim() !== "");
 };
 
 export const validateMemberBillingInfo = (user: ExtendedUser): boolean => {

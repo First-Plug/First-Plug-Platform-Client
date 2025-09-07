@@ -48,6 +48,7 @@ export * from "./components/ui/pagination-with-links";
 export * from "./components/ui/checkbox";
 export * from "./components/ui/dropdown-menu";
 export * from "./components/ui/toaster";
+export * from "./components/ui/tabs";
 export * from "./components/ui/label";
 export * from "./components/ui/scroll-area";
 export * from "./components/ui/command";
@@ -59,7 +60,6 @@ export * from "./icons/icons";
 export * from "./stores/alerts.store";
 export * from "./stores/aside.store";
 
-export * from "./utils/formateDate";
 export * from "./utils/dataTransformUtil";
 export * from "./utils/isProductCompleted";
 export * from "./utils/parseMembers";
@@ -69,6 +69,14 @@ export * from "./utils/date";
 export * from "./utils/parseProducts";
 export * from "./utils/validateAfterAction";
 export * from "./utils/utils";
+export {
+  exportToCsv,
+  formatPrice,
+  formatDate,
+  type CsvColumnConfig,
+  type CsvExportOptions,
+  createLogisticsCsvConfig,
+} from "./utils/csvExport";
 
 export * from "./interfaces/csv";
 export * from "./interfaces/tables";

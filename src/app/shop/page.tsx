@@ -10,6 +10,8 @@ import bagImage from "../../../public/svg/Frame 2608568.svg";
 import arrowIcon from "../../../public/svg/Frame 427321381.svg";
 import rectangle from "../../../public/svg/Rectangle 518.svg";
 
+export const dynamic = "force-dynamic";
+
 export default function Shop() {
   return (
     <>

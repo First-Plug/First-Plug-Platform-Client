@@ -5,6 +5,7 @@ export * from "./components/pagination";
 export * from "./hooks/usePagination";
 export * from "./hooks/useTableFilters";
 
-export * from "./store/createFilterStore";
+// Comentado temporalmente para evitar problemas de SSR
+// export { createFilterStore } from "./store/createFilterStore";
 
 export * from "./interfaces/table.interface";

@@ -30,9 +30,14 @@ export class AuthServices {
 
   static async registerByProviders(user: RegisterUserPlatforms) {
     try {
-      return await axios.post(`${BASE_URL}/api/auth/register-providers`, user);
+      const res = await axios.post(
+        `${BASE_URL}/api/auth/register-providers`,
+        user
+      );
+      return res.data;
     } catch (error) {
-      console.error(error);
+      console.error("registerByProviders failed:", error);
+      throw error;
     }
   }
 
@@ -50,7 +55,8 @@ export class AuthServices {
       const tokens = await axios.post(`${BASE_URL}/api/auth/get-tokens`, user);
       return tokens.data;
     } catch (error) {
-      console.error(error);
+      console.error("getBackendTokens failed:", error);
+      throw error;
     }
   }
 

@@ -285,12 +285,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       missingMessages = await validateOnCreate(
         selectedMember,
         {
-          country: sessionUser?.country,
-          city: sessionUser?.city,
-          state: sessionUser?.state,
-          zipCode: sessionUser?.zipCode,
-          address: sessionUser?.address,
-          phone: sessionUser?.phone,
+          country: (sessionUser as any)?.country,
+          city: (sessionUser as any)?.city,
+          state: (sessionUser as any)?.state,
+          zipCode: (sessionUser as any)?.zipCode,
+          address: (sessionUser as any)?.address,
+          phone: (sessionUser as any)?.phone,
         },
         adjustedNoneOption
       );
