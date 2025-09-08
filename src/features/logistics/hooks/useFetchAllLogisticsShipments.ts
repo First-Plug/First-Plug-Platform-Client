@@ -18,8 +18,7 @@ export const useFetchAllLogisticsShipments = () => {
         selectedDates.endDate.toISOString()
       );
     },
-    staleTime: 0,
-    gcTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 10,
     refetchOnWindowFocus: true,
     refetchOnMount: "always",
     refetchOnReconnect: true,
