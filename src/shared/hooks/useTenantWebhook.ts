@@ -52,6 +52,11 @@ export function useTenantWebSocket(tenantId: string) {
         });
       });
 
+      socket.on("shipments-superadmin", (data) => {
+        queryClient.invalidateQueries({ queryKey: ["logistics-shipments"] });
+        queryClient.refetchQueries({ queryKey: ["logistics-shipments"] });
+      });
+
       return () => {
         if (socket) {
           socket.disconnect();
