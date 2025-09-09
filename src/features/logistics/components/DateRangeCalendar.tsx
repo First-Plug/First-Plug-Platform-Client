@@ -18,11 +18,6 @@ import { useLogisticsDateFilterStore } from "../store/dateFilter.store";
 
 const predefinedRanges = [
   {
-    label: "Last 7 days",
-    value: "last7",
-    range: [subDays(new Date(), 6), new Date()],
-  },
-  {
     label: "Last 30 days",
     value: "last30",
     range: [subDays(new Date(), 30), new Date()],
