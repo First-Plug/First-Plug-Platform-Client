@@ -11,7 +11,7 @@ interface DateFilterState {
 }
 
 const defaultDates = {
-  startDate: startOfDay(subDays(new Date(), 6)),
+  startDate: startOfDay(subDays(new Date(), 30)),
   endDate: endOfDay(new Date()),
 };
 
