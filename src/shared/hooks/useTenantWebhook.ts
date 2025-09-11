@@ -26,8 +26,8 @@ export function useTenantWebSocket(tenantId: string) {
       });
 
       socket.on("shipments-update", (data) => {
-        queryClient.invalidateQueries({ queryKey: ["shipments"] });
-        queryClient.refetchQueries({ queryKey: ["shipments"] });
+        queryClient.invalidateQueries();
+        queryClient.refetchQueries();
       });
 
       socket.on("company-updated", (data) => {
