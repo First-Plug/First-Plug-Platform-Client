@@ -58,22 +58,22 @@ export default function SelectDropdownOptions({
 
   return (
     <div className={`w-full ${className}`}>
-      <label className="block mb-2 font-semibold text-dark-grey">{label}</label>
+      <label className="block ml-2 font-sans text-dark-grey">{label}</label>
 
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <button
             disabled={disabled}
-            className="flex justify-between items-center bg-white disabled:opacity-50 px-3 py-3 border border-gray-300 hover:border-gray-400 rounded-md w-full h-12 text-sm text-left transition-colors disabled:cursor-not-allowed"
+            className="relative disabled:opacity-50 p-4 py-2 pr-12 pl-4 border rounded-xl focus:outline-none w-full h-14 font-sans text-black text-left cursor-pointer disabled:cursor-not-allowed"
           >
-            <span
-              className={
-                !value ? "text-gray-400 text-md" : "text-gray-900 text-md"
-              }
-            >
+            <span className={!value ? "text-gray-400" : "text-black"}>
               {displayValue}
             </span>
-            <ChevronDown className="w-4 h-4 text-gray-600" />
+            <ChevronDown
+              className="top-1/2 right-3 absolute -translate-y-1/2 cursor-pointer transform"
+              strokeWidth={2}
+              color="grey"
+            />
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>

@@ -4,6 +4,7 @@ import { ProductDetail } from "@/features/assets";
 import { Product } from "@/features/assets";
 import { User } from "@/features/auth";
 import { DropdownInputProductForm } from "@/features/assets";
+import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -466,20 +467,19 @@ export const RequestOffBoardingForm = ({
               name={`products.${index}.relocation`}
               control={control}
               render={({ field: { onChange, value, name } }) => (
-                <DropdownInputProductForm
-                  name={name}
-                  options={dropdownOptions}
+                <SelectDropdownOptions
+                  label="New Location*"
                   placeholder="New Location"
-                  title="New Location*"
+                  value={value || ""}
                   onChange={(selectedValue: string) => {
                     if (value !== selectedValue) {
                       onChange(selectedValue);
                       handleDropdown(selectedValue);
                     }
                   }}
+                  options={dropdownOptions}
                   disabled={isDisabledDropdown}
-                  searchable={true}
-                  selectedOption={value || ""}
+                  required
                 />
               )}
             />
