@@ -160,10 +160,17 @@ export default function WarehousesPage() {
   return (
     <PageLayout>
       <div className="flex flex-col h-full max-h-full">
-        <div className="flex justify-end items-center mb-4">
+        <div className="flex justify-between items-center mb-4">
           <Button
             size="small"
             variant="secondary"
+            body="Clear All Filters"
+            onClick={() => {}}
+          />
+
+          <Button
+            size="small"
+            variant="primary"
             body="Create Warehouse"
             icon={<AddIcon />}
             onClick={() => setAside("CreateTenant")}

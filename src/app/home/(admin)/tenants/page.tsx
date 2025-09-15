@@ -57,7 +57,7 @@ export default function TenantsPage() {
   if (error) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center h-64">
+        <div className="flex justify-center items-center h-64">
           <p className="text-red-600">Error loading tenants: {error.message}</p>
         </div>
       </PageLayout>
@@ -83,7 +83,7 @@ export default function TenantsPage() {
 
           <Button
             size="small"
-            variant="secondary"
+            variant="primary"
             body="Create Tenant"
             icon={<AddIcon />}
             onClick={() => setAside("CreateTenant")}
