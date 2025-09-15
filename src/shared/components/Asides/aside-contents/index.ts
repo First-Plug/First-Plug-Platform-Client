@@ -13,7 +13,7 @@ export * from "./EditAssignedUser";
 export * from "./UpdateTenant";
 export * from "./UpdateOffice";
 export * from "./CreateTenant";
-
+export * from "./CreateWarehouse";
 export * from "./EditProductAside";
 export * from "./LoadAside";
 export * from "./MemberAsideDetails";

@@ -120,6 +120,7 @@ export default function WarehousesPage() {
     {
       id: "actions",
       header: "Actions",
+      size: 80,
       cell: ({ row }: any) => (
         <div className="flex gap-1">
           <Button
@@ -137,22 +138,23 @@ export default function WarehousesPage() {
               <TrashIcon className="w-4 h-4 text-[#B73232]" strokeWidth={2} />
             }
           />
-
-          <Button
-            className="m-0 p-0 min-w-0"
-            icon={
-              false ? (
-                <ChevronUpIcon size={16} />
-              ) : (
-                <ChevronDownIcon size={16} />
-              )
-            }
-            body="Details"
-            variant="outline"
-            size="small"
-            onClick={() => {}}
-          />
         </div>
+      ),
+    },
+    {
+      id: "details",
+      size: 140,
+      cell: () => (
+        <Button
+          className="m-0 p-0 min-w-0"
+          icon={
+            false ? <ChevronUpIcon size={16} /> : <ChevronDownIcon size={16} />
+          }
+          body="Details"
+          variant="outline"
+          size="small"
+          onClick={() => {}}
+        />
       ),
     },
   ];
@@ -173,7 +175,7 @@ export default function WarehousesPage() {
             variant="primary"
             body="Create Warehouse"
             icon={<AddIcon />}
-            onClick={() => setAside("CreateTenant")}
+            onClick={() => setAside("CreateWarehouse")}
           />
         </div>
 
