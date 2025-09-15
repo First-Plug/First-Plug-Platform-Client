@@ -26,6 +26,7 @@ const Titles = {
   "unassigned-users": "Unassigned Users",
   "assigned-users": "Assigned Users",
   tenants: "Tenants",
+  warehouses: "Warehouses",
 } as const;
 
 export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
