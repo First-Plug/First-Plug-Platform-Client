@@ -13,6 +13,7 @@ import {
   useWarehousesTable,
   useWarehousesTableColumns,
 } from "@/features/warehouses";
+import { useWarehousesSubtableLogic } from "@/features/warehouses/hooks/useWarehousesSubtableLogic";
 
 export default function WarehousesPage() {
   const { setAside } = useAsideStore();
@@ -33,6 +34,9 @@ export default function WarehousesPage() {
   const columns = useWarehousesTableColumns({
     warehouses: filteredDataForColumns,
   });
+
+  const { getRowCanExpand, getRowId, renderSubComponent } =
+    useWarehousesSubtableLogic();
 
   return (
     <PageLayout>
@@ -61,6 +65,9 @@ export default function WarehousesPage() {
             data={paginatedWarehouses}
             useFilterStore={useWarehousesTableFilterStore}
             scrollContainerRef={tableContainerRef}
+            getRowCanExpand={getRowCanExpand}
+            getRowId={getRowId}
+            renderSubComponent={renderSubComponent}
             rowHeight={56}
             adaptiveHeight={false}
             enableSnapScroll={false}

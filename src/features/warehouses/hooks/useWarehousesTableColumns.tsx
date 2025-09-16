@@ -1,10 +1,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Warehouse } from "../interfaces/warehouse.interface";
 import { useMemo } from "react";
-import { Button } from "@/shared";
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { WarehousesTableActions } from "../components/WarehousesTableActions";
+
+import { DetailsButton } from "@/shared/components/Tables/DetailButton";
 
 interface UseWarehousesTableColumnsProps {
   warehouses: Warehouse[];
@@ -15,8 +14,6 @@ export const useWarehousesTableColumns = ({
   warehouses,
   onDeleteWarehouse,
 }: UseWarehousesTableColumnsProps): ColumnDef<Warehouse>[] => {
-  const queryClient = useQueryClient();
-
   const filterOptions = useMemo(() => {
     const names = Array.from(
       new Set(warehouses.map((warehouse) => warehouse.name))
@@ -177,32 +174,23 @@ export const useWarehousesTableColumns = ({
         id: "actions",
         header: "Actions",
         size: 80,
-        cell: ({ row }) => (
-          <WarehousesTableActions
-            warehouse={row.original}
-            onDeleteWarehouse={onDeleteWarehouse}
-          />
-        ),
+        cell: ({ row }) => {
+          return (
+            <WarehousesTableActions
+              warehouse={row.original}
+              onDeleteWarehouse={onDeleteWarehouse}
+            />
+          );
+        },
       },
+
       {
-        id: "details",
-        size: 80,
-        cell: () => (
-          <Button
-            className="m-0 p-0 min-w-0"
-            icon={
-              false ? (
-                <ChevronUpIcon size={16} />
-              ) : (
-                <ChevronDownIcon size={16} />
-              )
-            }
-            body="Details"
-            variant="outline"
-            size="small"
-            onClick={() => {}}
-          />
-        ),
+        id: "expander",
+        header: () => null,
+        size: 100,
+        cell: ({ row }) => {
+          return <DetailsButton row={row} />;
+        },
       },
     ],
     [filterOptions, onDeleteWarehouse]

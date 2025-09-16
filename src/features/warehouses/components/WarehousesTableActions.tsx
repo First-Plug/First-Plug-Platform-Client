@@ -39,7 +39,7 @@ export function WarehousesTableActions({
   };
 
   return (
-    <div className="flex">
+    <div className="flex items-center gap-1">
       <Button
         className="m-0 p-0 min-w-0"
         variant="outline"

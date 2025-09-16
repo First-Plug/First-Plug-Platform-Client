@@ -28,6 +28,32 @@ export function useWarehousesTable() {
       contactChannel: "123456",
       contactPerson: "123456",
       additionalInfo: "123456",
+      tenants: [
+        {
+          tenantName: "Asian Innovations",
+          companyName: "Asian Innovations Pte Ltd",
+          computers: 180,
+          otherProducts: 220,
+        },
+        {
+          tenantName: "Pacific Systems",
+          companyName: "Pacific Systems Co.",
+          computers: 320,
+          otherProducts: 380,
+        },
+        {
+          tenantName: "Smart Solutions Asia",
+          companyName: "Smart Solutions Asia Ltd.",
+          computers: 400,
+          otherProducts: 500,
+        },
+        {
+          tenantName: "Tech Bridge",
+          companyName: "Tech Bridge Singapore",
+          computers: 250,
+          otherProducts: 350,
+        },
+      ],
     },
     {
       id: "2",
@@ -47,6 +73,26 @@ export function useWarehousesTable() {
       contactChannel: "123456",
       contactPerson: "123456",
       additionalInfo: "123456",
+      tenants: [
+        {
+          tenantName: "Pacific Systems",
+          companyName: "Pacific Systems Co.",
+          computers: 320,
+          otherProducts: 380,
+        },
+        {
+          tenantName: "Smart Solutions Asia",
+          companyName: "Smart Solutions Asia Ltd.",
+          computers: 400,
+          otherProducts: 500,
+        },
+        {
+          tenantName: "Tech Bridge",
+          companyName: "Tech Bridge Singapore",
+          computers: 250,
+          otherProducts: 350,
+        },
+      ],
     },
     {
       id: "3",
@@ -66,6 +112,26 @@ export function useWarehousesTable() {
       contactChannel: "123456",
       contactPerson: "123456",
       additionalInfo: "123456",
+      tenants: [
+        {
+          tenantName: "Pacific Systems",
+          companyName: "Pacific Systems Co.",
+          computers: 320,
+          otherProducts: 380,
+        },
+        {
+          tenantName: "Pacific Systems",
+          companyName: "Pacific Systems Co.",
+          computers: 320,
+          otherProducts: 380,
+        },
+        {
+          tenantName: "Tech Bridge",
+          companyName: "Tech Bridge Singapore",
+          computers: 250,
+          otherProducts: 350,
+        },
+      ],
     },
   ];
 

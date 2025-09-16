@@ -8,6 +8,13 @@ export interface Warehouse {
   totalProducts: number;
 }
 
+export interface WarehouseTenantSummary {
+  tenantName: string;
+  companyName: string;
+  computers: number;
+  otherProducts: number;
+}
+
 // Detalle extendido para el aside de actualización y selección desde la tabla
 export interface WarehouseDetails extends Warehouse {
   state?: string;
@@ -20,6 +27,7 @@ export interface WarehouseDetails extends Warehouse {
   contactChannel?: string;
   contactPerson?: string;
   additionalInfo?: string;
+  tenants?: WarehouseTenantSummary[];
 }
 
 // Alias semántico para el elemento seleccionado en QueryClient
