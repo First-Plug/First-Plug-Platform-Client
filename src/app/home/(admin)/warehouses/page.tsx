@@ -14,6 +14,13 @@ import {
   useWarehousesTableColumns,
 } from "@/features/warehouses";
 import { useWarehousesSubtableLogic } from "@/features/warehouses/hooks/useWarehousesSubtableLogic";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
 export default function WarehousesPage() {
   const { setAside } = useAsideStore();
@@ -29,6 +36,9 @@ export default function WarehousesPage() {
     tableContainerRef,
     useWarehousesTableFilterStore,
     filteredDataForColumns,
+    tenantFilterOptions,
+    selectedTenantName,
+    handleSetTenantFilter,
   } = useWarehousesTable();
 
   const columns = useWarehousesTableColumns({
@@ -42,12 +52,39 @@ export default function WarehousesPage() {
     <PageLayout>
       <div className="flex flex-col h-full max-h-full">
         <div className="flex justify-between items-center mb-4">
-          <Button
-            size="small"
-            variant="secondary"
-            body="Clear All Filters"
-            onClick={handleClearAllFilters}
-          />
+          <div className="flex items-center gap-2">
+            <div className="w-64">
+              <Select
+                value={selectedTenantName || "all"}
+                onValueChange={(v) =>
+                  v === "all"
+                    ? handleSetTenantFilter(undefined)
+                    : handleSetTenantFilter(v)
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue>
+                    {selectedTenantName || "Filter by tenant"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="all">All tenants</SelectItem>
+                  {tenantFilterOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button
+              size="small"
+              variant="secondary"
+              body="Clear All Filters"
+              onClick={handleClearAllFilters}
+            />
+          </div>
 
           <Button
             size="small"

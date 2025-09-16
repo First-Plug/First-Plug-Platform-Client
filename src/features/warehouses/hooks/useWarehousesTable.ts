@@ -141,6 +141,7 @@ export function useWarehousesTable() {
   const setOnFiltersChange = useWarehousesTableFilterStore(
     (s) => s.setOnFiltersChange
   );
+  const setFilter = useWarehousesTableFilterStore((s) => s.setFilter);
 
   const {
     pageIndex,
@@ -160,6 +161,24 @@ export function useWarehousesTable() {
       resetToFirstPage();
     });
   }, [setOnFiltersChange, resetToFirstPage]);
+
+  // Opciones de tenants para el filtro superior
+  const tenantFilterOptions = useMemo(() => {
+    const allTenantNames = (warehouses || [])
+      .flatMap((w) => w.tenants?.map((t) => t.tenantName) || [])
+      .filter(Boolean) as string[];
+    const unique = Array.from(new Set(allTenantNames)).sort();
+    return unique.map((name) => ({ label: name, value: name }));
+  }, [warehouses]);
+
+  const selectedTenantName = useMemo(() => {
+    const values = filters["tenantName"] || [];
+    return values[0] || "";
+  }, [filters]);
+
+  const handleSetTenantFilter = (value?: string) => {
+    setFilter("tenantName", value ? [value] : []);
+  };
 
   const filteredWarehouses = useMemo(() => {
     if (
@@ -188,6 +207,10 @@ export function useWarehousesTable() {
           case "isActive":
             return filterValues.some(
               (value) => warehouse.isActive.toString() === value
+            );
+          case "tenantName":
+            return filterValues.some((value) =>
+              (warehouse.tenants || []).some((t) => t.tenantName === value)
             );
           case "tenantCount":
             return filterValues.some((count: string) => {
@@ -229,6 +252,9 @@ export function useWarehousesTable() {
     tableContainerRef,
     useWarehousesTableFilterStore,
     filteredDataForColumns: filteredWarehouses,
+    tenantFilterOptions,
+    selectedTenantName,
+    handleSetTenantFilter,
     isLoading: false,
     error: null,
   };
