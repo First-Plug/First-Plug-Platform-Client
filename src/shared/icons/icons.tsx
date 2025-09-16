@@ -815,7 +815,7 @@ export const TrashIcon = ({
       fill="none"
       viewBox="0 0 24 24"
       strokeWidth={strokeWidth}
-      className={`w-6 h-6 ${className || ""}`}
+      className={` ${className || "w-6 h-6"}`}
     >
       <path
         stroke={color || "currentColor"}

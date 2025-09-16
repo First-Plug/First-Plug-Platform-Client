@@ -3,7 +3,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { LogOut, Users } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "./button";
 import { NavButtonIcon } from "../icons/icons";
 import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu";
@@ -13,6 +13,26 @@ export const SessionDropdown = () => {
   const session = useSession();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
 
   const handleLogOut = () => {
     if (localStorage.getItem("token")) {
@@ -38,7 +58,7 @@ export const SessionDropdown = () => {
   };
 
   return (
-    <div className="inline-block relative">
+    <div ref={dropdownRef} className="inline-block relative">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="text" className="p-0" onClick={() => setOpen(!open)}>
