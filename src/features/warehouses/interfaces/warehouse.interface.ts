@@ -8,6 +8,23 @@ export interface Warehouse {
   totalProducts: number;
 }
 
+// Detalle extendido para el aside de actualización y selección desde la tabla
+export interface WarehouseDetails extends Warehouse {
+  state?: string;
+  city?: string;
+  zipCode?: string;
+  address?: string;
+  apartment?: string;
+  phoneContact?: string;
+  email?: string;
+  contactChannel?: string;
+  contactPerson?: string;
+  additionalInfo?: string;
+}
+
+// Alias semántico para el elemento seleccionado en QueryClient
+export type SelectedWarehouse = WarehouseDetails;
+
 export interface CreateWarehouseRequest {
   name: string;
   country: string;

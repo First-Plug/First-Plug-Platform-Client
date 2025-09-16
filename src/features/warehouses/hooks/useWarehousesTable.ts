@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from "react";
 import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 import { usePagination } from "@/features/fp-tables";
-import { Warehouse } from "../interfaces/warehouse.interface";
+import type { WarehouseDetails } from "../interfaces/warehouse.interface";
 
 const useWarehousesTableFilterStore = createFilterStore();
 
@@ -9,7 +9,7 @@ export { useWarehousesTableFilterStore };
 
 export function useWarehousesTable() {
   // Mock data - en el futuro esto vendrá de una API
-  const warehousesData: Warehouse[] = [
+  const warehousesData: WarehouseDetails[] = [
     {
       id: "1",
       name: "Asia Pacific Center",
@@ -18,6 +18,16 @@ export function useWarehousesTable() {
       isActive: false,
       tenantCount: 4,
       totalProducts: 2100,
+      state: "Singapore",
+      city: "Singapore",
+      zipCode: "123456",
+      address: "123456",
+      apartment: "123456",
+      phoneContact: "123456",
+      email: "123456",
+      contactChannel: "123456",
+      contactPerson: "123456",
+      additionalInfo: "123456",
     },
     {
       id: "2",
@@ -27,6 +37,16 @@ export function useWarehousesTable() {
       isActive: true,
       tenantCount: 3,
       totalProducts: 1250,
+      state: "United States",
+      city: "United States",
+      zipCode: "123456",
+      address: "123456",
+      apartment: "123456",
+      phoneContact: "123456",
+      email: "123456",
+      contactChannel: "123456",
+      contactPerson: "123456",
+      additionalInfo: "123456",
     },
     {
       id: "3",
@@ -36,6 +56,16 @@ export function useWarehousesTable() {
       isActive: true,
       tenantCount: 2,
       totalProducts: 850,
+      state: "Germany",
+      city: "Germany",
+      zipCode: "123456",
+      address: "123456",
+      apartment: "123456",
+      phoneContact: "123456",
+      email: "123456",
+      contactChannel: "123456",
+      contactPerson: "123456",
+      additionalInfo: "123456",
     },
   ];
 

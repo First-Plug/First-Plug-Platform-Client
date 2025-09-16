@@ -46,5 +46,7 @@ export const AsideTitle = () => {
       return `Create Tenant`;
     case "CreateWarehouse":
       return `Create Warehouse`;
+    case "UpdateWarehouse":
+      return `Update Warehouse`;
   }
 };

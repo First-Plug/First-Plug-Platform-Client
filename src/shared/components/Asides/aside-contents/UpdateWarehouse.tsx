@@ -5,8 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAsideStore, Button, COUNTRIES } from "@/shared";
 import { InputProductForm, DropdownInputProductForm } from "@/features/assets";
+import { WarehouseDetails } from "@/features/warehouses";
+import { useQueryClient } from "@tanstack/react-query";
 
-const createWarehouseSchema = z.object({
+const updateWarehouseSchema = z.object({
+  id: z.string().min(1, "ID is required"),
   name: z.string().min(1, "Warehouse name is required"),
   country: z.string().min(1, "Country is required"),
   state: z.string().min(1, "State is required"),
@@ -23,28 +26,34 @@ const createWarehouseSchema = z.object({
   isActive: z.string().min(1, "Active status is required"),
 });
 
-type CreateWarehouseFormData = z.infer<typeof createWarehouseSchema>;
+type UpdateWarehouseFormData = z.infer<typeof updateWarehouseSchema>;
 
-export const CreateWarehouse = () => {
+export const UpdateWarehouse = () => {
   const { setAside } = useAsideStore();
 
-  const methods = useForm<CreateWarehouseFormData>({
-    resolver: zodResolver(createWarehouseSchema),
+  const queryClient = useQueryClient();
+  const selectedWarehouse = queryClient.getQueryData<WarehouseDetails>([
+    "selectedWarehouse",
+  ]);
+
+  const methods = useForm<UpdateWarehouseFormData>({
+    resolver: zodResolver(updateWarehouseSchema),
     defaultValues: {
-      name: "",
-      country: "",
-      state: "",
-      city: "",
-      zipCode: "",
-      address: "",
-      apartment: "",
-      phoneContact: "",
-      email: "",
-      partnerType: "Default",
-      contactChannel: "Mail",
-      contactPerson: "",
-      additionalInfo: "",
-      isActive: "Yes",
+      id: selectedWarehouse?.id || "",
+      name: selectedWarehouse?.name || "",
+      country: selectedWarehouse?.country || "",
+      state: selectedWarehouse?.state || "",
+      city: selectedWarehouse?.city || "",
+      zipCode: selectedWarehouse?.zipCode || "",
+      address: selectedWarehouse?.address || "",
+      apartment: selectedWarehouse?.apartment || "",
+      phoneContact: selectedWarehouse?.phoneContact || "",
+      email: selectedWarehouse?.email || "",
+      partnerType: selectedWarehouse?.partnerType || "",
+      contactChannel: selectedWarehouse?.contactChannel || "",
+      contactPerson: selectedWarehouse?.contactPerson || "",
+      additionalInfo: selectedWarehouse?.additionalInfo || "",
+      isActive: selectedWarehouse?.isActive ? "Yes" : "No",
     },
   });
 
@@ -55,10 +64,11 @@ export const CreateWarehouse = () => {
     formState: { errors, isSubmitting },
   } = methods;
 
-  const onSubmit = async (data: CreateWarehouseFormData) => {
+  const onSubmit = async (data: UpdateWarehouseFormData) => {
     try {
       // Transform data to match API expectations
-      const createData = {
+      const updateData = {
+        id: data.id,
         name: data.name,
         country: data.country,
         state: data.state,
@@ -74,12 +84,13 @@ export const CreateWarehouse = () => {
         additionalInfo: data.additionalInfo || undefined,
         isActive: data.isActive === "Yes",
       };
-      // TODO: Implement warehouse creation mutation
-      // await createWarehouseMutation.mutateAsync(createData);
-      console.log("Creating warehouse with data:", createData);
+      // TODO: Implement warehouse update mutation
+      // await updateWarehouseMutation.mutateAsync(updateData);
+      console.log("Updating warehouse with data:", updateData);
+
       setAside(null);
     } catch (error) {
-      console.error("Error creating warehouse:", error);
+      console.error("Error updating warehouse:", error);
     }
   };
 

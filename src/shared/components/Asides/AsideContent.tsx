@@ -15,6 +15,7 @@ import {
   UpdateOffice,
   CreateTenant,
   CreateWarehouse,
+  UpdateWarehouse,
 } from "./aside-contents";
 
 import { ShipmentAside } from "@/features/shipments";
@@ -57,5 +58,7 @@ export var AsideContent = function () {
       return <CreateTenant />;
     case "CreateWarehouse":
       return <CreateWarehouse />;
+    case "UpdateWarehouse":
+      return <UpdateWarehouse />;
   }
 };

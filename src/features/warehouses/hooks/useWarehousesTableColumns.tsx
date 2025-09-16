@@ -1,17 +1,22 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Warehouse } from "../interfaces/warehouse.interface";
 import { useMemo } from "react";
-import { useWarehousesTableFilterStore } from "./useWarehousesTable";
-import { Button, PenIcon, TrashIcon } from "@/shared";
+import { Button } from "@/shared";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { WarehousesTableActions } from "../components/WarehousesTableActions";
 
 interface UseWarehousesTableColumnsProps {
   warehouses: Warehouse[];
+  onDeleteWarehouse?: (id: string) => void | Promise<void>;
 }
 
 export const useWarehousesTableColumns = ({
   warehouses,
+  onDeleteWarehouse,
 }: UseWarehousesTableColumnsProps): ColumnDef<Warehouse>[] => {
+  const queryClient = useQueryClient();
+
   const filterOptions = useMemo(() => {
     const names = Array.from(
       new Set(warehouses.map((warehouse) => warehouse.name))
@@ -173,23 +178,10 @@ export const useWarehousesTableColumns = ({
         header: "Actions",
         size: 80,
         cell: ({ row }) => (
-          <div className="flex gap-1">
-            <Button
-              className="m-0 p-0 min-w-0"
-              variant="outline"
-              size="small"
-              icon={<PenIcon className="w-4 h-4 text-blue" strokeWidth={2} />}
-            />
-
-            <Button
-              className="m-0 p-0 min-w-0"
-              variant="outline"
-              size="small"
-              icon={
-                <TrashIcon className="w-4 h-4 text-[#B73232]" strokeWidth={2} />
-              }
-            />
-          </div>
+          <WarehousesTableActions
+            warehouse={row.original}
+            onDeleteWarehouse={onDeleteWarehouse}
+          />
         ),
       },
       {
@@ -213,7 +205,7 @@ export const useWarehousesTableColumns = ({
         ),
       },
     ],
-    [filterOptions]
+    [filterOptions, onDeleteWarehouse]
   );
 
   return columns;

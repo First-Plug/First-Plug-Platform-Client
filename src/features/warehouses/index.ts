@@ -8,4 +8,6 @@ export type {
   CreateWarehouseRequest,
   UpdateWarehouseRequest,
   WarehouseStats,
+  WarehouseDetails,
+  SelectedWarehouse,
 } from "./interfaces/warehouse.interface";

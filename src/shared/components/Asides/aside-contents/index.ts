@@ -17,3 +17,4 @@ export * from "./CreateWarehouse";
 export * from "./EditProductAside";
 export * from "./LoadAside";
 export * from "./MemberAsideDetails";
+export * from "./UpdateWarehouse";
