@@ -1,7 +1,8 @@
 "use client";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { QueryClient } from "@tanstack/react-query";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { cleanupAndSignOut } from "@/shared/services/sessionCleanup";
 import {
   PersistQueryClientProvider,
   persistQueryClientRestore,
@@ -13,6 +14,8 @@ interface Props {
 }
 
 export const QueryProvider = ({ children }: Props) => {
+  const isCleaningRef = useRef(false);
+
   const queryClient = useMemo(() => {
     return new QueryClient({
       defaultOptions: {
@@ -23,6 +26,20 @@ export const QueryProvider = ({ children }: Props) => {
           refetchOnReconnect: true,
         },
       },
+      queryCache: new QueryCache({
+        onError: async () => {
+          if (isCleaningRef.current) return;
+          isCleaningRef.current = true;
+          await cleanupAndSignOut();
+        },
+      }),
+      mutationCache: new MutationCache({
+        onError: async () => {
+          if (isCleaningRef.current) return;
+          isCleaningRef.current = true;
+          await cleanupAndSignOut();
+        },
+      }),
     });
   }, []);
 
@@ -48,6 +65,32 @@ export const QueryProvider = ({ children }: Props) => {
       observer.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    const handleGlobalError = async () => {
+      if (isCleaningRef.current) return;
+      isCleaningRef.current = true;
+      try {
+        queryClient.clear();
+      } catch {}
+      await cleanupAndSignOut();
+    };
+
+    const onWindowError = () => {
+      void handleGlobalError();
+    };
+    const onUnhandledRejection = () => {
+      void handleGlobalError();
+    };
+
+    window.addEventListener("error", onWindowError);
+    window.addEventListener("unhandledrejection", onUnhandledRejection);
+
+    return () => {
+      window.removeEventListener("error", onWindowError);
+      window.removeEventListener("unhandledrejection", onUnhandledRejection);
+    };
+  }, [queryClient]);
 
   useEffect(() => {
     const restoreData = async () => {

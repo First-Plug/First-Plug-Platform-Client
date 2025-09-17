@@ -1,14 +1,16 @@
 import axios from "axios";
-import { signOut } from "next-auth/react";
+import { cleanupAndSignOut } from "@/shared/services/sessionCleanup";
 
 export const BASE_URL: string = process.env.NEXT_PUBLIC_API;
 export const axiosInstance = axios.create({ baseURL: BASE_URL });
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.status && error.status === 401) {
-      signOut({ redirect: true });
+  async (error) => {
+    const status = error?.response?.status;
+    if (status === 401 || status === 403) {
+      await cleanupAndSignOut();
+      return;
     }
 
     return Promise.reject(error);
