@@ -3,12 +3,11 @@ import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { Member } from "@/features/members";
-import { TeamCard, MiniCake, CountryFlag } from "@/shared";
+import { TeamCard, MiniCake, CountryFlag, countriesByCode } from "@/shared";
 import { DataTable } from "@/features/fp-tables";
 import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 
 import { formatBirthDate, isBirthdayToday } from "@/features/dashboard";
-import { getCountryDisplay } from "@/features/members/utils/countryUtils";
 
 interface BirthdayTableProps {
   members: Member[];
@@ -41,15 +40,10 @@ export const BirthdayTable = ({ members }: BirthdayTableProps) => {
             return <span>-</span>;
           }
 
-          const countryDisplay = getCountryDisplay(country);
-          if (!countryDisplay) {
-            return <span>{country}</span>;
-          }
-
           return (
             <div className="flex items-center gap-2">
               <CountryFlag countryName={country} size={15} />
-              <span>{countryDisplay.name}</span>
+              <span>{countriesByCode[country]}</span>
             </div>
           );
         },

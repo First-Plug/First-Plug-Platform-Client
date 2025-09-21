@@ -5,6 +5,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
+  countriesByCode,
 } from "@/shared";
 
 import { Office } from "@/features/settings";
@@ -97,6 +98,10 @@ const formatValue = (value: any, field?: string) => {
 
   if (field === "isDefault") {
     return value ? "Yes" : "No";
+  }
+
+  if (field === "country") {
+    return countriesByCode[value as string] || value;
   }
 
   return value.toString();
