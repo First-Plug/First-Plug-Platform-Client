@@ -2,6 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { useMemberModalStore } from "../store/memberModal.store";
+import { countriesByCode } from "../../../shared/constants/country-codes";
 
 export const MemberModalProvider = () => {
   const { isOpen, orderDetails, closeModal, isMember, memberName } =
@@ -55,7 +56,7 @@ export const MemberModalProvider = () => {
                     Country
                   </span>
                   <span className="text-gray-900 text-sm">
-                    {orderDetails?.country || "Not specified"}
+                    {countriesByCode[orderDetails?.country] || "Not specified"}
                   </span>
                 </div>
                 <div className="flex flex-col">

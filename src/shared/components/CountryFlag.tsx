@@ -15,9 +15,7 @@ export const CountryFlag: React.FC<CountryFlagProps> = ({
   size = 24,
   className = "",
 }) => {
-  const countryCode = getCountryCode(countryName);
-
-  if (!countryCode) {
+  if (!countryName) {
     return (
       <div
         className={`flex items-center justify-center bg-gray-100 rounded ${className}`}
@@ -30,7 +28,7 @@ export const CountryFlag: React.FC<CountryFlagProps> = ({
 
   return (
     <Image
-      src={`https://flagcdn.com/${countryCode.toLowerCase()}.svg`}
+      src={`https://flagcdn.com/${countryName.toLowerCase()}.svg`}
       alt={`${countryName}`}
       width={size}
       height={size}

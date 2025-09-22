@@ -53,7 +53,7 @@ export default function MyAssets() {
               onClick={handleClearAllFiltersExtended}
               variant="secondary"
               size="small"
-              className="mr-2 w-32"
+              className="mr-2 w-36"
             >
               Clear All Filters
             </Button>

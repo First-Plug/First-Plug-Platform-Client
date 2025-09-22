@@ -21,7 +21,7 @@ import {
   SelectValue,
   SelectGroup,
 } from "@/shared";
-import fields from "@/features/members/components/AddMember/JSON/shipmentdata.json";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 const updateOfficeSchema = z.object({
   name: z.string().min(1, "Office name is required"),
@@ -37,9 +37,14 @@ const updateOfficeSchema = z.object({
 
 type UpdateOfficeFormData = z.infer<typeof updateOfficeSchema>;
 
-const countryOptions = fields.fields[0].options;
-
 export const UpdateOffice = () => {
+  // Crear lista de países con código y nombre
+  const countryOptions = Object.entries(countriesByCode).map(
+    ([code, name]) => ({
+      code,
+      name,
+    })
+  );
   const { setAside } = useAsideStore();
   const queryClient = useQueryClient();
   const selectedTenant = queryClient.getQueryData<Tenant>(["selectedTenant"]);
@@ -214,7 +219,9 @@ export const UpdateOffice = () => {
                             <SelectValue
                               placeholder="Select Country"
                               className="opacity-10"
-                            />
+                            >
+                              {countriesByCode[field.value]}
+                            </SelectValue>
                           ) : (
                             <span className="text-grey">Select Country</span>
                           )}
@@ -223,8 +230,8 @@ export const UpdateOffice = () => {
                           <SelectGroup>
                             <SelectLabel>Location</SelectLabel>
                             {countryOptions.map((option) => (
-                              <SelectItem value={option} key={option}>
-                                {option}
+                              <SelectItem value={option.code} key={option.code}>
+                                {option.name}
                               </SelectItem>
                             ))}
                           </SelectGroup>
