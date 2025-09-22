@@ -1,5 +1,6 @@
 import { CsvMember } from "@/shared";
 import { CreateMemberZodModel } from "@/features/members";
+import { getCountryCode } from "@/features/members/utils/countryUtils";
 function convertToISODate(inputDate: string): string {
   const [month, day, year] = inputDate.split("/");
   const formattedDate = `${year}-${month}-${day}`;
@@ -30,7 +31,7 @@ export function parseMembers(member: CsvMember): CreateMemberZodModel {
     address: member.Address,
     apartment: member.Apartment,
     city: member.City,
-    country: member.Country,
+    country: member.Country ? getCountryCode(member.Country) : member.Country,
     zipCode: member["Zip Code"],
     position: member["Job Position"],
   };
