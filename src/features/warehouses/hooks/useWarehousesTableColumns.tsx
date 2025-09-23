@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Warehouse } from "../interfaces/warehouse.interface";
 import { useMemo } from "react";
 import { WarehousesTableActions } from "../components/WarehousesTableActions";
+import { countriesByCode } from "@/shared";
 
 import { DetailsButton } from "@/shared/components/Tables/DetailButton";
 
@@ -46,7 +47,7 @@ export const useWarehousesTableColumns = ({
     return {
       names: names.map((name) => ({ label: name, value: name })),
       countries: countries.map((country) => ({
-        label: country,
+        label: countriesByCode[country] || country,
         value: country,
       })),
       partnerTypes: partnerTypes.map((type) => ({ label: type, value: type })),
@@ -89,6 +90,10 @@ export const useWarehousesTableColumns = ({
         meta: {
           hasFilter: true,
           filterOptions: filterOptions.countries,
+        },
+        cell: ({ row }) => {
+          const countryCode = row.getValue("country") as string;
+          return <span>{countriesByCode[countryCode] || countryCode}</span>;
         },
         filterOptions: filterOptions.countries,
       },

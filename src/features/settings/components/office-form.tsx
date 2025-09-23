@@ -15,24 +15,26 @@ import {
 } from "@/shared";
 import { UseFormReturn } from "react-hook-form";
 import { OfficeFormData } from "../schemas/office.schema";
-import { shipmentData } from "@/features/members";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface OfficeFormProps {
   form: UseFormReturn<OfficeFormData>;
 }
 
-// Obtener lista de países del JSON existente
-const COUNTRIES = shipmentData.fields[0].options;
-
 export const OfficeForm = ({ form }: OfficeFormProps) => {
+  // Crear lista de países con código y nombre
+  const COUNTRIES = Object.entries(countriesByCode).map(([code, name]) => ({
+    code,
+    name,
+  }));
   return (
-    <div className="border rounded-lg p-6">
-      <h2 className="text-xl font-semibold mb-2">Office Information</h2>
-      <p className="text-gray-600 mb-6">
+    <div className="p-6 border rounded-lg">
+      <h2 className="mb-2 font-semibold text-xl">Office Information</h2>
+      <p className="mb-6 text-gray-600">
         Manage your office contact details and address information.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="gap-6 grid grid-cols-1 md:grid-cols-2">
         <FormField
           control={form.control}
           name="name"
@@ -88,13 +90,17 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a country" />
+                    <SelectValue placeholder="Select a country">
+                      {field.value
+                        ? countriesByCode[field.value]
+                        : "Select a country"}
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="max-h-60 bg-white border border-gray-200 shadow-lg">
+                <SelectContent className="bg-white shadow-lg border border-gray-200 max-h-60">
                   {COUNTRIES.map((country) => (
-                    <SelectItem key={country} value={country}>
-                      {country}
+                    <SelectItem key={country.code} value={country.code}>
+                      {country.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

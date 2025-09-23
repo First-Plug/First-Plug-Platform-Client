@@ -28,6 +28,7 @@ export const useCompanySettings = () => {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tenantConfig"] });
+      queryClient.invalidateQueries({ queryKey: ["userSettings"] });
       setAlert("dataUpdatedSuccessfully");
     },
     onError: (error) => {

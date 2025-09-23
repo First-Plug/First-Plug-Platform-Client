@@ -13,7 +13,7 @@ export function useWarehousesTable() {
     {
       id: "1",
       name: "Asia Pacific Center",
-      country: "Singapore",
+      country: "SG",
       partnerType: "temporary",
       isActive: false,
       tenantCount: 4,
@@ -58,7 +58,7 @@ export function useWarehousesTable() {
     {
       id: "2",
       name: "Central Distribution Center",
-      country: "United States",
+      country: "US",
       partnerType: "own",
       isActive: true,
       tenantCount: 3,
@@ -97,7 +97,7 @@ export function useWarehousesTable() {
     {
       id: "3",
       name: "European Logistics Hub",
-      country: "Germany",
+      country: "DE",
       partnerType: "partner",
       isActive: true,
       tenantCount: 2,

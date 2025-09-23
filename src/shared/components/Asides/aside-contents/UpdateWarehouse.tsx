@@ -3,7 +3,7 @@
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAsideStore, Button, COUNTRIES } from "@/shared";
+import { useAsideStore, Button, countriesByCode } from "@/shared";
 import { InputProductForm, DropdownInputProductForm } from "@/features/assets";
 import { WarehouseDetails } from "@/features/warehouses";
 import { useQueryClient } from "@tanstack/react-query";
@@ -29,6 +29,13 @@ const updateWarehouseSchema = z.object({
 type UpdateWarehouseFormData = z.infer<typeof updateWarehouseSchema>;
 
 export const UpdateWarehouse = () => {
+  // Convert countriesByCode to options format for dropdown
+  const countryOptions = Object.entries(countriesByCode).map(
+    ([code, name]) => ({
+      label: name,
+      value: code,
+    })
+  );
   const { setAside } = useAsideStore();
 
   const queryClient = useQueryClient();
@@ -137,9 +144,18 @@ export const UpdateWarehouse = () => {
                 <DropdownInputProductForm
                   title="Country"
                   placeholder="Select country"
-                  options={COUNTRIES}
-                  selectedOption={watch("country")}
-                  onChange={(value) => setValue("country", value)}
+                  options={countryOptions.map((option) => option.label)}
+                  selectedOption={
+                    watch("country")
+                      ? countriesByCode[watch("country")] || watch("country")
+                      : ""
+                  }
+                  onChange={(selectedCountryName) => {
+                    const countryCode = Object.entries(countriesByCode).find(
+                      ([code, name]) => name === selectedCountryName
+                    )?.[0];
+                    setValue("country", countryCode || "");
+                  }}
                   name="country"
                   searchable={true}
                 />

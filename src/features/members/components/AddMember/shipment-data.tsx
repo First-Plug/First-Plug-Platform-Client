@@ -5,6 +5,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import { SectionTitle } from "@/shared";
 import { type Member } from "@/features/members";
 import { shipmentData } from "./data/shipmentdata";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 import { InputProductForm, DropdownInputProductForm } from "@/features/assets";
 
@@ -15,6 +16,15 @@ export const ShipmentData = ({
   initialData: Member;
 }) => {
   const { control } = useFormContext();
+
+  // Convert countriesByCode to options format for dropdown
+  const countryOptions = Object.entries(countriesByCode).map(
+    ([code, name]) => ({
+      label: name,
+      value: code,
+    })
+  );
+
   return (
     <div>
       <SectionTitle>Shipment Details</SectionTitle>
@@ -30,7 +40,31 @@ export const ShipmentData = ({
               name={field.name}
               control={control}
               render={({ field: controllerField }) => {
-                if (field.type === "dropdown") {
+                if (field.type === "dropdown" && field.name === "country") {
+                  return (
+                    <DropdownInputProductForm
+                      title={field.title}
+                      placeholder={field.placeholder}
+                      options={countryOptions.map((option) => option.label)}
+                      selectedOption={
+                        controllerField.value
+                          ? countriesByCode[controllerField.value] ||
+                            controllerField.value
+                          : ""
+                      }
+                      onChange={(selectedCountryName) => {
+                        const countryCode = Object.entries(
+                          countriesByCode
+                        ).find(
+                          ([code, name]) => name === selectedCountryName
+                        )?.[0];
+                        controllerField.onChange(countryCode);
+                      }}
+                      name={field.name}
+                      searchable={true}
+                    />
+                  );
+                } else if (field.type === "dropdown") {
                   return (
                     <DropdownInputProductForm
                       title={field.title}

@@ -88,5 +88,4 @@ export {
 
 export * from "./services/csv.services";
 
-// constants
-export * from "./constants/countries";
+export * from "./constants/country-codes";

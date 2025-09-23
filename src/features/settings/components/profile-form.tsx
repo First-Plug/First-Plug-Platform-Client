@@ -15,15 +15,18 @@ import {
 } from "@/shared";
 import { UseFormReturn } from "react-hook-form";
 import { ProfileFormData } from "../schemas/profile.schema";
-import { shipmentData } from "@/features/members";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface ProfileFormProps {
   form: UseFormReturn<ProfileFormData>;
 }
 
 export const ProfileForm = ({ form }: ProfileFormProps) => {
-  // Obtener lista de países del JSON existente
-  const COUNTRIES = shipmentData?.fields?.[0]?.options || [];
+  // Crear lista de países con código y nombre
+  const COUNTRIES = Object.entries(countriesByCode).map(([code, name]) => ({
+    code,
+    name,
+  }));
 
   return (
     <div className="p-6 border rounded-lg">
@@ -104,13 +107,17 @@ export const ProfileForm = ({ form }: ProfileFormProps) => {
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a country" />
+                    <SelectValue placeholder="Select a country">
+                      {field.value
+                        ? countriesByCode[field.value]
+                        : "Select a country"}
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent className="bg-white shadow-lg border border-gray-200 max-h-60">
                   {COUNTRIES.map((country) => (
-                    <SelectItem key={country} value={country}>
-                      {country}
+                    <SelectItem key={country.code} value={country.code}>
+                      {country.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
