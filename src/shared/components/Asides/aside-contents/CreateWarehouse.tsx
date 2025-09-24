@@ -17,7 +17,7 @@ const createWarehouseSchema = z.object({
   phoneContact: z.string().optional(),
   email: z.string().email("Invalid email format").optional().or(z.literal("")),
   partnerType: z.string().min(1, "Partner type is required"),
-  contactChannel: z.string().min(1, "Contact channel is required"),
+  contactChannel: z.string().optional(),
   contactPerson: z.string().optional(),
   additionalInfo: z.string().optional(),
   isActive: z.string().min(1, "Active status is required"),
@@ -48,10 +48,10 @@ export const CreateWarehouse = () => {
       phoneContact: "",
       email: "",
       partnerType: "Default",
-      contactChannel: "Mail",
+      contactChannel: "",
       contactPerson: "",
       additionalInfo: "",
-      isActive: "Yes",
+      isActive: "",
     },
   });
 
@@ -160,22 +160,6 @@ export const CreateWarehouse = () => {
             <div className="gap-4 grid grid-cols-2">
               <div>
                 <InputProductForm
-                  title="City"
-                  placeholder="Enter city"
-                  value={watch("city")}
-                  onChange={(e) => {
-                    setValue("city", e.target.value);
-                  }}
-                  name="city"
-                />
-                {errors.city && (
-                  <p className="mt-1 text-red-600 text-sm">
-                    {errors.city.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <InputProductForm
                   title="State/Province"
                   placeholder="Enter state/province"
                   value={watch("state")}
@@ -187,6 +171,22 @@ export const CreateWarehouse = () => {
                 {errors.state && (
                   <p className="mt-1 text-red-600 text-sm">
                     {errors.state.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <InputProductForm
+                  title="City"
+                  placeholder="Enter city"
+                  value={watch("city")}
+                  onChange={(e) => {
+                    setValue("city", e.target.value);
+                  }}
+                  name="city"
+                />
+                {errors.city && (
+                  <p className="mt-1 text-red-600 text-sm">
+                    {errors.city.message}
                   </p>
                 )}
               </div>
@@ -245,7 +245,7 @@ export const CreateWarehouse = () => {
             <div className="gap-4 grid grid-cols-2">
               <div>
                 <InputProductForm
-                  title="Phone Contact"
+                  title="Phone Contact (Optional)"
                   placeholder="Phone number"
                   value={watch("phoneContact")}
                   onChange={(e) => {
@@ -256,7 +256,7 @@ export const CreateWarehouse = () => {
               </div>
               <div>
                 <InputProductForm
-                  title="Email"
+                  title="Email (Optional)"
                   placeholder="Email address"
                   value={watch("email")}
                   onChange={(e) => {
@@ -291,7 +291,7 @@ export const CreateWarehouse = () => {
               </div>
               <div>
                 <DropdownInputProductForm
-                  title="Contact Channel"
+                  title="Contact Channel (Optional)"
                   placeholder="Select channel"
                   options={["Mail", "Phone", "Email", "SMS"]}
                   selectedOption={watch("contactChannel")}
@@ -309,7 +309,7 @@ export const CreateWarehouse = () => {
             {/* Fila 7: Contact Person (ancho completo) */}
             <div>
               <InputProductForm
-                title="Contact Person"
+                title="Contact Person (Optional)"
                 placeholder="Contact person name"
                 value={watch("contactPerson")}
                 onChange={(e) => {
@@ -322,8 +322,8 @@ export const CreateWarehouse = () => {
             {/* Fila 8: Additional Info (ancho completo) */}
             <div>
               <InputProductForm
-                title="Additional Info"
-                placeholder="Additional information (optional)"
+                title="Additional Info (Optional)"
+                placeholder="Additional information"
                 value={watch("additionalInfo")}
                 onChange={(e) => {
                   setValue("additionalInfo", e.target.value);
@@ -350,7 +350,6 @@ export const CreateWarehouse = () => {
               !watch("zipCode")?.trim() ||
               !watch("address")?.trim() ||
               !watch("partnerType")?.trim() ||
-              !watch("contactChannel")?.trim() ||
               !watch("isActive")?.trim()
             }
           >

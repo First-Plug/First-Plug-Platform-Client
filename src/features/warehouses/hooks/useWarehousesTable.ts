@@ -133,6 +133,26 @@ export function useWarehousesTable() {
         },
       ],
     },
+    {
+      id: "4",
+      name: "Empty Warehouse Center",
+      country: "MX",
+      partnerType: "own",
+      isActive: true,
+      tenantCount: 0,
+      totalProducts: 0,
+      state: "Mexico City",
+      city: "Mexico City",
+      zipCode: "04000",
+      address: "123 Main Street",
+      apartment: "",
+      phoneContact: "+52 55 1234 5678",
+      email: "contact@emptywarehouse.mx",
+      contactChannel: "Email",
+      contactPerson: "Maria Rodriguez",
+      additionalInfo: "New warehouse ready for products",
+      tenants: [],
+    },
   ];
 
   const warehouses = warehousesData;

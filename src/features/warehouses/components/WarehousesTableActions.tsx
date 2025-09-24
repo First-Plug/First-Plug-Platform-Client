@@ -25,6 +25,8 @@ export function WarehousesTableActions({
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
+  const canDelete = warehouse.totalProducts === 0;
+
   const deleteWarehouse = async () => {
     try {
       if (onDeleteWarehouse) await onDeleteWarehouse(warehouse.id);
@@ -53,10 +55,16 @@ export function WarehousesTableActions({
           className="m-0 p-0 min-w-0"
           variant="outline"
           size="small"
+          disabled={!canDelete}
           icon={
-            <TrashIcon className="w-5 h-5 text-[#B73232]" strokeWidth={2} />
+            <TrashIcon
+              className={`w-5 h-5 ${
+                canDelete ? "text-[#B73232]" : "text-gray-400"
+              }`}
+              strokeWidth={2}
+            />
           }
-          onClick={() => setOpen(true)}
+          onClick={() => canDelete && setOpen(true)}
         />
 
         <Dialog open={open}>
@@ -64,8 +72,9 @@ export function WarehousesTableActions({
             <DialogHeader>
               <DialogTitle className="text-xl">Delete warehouse</DialogTitle>
               <DialogDescription className="font-normal text-md">
-                Are you sure you want to delete this warehouse? This action
-                cannot be undone.
+                {canDelete
+                  ? "Are you sure you want to delete this warehouse? This action cannot be undone."
+                  : `Cannot delete warehouse "${warehouse.name}" because it contains ${warehouse.totalProducts} products. Please remove all products before deleting the warehouse.`}
               </DialogDescription>
             </DialogHeader>
             <DialogDescription className="text-md">
@@ -75,15 +84,17 @@ export function WarehousesTableActions({
                   onClick={() => setOpen(false)}
                   className="w-full"
                 >
-                  <p>Cancel</p>
+                  <p>{canDelete ? "Cancel" : "Close"}</p>
                 </Button>
-                <Button
-                  variant="delete"
-                  className="bg-error w-full"
-                  onClick={deleteWarehouse}
-                >
-                  <p>Delete</p>
-                </Button>
+                {canDelete && (
+                  <Button
+                    variant="delete"
+                    className="bg-error w-full"
+                    onClick={deleteWarehouse}
+                  >
+                    <p>Delete</p>
+                  </Button>
+                )}
               </div>
             </DialogDescription>
           </DialogContent>

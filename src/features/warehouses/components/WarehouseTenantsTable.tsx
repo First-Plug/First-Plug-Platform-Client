@@ -25,9 +25,7 @@ export const WarehouseTenantsTable = ({
         header: "Computers",
         size: 120,
         cell: ({ row }) => (
-          <span className="font-medium text-blue">
-            {row.getValue("computers")}
-          </span>
+          <span className="font-medium">{row.getValue("computers")}</span>
         ),
       },
       {
@@ -35,9 +33,7 @@ export const WarehouseTenantsTable = ({
         header: "Other Products",
         size: 140,
         cell: ({ row }) => (
-          <span className="font-medium text-green-600">
-            {row.getValue("otherProducts")}
-          </span>
+          <span className="font-medium">{row.getValue("otherProducts")}</span>
         ),
       },
     ],
