@@ -73,7 +73,7 @@ export const CreateProductStep1 = ({
           onChange={handleTenantChange}
           className="shadow-sm px-3 py-2 border border-gray-300 focus:border-blue-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
         >
-          <option value="">Selecciona un tenant</option>
+          <option value="">Select a tenant</option>
           {tenants?.map((tenant) => (
             <option key={tenant.id} value={tenant.id}>
               {tenant.name}

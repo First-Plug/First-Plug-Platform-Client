@@ -302,7 +302,7 @@ export const CreateProductStep3 = ({
                 placeholder={
                   isMoreThanTwoProducts
                     ? "Will be set to Optimal for all products"
-                    : "Selecciona una condición"
+                    : "Select a condition"
                 }
                 options={["Optimal", "Detective", "Unusable"]}
                 selectedOption={formData.productCondition || undefined}
@@ -321,7 +321,7 @@ export const CreateProductStep3 = ({
             <div>
               <InputProductForm
                 title="Acquisition Date"
-                placeholder="dd/mm/aaaa"
+                placeholder="mm/dd/yyyy"
                 type="date"
                 value={formData.acquisitionDate || ""}
                 onChange={(e) => {
