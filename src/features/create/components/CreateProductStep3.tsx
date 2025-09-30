@@ -28,6 +28,16 @@ const categoryComponents = {
   Other: othersData,
 };
 
+// Mapeo entre nombres de categorías del frontend y claves en recoverableConfig
+const categoryMapping = {
+  Computers: "Computer",
+  Audio: "Audio",
+  Merchandising: "Merchandising",
+  Monitors: "Monitor",
+  Peripherals: "Peripherals",
+  Other: "Other",
+};
+
 interface CreateProductStep3Props {
   formData: any;
   onFormDataChange: (field: string, value: any) => void;
@@ -49,11 +59,11 @@ export const CreateProductStep3 = ({
   const [quantity, setQuantity] = useState(formData.quantity || 1);
   const [attributes, setAttributes] = useState<any[]>([]);
 
-  // Lógica para deshabilitar campos cuando hay más de 2 productos
+  const selectedTenant = formData.tenant;
+
   const isMoreThanTwoProducts = quantity >= 2;
   const shouldGoToStep4 = quantity >= 2;
 
-  // Reset hasAttemptedSubmit cuando se monta el componente
   useEffect(() => {
     setHasAttemptedSubmit(false);
   }, []);
@@ -66,7 +76,7 @@ export const CreateProductStep3 = ({
       productCondition: formData.productCondition || undefined,
       recoverable: formData.recoverable || false,
       acquisitionDate: formData.acquisitionDate || "",
-      price: formData.price || { amount: 0, currencyCode: "USD" },
+      price: formData.price || { amount: "", currencyCode: "USD" },
       additionalInfo: formData.additionalInfo || "",
       attributes: [],
       category: formData.category,
@@ -82,14 +92,60 @@ export const CreateProductStep3 = ({
     formState: { errors },
   } = methods;
 
+  // Configurar el valor por defecto del botón recoverable basado en la configuración del tenant seleccionado
+  useEffect(() => {
+    if (selectedCategory && selectedTenant?.recoverableConfig) {
+      // Mapear el nombre de la categoría del frontend a la clave en recoverableConfig
+      const mappedCategoryKey =
+        categoryMapping[selectedCategory as keyof typeof categoryMapping];
+      const isRecoverableForCategory = mappedCategoryKey
+        ? selectedTenant.recoverableConfig[mappedCategoryKey]
+        : false;
+
+      console.log("Category mapping debug:", {
+        selectedCategory,
+        mappedCategoryKey,
+        recoverableConfig: selectedTenant.recoverableConfig,
+        isRecoverableForCategory,
+      });
+
+      // Configurar el valor por defecto basado en la configuración del tenant
+      const defaultValue = isRecoverableForCategory || false;
+      onFormDataChange("recoverable", defaultValue);
+      setValue("recoverable" as any, defaultValue);
+    }
+  }, [selectedCategory, selectedTenant?.recoverableConfig]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Limpiar el campo Product Name cuando se deshabilita
+  useEffect(() => {
+    if (!isProductNameEnabled() && formData.name) {
+      onFormDataChange("name", "");
+      setValue("name" as any, "");
+    }
+  }, [selectedCategory, attributes, formData.name, onFormDataChange, setValue]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (isMoreThanTwoProducts && formData.productCondition !== "Optimal") {
       onFormDataChange("productCondition", "Optimal");
       setValue("productCondition" as any, "Optimal");
     }
+
+    // Limpiar serialNumber y additionalInfo cuando hay 2 o más productos
+    if (isMoreThanTwoProducts) {
+      if (formData.serialNumber) {
+        onFormDataChange("serialNumber", "");
+        setValue("serialNumber" as any, "");
+      }
+      if (formData.additionalInfo) {
+        onFormDataChange("additionalInfo", "");
+        setValue("additionalInfo" as any, "");
+      }
+    }
   }, [
     isMoreThanTwoProducts,
     formData.productCondition,
+    formData.serialNumber,
+    formData.additionalInfo,
     onFormDataChange,
     setValue,
   ]);
@@ -198,6 +254,11 @@ export const CreateProductStep3 = ({
     return attributes.find((attr) => attr.key === fieldName)?.value || "";
   };
 
+  // Determinar si el campo Product Name debe estar habilitado
+  const isProductNameEnabled = () => {
+    return selectedCategory === "Merchandising" || selectedCategory === "Other";
+  };
+
   const getAttributeError = (fieldName: string) => {
     if (!hasAttemptedSubmit) return null;
     return customErrors[fieldName] || null;
@@ -266,10 +327,13 @@ export const CreateProductStep3 = ({
                 placeholder="Product Name"
                 value={formData.name || ""}
                 onChange={(e) => {
-                  onFormDataChange("name", e.target.value);
-                  setValue("name" as any, e.target.value);
+                  if (isProductNameEnabled()) {
+                    onFormDataChange("name", e.target.value);
+                    setValue("name" as any, e.target.value);
+                  }
                 }}
                 name="name"
+                disabled={!isProductNameEnabled()}
               />
               {errors.name && (
                 <p className="mt-1 text-red-500 text-xs">
@@ -337,11 +401,14 @@ export const CreateProductStep3 = ({
                 title="Price Amount"
                 placeholder="Price Amount"
                 type="text"
-                value={formData.price?.amount?.toString() || "0"}
+                value={formData.price?.amount?.toString() || ""}
                 onChange={(e) => {
                   const newPrice = {
                     ...formData.price,
-                    amount: parseFloat(e.target.value) || 0,
+                    amount:
+                      e.target.value === ""
+                        ? ""
+                        : parseFloat(e.target.value) || 0,
                   };
                   onFormDataChange("price", newPrice);
                   setValue("price" as any, newPrice);

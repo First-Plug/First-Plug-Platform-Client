@@ -35,6 +35,17 @@ export const CreateProductStep2 = ({
       (c) => c.id === parseInt(e.target.value)
     );
     onFormDataChange("category", selectedCategory);
+
+    // Limpiar datos del Step 3 cuando se cambia la categoría
+    onFormDataChange("name", "");
+    onFormDataChange("serialNumber", "");
+    onFormDataChange("productCondition", null);
+    onFormDataChange("recoverable", false);
+    onFormDataChange("acquisitionDate", "");
+    onFormDataChange("price", { amount: "", currencyCode: "USD" });
+    onFormDataChange("additionalInfo", "");
+    onFormDataChange("attributes", []);
+    onFormDataChange("quantity", 1);
   };
 
   const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

@@ -42,6 +42,22 @@ export default function CreatePage() {
 
   const handlePrevious = () => {
     if (currentStep > 1) {
+      // Si estamos en el Step 3 y vamos al Step 2, limpiar los datos del Step 3
+      if (currentStep === 3) {
+        setFormData((prev) => ({
+          ...prev,
+          // Limpiar datos específicos del Step 3
+          name: "",
+          serialNumber: "",
+          productCondition: null,
+          recoverable: false,
+          acquisitionDate: "",
+          price: { amount: "", currencyCode: "USD" },
+          additionalInfo: "",
+          attributes: [],
+          quantity: 1,
+        }));
+      }
       setCurrentStep(currentStep - 1);
     }
   };
@@ -63,6 +79,31 @@ export default function CreatePage() {
     // Por ahora solo mostramos un alert
     alert("Product created successfully!");
     setShowConfirmation(false);
+
+    // Reiniciar todo el formulario y volver al Step 1
+    setCurrentStep(1);
+    setFormData({
+      tenant: null,
+      category: null,
+      warehouse: null,
+      quantity: 1,
+      pricePerUnit: 0,
+      acquisitionDate: null,
+      productCondition: null,
+      model: null,
+      processor: null,
+      recoverable: false,
+      currency: "USD",
+      serialNumber: null,
+      brand: null,
+      color: null,
+      ram: null,
+      storage: null,
+      screen: null,
+      keyboardLanguage: null,
+      gpu: null,
+      additionalInfo: null,
+    });
   };
 
   const handleCancelCreate = () => {

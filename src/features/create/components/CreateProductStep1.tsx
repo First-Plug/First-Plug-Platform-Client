@@ -21,7 +21,10 @@ export const CreateProductStep1 = ({
     const selectedTenant = tenants?.find((t) => t.id === e.target.value);
     if (selectedTenant) {
       onFormDataChange("tenant", {
+        id: selectedTenant.id,
         tenantName: selectedTenant.tenantName,
+        name: selectedTenant.name,
+        recoverableConfig: selectedTenant.recoverableConfig,
       });
     }
   };

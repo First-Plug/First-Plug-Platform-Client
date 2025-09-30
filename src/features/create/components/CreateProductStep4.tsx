@@ -18,17 +18,19 @@ interface CreateProductStep4Props {
   onCreateProduct: () => void;
 }
 
-// Componente para mostrar un solo ProductDetail y múltiples inputs de Serial Number
+// Componente para mostrar un solo ProductDetail y múltiples inputs de Serial Number y Additional Info
 const ProductSerialNumbers = ({
   baseProduct,
   products,
   onSerialNumberChange,
+  onAdditionalInfoChange,
   errors,
   categoryName,
 }: {
   baseProduct: any;
   products: any[];
   onSerialNumberChange: (index: number, value: string) => void;
+  onAdditionalInfoChange: (index: number, value: string) => void;
   errors: Record<string, string>;
   categoryName: string;
 }) => {
@@ -81,10 +83,10 @@ const ProductSerialNumbers = ({
         />
       </div>
 
-      {/* Múltiples inputs de Serial Number */}
+      {/* Múltiples inputs de Serial Number y Additional Info */}
       <div className="space-y-4">
         <h3 className="font-semibold text-gray-800 text-lg">
-          Serial Numbers for Each Product
+          Individual Product Details
         </h3>
         {products.map((product, index) => (
           <div
@@ -92,21 +94,40 @@ const ProductSerialNumbers = ({
             className="bg-white p-4 border border-gray-200 rounded-lg"
           >
             <h4 className="mb-3 font-medium text-gray-700">
-              Serial Number for Product {index + 1}
+              Product {index + 1}
             </h4>
-            <div>
-              <InputProductForm
-                title=""
-                placeholder="Enter serial number"
-                value={product.serialNumber || ""}
-                onChange={(e) => onSerialNumberChange(index, e.target.value)}
-                name={`serialNumber_${index}`}
-              />
-              {errors[`serialNumber_${index}`] && (
-                <p className="mt-1 text-red-500 text-xs">
-                  {errors[`serialNumber_${index}`]}
-                </p>
-              )}
+            <div className="space-y-4">
+              <div>
+                <InputProductForm
+                  title="Serial Number"
+                  placeholder="Enter serial number"
+                  value={product.serialNumber || ""}
+                  onChange={(e) => onSerialNumberChange(index, e.target.value)}
+                  name={`serialNumber_${index}`}
+                />
+                {errors[`serialNumber_${index}`] && (
+                  <p className="mt-1 text-red-500 text-xs">
+                    {errors[`serialNumber_${index}`]}
+                  </p>
+                )}
+              </div>
+              <div>
+                <InputProductForm
+                  title="Additional Info"
+                  placeholder="Enter additional information"
+                  type="textarea"
+                  value={product.additionalInfo || ""}
+                  onChange={(e) =>
+                    onAdditionalInfoChange(index, e.target.value)
+                  }
+                  name={`additionalInfo_${index}`}
+                />
+                {errors[`additionalInfo_${index}`] && (
+                  <p className="mt-1 text-red-500 text-xs">
+                    {errors[`additionalInfo_${index}`]}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -172,6 +193,22 @@ export const CreateProductStep4 = ({
     }
   };
 
+  const handleAdditionalInfoChange = (index: number, value: string) => {
+    const updatedProducts = products.map((product, i) =>
+      i === index ? { ...product, additionalInfo: value } : product
+    );
+    setProducts(updatedProducts);
+    onFormDataChange("products", updatedProducts);
+
+    // Clear error when user starts typing
+    if (errors[`additionalInfo_${index}`]) {
+      setErrors((prev) => ({
+        ...prev,
+        [`additionalInfo_${index}`]: undefined,
+      }));
+    }
+  };
+
   // Obtener el producto base (primer producto) para mostrar en ProductDetail
   const baseProduct = products[0] || {
     name: formData.name || "",
@@ -192,11 +229,12 @@ export const CreateProductStep4 = ({
       <div className="bg-white shadow-sm p-6 border border-gray-200 rounded-lg">
         <div className="mb-6">
           <h2 className="mb-2 font-semibold text-gray-900 text-xl">
-            Step 4: Individual Product Serial Numbers
+            Step 4: Individual Product Details
           </h2>
           <p className="text-gray-600">
-            Configure the serial number for each of the {formData.quantity}{" "}
-            products. All other details are inherited from Step 3.
+            Configure the serial number and additional info for each of the{" "}
+            {formData.quantity} products. All other details are inherited from
+            Step 3.
           </p>
         </div>
 
@@ -204,6 +242,7 @@ export const CreateProductStep4 = ({
           baseProduct={baseProduct}
           products={products}
           onSerialNumberChange={handleSerialNumberChange}
+          onAdditionalInfoChange={handleAdditionalInfoChange}
           errors={errors}
           categoryName={formData.category?.name || "Other"}
         />
