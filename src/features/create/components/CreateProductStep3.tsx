@@ -125,11 +125,6 @@ export const CreateProductStep3 = ({
   }, [selectedCategory, attributes, formData.name, onFormDataChange, setValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (isMoreThanTwoProducts && formData.productCondition !== "Optimal") {
-      onFormDataChange("productCondition", "Optimal");
-      setValue("productCondition" as any, "Optimal");
-    }
-
     // Limpiar serialNumber y additionalInfo cuando hay 2 o más productos
     if (isMoreThanTwoProducts) {
       if (formData.serialNumber) {
@@ -143,7 +138,6 @@ export const CreateProductStep3 = ({
     }
   }, [
     isMoreThanTwoProducts,
-    formData.productCondition,
     formData.serialNumber,
     formData.additionalInfo,
     onFormDataChange,
@@ -363,23 +357,22 @@ export const CreateProductStep3 = ({
             <div>
               <DropdownInputProductForm
                 title="Product Condition"
-                placeholder={
-                  isMoreThanTwoProducts
-                    ? "Will be set to Optimal for all products"
-                    : "Select a condition"
-                }
-                options={["Optimal", "Detective", "Unusable"]}
+                placeholder="Select a condition"
+                options={["Optimal", "Defective", "Unusable"]}
                 selectedOption={formData.productCondition || undefined}
                 onChange={(value) => {
-                  if (!isMoreThanTwoProducts) {
-                    onFormDataChange("productCondition", value);
-                    setValue("productCondition" as any, value);
-                  }
+                  onFormDataChange("productCondition", value);
+                  setValue("productCondition" as any, value);
                 }}
                 name="productCondition"
                 searchable={false}
-                disabled={isMoreThanTwoProducts}
+                required="required"
               />
+              {errors.productCondition && (
+                <p className="mt-1 text-red-500 text-xs">
+                  {String(errors.productCondition.message)}
+                </p>
+              )}
             </div>
 
             <div>

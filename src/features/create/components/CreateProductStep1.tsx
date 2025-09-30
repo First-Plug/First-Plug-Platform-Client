@@ -79,7 +79,7 @@ export const CreateProductStep1 = ({
           <option value="">Select a tenant</option>
           {tenants?.map((tenant) => (
             <option key={tenant.id} value={tenant.id}>
-              {tenant.name}
+              {tenant.tenantName}
             </option>
           ))}
         </select>
