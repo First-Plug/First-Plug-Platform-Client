@@ -26,7 +26,7 @@ export const CreateProductConfirmation = ({
           <DialogTitle className="text-xl">Create products</DialogTitle>
           <DialogDescription className="font-normal text-md">
             Are you sure you want to create <strong>{formData.quantity}</strong>{" "}
-            product(s) for <strong>{formData.tenant?.name}</strong> in the
+            product(s) for <strong>{formData.tenant?.tenantName}</strong> in the
             warehouse <strong>{formData.warehouse?.name}</strong>?
           </DialogDescription>
         </DialogHeader>

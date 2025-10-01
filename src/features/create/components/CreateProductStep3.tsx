@@ -198,21 +198,28 @@ export const CreateProductStep3 = ({
     const model = attributes?.find((attr) => attr.key === "model")?.value;
     const productName = watch("name") as string;
 
-    if (
-      selectedCategory === "Merchandising" &&
-      (!productName || productName.trim() === "")
-    ) {
-      methods.setError("name", {
-        type: "manual",
-        message: "Product Name is required for Merchandising.",
-      });
-      return false;
-    }
+    // Product Name es requerido si:
+    // 1. Categoría es Merchandising
+    // 2. Categoría es Other
+    // 3. Modelo es Other (cualquier categoría)
+    const isProductNameRequired =
+      selectedCategory === "Merchandising" ||
+      selectedCategory === "Other" ||
+      model === "Other";
 
-    if (model === "Other" && (!productName || productName.trim() === "")) {
+    if (isProductNameRequired && (!productName || productName.trim() === "")) {
+      let errorMessage = "Product Name is required.";
+      if (selectedCategory === "Merchandising") {
+        errorMessage = "Product Name is required for Merchandising.";
+      } else if (selectedCategory === "Other") {
+        errorMessage = "Product Name is required for Other category.";
+      } else if (model === "Other") {
+        errorMessage = "Product Name is required when model is Other.";
+      }
+
       methods.setError("name", {
         type: "manual",
-        message: "Product Name is required when model is Other.",
+        message: errorMessage,
       });
       return false;
     } else {
@@ -250,7 +257,12 @@ export const CreateProductStep3 = ({
 
   // Determinar si el campo Product Name debe estar habilitado
   const isProductNameEnabled = () => {
-    return selectedCategory === "Merchandising" || selectedCategory === "Other";
+    const model = attributes?.find((attr) => attr.key === "model")?.value;
+    return (
+      selectedCategory === "Merchandising" ||
+      selectedCategory === "Other" ||
+      model === "Other"
+    );
   };
 
   const getAttributeError = (fieldName: string) => {
