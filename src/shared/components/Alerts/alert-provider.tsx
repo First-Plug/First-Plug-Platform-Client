@@ -495,6 +495,62 @@ export const AlertProvider = () => {
         setAlert(undefined);
       },
     },
+    officeCreatedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: "Office has been created successfully.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    officeUpdatedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: "Office has been updated successfully.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    officeDeletedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: "Office has been deleted successfully.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    defaultOfficeUpdatedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: "Default office has been updated successfully.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorCreateOffice: {
+      title: "Error",
+      type: "error",
+      description: "Failed to create office. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorDeleteOffice: {
+      title: "Error",
+      type: "error",
+      description: "Failed to delete office. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorSetDefaultOffice: {
+      title: "Error",
+      type: "error",
+      description: "Failed to set default office. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;

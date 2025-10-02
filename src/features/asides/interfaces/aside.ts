@@ -16,6 +16,7 @@ export const ASIDE_TYPES = [
   "EditAssignedUser",
   "UpdateTenant",
   "UpdateOffice",
+  "CreateOffice",
   "CreateTenant",
   "CreateWarehouse",
   "UpdateWarehouse",

@@ -44,6 +44,18 @@ export interface Office {
   isDefault: boolean;
 }
 
+export interface CreateOffice {
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  apartment?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+}
+
 export interface UpdateOffice {
   name?: string;
   email?: string;

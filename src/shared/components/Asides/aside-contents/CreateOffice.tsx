@@ -4,9 +4,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAsideStore, Button } from "@/shared";
-import { Tenant, useUpdateTenantOffice } from "@/features/tenants";
 import { useQueryClient } from "@tanstack/react-query";
-import { Office } from "@/features/settings/types/settings.types";
 import {
   FormControl,
   FormField,
@@ -24,7 +22,7 @@ import {
 } from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
-const updateOfficeSchema = z.object({
+const createOfficeSchema = z.object({
   name: z.string().min(1, "Office name is required"),
   email: z.string().email("Invalid email format").optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")),
@@ -36,9 +34,9 @@ const updateOfficeSchema = z.object({
   apartment: z.string().optional().or(z.literal("")),
 });
 
-type UpdateOfficeFormData = z.infer<typeof updateOfficeSchema>;
+type CreateOfficeFormData = z.infer<typeof createOfficeSchema>;
 
-export const UpdateOffice = () => {
+export const CreateOffice = () => {
   // Crear lista de países con código y nombre
   const countryOptions = Object.entries(countriesByCode).map(
     ([code, name]) => ({
@@ -48,23 +46,19 @@ export const UpdateOffice = () => {
   );
   const { setAside } = useAsideStore();
   const queryClient = useQueryClient();
-  const selectedTenant = queryClient.getQueryData<Tenant>(["selectedTenant"]);
-  const selectedOffice = queryClient.getQueryData<Office>(["selectedOffice"]);
-  const updateOfficeMutation = useUpdateTenantOffice();
 
-  const methods = useForm<UpdateOfficeFormData>({
-    resolver: zodResolver(updateOfficeSchema),
+  const methods = useForm<CreateOfficeFormData>({
+    resolver: zodResolver(createOfficeSchema),
     defaultValues: {
-      name: selectedOffice?.name || selectedTenant?.office?.name || "",
-      email: selectedOffice?.email || selectedTenant?.office?.email || "",
-      phone: selectedOffice?.phone || selectedTenant?.office?.phone || "",
-      country: selectedOffice?.country || selectedTenant?.office?.country || "",
-      state: selectedOffice?.state || selectedTenant?.office?.state || "",
-      city: selectedOffice?.city || selectedTenant?.office?.city || "",
-      zipCode: selectedOffice?.zipCode || selectedTenant?.office?.zipCode || "",
-      address: selectedOffice?.address || selectedTenant?.office?.address || "",
-      apartment:
-        selectedOffice?.apartment || selectedTenant?.office?.apartment || "",
+      name: "",
+      email: "",
+      phone: "",
+      country: "",
+      state: "",
+      city: "",
+      zipCode: "",
+      address: "",
+      apartment: "",
     },
   });
 
@@ -82,70 +76,14 @@ export const UpdateOffice = () => {
     return isDirty;
   };
 
-  const onSubmit = async (data: UpdateOfficeFormData) => {
-    if (!selectedTenant && !selectedOffice) return;
-
-    // Let Zod validation handle the validation first
-    // If we reach here, the form should be valid according to Zod schema
-
-    // Send all fields that have been modified (including empty strings to clear fields)
-    // Compare with original values to detect changes
-    const originalData = {
-      name: selectedOffice?.name || selectedTenant?.office?.name || "",
-      email: selectedOffice?.email || selectedTenant?.office?.email || "",
-      phone: selectedOffice?.phone || selectedTenant?.office?.phone || "",
-      country: selectedOffice?.country || selectedTenant?.office?.country || "",
-      state: selectedOffice?.state || selectedTenant?.office?.state || "",
-      city: selectedOffice?.city || selectedTenant?.office?.city || "",
-      zipCode: selectedOffice?.zipCode || selectedTenant?.office?.zipCode || "",
-      address: selectedOffice?.address || selectedTenant?.office?.address || "",
-      apartment:
-        selectedOffice?.apartment || selectedTenant?.office?.apartment || "",
-    };
-
-    const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
-      const originalValue = originalData[key as keyof typeof originalData];
-      // Include field if it has changed (including changes to empty string)
-      if (value !== originalValue) {
-        acc[key as keyof UpdateOfficeFormData] = value || ""; // Send empty string to clear field
-      }
-      return acc;
-    }, {} as Partial<UpdateOfficeFormData>);
-
-    // Only proceed if there are actual changes to send
-    if (Object.keys(filteredData).length === 0) {
-      // No changes to save - just close the aside
-      setAside(null);
-      return;
-    }
-
-    // Additional validation: if name is being changed to empty, don't allow it
-    if (
-      filteredData.name !== undefined &&
-      (!filteredData.name || filteredData.name.trim() === "")
-    ) {
-      console.log(
-        "❌ Validation failed: Office name is being changed to empty"
-      );
-      // Don't send the request, the validation should have been caught by Zod
-      return;
-    }
-
+  const onSubmit = async (data: CreateOfficeFormData) => {
     try {
-      // TODO: Implement office update mutation for individual offices
-      // For now, we'll use the tenant office update if we have a selectedTenant
-      if (selectedTenant) {
-        await updateOfficeMutation.mutateAsync({
-          tenantId: selectedTenant.id,
-          data: filteredData,
-        });
-      } else {
-        // Handle individual office update
-        console.log("Updating individual office with data:", filteredData);
-      }
+      // TODO: Implement office creation mutation
+      // await createOfficeMutation.mutateAsync(data);
+      console.log("Creating office with data:", data);
       setAside(null);
     } catch (error) {
-      console.error("Error updating office:", error);
+      console.error("Error creating office:", error);
     }
   };
 
@@ -367,7 +305,7 @@ export const UpdateOffice = () => {
             onClick={handleSubmit(onSubmit)}
             disabled={!isSaveButtonEnabled()}
           >
-            {isSubmitting ? "Saving..." : "Save"}
+            {isSubmitting ? "Creating..." : "Create Office"}
           </Button>
         </div>
       </aside>

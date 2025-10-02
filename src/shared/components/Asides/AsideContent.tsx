@@ -13,6 +13,7 @@ import {
   EditAssignedUser,
   UpdateTenant,
   UpdateOffice,
+  CreateOffice,
   CreateTenant,
   CreateWarehouse,
   UpdateWarehouse,
@@ -54,6 +55,8 @@ export var AsideContent = function () {
       return <UpdateTenant />;
     case "UpdateOffice":
       return <UpdateOffice />;
+    case "CreateOffice":
+      return <CreateOffice />;
     case "CreateTenant":
       return <CreateTenant />;
     case "CreateWarehouse":
