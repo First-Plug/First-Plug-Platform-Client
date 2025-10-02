@@ -15,7 +15,9 @@ import { DownloadIcon } from "@/shared";
 import { useAsideStore } from "@/shared";
 
 export const DownloadStock = () => {
-  const { type } = useAsideStore();
+  const { getCurrentAside } = useAsideStore();
+  const currentAside = getCurrentAside();
+  const type = currentAside?.type;
 
   const fileToDownload = type === "LoadStock" ? "stock.xlsm" : "members.xlsm";
   const downloadTemplate = async () => {

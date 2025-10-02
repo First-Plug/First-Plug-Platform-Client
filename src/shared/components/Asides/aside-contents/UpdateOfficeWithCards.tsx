@@ -208,6 +208,31 @@ export const UpdateOfficeWithCards = () => {
 
     return (
       <div className="flex flex-col h-full">
+        {/* Header con información del tenant */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-3">
+            {stack.length > 1 && (
+              <Button
+                onClick={handleGoBack}
+                variant="secondary"
+                size="small"
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+            )}
+            <div>
+              <h3 className="font-semibold text-gray-900 text-lg">
+                Office - {selectedTenant.name}
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Tenant: {selectedTenant.tenantName}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Search */}
         <div className="relative mb-4">
           <Search className="top-1/2 left-3 absolute w-4 h-4 text-gray-400 -translate-y-1/2 transform" />

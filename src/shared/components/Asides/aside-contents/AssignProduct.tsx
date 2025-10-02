@@ -12,7 +12,9 @@ import { Member, AddMemberForm } from "@/features/members";
 import { useAsideStore } from "@/shared";
 
 export const AssignProduct = function () {
-  const { type } = useAsideStore();
+  const { getCurrentAside } = useAsideStore();
+  const currentAside = getCurrentAside();
+  const type = currentAside?.type;
 
   const queryClient = useQueryClient();
 
