@@ -34,7 +34,7 @@ export const TenantsTableActions: React.FC<TenantsTableActionsProps> = ({
 
   const handleUpdateOffice = () => {
     queryClient.setQueryData(["selectedTenant"], tenant);
-    setAside("UpdateOffice");
+    setAside("UpdateOfficeWithCards");
   };
 
   const handleToggleStatus = () => {

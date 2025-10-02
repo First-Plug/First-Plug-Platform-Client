@@ -1,10 +1,10 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAsideStore, Button } from "@/shared";
-import { ArrowLeft } from "lucide-react";
+import { useAsideStore, Button, LoaderSpinner, Input } from "@/shared";
 import { Tenant, useUpdateTenantOffice } from "@/features/tenants";
 import { useQueryClient } from "@tanstack/react-query";
 import { Office } from "@/features/settings/types/settings.types";
@@ -15,7 +15,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
+  Input as FormInput,
   Select,
   SelectItem,
   SelectContent,
@@ -25,6 +25,8 @@ import {
   SelectGroup,
 } from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { OfficeCard } from "@/features/settings/components/office-card";
+import { Building, Plus, Search, ArrowLeft } from "lucide-react";
 
 const updateOfficeSchema = z.object({
   name: z.string().min(1, "Office name is required"),
@@ -40,7 +42,7 @@ const updateOfficeSchema = z.object({
 
 type UpdateOfficeFormData = z.infer<typeof updateOfficeSchema>;
 
-export const UpdateOffice = () => {
+export const UpdateOfficeWithCards = () => {
   // Crear lista de países con código y nombre
   const countryOptions = Object.entries(countriesByCode).map(
     ([code, name]) => ({
@@ -48,26 +50,62 @@ export const UpdateOffice = () => {
       name,
     })
   );
-  const { setAside, popAside, stack } = useAsideStore();
+  const { setAside, pushAside, popAside, stack } = useAsideStore();
   const queryClient = useQueryClient();
   const selectedTenant = queryClient.getQueryData<Tenant>(["selectedTenant"]);
-  const selectedOffice = queryClient.getQueryData<Office>(["selectedOffice"]);
   const updateOfficeMutation = useUpdateTenantOffice();
-  const { updateOffice } = useOffices();
+
+  // Estado para manejar la vista actual (formulario o cards)
+  const [currentView, setCurrentView] = useState<"form" | "cards">("cards");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Convertir la oficina del tenant a formato Office para mostrar como card
+  const tenantOffice: Office | null = useMemo(() => {
+    if (!selectedTenant?.office) return null;
+
+    return {
+      _id: selectedTenant.office.id,
+      name: selectedTenant.office.name,
+      email: selectedTenant.office.email,
+      phone: selectedTenant.office.phone,
+      address: selectedTenant.office.address,
+      apartment: selectedTenant.office.apartment,
+      city: selectedTenant.office.city,
+      state: selectedTenant.office.state,
+      country: selectedTenant.office.country,
+      zipCode: selectedTenant.office.zipCode,
+      isDefault: selectedTenant.office.isDefault,
+    };
+  }, [selectedTenant]);
+
+  // Filtrar oficinas basado en el término de búsqueda (solo la oficina del tenant)
+  const filteredOffices: Office[] = useMemo(() => {
+    if (!tenantOffice) return [];
+
+    if (!searchTerm.trim()) return [tenantOffice];
+
+    const office = tenantOffice;
+    const matchesSearch =
+      office.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      office.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      office.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      office.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesSearch ? [office] : [];
+  }, [tenantOffice, searchTerm]);
 
   const methods = useForm<UpdateOfficeFormData>({
     resolver: zodResolver(updateOfficeSchema),
     defaultValues: {
-      name: selectedOffice?.name || selectedTenant?.office?.name || "",
-      email: selectedOffice?.email || selectedTenant?.office?.email || "",
-      phone: selectedOffice?.phone || selectedTenant?.office?.phone || "",
-      country: selectedOffice?.country || selectedTenant?.office?.country || "",
-      state: selectedOffice?.state || selectedTenant?.office?.state || "",
-      city: selectedOffice?.city || selectedTenant?.office?.city || "",
-      zipCode: selectedOffice?.zipCode || selectedTenant?.office?.zipCode || "",
-      address: selectedOffice?.address || selectedTenant?.office?.address || "",
-      apartment:
-        selectedOffice?.apartment || selectedTenant?.office?.apartment || "",
+      name: selectedTenant?.office?.name || "",
+      email: selectedTenant?.office?.email || "",
+      phone: selectedTenant?.office?.phone || "",
+      country: selectedTenant?.office?.country || "",
+      state: selectedTenant?.office?.state || "",
+      city: selectedTenant?.office?.city || "",
+      zipCode: selectedTenant?.office?.zipCode || "",
+      address: selectedTenant?.office?.address || "",
+      apartment: selectedTenant?.office?.apartment || "",
     },
   });
 
@@ -79,76 +117,66 @@ export const UpdateOffice = () => {
   // Función para verificar si el botón Save debe estar habilitado
   const isSaveButtonEnabled = () => {
     if (isSubmitting) return false;
-
-    // Permitir que el botón esté habilitado si hay cambios,
-    // la validación se hará en onSubmit para mostrar errores
     return isDirty;
   };
 
   const onSubmit = async (data: UpdateOfficeFormData) => {
-    if (!selectedTenant && !selectedOffice) return;
+    if (!selectedTenant) return;
 
-    // Let Zod validation handle the validation first
-    // If we reach here, the form should be valid according to Zod schema
-
-    // Send all fields that have been modified (including empty strings to clear fields)
-    // Compare with original values to detect changes
+    // Send all fields that have been modified
     const originalData = {
-      name: selectedOffice?.name || selectedTenant?.office?.name || "",
-      email: selectedOffice?.email || selectedTenant?.office?.email || "",
-      phone: selectedOffice?.phone || selectedTenant?.office?.phone || "",
-      country: selectedOffice?.country || selectedTenant?.office?.country || "",
-      state: selectedOffice?.state || selectedTenant?.office?.state || "",
-      city: selectedOffice?.city || selectedTenant?.office?.city || "",
-      zipCode: selectedOffice?.zipCode || selectedTenant?.office?.zipCode || "",
-      address: selectedOffice?.address || selectedTenant?.office?.address || "",
-      apartment:
-        selectedOffice?.apartment || selectedTenant?.office?.apartment || "",
+      name: selectedTenant?.office?.name || "",
+      email: selectedTenant?.office?.email || "",
+      phone: selectedTenant?.office?.phone || "",
+      country: selectedTenant?.office?.country || "",
+      state: selectedTenant?.office?.state || "",
+      city: selectedTenant?.office?.city || "",
+      zipCode: selectedTenant?.office?.zipCode || "",
+      address: selectedTenant?.office?.address || "",
+      apartment: selectedTenant?.office?.apartment || "",
     };
 
     const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
       const originalValue = originalData[key as keyof typeof originalData];
-      // Include field if it has changed (including changes to empty string)
       if (value !== originalValue) {
-        acc[key as keyof UpdateOfficeFormData] = value || ""; // Send empty string to clear field
+        acc[key as keyof UpdateOfficeFormData] = value || "";
       }
       return acc;
     }, {} as Partial<UpdateOfficeFormData>);
 
-    // Only proceed if there are actual changes to send
     if (Object.keys(filteredData).length === 0) {
-      // No changes to save - just close the aside
       setAside(null);
-      return;
-    }
-
-    // Additional validation: if name is being changed to empty, don't allow it
-    if (
-      filteredData.name !== undefined &&
-      (!filteredData.name || filteredData.name.trim() === "")
-    ) {
-      console.log(
-        "❌ Validation failed: Office name is being changed to empty"
-      );
-      // Don't send the request, the validation should have been caught by Zod
       return;
     }
 
     try {
-      if (selectedTenant) {
-        // Update tenant office
-        await updateOfficeMutation.mutateAsync({
-          tenantId: selectedTenant.id,
-          data: filteredData,
-        });
-      } else if (selectedOffice) {
-        // Update individual office
-        updateOffice(selectedOffice._id, filteredData);
-      }
+      await updateOfficeMutation.mutateAsync({
+        tenantId: selectedTenant.id,
+        data: filteredData,
+      });
       setAside(null);
     } catch (error) {
       console.error("Error updating office:", error);
     }
+  };
+
+  const handleAddOffice = () => {
+    setAside("CreateOffice");
+  };
+
+  const handleDeleteOffice = (id: string) => {
+    // Eliminar la oficina del tenant
+    if (selectedTenant) {
+      // TODO: Implementar eliminación de oficina del tenant
+      // Por ahora, solo mostramos un mensaje
+      console.log("Deleting tenant office:", id);
+      // Ejemplo: await deleteTenantOfficeMutation.mutateAsync(selectedTenant.id);
+    }
+  };
+
+  const handleEditOffice = (office: Office) => {
+    queryClient.setQueryData(["selectedOffice"], office);
+    pushAside("UpdateOffice");
   };
 
   const handleGoBack = () => {
@@ -161,21 +189,112 @@ export const UpdateOffice = () => {
     }
   };
 
-  return (
+  const renderCardsView = () => {
+    if (!selectedTenant) {
+      return (
+        <div className="flex justify-center items-center h-full">
+          <div className="text-center">
+            <Building className="mx-auto mb-4 w-12 h-12 text-gray-400" />
+            <h3 className="mb-2 font-medium text-gray-900 text-sm">
+              No tenant selected
+            </h3>
+            <p className="text-gray-500 text-sm">
+              Please select a tenant to view their office information.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col h-full">
+        {/* Search */}
+        <div className="relative mb-4">
+          <Search className="top-1/2 left-3 absolute w-4 h-4 text-gray-400 -translate-y-1/2 transform" />
+          <Input
+            placeholder="Search offices by name, city, or country..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* Stats */}
+        <div className="mb-4 text-gray-600 text-sm">
+          {filteredOffices.length}{" "}
+          {filteredOffices.length === 1 ? "office" : "offices"}
+        </div>
+
+        {/* Offices Grid */}
+        <div className="flex-1 overflow-y-auto">
+          {!tenantOffice ? (
+            <div className="py-12 text-center">
+              <Building className="mx-auto w-12 h-12 text-gray-400" />
+              <h3 className="mt-2 font-medium text-gray-900 text-sm">
+                No office configured
+              </h3>
+              <p className="mt-1 text-gray-500 text-sm">
+                This tenant doesn&apos;t have an office configured yet.
+              </p>
+              <div className="mt-6">
+                <Button onClick={handleAddOffice} variant="primary">
+                  <Plus className="mr-2 w-4 h-4" />
+                  Add Office
+                </Button>
+              </div>
+            </div>
+          ) : filteredOffices.length === 0 ? (
+            <div className="py-12 text-center">
+              <Building className="mx-auto w-12 h-12 text-gray-400" />
+              <h3 className="mt-2 font-medium text-gray-900 text-sm">
+                No offices found
+              </h3>
+              <p className="mt-1 text-gray-500 text-sm">
+                Try adjusting your search terms.
+              </p>
+            </div>
+          ) : (
+            <div className="gap-4 grid grid-cols-1">
+              {filteredOffices?.map((office: Office) => (
+                <OfficeCard
+                  key={office._id}
+                  office={office}
+                  onDelete={handleDeleteOffice}
+                  isDeleting={false}
+                  canDelete={true} // Permitimos eliminar oficinas de tenant
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderFormView = () => (
     <div className="flex flex-col h-full">
-      {/* Header con botón de volver atrás */}
-      <div className="flex items-center gap-3 mt-2">
-        {stack.length > 1 && (
-          <Button
-            onClick={handleGoBack}
-            variant="secondary"
-            size="small"
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-        )}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-3">
+          {stack.length > 1 && (
+            <Button
+              onClick={handleGoBack}
+              variant="secondary"
+              size="small"
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+          )}
+          <h3 className="font-semibold text-gray-900 text-lg">Edit Office</h3>
+        </div>
+        <Button
+          onClick={() => setCurrentView("cards")}
+          variant="secondary"
+          size="small"
+        >
+          Back to Offices
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -190,7 +309,7 @@ export const UpdateOffice = () => {
                   <FormItem>
                     <FormLabel>Office Name</FormLabel>
                     <FormControl>
-                      <Input
+                      <FormInput
                         placeholder="Enter office name"
                         {...field}
                         className="py-2 w-full h-14 text-lg"
@@ -208,7 +327,7 @@ export const UpdateOffice = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input
+                      <FormInput
                         placeholder="Enter contact email"
                         type="email"
                         {...field}
@@ -230,7 +349,7 @@ export const UpdateOffice = () => {
                   <FormItem>
                     <FormLabel>Contact Phone Number</FormLabel>
                     <FormControl>
-                      <Input
+                      <FormInput
                         placeholder="+54 11 15466052"
                         {...field}
                         className="py-2 w-full h-14 text-lg"
@@ -291,7 +410,7 @@ export const UpdateOffice = () => {
                   <FormItem>
                     <FormLabel>State</FormLabel>
                     <FormControl>
-                      <Input
+                      <FormInput
                         placeholder="State"
                         {...field}
                         className="py-2 w-full h-14 text-lg"
@@ -309,7 +428,7 @@ export const UpdateOffice = () => {
                   <FormItem>
                     <FormLabel>City</FormLabel>
                     <FormControl>
-                      <Input
+                      <FormInput
                         placeholder="City"
                         {...field}
                         className="py-2 w-full h-14 text-lg"
@@ -330,7 +449,7 @@ export const UpdateOffice = () => {
                   <FormItem>
                     <FormLabel>Zip Code</FormLabel>
                     <FormControl>
-                      <Input
+                      <FormInput
                         placeholder="Zip Code"
                         {...field}
                         className="py-2 w-full h-14 text-lg"
@@ -348,7 +467,7 @@ export const UpdateOffice = () => {
                   <FormItem>
                     <FormLabel>Address</FormLabel>
                     <FormControl>
-                      <Input
+                      <FormInput
                         placeholder="Address"
                         {...field}
                         className="py-2 w-full h-14 text-lg"
@@ -370,7 +489,7 @@ export const UpdateOffice = () => {
                     <FormItem>
                       <FormLabel>Apartment, Suite, etc.</FormLabel>
                       <FormControl>
-                        <Input
+                        <FormInput
                           placeholder="Apartment, suite, etc."
                           {...field}
                           className="py-2 w-full h-14 text-lg"
@@ -400,4 +519,6 @@ export const UpdateOffice = () => {
       </aside>
     </div>
   );
+
+  return currentView === "cards" ? renderCardsView() : renderFormView();
 };

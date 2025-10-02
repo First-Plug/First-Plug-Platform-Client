@@ -4,7 +4,10 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAsideStore, Button } from "@/shared";
+import { ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useOffices } from "@/features/settings/hooks/use-offices";
+import { CreateOffice as CreateOfficeType } from "@/features/settings/types/settings.types";
 import {
   FormControl,
   FormField,
@@ -44,8 +47,9 @@ export const CreateOffice = () => {
       name,
     })
   );
-  const { setAside } = useAsideStore();
+  const { setAside, popAside, stack } = useAsideStore();
   const queryClient = useQueryClient();
+  const { createOffice } = useOffices();
 
   const methods = useForm<CreateOfficeFormData>({
     resolver: zodResolver(createOfficeSchema),
@@ -78,17 +82,67 @@ export const CreateOffice = () => {
 
   const onSubmit = async (data: CreateOfficeFormData) => {
     try {
-      // TODO: Implement office creation mutation
-      // await createOfficeMutation.mutateAsync(data);
-      console.log("Creating office with data:", data);
+      // Ensure name is provided (required field)
+      if (!data.name || data.name.trim() === "") {
+        console.error("Office name is required");
+        return;
+      }
+
+      // Create office data with only non-empty fields
+      const officeData: CreateOfficeType = {
+        name: data.name.trim(),
+        ...(data.email &&
+          data.email.trim() !== "" && { email: data.email.trim() }),
+        ...(data.phone &&
+          data.phone.trim() !== "" && { phone: data.phone.trim() }),
+        ...(data.country &&
+          data.country.trim() !== "" && { country: data.country.trim() }),
+        ...(data.state &&
+          data.state.trim() !== "" && { state: data.state.trim() }),
+        ...(data.city && data.city.trim() !== "" && { city: data.city.trim() }),
+        ...(data.zipCode &&
+          data.zipCode.trim() !== "" && { zipCode: data.zipCode.trim() }),
+        ...(data.address &&
+          data.address.trim() !== "" && { address: data.address.trim() }),
+        ...(data.apartment &&
+          data.apartment.trim() !== "" && { apartment: data.apartment.trim() }),
+      };
+
+      createOffice(officeData);
       setAside(null);
     } catch (error) {
       console.error("Error creating office:", error);
     }
   };
 
+  const handleGoBack = () => {
+    // Solo hacer pop si hay más de una sidebar en el stack
+    if (stack.length > 1) {
+      popAside();
+    } else {
+      // Si solo hay una sidebar, cerrar todo
+      setAside(null);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
+      {/* Header con botón de volver atrás */}
+      <div className="flex items-center gap-3 mb-4">
+        {stack.length > 1 && (
+          <Button
+            onClick={handleGoBack}
+            variant="secondary"
+            size="small"
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+        )}
+        <h3 className="font-semibold text-gray-900 text-lg">Create Office</h3>
+      </div>
+
       <div className="flex-1 overflow-y-auto">
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pr-4">

@@ -12,6 +12,7 @@ export * from "./CreateTeamAside";
 export * from "./EditAssignedUser";
 export * from "./UpdateTenant";
 export * from "./UpdateOffice";
+export * from "./UpdateOfficeWithCards";
 export * from "./CreateOffice";
 export * from "./CreateTenant";
 export * from "./CreateWarehouse";

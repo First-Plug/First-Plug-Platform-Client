@@ -16,19 +16,21 @@ interface OfficeCardProps {
   office: Office;
   onDelete: (id: string) => void;
   isDeleting?: boolean;
+  canDelete?: boolean;
 }
 
 export const OfficeCard = ({
   office,
   onDelete,
   isDeleting = false,
+  canDelete = true,
 }: OfficeCardProps) => {
-  const { setAside } = useAsideStore();
+  const { setAside, pushAside } = useAsideStore();
   const queryClient = useQueryClient();
 
   const handleEdit = () => {
     queryClient.setQueryData(["selectedOffice"], office);
-    setAside("UpdateOffice");
+    pushAside("UpdateOffice");
   };
   const getCountryName = (countryCode?: string) => {
     if (!countryCode) return "";
@@ -62,23 +64,25 @@ export const OfficeCard = ({
               strokeWidth={2}
             />
           </Button>
-          <DeleteAction
-            type="office"
-            id={office._id}
-            onConfirm={() => onDelete(office._id)}
-            trigger={
-              <Button
-                variant="outline"
-                disabled={isDeleting}
-                className="hover:bg-red-50 p-2"
-              >
-                <TrashIcon
-                  className="w-4 h-4 text-red-600 hover:text-red-700"
-                  strokeWidth={2}
-                />
-              </Button>
-            }
-          />
+          {canDelete && (
+            <DeleteAction
+              type="office"
+              id={office._id}
+              onConfirm={() => onDelete(office._id)}
+              trigger={
+                <Button
+                  variant="outline"
+                  disabled={isDeleting}
+                  className="hover:bg-red-50 p-2"
+                >
+                  <TrashIcon
+                    className="w-4 h-4 text-red-600 hover:text-red-700"
+                    strokeWidth={2}
+                  />
+                </Button>
+              }
+            />
+          )}
         </div>
       </div>
 

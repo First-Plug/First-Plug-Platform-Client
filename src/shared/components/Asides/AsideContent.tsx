@@ -13,6 +13,7 @@ import {
   EditAssignedUser,
   UpdateTenant,
   UpdateOffice,
+  UpdateOfficeWithCards,
   CreateOffice,
   CreateTenant,
   CreateWarehouse,
@@ -23,7 +24,10 @@ import { ShipmentAside } from "@/features/shipments";
 import { EditLogisticsShipmentAside } from "@/features/logistics";
 
 export var AsideContent = function () {
-  const { type } = useAsideStore();
+  const { getCurrentAside } = useAsideStore();
+  const currentAside = getCurrentAside();
+  const type = currentAside?.type;
+
   switch (type) {
     case "MemberDetails":
       return <MemberAsideDetails />;
@@ -55,6 +59,8 @@ export var AsideContent = function () {
       return <UpdateTenant />;
     case "UpdateOffice":
       return <UpdateOffice />;
+    case "UpdateOfficeWithCards":
+      return <UpdateOfficeWithCards />;
     case "CreateOffice":
       return <CreateOffice />;
     case "CreateTenant":
