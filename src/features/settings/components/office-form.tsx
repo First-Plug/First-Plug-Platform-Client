@@ -7,21 +7,19 @@ import {
   FormLabel,
   FormMessage,
   Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from "@/shared";
+import { DropdownInputProductForm } from "@/features/assets";
 import { UseFormReturn } from "react-hook-form";
 import { OfficeFormData } from "../schemas/office.schema";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { z } from "zod";
 
 interface OfficeFormProps {
   form: UseFormReturn<OfficeFormData>;
+  isEditMode?: boolean;
 }
 
-export const OfficeForm = ({ form }: OfficeFormProps) => {
+export const OfficeForm = ({ form, isEditMode = false }: OfficeFormProps) => {
   // Crear lista de países con código y nombre
   const COUNTRIES = Object.entries(countriesByCode).map(([code, name]) => ({
     code,
@@ -40,9 +38,15 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Office Name *</FormLabel>
+              <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                Office Name *
+              </FormLabel>
               <FormControl>
-                <Input placeholder="Enter office name" {...field} />
+                <Input
+                  placeholder="Enter office name"
+                  {...field}
+                  className="rounded-xl h-14"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -54,12 +58,15 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Office Email</FormLabel>
+              <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                Office Email
+              </FormLabel>
               <FormControl>
                 <Input
                   type="email"
                   placeholder="office@company.com"
                   {...field}
+                  className="rounded-xl h-14"
                 />
               </FormControl>
               <FormMessage />
@@ -72,9 +79,15 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Office Phone</FormLabel>
+              <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                Office Phone
+              </FormLabel>
               <FormControl>
-                <Input placeholder="+1 234 567 8900" {...field} />
+                <Input
+                  placeholder="+1 234 567 8900"
+                  {...field}
+                  className="rounded-xl h-14"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -86,25 +99,23 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
           name="country"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Country</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a country">
-                      {field.value
-                        ? countriesByCode[field.value]
-                        : "Select a country"}
-                    </SelectValue>
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="bg-white shadow-lg border border-gray-200 max-h-60">
-                  {COUNTRIES.map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
-                      {country.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <DropdownInputProductForm
+                title="Country"
+                placeholder="Select a country"
+                options={COUNTRIES.map((country) => country.name)}
+                selectedOption={field.value ? countriesByCode[field.value] : ""}
+                onChange={(selectedCountryName) => {
+                  const countryCode = Object.entries(countriesByCode).find(
+                    ([code, name]) => name === selectedCountryName
+                  )?.[0];
+                  field.onChange(countryCode || "");
+                }}
+                name="country"
+                searchable={true}
+                required={!isEditMode ? "required" : undefined}
+                disabled={isEditMode}
+                className="-mb-2"
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -115,9 +126,15 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
           name="state"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>State/Province</FormLabel>
+              <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                State/Province
+              </FormLabel>
               <FormControl>
-                <Input placeholder="Enter state or province" {...field} />
+                <Input
+                  placeholder="Enter state or province"
+                  {...field}
+                  className="rounded-xl h-14"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -129,9 +146,15 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
           name="city"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>City</FormLabel>
+              <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                City
+              </FormLabel>
               <FormControl>
-                <Input placeholder="Enter city" {...field} />
+                <Input
+                  placeholder="Enter city"
+                  {...field}
+                  className="rounded-xl h-14"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -143,9 +166,15 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
           name="zipCode"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Zip Code</FormLabel>
+              <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                Zip Code
+              </FormLabel>
               <FormControl>
-                <Input placeholder="Enter zip code" {...field} />
+                <Input
+                  placeholder="Enter zip code"
+                  {...field}
+                  className="rounded-xl h-14"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -157,9 +186,15 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
           name="address"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Address</FormLabel>
+              <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                Address
+              </FormLabel>
               <FormControl>
-                <Input placeholder="Enter office address" {...field} />
+                <Input
+                  placeholder="Enter office address"
+                  {...field}
+                  className="rounded-xl h-14"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -171,9 +206,39 @@ export const OfficeForm = ({ form }: OfficeFormProps) => {
           name="apartment"
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel>Suite, Floor, etc.</FormLabel>
+              <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                Suite, Floor, etc.
+              </FormLabel>
               <FormControl>
-                <Input placeholder="Suite, floor, unit, etc." {...field} />
+                <Input
+                  placeholder="Suite, floor, unit, etc."
+                  {...field}
+                  className="rounded-xl h-14"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {/* Additional Info - Full Width */}
+      <div className="mt-6">
+        <FormField
+          control={form.control}
+          name="additionalInfo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                Additional Info
+              </FormLabel>
+              <FormControl>
+                <textarea
+                  placeholder="Enter any additional information about the office"
+                  {...field}
+                  className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[80px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
+                  rows={3}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

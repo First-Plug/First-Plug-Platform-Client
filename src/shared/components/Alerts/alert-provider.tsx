@@ -498,7 +498,7 @@ export const AlertProvider = () => {
     officeCreatedSuccessfully: {
       title: "Success",
       type: "succes",
-      description: "Office has been created successfully.",
+      description: "Office has been successfully created.",
       closeAction: () => {
         setAlert(undefined);
       },
@@ -506,7 +506,7 @@ export const AlertProvider = () => {
     officeUpdatedSuccessfully: {
       title: "Success",
       type: "succes",
-      description: "Office has been updated successfully.",
+      description: "Office has been successfully updated.",
       closeAction: () => {
         setAlert(undefined);
       },
@@ -514,7 +514,7 @@ export const AlertProvider = () => {
     officeDeletedSuccessfully: {
       title: "Success",
       type: "succes",
-      description: "Office has been deleted successfully.",
+      description: "Office has been successfully deleted.",
       closeAction: () => {
         setAlert(undefined);
       },

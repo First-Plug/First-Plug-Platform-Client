@@ -44,6 +44,8 @@ export const officeSchema = z.object({
   address: z.string().optional().or(z.literal("")),
 
   apartment: z.string().optional().or(z.literal("")),
+
+  additionalInfo: z.string().optional().or(z.literal("")),
 });
 
 export type OfficeFormData = z.infer<typeof officeSchema>;

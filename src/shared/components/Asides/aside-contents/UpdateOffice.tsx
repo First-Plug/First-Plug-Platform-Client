@@ -16,14 +16,8 @@ import {
   FormLabel,
   FormMessage,
   Input,
-  Select,
-  SelectItem,
-  SelectContent,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-  SelectGroup,
 } from "@/shared";
+import { DropdownInputProductForm } from "@/features/assets";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
 const updateOfficeSchema = z.object({
@@ -36,6 +30,7 @@ const updateOfficeSchema = z.object({
   zipCode: z.string().optional().or(z.literal("")),
   address: z.string().optional().or(z.literal("")),
   apartment: z.string().optional().or(z.literal("")),
+  additionalInfo: z.string().optional().or(z.literal("")),
 });
 
 type UpdateOfficeFormData = z.infer<typeof updateOfficeSchema>;
@@ -68,6 +63,10 @@ export const UpdateOffice = () => {
       address: selectedOffice?.address || selectedTenant?.office?.address || "",
       apartment:
         selectedOffice?.apartment || selectedTenant?.office?.apartment || "",
+      additionalInfo:
+        selectedOffice?.additionalInfo ||
+        selectedTenant?.office?.additionalInfo ||
+        "",
     },
   });
 
@@ -188,12 +187,14 @@ export const UpdateOffice = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Office Name</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Office Name
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter office name"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -206,13 +207,15 @@ export const UpdateOffice = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Email
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter contact email"
                         type="email"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -228,12 +231,14 @@ export const UpdateOffice = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contact Phone Number</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Contact Phone Number
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="+54 11 15466052"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -246,36 +251,26 @@ export const UpdateOffice = () => {
                 name="country"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Country</FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger className="py-2 w-full h-14 text-lg">
-                          {field.value ? (
-                            <SelectValue
-                              placeholder="Select Country"
-                              className="opacity-10"
-                            >
-                              {countriesByCode[field.value]}
-                            </SelectValue>
-                          ) : (
-                            <span className="text-grey">Select Country</span>
-                          )}
-                        </SelectTrigger>
-                        <SelectContent className="bg-white max-h-60">
-                          <SelectGroup>
-                            <SelectLabel>Location</SelectLabel>
-                            {countryOptions.map((option) => (
-                              <SelectItem value={option.code} key={option.code}>
-                                {option.name}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
+                    <DropdownInputProductForm
+                      title="Country"
+                      placeholder="Select Country"
+                      options={countryOptions.map((option) => option.name)}
+                      selectedOption={
+                        field.value ? countriesByCode[field.value] : ""
+                      }
+                      onChange={(selectedCountryName) => {
+                        const countryCode = Object.entries(
+                          countriesByCode
+                        ).find(
+                          ([code, name]) => name === selectedCountryName
+                        )?.[0];
+                        field.onChange(countryCode || "");
+                      }}
+                      name="country"
+                      searchable={true}
+                      disabled={true}
+                      className="-mb-2"
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -289,12 +284,14 @@ export const UpdateOffice = () => {
                 name="state"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>State</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      State
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="State"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -307,12 +304,14 @@ export const UpdateOffice = () => {
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>City</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      City
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="City"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -328,12 +327,14 @@ export const UpdateOffice = () => {
                 name="zipCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Zip Code</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Zip Code
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Zip Code"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -346,12 +347,14 @@ export const UpdateOffice = () => {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Address</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Address
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Address"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -368,12 +371,14 @@ export const UpdateOffice = () => {
                   name="apartment"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Apartment, Suite, etc.</FormLabel>
+                      <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                        Apartment, Suite, etc.
+                      </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Apartment, suite, etc."
                           {...field}
-                          className="py-2 w-full h-14 text-lg"
+                          className="py-2 rounded-xl w-full h-14 text-lg"
                         />
                       </FormControl>
                       <FormMessage />
@@ -381,6 +386,30 @@ export const UpdateOffice = () => {
                   )}
                 />
               </div>
+            </div>
+
+            {/* Additional Info - Full Width */}
+            <div className="mt-6">
+              <FormField
+                control={methods.control}
+                name="additionalInfo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Additional Info
+                    </FormLabel>
+                    <FormControl>
+                      <textarea
+                        placeholder="Enter any additional information about the office"
+                        {...field}
+                        className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[80px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
+                        rows={3}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </form>
         </FormProvider>

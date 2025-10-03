@@ -285,7 +285,9 @@ export const UpdateOfficeWithCards = () => {
                   key={office._id}
                   office={office}
                   onDelete={handleDeleteOffice}
+                  onSetDefault={() => {}} // Función vacía ya que no se maneja setDefault en este contexto
                   isDeleting={false}
+                  isSettingDefault={false}
                   canDelete={true} // Permitimos eliminar oficinas de tenant
                 />
               ))}

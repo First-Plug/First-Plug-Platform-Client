@@ -7,22 +7,30 @@ import {
   TrashIcon,
   DeleteAction,
   useAsideStore,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/shared";
-import { MapPin, Mail, Phone, Building } from "lucide-react";
+import { MapPin, Mail, Phone, Building, Star } from "lucide-react";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface OfficeCardProps {
   office: Office;
   onDelete: (id: string) => void;
+  onSetDefault: (id: string) => void;
   isDeleting?: boolean;
+  isSettingDefault?: boolean;
   canDelete?: boolean;
 }
 
 export const OfficeCard = ({
   office,
   onDelete,
+  onSetDefault,
   isDeleting = false,
+  isSettingDefault = false,
   canDelete = true,
 }: OfficeCardProps) => {
   const { setAside, pushAside } = useAsideStore();
@@ -32,9 +40,33 @@ export const OfficeCard = ({
     queryClient.setQueryData(["selectedOffice"], office);
     pushAside("UpdateOffice");
   };
+
+  const handleSetDefault = () => {
+    // Solo hacer click si no es ya la oficina por defecto
+    if (!office.isDefault) {
+      onSetDefault(office._id);
+    }
+  };
   const getCountryName = (countryCode?: string) => {
     if (!countryCode) return "";
     return countriesByCode[countryCode] || countryCode;
+  };
+
+  // Función para verificar si la oficina tiene todos los datos obligatorios
+  const isOfficeIncomplete = () => {
+    const requiredFields = [
+      "name",
+      "phone",
+      "country",
+      "state",
+      "city",
+      "zipCode",
+      "address",
+    ];
+    return requiredFields.some((field) => {
+      const value = office[field as keyof Office];
+      return !value || (typeof value === "string" && value.trim() === "");
+    });
   };
 
   const formatAddress = () => {
@@ -50,7 +82,13 @@ export const OfficeCard = ({
   };
 
   return (
-    <div className="bg-white hover:shadow-md p-6 border border-gray-200 rounded-lg transition-shadow duration-200">
+    <div
+      className={`${
+        isOfficeIncomplete()
+          ? "bg-red-50 border-red-200"
+          : "bg-white border-gray-200"
+      } hover:shadow-md p-6 border rounded-lg transition-shadow duration-200`}
+    >
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-2">
           <Building className="w-5 h-5 text-gray-600" />
@@ -58,6 +96,27 @@ export const OfficeCard = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Estrella para marcar oficina por defecto */}
+          <Button
+            variant="outline"
+            onClick={handleSetDefault}
+            disabled={isSettingDefault || office.isDefault}
+            className={`p-2 ${
+              office.isDefault
+                ? "hover:bg-yellow-50"
+                : "hover:bg-yellow-50 cursor-pointer"
+            }`}
+          >
+            <Star
+              className={`w-4 h-4 ${
+                office.isDefault
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "text-gray-400 hover:text-yellow-400"
+              }`}
+              strokeWidth={2}
+            />
+          </Button>
+
           <Button variant="outline" onClick={handleEdit} className="p-2">
             <PenIcon
               className="w-4 h-4 text-blue hover:text-blue/70"
@@ -65,26 +124,75 @@ export const OfficeCard = ({
             />
           </Button>
           {canDelete && (
-            <DeleteAction
-              type="office"
-              id={office._id}
-              onConfirm={() => onDelete(office._id)}
-              trigger={
-                <Button
-                  variant="outline"
-                  disabled={isDeleting}
-                  className="hover:bg-red-50 p-2"
-                >
-                  <TrashIcon
-                    className="w-4 h-4 text-red-600 hover:text-red-700"
-                    strokeWidth={2}
-                  />
-                </Button>
-              }
-            />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <DeleteAction
+                      type="office"
+                      id={office._id}
+                      onConfirm={() => onDelete(office._id)}
+                      disabled={
+                        isDeleting ||
+                        office.isDefault ||
+                        office.hasActiveProducts === true
+                      }
+                      trigger={
+                        <Button
+                          variant="outline"
+                          disabled={
+                            isDeleting ||
+                            office.isDefault ||
+                            office.hasActiveProducts === true
+                          }
+                          className="hover:bg-red-50 p-2"
+                        >
+                          <TrashIcon
+                            className={`w-4 h-4 ${
+                              office.isDefault ||
+                              office.hasActiveProducts === true
+                                ? "text-gray-400"
+                                : "text-red-600 hover:text-red-700"
+                            }`}
+                            strokeWidth={2}
+                          />
+                        </Button>
+                      }
+                    />
+                  </div>
+                </TooltipTrigger>
+                {office.hasActiveProducts === true && (
+                  <TooltipContent>
+                    <p>
+                      Offices with recoverable products assigned or active
+                      shipments cannot be deleted.
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       </div>
+
+      {isOfficeIncomplete() && (
+        <div className="mb-3">
+          <span className="inline-flex items-center bg-red-100 px-2.5 py-0.5 rounded-full font-medium text-red-800 text-xs">
+            <svg
+              className="mr-1 w-3 h-3"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Incomplete Data
+          </span>
+        </div>
+      )}
 
       <div className="space-y-3">
         <div className="flex items-start gap-3">

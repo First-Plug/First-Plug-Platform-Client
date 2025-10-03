@@ -35,6 +35,7 @@ export const OfficeModal = ({
       zipCode: "",
       address: "",
       apartment: "",
+      additionalInfo: "",
     },
   });
 
@@ -50,6 +51,7 @@ export const OfficeModal = ({
         zipCode: office.zipCode || "",
         address: office.address || "",
         apartment: office.apartment || "",
+        additionalInfo: office.additionalInfo || "",
       });
     } else {
       form.reset({
@@ -62,6 +64,7 @@ export const OfficeModal = ({
         zipCode: "",
         address: "",
         apartment: "",
+        additionalInfo: "",
       });
     }
   }, [office, form, isOpen]);
@@ -119,7 +122,7 @@ export const OfficeModal = ({
               onSubmit={form.handleSubmit(handleSubmit)}
               className="space-y-6"
             >
-              <OfficeForm form={form} />
+              <OfficeForm form={form} isEditMode={!!office} />
 
               {/* Actions */}
               <div className="flex justify-end gap-3 pt-4 border-gray-200 border-t">

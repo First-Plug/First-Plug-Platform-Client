@@ -274,8 +274,9 @@ export const DeleteAction = ({
       deleteAction: handleDeleteShipment,
     },
     office: {
-      title: "¿Estás seguro de que quieres eliminar esta oficina? 🗑️",
-      description: "Esta oficina será eliminada permanentemente",
+      title: "Delete Office 🗑️",
+      description:
+        "Are you sure you want to delete this office? This office will be permanently removed.",
       deleteAction: () => {
         if (onConfirm) {
           onConfirm();

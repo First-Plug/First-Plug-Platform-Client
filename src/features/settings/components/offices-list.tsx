@@ -6,26 +6,48 @@ import { OfficeCard } from "./office-card";
 import { Button, LoaderSpinner, Input, useAsideStore } from "@/shared";
 import { Building, Plus, Search } from "lucide-react";
 import { Office } from "../types/settings.types";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 export const OfficesList = () => {
-  const { offices, isLoading, deleteOffice, isDeleting } = useOffices();
+  const {
+    offices,
+    isLoading,
+    deleteOffice,
+    setDefaultOffice,
+    isDeleting,
+    isSettingDefault,
+  } = useOffices();
 
   const { setAside } = useAsideStore();
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Filtrar oficinas basado en el término de búsqueda
   const filteredOffices: Office[] = useMemo(() => {
     if (!offices || offices.length === 0) return [];
 
     if (!searchTerm.trim()) return offices;
 
-    return offices.filter(
-      (office: Office) =>
-        office.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        office.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        office.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        office.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const searchTermLower = searchTerm.toLowerCase();
+
+    return offices.filter((office: Office) => {
+      const basicMatch =
+        office.name.toLowerCase().includes(searchTermLower) ||
+        office.city?.toLowerCase().includes(searchTermLower) ||
+        office.email?.toLowerCase().includes(searchTermLower);
+
+      const countryCodeMatch = office.country
+        ?.toLowerCase()
+        .includes(searchTermLower);
+
+      let countryNameMatch = false;
+      if (office.country && countriesByCode[office.country]) {
+        const fullCountryName = countriesByCode[office.country];
+        countryNameMatch = fullCountryName
+          .toLowerCase()
+          .includes(searchTermLower);
+      }
+
+      return basicMatch || countryCodeMatch || countryNameMatch;
+    });
   }, [offices, searchTerm]);
 
   const handleAddOffice = () => {
@@ -34,6 +56,10 @@ export const OfficesList = () => {
 
   const handleDeleteOffice = (id: string) => {
     deleteOffice(id);
+  };
+
+  const handleSetDefaultOffice = (id: string) => {
+    setDefaultOffice(id);
   };
 
   if (isLoading) {
@@ -104,7 +130,9 @@ export const OfficesList = () => {
               key={office._id}
               office={office}
               onDelete={handleDeleteOffice}
+              onSetDefault={handleSetDefaultOffice}
               isDeleting={isDeleting}
+              isSettingDefault={isSettingDefault}
             />
           ))}
         </div>

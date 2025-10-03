@@ -12,6 +12,7 @@ export const mockOffices: Office[] = [
     state: "Madrid",
     country: "ES",
     zipCode: "28001",
+    additionalInfo: "Oficina principal con acceso a metro y parking disponible",
     isDefault: true,
   },
   {
@@ -25,7 +26,9 @@ export const mockOffices: Office[] = [
     state: "Cataluña",
     country: "ES",
     zipCode: "08001",
+    additionalInfo: "Sucursal comercial en el centro de Barcelona",
     isDefault: false,
+    hasActiveProducts: true, // ← Tiene productos recoverables/envíos activos (no se puede eliminar)
   },
   {
     _id: "3",
@@ -38,6 +41,7 @@ export const mockOffices: Office[] = [
     state: "San Salvador",
     country: "SV",
     zipCode: "01101",
+    additionalInfo: "Oficina regional para Centroamérica",
     isDefault: false,
   },
   {
@@ -51,19 +55,22 @@ export const mockOffices: Office[] = [
     state: "NY",
     country: "US",
     zipCode: "10001",
+    additionalInfo:
+      "Oficina corporativa en Manhattan con vista al Times Square",
     isDefault: false,
   },
   {
     _id: "5",
     name: "Oficina Londres",
     email: "london@firstplug.com",
-    phone: "+44 20 7946 0958",
-    address: "Oxford Street 567",
+    phone: "", // ← Datos incompletos: falta teléfono
+    address: "", // ← Datos incompletos: falta dirección
     apartment: "Suite 200",
     city: "London",
-    state: "England",
+    state: "", // ← Datos incompletos: falta estado
     country: "GB",
-    zipCode: "W1D 1BS",
+    zipCode: "", // ← Datos incompletos: falta código postal
+    additionalInfo: "Oficina europea con acceso directo al metro",
     isDefault: false,
   },
 ];
