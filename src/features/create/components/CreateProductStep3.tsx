@@ -258,11 +258,7 @@ export const CreateProductStep3 = ({
   // Determinar si el campo Product Name debe estar habilitado
   const isProductNameEnabled = () => {
     const model = attributes?.find((attr) => attr.key === "model")?.value;
-    return (
-      selectedCategory === "Merchandising" ||
-      selectedCategory === "Other" ||
-      model === "Other"
-    );
+    return selectedCategory === "Merchandising" || model === "Other";
   };
 
   const getAttributeError = (fieldName: string) => {
