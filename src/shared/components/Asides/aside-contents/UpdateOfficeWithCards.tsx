@@ -223,9 +223,6 @@ export const UpdateOfficeWithCards = () => {
               </Button>
             )}
             <div>
-              <h3 className="font-semibold text-gray-900 text-lg">
-                Office - {selectedTenant.name}
-              </h3>
               <p className="text-gray-600 text-sm">
                 Tenant: {selectedTenant.tenantName}
               </p>
