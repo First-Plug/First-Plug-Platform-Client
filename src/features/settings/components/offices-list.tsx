@@ -29,15 +29,18 @@ export const OfficesList = () => {
     const searchTermLower = searchTerm.toLowerCase();
 
     return offices.filter((office: Office) => {
+      // Búsqueda básica: nombre, ciudad, email
       const basicMatch =
         office.name.toLowerCase().includes(searchTermLower) ||
         office.city?.toLowerCase().includes(searchTermLower) ||
         office.email?.toLowerCase().includes(searchTermLower);
 
+      // Búsqueda por código de país
       const countryCodeMatch = office.country
         ?.toLowerCase()
         .includes(searchTermLower);
 
+      // Búsqueda por nombre completo del país
       let countryNameMatch = false;
       if (office.country && countriesByCode[office.country]) {
         const fullCountryName = countriesByCode[office.country];
@@ -46,7 +49,10 @@ export const OfficesList = () => {
           .includes(searchTermLower);
       }
 
-      return basicMatch || countryCodeMatch || countryNameMatch;
+      // Búsqueda por estado
+      const stateMatch = office.state?.toLowerCase().includes(searchTermLower);
+
+      return basicMatch || countryCodeMatch || countryNameMatch || stateMatch;
     });
   }, [offices, searchTerm]);
 
@@ -90,7 +96,7 @@ export const OfficesList = () => {
         <div className="relative flex-1 max-w-md">
           <Search className="top-1/2 left-3 absolute w-4 h-4 text-gray-400 -translate-y-1/2 transform" />
           <Input
-            placeholder="Search offices by name, city, or country..."
+            placeholder="Search offices by name, city, country, or state..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"

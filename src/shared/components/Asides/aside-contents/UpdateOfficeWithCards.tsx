@@ -8,7 +8,7 @@ import { useAsideStore, Button, LoaderSpinner, Input } from "@/shared";
 import { Tenant, useUpdateTenantOffice } from "@/features/tenants";
 import { useQueryClient } from "@tanstack/react-query";
 import { Office } from "@/features/settings/types/settings.types";
-import { useOffices } from "@/features/settings/hooks/use-offices";
+import { countriesByCode } from "@/shared/constants/country-codes";
 import {
   FormControl,
   FormField,
@@ -24,7 +24,6 @@ import {
   SelectValue,
   SelectGroup,
 } from "@/shared";
-import { countriesByCode } from "@/shared/constants/country-codes";
 import { OfficeCard } from "@/features/settings/components/office-card";
 import { Building, Plus, Search, ArrowLeft } from "lucide-react";
 
@@ -85,11 +84,33 @@ export const UpdateOfficeWithCards = () => {
     if (!searchTerm.trim()) return [tenantOffice];
 
     const office = tenantOffice;
+    const searchTermLower = searchTerm.toLowerCase();
+
+    // Búsqueda básica: nombre, ciudad, email
+    const basicMatch =
+      office.name.toLowerCase().includes(searchTermLower) ||
+      office.city?.toLowerCase().includes(searchTermLower) ||
+      office.email?.toLowerCase().includes(searchTermLower);
+
+    // Búsqueda por código de país
+    const countryCodeMatch = office.country
+      ?.toLowerCase()
+      .includes(searchTermLower);
+
+    // Búsqueda por nombre completo del país
+    let countryNameMatch = false;
+    if (office.country && countriesByCode[office.country]) {
+      const fullCountryName = countriesByCode[office.country];
+      countryNameMatch = fullCountryName
+        .toLowerCase()
+        .includes(searchTermLower);
+    }
+
+    // Búsqueda por estado
+    const stateMatch = office.state?.toLowerCase().includes(searchTermLower);
+
     const matchesSearch =
-      office.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      office.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      office.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      office.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      basicMatch || countryCodeMatch || countryNameMatch || stateMatch;
 
     return matchesSearch ? [office] : [];
   }, [tenantOffice, searchTerm]);
@@ -234,7 +255,7 @@ export const UpdateOfficeWithCards = () => {
         <div className="relative mb-4">
           <Search className="top-1/2 left-3 absolute w-4 h-4 text-gray-400 -translate-y-1/2 transform" />
           <Input
-            placeholder="Search offices by name, city, or country..."
+            placeholder="Search offices by name, city, country, or state..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"

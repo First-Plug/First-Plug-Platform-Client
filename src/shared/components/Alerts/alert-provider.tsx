@@ -522,7 +522,7 @@ export const AlertProvider = () => {
     defaultOfficeUpdatedSuccessfully: {
       title: "Success",
       type: "succes",
-      description: "Default office has been updated successfully.",
+      description: "Default office has been successfully updated.",
       closeAction: () => {
         setAlert(undefined);
       },

@@ -2,7 +2,6 @@
 
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useAsideStore, Button } from "@/shared";
 import { ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,21 +17,10 @@ import {
 } from "@/shared";
 import { DropdownInputProductForm } from "@/features/assets";
 import { countriesByCode } from "@/shared/constants/country-codes";
-
-const createOfficeSchema = z.object({
-  name: z.string().min(1, "Office name is required"),
-  email: z.string().email("Invalid email format").optional().or(z.literal("")),
-  phone: z.string().optional().or(z.literal("")),
-  country: z.string().min(1, "Country is required"),
-  state: z.string().optional().or(z.literal("")),
-  city: z.string().optional().or(z.literal("")),
-  zipCode: z.string().optional().or(z.literal("")),
-  address: z.string().optional().or(z.literal("")),
-  apartment: z.string().optional().or(z.literal("")),
-  additionalInfo: z.string().optional().or(z.literal("")),
-});
-
-type CreateOfficeFormData = z.infer<typeof createOfficeSchema>;
+import {
+  createOfficeSchema,
+  type OfficeFormData,
+} from "@/features/settings/schemas/office.schema";
 
 export const CreateOffice = () => {
   // Crear lista de países con código y nombre
@@ -44,10 +32,13 @@ export const CreateOffice = () => {
   );
   const { setAside, popAside, stack } = useAsideStore();
   const queryClient = useQueryClient();
-  const { createOffice } = useOffices();
+  const { createOffice, offices } = useOffices();
 
-  const methods = useForm<CreateOfficeFormData>({
-    resolver: zodResolver(createOfficeSchema),
+  // Crear el esquema con validación de nombres únicos
+  const schema = createOfficeSchema(offices);
+
+  const methods = useForm<OfficeFormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
       name: "",
       email: "",
@@ -76,7 +67,7 @@ export const CreateOffice = () => {
     return isDirty;
   };
 
-  const onSubmit = async (data: CreateOfficeFormData) => {
+  const onSubmit = async (data: OfficeFormData) => {
     try {
       // Ensure name is provided (required field)
       if (!data.name || data.name.trim() === "") {

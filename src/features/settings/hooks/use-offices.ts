@@ -47,6 +47,15 @@ export const useOffices = (): {
   // TODO: Replace with OfficeServices.createOffice(data) when API endpoint is ready
   const createOfficeMutation = useMutation({
     mutationFn: async (data: CreateOffice) => {
+      // Validar que el nombre sea único
+      const existingOffice = mockOfficesData.find(
+        (office) => office.name.toLowerCase() === data.name.toLowerCase()
+      );
+
+      if (existingOffice) {
+        throw new Error("An office with this name already exists");
+      }
+
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const newOffice: Office = {
@@ -70,6 +79,19 @@ export const useOffices = (): {
   // Update office mutation
   const updateOfficeMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateOffice }) => {
+      // Si se está actualizando el nombre, validar que sea único
+      if (data.name) {
+        const existingOffice = mockOfficesData.find(
+          (office) =>
+            office._id !== id &&
+            office.name.toLowerCase() === data.name.toLowerCase()
+        );
+
+        if (existingOffice) {
+          throw new Error("An office with this name already exists");
+        }
+      }
+
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const officeIndex = mockOfficesData.findIndex(

@@ -5,7 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { Button, LoaderSpinner, Form } from "@/shared";
 import { OfficeForm } from "./office-form";
-import { officeSchema, type OfficeFormData } from "../schemas/office.schema";
+import {
+  createOfficeSchema,
+  type OfficeFormData,
+} from "../schemas/office.schema";
 import { Office, CreateOffice, UpdateOffice } from "../types/settings.types";
 
 interface OfficeModalProps {
@@ -14,6 +17,7 @@ interface OfficeModalProps {
   onSubmit: (data: CreateOffice | UpdateOffice) => void;
   office?: Office | null;
   isLoading?: boolean;
+  existingOffices?: Office[];
 }
 
 export const OfficeModal = ({
@@ -22,9 +26,13 @@ export const OfficeModal = ({
   onSubmit,
   office,
   isLoading = false,
+  existingOffices = [],
 }: OfficeModalProps) => {
+  // Crear el esquema con validación de nombres únicos
+  const schema = createOfficeSchema(existingOffices, office?._id);
+
   const form = useForm<OfficeFormData>({
-    resolver: zodResolver(officeSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: "",
       email: "",

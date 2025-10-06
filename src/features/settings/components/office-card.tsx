@@ -161,11 +161,12 @@ export const OfficeCard = ({
                     />
                   </div>
                 </TooltipTrigger>
-                {office.hasActiveProducts === true && (
-                  <TooltipContent>
+                {(office.hasActiveProducts === true || office.isDefault) && (
+                  <TooltipContent className="bg-white">
                     <p>
-                      Offices with recoverable products assigned or active
-                      shipments cannot be deleted.
+                      {office.isDefault
+                        ? "Default office cannot be deleted."
+                        : "Offices with recoverable products assigned or active shipments cannot be deleted."}
                     </p>
                   </TooltipContent>
                 )}
