@@ -3,7 +3,9 @@ import { useMemberStore } from "@/features/members";
 import { useAsideStore } from "@/shared";
 
 export const AsideTitle = () => {
-  const { type } = useAsideStore();
+  const { getCurrentAside } = useAsideStore();
+  const currentAside = getCurrentAside();
+  const type = currentAside?.type;
 
   const { selectedMember } = useMemberStore();
 
@@ -42,7 +44,15 @@ export const AsideTitle = () => {
       return `Update Tenant`;
     case "UpdateOffice":
       return `Update Office`;
+    case "UpdateOfficeWithCards":
+      return `Office Management`;
     case "CreateTenant":
       return `Create Tenant`;
+    case "CreateWarehouse":
+      return `Create Warehouse`;
+    case "UpdateWarehouse":
+      return `Update Warehouse`;
+    case "CreateOffice":
+      return `Create Office`;
   }
 };

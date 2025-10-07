@@ -26,7 +26,9 @@ export const LoadAside = function () {
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { setAside, type } = useAsideStore();
+  const { setAside, getCurrentAside } = useAsideStore();
+  const currentAside = getCurrentAside();
+  const type = currentAside?.type;
   const { setAlert } = useAlertStore();
 
   const queryClient = useQueryClient();

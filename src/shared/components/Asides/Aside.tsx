@@ -7,7 +7,7 @@ import { AsideTitle } from "./AsideTitle";
 import { useQueryClient } from "@tanstack/react-query";
 
 export var Aside = function Aside() {
-  const { type, closeAside } = useAsideStore();
+  const { stack, isClosed, closeAside, popAside } = useAsideStore();
 
   const queryClient = useQueryClient();
 
@@ -17,19 +17,27 @@ export var Aside = function Aside() {
     closeAside();
   };
 
-  return (
-    <>
-      <div
-        className={`fixed top-0 left-0 w-full h-full -z-0 backdrop-blur-[1px] bg-grey bg-opacity-50 cursor-pointer ${
-          type ? "translate-x-0" : "translate-x-full"
-        }`}
-        onClick={handleCloseAside}
-      ></div>
+  const handlePopAside = () => {
+    popAside();
+  };
 
+  const renderAside = (asideItem: any, index: number) => {
+    const isTopAside = index === stack.length - 1;
+    const zIndex = 30 + index;
+    const rightOffset = index * 20; // Offset para mostrar múltiples sidebars
+
+    return (
       <aside
-        className={`flex flex-col gap-2 fixed top-0 right-0 h-full w-[50%] min-w-[600px] shadow-md shadow-gray-400 px-14 py-10 bg-white z-30 transform transition-transform duration-300 ${
-          type ? "translate-x-0" : "translate-x-full"
-        } `}
+        key={`${asideItem.type}-${index}`}
+        className={`flex flex-col gap-2 fixed top-0 right-0 h-full w-[50%] min-w-[600px] shadow-md shadow-gray-400 px-14 py-10 bg-white transform transition-transform duration-300 ${
+          isTopAside ? "translate-x-0" : "translate-x-full"
+        }`}
+        style={{
+          zIndex,
+          right: `${rightOffset}px`,
+          width: `calc(50% - ${rightOffset}px)`,
+          minWidth: `${600 - rightOffset}px`,
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex justify-between items-center">
@@ -39,7 +47,11 @@ export var Aside = function Aside() {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleCloseAside();
+              if (stack.length > 1) {
+                handlePopAside();
+              } else {
+                handleCloseAside();
+              }
             }}
           >
             <IconX className="w-8 h-8" />
@@ -50,6 +62,19 @@ export var Aside = function Aside() {
           <AsideContent />
         </div>
       </aside>
+    );
+  };
+
+  return (
+    <>
+      <div
+        className={`fixed top-0 left-0 w-full h-full -z-0 backdrop-blur-[1px] bg-grey bg-opacity-50 cursor-pointer ${
+          !isClosed ? "translate-x-0" : "translate-x-full"
+        }`}
+        onClick={handleCloseAside}
+      ></div>
+
+      {stack.map((asideItem, index) => renderAside(asideItem, index))}
     </>
   );
 };

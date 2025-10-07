@@ -4,8 +4,11 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAsideStore, Button } from "@/shared";
+import { ArrowLeft } from "lucide-react";
 import { Tenant, useUpdateTenantOffice } from "@/features/tenants";
 import { useQueryClient } from "@tanstack/react-query";
+import { Office } from "@/features/settings/types/settings.types";
+import { useOffices } from "@/features/settings/hooks/use-offices";
 import {
   FormControl,
   FormField,
@@ -13,14 +16,8 @@ import {
   FormLabel,
   FormMessage,
   Input,
-  Select,
-  SelectItem,
-  SelectContent,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-  SelectGroup,
 } from "@/shared";
+import { DropdownInputProductForm } from "@/features/assets";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
 const updateOfficeSchema = z.object({
@@ -33,6 +30,7 @@ const updateOfficeSchema = z.object({
   zipCode: z.string().optional().or(z.literal("")),
   address: z.string().optional().or(z.literal("")),
   apartment: z.string().optional().or(z.literal("")),
+  additionalInfo: z.string().optional().or(z.literal("")),
 });
 
 type UpdateOfficeFormData = z.infer<typeof updateOfficeSchema>;
@@ -45,23 +43,30 @@ export const UpdateOffice = () => {
       name,
     })
   );
-  const { setAside } = useAsideStore();
+  const { setAside, popAside, stack } = useAsideStore();
   const queryClient = useQueryClient();
   const selectedTenant = queryClient.getQueryData<Tenant>(["selectedTenant"]);
+  const selectedOffice = queryClient.getQueryData<Office>(["selectedOffice"]);
   const updateOfficeMutation = useUpdateTenantOffice();
+  const { updateOffice } = useOffices();
 
   const methods = useForm<UpdateOfficeFormData>({
     resolver: zodResolver(updateOfficeSchema),
     defaultValues: {
-      name: selectedTenant?.office?.name || "",
-      email: selectedTenant?.office?.email || "",
-      phone: selectedTenant?.office?.phone || "",
-      country: selectedTenant?.office?.country || "",
-      state: selectedTenant?.office?.state || "",
-      city: selectedTenant?.office?.city || "",
-      zipCode: selectedTenant?.office?.zipCode || "",
-      address: selectedTenant?.office?.address || "",
-      apartment: selectedTenant?.office?.apartment || "",
+      name: selectedOffice?.name || selectedTenant?.office?.name || "",
+      email: selectedOffice?.email || selectedTenant?.office?.email || "",
+      phone: selectedOffice?.phone || selectedTenant?.office?.phone || "",
+      country: selectedOffice?.country || selectedTenant?.office?.country || "",
+      state: selectedOffice?.state || selectedTenant?.office?.state || "",
+      city: selectedOffice?.city || selectedTenant?.office?.city || "",
+      zipCode: selectedOffice?.zipCode || selectedTenant?.office?.zipCode || "",
+      address: selectedOffice?.address || selectedTenant?.office?.address || "",
+      apartment:
+        selectedOffice?.apartment || selectedTenant?.office?.apartment || "",
+      additionalInfo:
+        selectedOffice?.additionalInfo ||
+        selectedTenant?.office?.additionalInfo ||
+        "",
     },
   });
 
@@ -80,7 +85,7 @@ export const UpdateOffice = () => {
   };
 
   const onSubmit = async (data: UpdateOfficeFormData) => {
-    if (!selectedTenant) return;
+    if (!selectedTenant && !selectedOffice) return;
 
     // Let Zod validation handle the validation first
     // If we reach here, the form should be valid according to Zod schema
@@ -88,15 +93,16 @@ export const UpdateOffice = () => {
     // Send all fields that have been modified (including empty strings to clear fields)
     // Compare with original values to detect changes
     const originalData = {
-      name: selectedTenant?.office?.name || "",
-      email: selectedTenant?.office?.email || "",
-      phone: selectedTenant?.office?.phone || "",
-      country: selectedTenant?.office?.country || "",
-      state: selectedTenant?.office?.state || "",
-      city: selectedTenant?.office?.city || "",
-      zipCode: selectedTenant?.office?.zipCode || "",
-      address: selectedTenant?.office?.address || "",
-      apartment: selectedTenant?.office?.apartment || "",
+      name: selectedOffice?.name || selectedTenant?.office?.name || "",
+      email: selectedOffice?.email || selectedTenant?.office?.email || "",
+      phone: selectedOffice?.phone || selectedTenant?.office?.phone || "",
+      country: selectedOffice?.country || selectedTenant?.office?.country || "",
+      state: selectedOffice?.state || selectedTenant?.office?.state || "",
+      city: selectedOffice?.city || selectedTenant?.office?.city || "",
+      zipCode: selectedOffice?.zipCode || selectedTenant?.office?.zipCode || "",
+      address: selectedOffice?.address || selectedTenant?.office?.address || "",
+      apartment:
+        selectedOffice?.apartment || selectedTenant?.office?.apartment || "",
     };
 
     const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
@@ -128,18 +134,49 @@ export const UpdateOffice = () => {
     }
 
     try {
-      await updateOfficeMutation.mutateAsync({
-        tenantId: selectedTenant.id,
-        data: filteredData,
-      });
+      if (selectedTenant) {
+        // Update tenant office
+        await updateOfficeMutation.mutateAsync({
+          tenantId: selectedTenant.id,
+          data: filteredData,
+        });
+      } else if (selectedOffice) {
+        // Update individual office
+        updateOffice(selectedOffice._id, filteredData);
+      }
       setAside(null);
     } catch (error) {
       console.error("Error updating office:", error);
     }
   };
 
+  const handleGoBack = () => {
+    // Solo hacer pop si hay más de una sidebar en el stack
+    if (stack.length > 1) {
+      popAside();
+    } else {
+      // Si solo hay una sidebar, cerrar todo
+      setAside(null);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
+      {/* Header con botón de volver atrás */}
+      <div className="flex items-center gap-3 mt-2">
+        {stack.length > 1 && (
+          <Button
+            onClick={handleGoBack}
+            variant="secondary"
+            size="small"
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+        )}
+      </div>
+
       <div className="flex-1 overflow-y-auto">
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pr-4">
@@ -150,12 +187,14 @@ export const UpdateOffice = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Office Name</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Office Name
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter office name"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -168,13 +207,15 @@ export const UpdateOffice = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Email
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter contact email"
                         type="email"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -190,12 +231,14 @@ export const UpdateOffice = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contact Phone Number</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Contact Phone Number
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="+54 11 15466052"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -208,36 +251,26 @@ export const UpdateOffice = () => {
                 name="country"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Country</FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger className="py-2 w-full h-14 text-lg">
-                          {field.value ? (
-                            <SelectValue
-                              placeholder="Select Country"
-                              className="opacity-10"
-                            >
-                              {countriesByCode[field.value]}
-                            </SelectValue>
-                          ) : (
-                            <span className="text-grey">Select Country</span>
-                          )}
-                        </SelectTrigger>
-                        <SelectContent className="bg-white max-h-60">
-                          <SelectGroup>
-                            <SelectLabel>Location</SelectLabel>
-                            {countryOptions.map((option) => (
-                              <SelectItem value={option.code} key={option.code}>
-                                {option.name}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
+                    <DropdownInputProductForm
+                      title="Country"
+                      placeholder="Select Country"
+                      options={countryOptions.map((option) => option.name)}
+                      selectedOption={
+                        field.value ? countriesByCode[field.value] : ""
+                      }
+                      onChange={(selectedCountryName) => {
+                        const countryCode = Object.entries(
+                          countriesByCode
+                        ).find(
+                          ([code, name]) => name === selectedCountryName
+                        )?.[0];
+                        field.onChange(countryCode || "");
+                      }}
+                      name="country"
+                      searchable={true}
+                      disabled={true}
+                      className="-mb-2"
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -251,12 +284,14 @@ export const UpdateOffice = () => {
                 name="state"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>State</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      State
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="State"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -269,12 +304,14 @@ export const UpdateOffice = () => {
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>City</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      City
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="City"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -290,12 +327,14 @@ export const UpdateOffice = () => {
                 name="zipCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Zip Code</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Zip Code
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Zip Code"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -308,12 +347,14 @@ export const UpdateOffice = () => {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Address</FormLabel>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Address
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Address"
                         {...field}
-                        className="py-2 w-full h-14 text-lg"
+                        className="py-2 rounded-xl w-full h-14 text-lg"
                       />
                     </FormControl>
                     <FormMessage />
@@ -330,12 +371,14 @@ export const UpdateOffice = () => {
                   name="apartment"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Apartment, Suite, etc.</FormLabel>
+                      <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                        Apartment, Suite, etc.
+                      </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Apartment, suite, etc."
                           {...field}
-                          className="py-2 w-full h-14 text-lg"
+                          className="py-2 rounded-xl w-full h-14 text-lg"
                         />
                       </FormControl>
                       <FormMessage />
@@ -343,6 +386,30 @@ export const UpdateOffice = () => {
                   )}
                 />
               </div>
+            </div>
+
+            {/* Additional Info - Full Width */}
+            <div className="mt-6">
+              <FormField
+                control={methods.control}
+                name="additionalInfo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Additional Info
+                    </FormLabel>
+                    <FormControl>
+                      <textarea
+                        placeholder="Enter any additional information about the office"
+                        {...field}
+                        className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[80px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
+                        rows={3}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </form>
         </FormProvider>

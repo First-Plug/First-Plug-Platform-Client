@@ -24,7 +24,7 @@ import { usePrefetchLatestActivity } from "@/features/activity";
 import Link from "next/link";
 import { usePrefetchShipments } from "@/features/shipments";
 import { useLogisticUser } from "@/shared/hooks/useLogisticUser";
-import { UserPlusIcon, UsersIcon } from "lucide-react";
+import { UserPlusIcon, UsersIcon, Warehouse, PlusIcon } from "lucide-react";
 
 export const Sidebar = () => {
   const path = usePathname();
@@ -158,6 +158,28 @@ export const Sidebar = () => {
               title="Tenants"
               href="/home/tenants"
               isActive={pathArray.includes("tenants")}
+              onMouseEnter={() => {
+                // prefetchAssets();
+              }}
+            />
+
+            <SidebarLink
+              isSmall={isSidebarSmall}
+              icon={<Warehouse />}
+              title="Warehouses"
+              href="/home/warehouses"
+              isActive={pathArray.includes("warehouses")}
+              onMouseEnter={() => {
+                // prefetchAssets();
+              }}
+            />
+
+            <SidebarLink
+              isSmall={isSidebarSmall}
+              icon={<PlusIcon />}
+              title="Create"
+              href="/home/create"
+              isActive={pathArray.includes("create")}
               onMouseEnter={() => {
                 // prefetchAssets();
               }}

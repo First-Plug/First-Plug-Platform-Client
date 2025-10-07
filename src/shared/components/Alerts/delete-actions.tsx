@@ -31,7 +31,8 @@ type DeleteTypes =
   | "member"
   | "team"
   | "memberUnassign"
-  | "shipment";
+  | "shipment"
+  | "office";
 
 type ConfigType = {
   title: string;
@@ -271,6 +272,17 @@ export const DeleteAction = ({
       title: "Are you sure you want to delete this shipment? 🗑️",
       description: "This shipment will be permanently deleted",
       deleteAction: handleDeleteShipment,
+    },
+    office: {
+      title: "Delete Office 🗑️",
+      description:
+        "Are you sure you want to delete this office? This office will be permanently removed.",
+      deleteAction: () => {
+        if (onConfirm) {
+          onConfirm();
+        }
+        setOpen(false);
+      },
     },
   };
   const { title, description, deleteAction } = DeleteConfig[type];

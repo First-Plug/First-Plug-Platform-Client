@@ -34,6 +34,7 @@ export interface TenantOffice {
   state?: string;
   country?: string;
   zipCode?: string;
+  additionalInfo?: string;
   isDefault: boolean;
 }
 
@@ -61,6 +62,7 @@ export interface UpdateTenantOfficeRequest {
   state?: string;
   country?: string;
   zipCode?: string;
+  additionalInfo?: string;
 }
 
 export interface TenantStats {

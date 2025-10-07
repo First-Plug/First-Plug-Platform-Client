@@ -41,7 +41,22 @@ export interface Office {
   state?: string;
   country?: string;
   zipCode?: string;
+  additionalInfo?: string;
   isDefault: boolean;
+  hasActiveProducts?: boolean; // true si tiene productos recoverables o envíos activos (no se puede eliminar)
+}
+
+export interface CreateOffice {
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  apartment?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  additionalInfo?: string;
 }
 
 export interface UpdateOffice {
@@ -54,6 +69,7 @@ export interface UpdateOffice {
   state?: string;
   country?: string;
   zipCode?: string;
+  additionalInfo?: string;
 }
 
 // Tenant Config interfaces

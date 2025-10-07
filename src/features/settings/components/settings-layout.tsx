@@ -8,12 +8,12 @@ import { SecuritySettings } from "./security-settings";
 
 export const SettingsLayout = () => {
   return (
-    <div className="w-full px-6 py-4">
+    <div className="px-6 py-4 w-full">
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-4 mb-4 w-full">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <svg
-              className="h-4 w-4"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -30,7 +30,7 @@ export const SettingsLayout = () => {
 
           <TabsTrigger value="company" className="flex items-center gap-2">
             <svg
-              className="h-4 w-4"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -47,7 +47,7 @@ export const SettingsLayout = () => {
 
           <TabsTrigger value="office" className="flex items-center gap-2">
             <svg
-              className="h-4 w-4"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -65,12 +65,12 @@ export const SettingsLayout = () => {
                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
               />
             </svg>
-            Office
+            Offices
           </TabsTrigger>
 
           <TabsTrigger value="security" className="flex items-center gap-2">
             <svg
-              className="h-4 w-4"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

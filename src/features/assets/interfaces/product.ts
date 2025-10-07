@@ -372,7 +372,10 @@ export const zodCreateProductModel = z
       invalid_type_error: "Invalid location",
     }),
     status: z.string().optional(),
-    productCondition: z.string().optional(),
+    productCondition: z.string({
+      required_error: "Product Condition is required",
+      invalid_type_error: "Invalid product condition",
+    }),
     additionalInfo: z.string().optional(),
     price: z
       .object({
