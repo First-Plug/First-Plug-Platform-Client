@@ -2,160 +2,48 @@ import { useMemo, useEffect } from "react";
 import { createFilterStore } from "@/features/fp-tables/store/createFilterStore";
 import { usePagination } from "@/features/fp-tables";
 import type { WarehouseDetails } from "../interfaces/warehouse.interface";
+import { useFetchWarehouses } from "./useFetchWarehouses";
+import type { WarehouseAPIData } from "../services/warehouses.services";
 
 const useWarehousesTableFilterStore = createFilterStore();
 
 export { useWarehousesTableFilterStore };
 
-export function useWarehousesTable() {
-  // Mock data - en el futuro esto vendrá de una API
-  const warehousesData: WarehouseDetails[] = [
-    {
-      id: "1",
-      name: "Asia Pacific Center",
-      country: "SG",
-      partnerType: "temporary",
-      isActive: false,
-      tenantCount: 4,
-      totalProducts: 2100,
-      state: "Singapore",
-      city: "Singapore",
-      zipCode: "123456",
-      address: "123456",
-      apartment: "123456",
-      phoneContact: "123456",
-      email: "123456",
-      contactChannel: "123456",
-      contactPerson: "123456",
-      additionalInfo: "123456",
-      tenants: [
-        {
-          tenantName: "Asian Innovations",
-          companyName: "Asian Innovations Pte Ltd",
-          computers: 180,
-          otherProducts: 220,
-        },
-        {
-          tenantName: "Pacific Systems",
-          companyName: "Pacific Systems Co.",
-          computers: 320,
-          otherProducts: 380,
-        },
-        {
-          tenantName: "Smart Solutions Asia",
-          companyName: "Smart Solutions Asia Ltd.",
-          computers: 400,
-          otherProducts: 500,
-        },
-        {
-          tenantName: "Tech Bridge",
-          companyName: "Tech Bridge Singapore",
-          computers: 250,
-          otherProducts: 350,
-        },
-      ],
-    },
-    {
-      id: "2",
-      name: "Central Distribution Center",
-      country: "US",
-      partnerType: "own",
-      isActive: true,
-      tenantCount: 3,
-      totalProducts: 1250,
-      state: "United States",
-      city: "United States",
-      zipCode: "123456",
-      address: "123456",
-      apartment: "123456",
-      phoneContact: "123456",
-      email: "123456",
-      contactChannel: "123456",
-      contactPerson: "123456",
-      additionalInfo: "123456",
-      tenants: [
-        {
-          tenantName: "Pacific Systems",
-          companyName: "Pacific Systems Co.",
-          computers: 320,
-          otherProducts: 380,
-        },
-        {
-          tenantName: "Smart Solutions Asia",
-          companyName: "Smart Solutions Asia Ltd.",
-          computers: 400,
-          otherProducts: 500,
-        },
-        {
-          tenantName: "Tech Bridge",
-          companyName: "Tech Bridge Singapore",
-          computers: 250,
-          otherProducts: 350,
-        },
-      ],
-    },
-    {
-      id: "3",
-      name: "European Logistics Hub",
-      country: "DE",
-      partnerType: "partner",
-      isActive: true,
-      tenantCount: 2,
-      totalProducts: 850,
-      state: "Germany",
-      city: "Germany",
-      zipCode: "123456",
-      address: "123456",
-      apartment: "123456",
-      phoneContact: "123456",
-      email: "123456",
-      contactChannel: "123456",
-      contactPerson: "123456",
-      additionalInfo: "123456",
-      tenants: [
-        {
-          tenantName: "Pacific Systems",
-          companyName: "Pacific Systems Co.",
-          computers: 320,
-          otherProducts: 380,
-        },
-        {
-          tenantName: "Pacific Systems",
-          companyName: "Pacific Systems Co.",
-          computers: 320,
-          otherProducts: 380,
-        },
-        {
-          tenantName: "Tech Bridge",
-          companyName: "Tech Bridge Singapore",
-          computers: 250,
-          otherProducts: 350,
-        },
-      ],
-    },
-    {
-      id: "4",
-      name: "Empty Warehouse Center",
-      country: "MX",
-      partnerType: "own",
-      isActive: true,
-      tenantCount: 0,
-      totalProducts: 0,
-      state: "Mexico City",
-      city: "Mexico City",
-      zipCode: "04000",
-      address: "123 Main Street",
-      apartment: "",
-      phoneContact: "+52 55 1234 5678",
-      email: "contact@emptywarehouse.mx",
-      contactChannel: "Email",
-      contactPerson: "Maria Rodriguez",
-      additionalInfo: "New warehouse ready for products",
-      tenants: [],
-    },
-  ];
+// Transform API data to WarehouseDetails format
+function transformWarehouseData(
+  apiData: WarehouseAPIData[]
+): WarehouseDetails[] {
+  return apiData.map((warehouse) => ({
+    id: warehouse.warehouseId,
+    name: warehouse.warehouseName,
+    country: warehouse.country,
+    countryCode: warehouse.countryCode,
+    partnerType: warehouse.partnerType,
+    isActive: warehouse.isActive,
+    tenantCount: warehouse.distinctTenants,
+    totalProducts: warehouse.totalProducts,
+    computers: warehouse.computers,
+    otherProducts: warehouse.otherProducts,
+    distinctTenants: warehouse.distinctTenants,
+    hasStoredProducts: warehouse.hasStoredProducts,
+    tenants: warehouse.tenants.map((tenant) => ({
+      tenantId: tenant.tenantId,
+      tenantName: tenant.tenantName,
+      companyName: tenant.companyName,
+      totalProducts: tenant.totalProducts,
+      computers: tenant.computers,
+      otherProducts: tenant.otherProducts,
+    })),
+  }));
+}
 
-  const warehouses = warehousesData;
+export function useWarehousesTable() {
+  const { data: warehousesDataAPI, isLoading, error } = useFetchWarehouses();
+
+  const warehouses = useMemo(() => {
+    if (!warehousesDataAPI) return [];
+    return transformWarehouseData(warehousesDataAPI);
+  }, [warehousesDataAPI]);
 
   const filters = useWarehousesTableFilterStore((s) => s.filters);
   const setOnFiltersChange = useWarehousesTableFilterStore(
@@ -216,9 +104,9 @@ export function useWarehousesTable() {
             return filterValues.some((value) =>
               warehouse.name.toLowerCase().includes(value.toLowerCase())
             );
-          case "country":
+          case "countryCode":
             return filterValues.some((value) =>
-              warehouse.country.toLowerCase().includes(value.toLowerCase())
+              warehouse.countryCode.toLowerCase().includes(value.toLowerCase())
             );
           case "partnerType":
             return filterValues.some(
@@ -275,7 +163,7 @@ export function useWarehousesTable() {
     tenantFilterOptions,
     selectedTenantName,
     handleSetTenantFilter,
-    isLoading: false,
-    error: null,
+    isLoading,
+    error,
   };
 }

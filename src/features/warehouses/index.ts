@@ -1,6 +1,7 @@
 // Hooks
 export { useWarehousesTable } from "./hooks/useWarehousesTable";
 export { useWarehousesTableColumns } from "./hooks/useWarehousesTableColumns";
+export { useFetchWarehouses } from "./hooks/useFetchWarehouses";
 
 // Interfaces
 export type {
