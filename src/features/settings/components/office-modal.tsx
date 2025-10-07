@@ -78,21 +78,33 @@ export const OfficeModal = ({
   }, [office, form, isOpen]);
 
   const handleSubmit = (data: OfficeFormData) => {
-    // Procesar datos para enviar solo los campos no vacíos
-    const processedData = Object.fromEntries(
-      Object.entries(data).map(([key, value]) => {
-        // Convertir valores null/undefined a string vacío y luego filtrar vacíos
-        return [key, value ?? ""];
-      })
-    );
-
     // Si estamos editando, incluir el ID
     if (office) {
+      // Para actualización, procesar datos para enviar solo los campos no vacíos
+      const processedData = Object.fromEntries(
+        Object.entries(data).map(([key, value]) => {
+          // Convertir valores null/undefined a string vacío
+          return [key, value ?? ""];
+        })
+      );
       onSubmit({ ...processedData, id: office._id } as UpdateOffice & {
         id: string;
       });
     } else {
-      onSubmit(processedData as unknown as CreateOffice);
+      // Para creación, asegurarse de que los campos requeridos estén presentes
+      const createData: CreateOffice = {
+        name: data.name,
+        country: data.country,
+        ...(data.email && { email: data.email }),
+        ...(data.phone && { phone: data.phone }),
+        ...(data.state && { state: data.state }),
+        ...(data.city && { city: data.city }),
+        ...(data.zipCode && { zipCode: data.zipCode }),
+        ...(data.address && { address: data.address }),
+        ...(data.apartment && { apartment: data.apartment }),
+        ...(data.additionalInfo && { additionalInfo: data.additionalInfo }),
+      };
+      onSubmit(createData);
     }
   };
 

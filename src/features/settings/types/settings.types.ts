@@ -48,13 +48,13 @@ export interface Office {
 
 export interface CreateOffice {
   name: string;
+  country: string;
   email?: string;
   phone?: string;
   address?: string;
   apartment?: string;
   city?: string;
   state?: string;
-  country?: string;
   zipCode?: string;
   additionalInfo?: string;
 }

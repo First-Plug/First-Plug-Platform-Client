@@ -69,21 +69,24 @@ export const CreateOffice = () => {
 
   const onSubmit = async (data: OfficeFormData) => {
     try {
-      // Ensure name is provided (required field)
+      // Ensure required fields are provided
       if (!data.name || data.name.trim() === "") {
         console.error("Office name is required");
         return;
       }
+      if (!data.country || data.country.trim() === "") {
+        console.error("Country is required");
+        return;
+      }
 
-      // Create office data with only non-empty fields
+      // Create office data with required fields and optional non-empty fields
       const officeData: CreateOfficeType = {
         name: data.name.trim(),
+        country: data.country.trim(),
         ...(data.email &&
           data.email.trim() !== "" && { email: data.email.trim() }),
         ...(data.phone &&
           data.phone.trim() !== "" && { phone: data.phone.trim() }),
-        ...(data.country &&
-          data.country.trim() !== "" && { country: data.country.trim() }),
         ...(data.state &&
           data.state.trim() !== "" && { state: data.state.trim() }),
         ...(data.city && data.city.trim() !== "" && { city: data.city.trim() }),
@@ -144,7 +147,7 @@ export const CreateOffice = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
-                      Office Name
+                      Office Name *
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -208,7 +211,7 @@ export const CreateOffice = () => {
                 render={({ field }) => (
                   <FormItem>
                     <DropdownInputProductForm
-                      title="Country"
+                      title="Country *"
                       placeholder="Select Country"
                       options={countryOptions.map((option) => option.name)}
                       selectedOption={

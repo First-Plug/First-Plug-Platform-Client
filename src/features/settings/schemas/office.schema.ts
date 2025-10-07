@@ -45,9 +45,8 @@ export const createOfficeSchema = (
 
     country: z
       .string()
-      .regex(onlyLetters, "Country can only contain letters")
-      .optional()
-      .or(z.literal("")),
+      .min(1, "Country is required")
+      .regex(onlyLetters, "Country can only contain letters"),
 
     city: z
       .string()
@@ -91,9 +90,8 @@ export const officeSchema = z.object({
 
   country: z
     .string()
-    .regex(onlyLetters, "Country can only contain letters")
-    .optional()
-    .or(z.literal("")),
+    .min(1, "Country is required")
+    .regex(onlyLetters, "Country can only contain letters"),
 
   city: z
     .string()

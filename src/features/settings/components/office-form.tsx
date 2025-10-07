@@ -100,7 +100,7 @@ export const OfficeForm = ({ form, isEditMode = false }: OfficeFormProps) => {
           render={({ field }) => (
             <FormItem>
               <DropdownInputProductForm
-                title="Country"
+                title="Country *"
                 placeholder="Select a country"
                 options={COUNTRIES.map((country) => country.name)}
                 selectedOption={field.value ? countriesByCode[field.value] : ""}
@@ -112,8 +112,7 @@ export const OfficeForm = ({ form, isEditMode = false }: OfficeFormProps) => {
                 }}
                 name="country"
                 searchable={true}
-                required={!isEditMode ? "required" : undefined}
-                disabled={isEditMode}
+                required="required"
                 className="-mb-2"
               />
               <FormMessage />
