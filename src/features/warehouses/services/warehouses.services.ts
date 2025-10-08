@@ -1,4 +1,5 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
+import { UpdateWarehouseRequest } from "../interfaces/warehouse.interface";
 
 export interface WarehouseAPIResponse {
   success: boolean;
@@ -38,5 +39,20 @@ export class WarehousesServices {
       `${BASE_URL}/api/superadmin/metrics/warehouses-with-tenants`
     );
     return response.data.data;
+  }
+
+  /**
+   * Update warehouse data
+   */
+  static async updateWarehouse(
+    country: string,
+    warehouseId: string,
+    data: UpdateWarehouseRequest
+  ): Promise<any> {
+    const response = await HTTPRequests.patch(
+      `${BASE_URL}/api/superadmin/warehouses/${country}/${warehouseId}/data`,
+      data
+    );
+    return response.data;
   }
 }

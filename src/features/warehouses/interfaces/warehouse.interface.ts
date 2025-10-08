@@ -48,11 +48,19 @@ export interface CreateWarehouseRequest {
 }
 
 export interface UpdateWarehouseRequest {
-  id: string;
-  name?: string;
-  country?: string;
-  partnerType?: "temporary" | "own" | "partner";
-  isActive?: boolean;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  apartment?: string;
+  phone?: string;
+  email?: string;
+  partnerType: string;
+  canal?: string;
+  contactPerson?: string;
+  additionalInfo?: string;
+  isActive: boolean;
 }
 
 export interface WarehouseStats {

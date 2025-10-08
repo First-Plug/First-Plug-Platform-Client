@@ -7,24 +7,91 @@ import { useAsideStore, Button, countriesByCode } from "@/shared";
 import { InputProductForm, DropdownInputProductForm } from "@/features/assets";
 import { WarehouseDetails } from "@/features/warehouses";
 import { useQueryClient } from "@tanstack/react-query";
+import { useUpdateWarehouse } from "@/features/warehouses/hooks/useUpdateWarehouse";
+import { useAlertStore } from "@/shared/stores/alerts.store";
 
-const updateWarehouseSchema = z.object({
-  id: z.string().min(1, "ID is required"),
-  name: z.string().min(1, "Warehouse name is required"),
-  country: z.string().min(1, "Country is required"),
-  state: z.string().min(1, "State is required"),
-  city: z.string().min(1, "City is required"),
-  zipCode: z.string().min(1, "Zip code is required"),
-  address: z.string().min(1, "Address is required"),
-  apartment: z.string().optional(),
-  phoneContact: z.string().optional(),
-  email: z.string().email("Invalid email format").optional().or(z.literal("")),
-  partnerType: z.string().min(1, "Partner type is required"),
-  contactChannel: z.string().optional(),
-  contactPerson: z.string().optional(),
-  additionalInfo: z.string().optional(),
-  isActive: z.string().min(1, "Active status is required"),
-});
+const updateWarehouseSchema = z
+  .object({
+    id: z.string().min(1, "ID is required"),
+    name: z.string(),
+    country: z.string().min(1, "Country is required"),
+    state: z.string(),
+    city: z.string(),
+    zipCode: z.string(),
+    address: z.string(),
+    apartment: z.string().optional(),
+    phoneContact: z.string().optional(),
+    email: z
+      .string()
+      .email("Invalid email format")
+      .optional()
+      .or(z.literal("")),
+    partnerType: z.string().min(1, "Partner type is required"),
+    contactChannel: z.string().optional(),
+    contactPerson: z.string().optional(),
+    additionalInfo: z.string().optional(),
+    isActive: z.string().min(1, "Active status is required"),
+  })
+  .refine(
+    (data) => {
+      if (data.isActive === "Yes") {
+        return data.name?.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Warehouse name is required to activate the warehouse",
+      path: ["name"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.isActive === "Yes") {
+        return data.address?.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Address is required to activate the warehouse",
+      path: ["address"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.isActive === "Yes") {
+        return data.city?.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "City is required to activate the warehouse",
+      path: ["city"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.isActive === "Yes") {
+        return data.state?.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "State/Province is required to activate the warehouse",
+      path: ["state"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.isActive === "Yes") {
+        return data.zipCode?.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Zip Code is required to activate the warehouse",
+      path: ["zipCode"],
+    }
+  );
 
 type UpdateWarehouseFormData = z.infer<typeof updateWarehouseSchema>;
 
@@ -37,6 +104,8 @@ export const UpdateWarehouse = () => {
     })
   );
   const { setAside } = useAsideStore();
+  const { setAlert } = useAlertStore();
+  const updateWarehouseMutation = useUpdateWarehouse();
 
   const queryClient = useQueryClient();
   const selectedWarehouse = queryClient.getQueryData<WarehouseDetails>([
@@ -75,29 +144,35 @@ export const UpdateWarehouse = () => {
     try {
       // Transform data to match API expectations
       const updateData = {
-        id: data.id,
         name: data.name,
-        country: data.country,
-        state: data.state,
-        city: data.city,
-        zipCode: data.zipCode,
         address: data.address,
+        city: data.city,
+        state: data.state,
+        zipCode: data.zipCode,
         apartment: data.apartment || undefined,
-        phoneContact: data.phoneContact || undefined,
+        phone: data.phoneContact || undefined,
         email: data.email || undefined,
         partnerType: data.partnerType,
-        contactChannel: data.contactChannel,
+        canal: data.contactChannel || undefined,
         contactPerson: data.contactPerson || undefined,
         additionalInfo: data.additionalInfo || undefined,
         isActive: data.isActive === "Yes",
       };
-      // TODO: Implement warehouse update mutation
-      // await updateWarehouseMutation.mutateAsync(updateData);
-      console.log("Updating warehouse with data:", updateData);
 
+      await updateWarehouseMutation.mutateAsync({
+        country: data.country,
+        warehouseId: data.id,
+        data: updateData,
+      });
+
+      setAlert("dataUpdatedSuccessfully");
       setAside(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating warehouse:", error);
+      // TODO: Add specific warehouse error alert types
+      setAlert("dynamicWarning", {
+        message: error?.response?.data?.message || "Failed to update warehouse",
+      });
     }
   };
 
@@ -336,6 +411,7 @@ export const UpdateWarehouse = () => {
               <InputProductForm
                 title="Additional Info (Optional)"
                 placeholder="Additional information"
+                type="textarea"
                 value={watch("additionalInfo")}
                 onChange={(e) => {
                   setValue("additionalInfo", e.target.value);
@@ -353,19 +429,11 @@ export const UpdateWarehouse = () => {
             variant="primary"
             className="px-8"
             onClick={handleSubmit(onSubmit)}
-            disabled={
-              isSubmitting ||
-              !watch("name")?.trim() ||
-              !watch("country")?.trim() ||
-              !watch("state")?.trim() ||
-              !watch("city")?.trim() ||
-              !watch("zipCode")?.trim() ||
-              !watch("address")?.trim() ||
-              !watch("partnerType")?.trim() ||
-              !watch("isActive")?.trim()
-            }
+            disabled={isSubmitting || updateWarehouseMutation.isPending}
           >
-            {isSubmitting ? "Saving..." : "Save"}
+            {isSubmitting || updateWarehouseMutation.isPending
+              ? "Guardando..."
+              : "Guardar"}
           </Button>
         </div>
       </aside>

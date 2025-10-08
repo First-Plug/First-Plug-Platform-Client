@@ -49,57 +49,6 @@ export function WarehousesTableActions({
         icon={<PenIcon className="w-5 h-5 text-blue" strokeWidth={2} />}
         onClick={handleUpdateWarehouse}
       />
-
-      <>
-        <Button
-          className="m-0 p-0 min-w-0"
-          variant="outline"
-          size="small"
-          disabled={!canDelete}
-          icon={
-            <TrashIcon
-              className={`w-5 h-5 ${
-                canDelete ? "text-[#B73232]" : "text-gray-400"
-              }`}
-              strokeWidth={2}
-            />
-          }
-          onClick={() => canDelete && setOpen(true)}
-        />
-
-        <Dialog open={open}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="text-xl">Delete warehouse</DialogTitle>
-              <DialogDescription className="font-normal text-md">
-                {canDelete
-                  ? "Are you sure you want to delete this warehouse? This action cannot be undone."
-                  : `Cannot delete warehouse "${warehouse.name}" because it contains ${warehouse.totalProducts} products. Please remove all products before deleting the warehouse.`}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogDescription className="text-md">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => setOpen(false)}
-                  className="w-full"
-                >
-                  <p>{canDelete ? "Cancel" : "Close"}</p>
-                </Button>
-                {canDelete && (
-                  <Button
-                    variant="delete"
-                    className="bg-error w-full"
-                    onClick={deleteWarehouse}
-                  >
-                    <p>Delete</p>
-                  </Button>
-                )}
-              </div>
-            </DialogDescription>
-          </DialogContent>
-        </Dialog>
-      </>
     </div>
   );
 }
