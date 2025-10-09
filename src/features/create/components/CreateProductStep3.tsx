@@ -11,6 +11,7 @@ import {
 } from "@/features/assets";
 import { CURRENCY_CODES } from "@/features/assets/interfaces/product";
 import * as Switch from "@radix-ui/react-switch";
+import { useWarehousesForCreate } from "../hooks/useWarehousesForCreate";
 
 import computerData from "@/features/assets/components/JSON/computerform.json";
 import audioData from "@/features/assets/components/JSON/audioform.json";
@@ -60,6 +61,10 @@ export const CreateProductStep3 = ({
   const [attributes, setAttributes] = useState<any[]>([]);
 
   const selectedTenant = formData.tenant;
+
+  // Cargar warehouses dinámicamente desde la API
+  const { warehouses, isLoading: isLoadingWarehouses } =
+    useWarehousesForCreate();
 
   const isMoreThanTwoProducts = quantity >= 2;
   const shouldGoToStep4 = quantity >= 2;
@@ -125,7 +130,7 @@ export const CreateProductStep3 = ({
   }, [selectedCategory, attributes, formData.name, onFormDataChange, setValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    // Limpiar serialNumber y additionalInfo cuando hay 2 o más productos
+    // Limpiar serialNumber, additionalInfo y warehouse cuando hay 2 o más productos
     if (isMoreThanTwoProducts) {
       if (formData.serialNumber) {
         onFormDataChange("serialNumber", "");
@@ -135,11 +140,15 @@ export const CreateProductStep3 = ({
         onFormDataChange("additionalInfo", "");
         setValue("additionalInfo" as any, "");
       }
+      if (formData.warehouse) {
+        onFormDataChange("warehouse", null);
+      }
     }
   }, [
     isMoreThanTwoProducts,
     formData.serialNumber,
     formData.additionalInfo,
+    formData.warehouse,
     onFormDataChange,
     setValue,
   ]);
@@ -234,6 +243,11 @@ export const CreateProductStep3 = ({
     onFormDataChange("quantity", newQuantity);
   };
 
+  const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedWarehouse = warehouses.find((w) => w.id === e.target.value);
+    onFormDataChange("warehouse", selectedWarehouse || null);
+  };
+
   const handleNext = async () => {
     setHasAttemptedSubmit(true);
 
@@ -242,6 +256,12 @@ export const CreateProductStep3 = ({
 
     const isAttributesValid = validateAttributes(attributes, selectedCategory);
     if (!isAttributesValid) return;
+
+    // Validar warehouse solo si quantity < 2
+    if (!isMoreThanTwoProducts && !formData.warehouse) {
+      alert("Please select a warehouse");
+      return;
+    }
 
     // Si hay más de 2 productos, ir al paso 4, sino crear directamente
     if (shouldGoToStep4) {
@@ -314,11 +334,46 @@ export const CreateProductStep3 = ({
             {isMoreThanTwoProducts && (
               <div className="bg-orange-50 px-3 py-2 rounded-md text-orange-600 text-sm">
                 <p>
-                  Serial Number and Additional Info will be configured per
-                  product in the next step
+                  Serial Number, Additional Info, and Warehouse will be
+                  configured per product in the next step
                 </p>
               </div>
             )}
+          </div>
+
+          {/* FP Warehouse */}
+          <div>
+            <label className="block mb-2 font-medium text-gray-700 text-sm">
+              FP Warehouse{" "}
+              {!isMoreThanTwoProducts && (
+                <span className="text-red-500">*</span>
+              )}
+            </label>
+            <select
+              value={formData.warehouse?.id || ""}
+              onChange={handleWarehouseChange}
+              disabled={isMoreThanTwoProducts || isLoadingWarehouses}
+              className={`shadow-sm px-3 py-2 border border-gray-300 focus:border-blue-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full ${
+                isMoreThanTwoProducts || isLoadingWarehouses
+                  ? "bg-gray-100 cursor-not-allowed"
+                  : ""
+              }`}
+            >
+              <option value="">
+                {isLoadingWarehouses
+                  ? "Loading warehouses..."
+                  : isMoreThanTwoProducts
+                  ? "Will be configured per product"
+                  : "Select a warehouse"}
+              </option>
+              {!isMoreThanTwoProducts &&
+                !isLoadingWarehouses &&
+                warehouses.map((warehouse) => (
+                  <option key={warehouse.id} value={warehouse.id}>
+                    {warehouse.name} ({warehouse.country})
+                  </option>
+                ))}
+            </select>
           </div>
 
           {/* Basic Product Information */}

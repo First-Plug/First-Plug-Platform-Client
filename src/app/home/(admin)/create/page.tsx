@@ -6,15 +6,21 @@ import {
   CreateProductStep3,
   CreateProductStep4,
   CreateProductConfirmation,
+  useBulkCreateProducts,
 } from "@/features/create";
+import { useAlertStore } from "@/shared/stores/alerts.store";
 
 export default function CreatePage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const { setAlert } = useAlertStore();
+  const bulkCreateMutation = useBulkCreateProducts();
+
   const [formData, setFormData] = useState({
     tenant: null,
     category: null,
     warehouse: null,
+    name: "",
     quantity: 1,
     pricePerUnit: 0,
     acquisitionDate: null,
@@ -32,6 +38,9 @@ export default function CreatePage() {
     keyboardLanguage: null,
     gpu: null,
     additionalInfo: null,
+    attributes: [],
+    price: { amount: 0, currencyCode: "USD" },
+    products: [],
   });
 
   const handleNext = () => {
@@ -52,10 +61,18 @@ export default function CreatePage() {
           productCondition: null,
           recoverable: false,
           acquisitionDate: "",
-          price: { amount: "", currencyCode: "USD" },
+          price: { amount: 0, currencyCode: "USD" },
           additionalInfo: "",
           attributes: [],
           quantity: 1,
+          warehouse: null,
+        }));
+      }
+      // Si estamos en el Step 4 y vamos al Step 3, limpiar los datos del Step 4
+      if (currentStep === 4) {
+        setFormData((prev) => ({
+          ...prev,
+          products: [],
         }));
       }
       setCurrentStep(currentStep - 1);
@@ -73,37 +90,105 @@ export default function CreatePage() {
     setShowConfirmation(true);
   };
 
-  const handleConfirmCreate = () => {
-    // Aquí se implementaría la lógica para crear el producto
-    console.log("Creando producto con datos:", formData);
-    // Por ahora solo mostramos un alert
-    alert("Product created successfully!");
-    setShowConfirmation(false);
+  const handleConfirmCreate = async () => {
+    try {
+      // Mapear categoría frontend a backend
+      const categoryMap: Record<string, string> = {
+        Computers: "Computer",
+        Monitors: "Monitor",
+        Peripherals: "Peripherals",
+        Audio: "Audio",
+        Merchandising: "Merchandising",
+        Other: "Other",
+      };
 
-    // Reiniciar todo el formulario y volver al Step 1
-    setCurrentStep(1);
-    setFormData({
-      tenant: null,
-      category: null,
-      warehouse: null,
-      quantity: 1,
-      pricePerUnit: 0,
-      acquisitionDate: null,
-      productCondition: null,
-      model: null,
-      processor: null,
-      recoverable: false,
-      currency: "USD",
-      serialNumber: null,
-      brand: null,
-      color: null,
-      ram: null,
-      storage: null,
-      screen: null,
-      keyboardLanguage: null,
-      gpu: null,
-      additionalInfo: null,
-    });
+      // Construir el array de productos según la cantidad
+      let productsArray;
+      if (formData.quantity >= 2) {
+        // Múltiples productos desde Step 4
+        productsArray = (formData.products || []).map((product: any) => ({
+          serialNumber: product.serialNumber || "",
+          warehouseCountryCode:
+            product.warehouse?.countryCode || product.warehouse?.country || "",
+          additionalInfo: product.additionalInfo || undefined,
+        }));
+      } else {
+        // Un solo producto desde Step 3
+        productsArray = [
+          {
+            serialNumber: formData.serialNumber || "",
+            warehouseCountryCode:
+              formData.warehouse?.countryCode ||
+              formData.warehouse?.country ||
+              "",
+            additionalInfo: formData.additionalInfo || undefined,
+          },
+        ];
+      }
+
+      // Construir el payload para la API
+      const payload = {
+        tenantName: formData.tenant?.name || formData.tenant?.tenantName || "",
+        name: formData.name || "",
+        category: categoryMap[formData.category?.name] || "Other",
+        attributes: formData.attributes || [],
+        productCondition: formData.productCondition || "Optimal",
+        recoverable: formData.recoverable || false,
+        acquisitionDate: formData.acquisitionDate || "",
+        price: {
+          amount: formData.price?.amount || 0,
+          currencyCode: formData.price?.currencyCode || "USD",
+        },
+        quantity: formData.quantity || 1,
+        products: productsArray,
+      };
+
+      console.log("Creando productos con payload:", payload);
+
+      // Llamar al endpoint
+      await bulkCreateMutation.mutateAsync(payload);
+
+      // Mostrar alerta de éxito
+      setAlert("createProduct");
+
+      setShowConfirmation(false);
+
+      // Reiniciar todo el formulario y volver al Step 1
+      setCurrentStep(1);
+      setFormData({
+        tenant: null,
+        category: null,
+        warehouse: null,
+        name: "",
+        quantity: 1,
+        pricePerUnit: 0,
+        acquisitionDate: null,
+        productCondition: null,
+        model: null,
+        processor: null,
+        recoverable: false,
+        currency: "USD",
+        serialNumber: null,
+        brand: null,
+        color: null,
+        ram: null,
+        storage: null,
+        screen: null,
+        keyboardLanguage: null,
+        gpu: null,
+        additionalInfo: null,
+        attributes: [],
+        price: { amount: 0, currencyCode: "USD" },
+        products: [],
+      });
+    } catch (error: any) {
+      console.error("Error creating products:", error);
+      setAlert("dynamicWarning", {
+        message:
+          error?.response?.data?.message ||
+          "Failed to create products. Please try again.",
+      });
+    }
   };
 
   const handleCancelCreate = () => {

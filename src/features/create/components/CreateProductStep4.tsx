@@ -9,6 +9,7 @@ import {
   ProductDetail,
 } from "@/features/assets";
 import type { Product } from "@/features/assets";
+import { useWarehousesForCreate } from "../hooks/useWarehousesForCreate";
 
 interface CreateProductStep4Props {
   formData: any;
@@ -18,21 +19,26 @@ interface CreateProductStep4Props {
   onCreateProduct: () => void;
 }
 
-// Componente para mostrar un solo ProductDetail y múltiples inputs de Serial Number y Additional Info
 const ProductSerialNumbers = ({
   baseProduct,
   products,
   onSerialNumberChange,
   onAdditionalInfoChange,
+  onWarehouseChange,
   errors,
   categoryName,
+  warehouses,
+  isLoadingWarehouses,
 }: {
   baseProduct: any;
   products: any[];
   onSerialNumberChange: (index: number, value: string) => void;
   onAdditionalInfoChange: (index: number, value: string) => void;
+  onWarehouseChange: (index: number, warehouseId: string) => void;
   errors: Record<string, string>;
   categoryName: string;
+  warehouses: any[];
+  isLoadingWarehouses: boolean;
 }) => {
   // Crear un objeto Product compatible con ProductDetail (usando el primer producto como base)
   const productForDetail: Product = {
@@ -98,6 +104,36 @@ const ProductSerialNumbers = ({
             </h4>
             <div className="space-y-4">
               <div>
+                <label className="block mb-2 font-medium text-gray-700 text-sm">
+                  FP Warehouse <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={product.warehouse?.id || ""}
+                  onChange={(e) => onWarehouseChange(index, e.target.value)}
+                  disabled={isLoadingWarehouses}
+                  className={`shadow-sm px-3 py-2 border border-gray-300 focus:border-blue-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full ${
+                    isLoadingWarehouses ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
+                >
+                  <option value="">
+                    {isLoadingWarehouses
+                      ? "Loading warehouses..."
+                      : "Select a warehouse"}
+                  </option>
+                  {!isLoadingWarehouses &&
+                    warehouses.map((warehouse) => (
+                      <option key={warehouse.id} value={warehouse.id}>
+                        {warehouse.name} ({warehouse.country})
+                      </option>
+                    ))}
+                </select>
+                {errors[`warehouse_${index}`] && (
+                  <p className="mt-1 text-red-500 text-xs">
+                    {errors[`warehouse_${index}`]}
+                  </p>
+                )}
+              </div>
+              <div>
                 <InputProductForm
                   title="Serial Number"
                   placeholder="Enter serial number"
@@ -146,6 +182,10 @@ export const CreateProductStep4 = ({
   const [products, setProducts] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Cargar warehouses dinámicamente desde la API
+  const { warehouses, isLoading: isLoadingWarehouses } =
+    useWarehousesForCreate();
+
   useEffect(() => {
     // Initialize products array based on quantity
     const initialProducts = Array.from(
@@ -155,6 +195,7 @@ export const CreateProductStep4 = ({
         return {
           id: index + 1,
           serialNumber: existingProduct?.serialNumber || "",
+          warehouse: existingProduct?.warehouse || null,
           name: existingProduct?.name || formData.name || "",
           attributes: existingProduct?.attributes || formData.attributes || [],
           productCondition:
@@ -209,6 +250,25 @@ export const CreateProductStep4 = ({
     }
   };
 
+  const handleWarehouseChange = (index: number, warehouseId: string) => {
+    const selectedWarehouse = warehouses.find((w) => w.id === warehouseId);
+    const updatedProducts = products.map((product, i) =>
+      i === index
+        ? { ...product, warehouse: selectedWarehouse || null }
+        : product
+    );
+    setProducts(updatedProducts);
+    onFormDataChange("products", updatedProducts);
+
+    // Clear error when user selects a warehouse
+    if (errors[`warehouse_${index}`]) {
+      setErrors((prev) => ({
+        ...prev,
+        [`warehouse_${index}`]: undefined,
+      }));
+    }
+  };
+
   // Obtener el producto base (primer producto) para mostrar en ProductDetail
   const baseProduct = products[0] || {
     name: formData.name || "",
@@ -221,6 +281,22 @@ export const CreateProductStep4 = ({
   };
 
   const handleNext = () => {
+    // Validar que todos los productos tengan warehouse
+    const newErrors: Record<string, string> = {};
+    let hasErrors = false;
+
+    products.forEach((product, index) => {
+      if (!product.warehouse) {
+        newErrors[`warehouse_${index}`] = "Warehouse is required";
+        hasErrors = true;
+      }
+    });
+
+    if (hasErrors) {
+      setErrors(newErrors);
+      return;
+    }
+
     onCreateProduct();
   };
 
@@ -243,8 +319,11 @@ export const CreateProductStep4 = ({
           products={products}
           onSerialNumberChange={handleSerialNumberChange}
           onAdditionalInfoChange={handleAdditionalInfoChange}
+          onWarehouseChange={handleWarehouseChange}
           errors={errors}
           categoryName={formData.category?.name || "Other"}
+          warehouses={warehouses}
+          isLoadingWarehouses={isLoadingWarehouses}
         />
 
         <div className="flex justify-between mt-8">
