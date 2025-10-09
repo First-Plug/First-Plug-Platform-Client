@@ -19,6 +19,16 @@ export interface WarehouseAPIData {
   distinctTenants: number;
   tenants: TenantAPIData[];
   hasStoredProducts: boolean;
+  state?: string;
+  city?: string;
+  zipCode?: string;
+  address?: string;
+  apartment?: string;
+  phone?: string;
+  email?: string;
+  canal?: string;
+  contactPerson?: string;
+  additionalInfo?: string;
 }
 
 export interface TenantAPIData {

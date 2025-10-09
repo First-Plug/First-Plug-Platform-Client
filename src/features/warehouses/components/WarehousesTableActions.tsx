@@ -10,32 +10,21 @@ import {
 } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Warehouse } from "../interfaces/warehouse.interface";
+import { WarehouseDetails } from "../interfaces/warehouse.interface";
 
 interface WarehousesTableActionsProps {
-  warehouse: Warehouse;
+  warehouse: WarehouseDetails;
   onDeleteWarehouse?: (id: string) => void | Promise<void>;
 }
 
 export function WarehousesTableActions({
   warehouse,
-  onDeleteWarehouse,
 }: WarehousesTableActionsProps) {
   const { setAside } = useAsideStore();
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
-
-  const canDelete = warehouse.totalProducts === 0;
-
-  const deleteWarehouse = async () => {
-    try {
-      if (onDeleteWarehouse) await onDeleteWarehouse(warehouse.id);
-    } finally {
-      setOpen(false);
-    }
-  };
 
   const handleUpdateWarehouse = () => {
+    // Inserción optimista en cache para carga instantánea
     queryClient.setQueryData(["selectedWarehouse"], warehouse);
     setAside("UpdateWarehouse");
   };

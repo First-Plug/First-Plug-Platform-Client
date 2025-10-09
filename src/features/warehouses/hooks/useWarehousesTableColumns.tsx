@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Warehouse } from "../interfaces/warehouse.interface";
+import { WarehouseDetails } from "../interfaces/warehouse.interface";
 import { useMemo } from "react";
 import { WarehousesTableActions } from "../components/WarehousesTableActions";
 import { countriesByCode } from "@/shared";
@@ -7,14 +7,14 @@ import { countriesByCode } from "@/shared";
 import { DetailsButton } from "@/shared/components/Tables/DetailButton";
 
 interface UseWarehousesTableColumnsProps {
-  warehouses: Warehouse[];
+  warehouses: WarehouseDetails[];
   onDeleteWarehouse?: (id: string) => void | Promise<void>;
 }
 
 export const useWarehousesTableColumns = ({
   warehouses,
   onDeleteWarehouse,
-}: UseWarehousesTableColumnsProps): ColumnDef<Warehouse>[] => {
+}: UseWarehousesTableColumnsProps): ColumnDef<WarehouseDetails>[] => {
   const filterOptions = useMemo(() => {
     const names = Array.from(
       new Set(warehouses.map((warehouse) => warehouse.name))
@@ -66,7 +66,7 @@ export const useWarehousesTableColumns = ({
     };
   }, [warehouses]);
 
-  const columns = useMemo<ColumnDef<Warehouse>[]>(
+  const columns = useMemo<ColumnDef<WarehouseDetails>[]>(
     () => [
       {
         accessorKey: "name",
@@ -180,12 +180,7 @@ export const useWarehousesTableColumns = ({
         header: "Actions",
         size: 80,
         cell: ({ row }) => {
-          return (
-            <WarehousesTableActions
-              warehouse={row.original}
-              onDeleteWarehouse={onDeleteWarehouse}
-            />
-          );
+          return <WarehousesTableActions warehouse={row.original} />;
         },
       },
 
@@ -198,7 +193,7 @@ export const useWarehousesTableColumns = ({
         },
       },
     ],
-    [filterOptions, onDeleteWarehouse]
+    [filterOptions]
   );
 
   return columns;

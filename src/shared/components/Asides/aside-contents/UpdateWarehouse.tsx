@@ -365,7 +365,7 @@ export const UpdateWarehouse = () => {
                 <DropdownInputProductForm
                   title="Partner Type"
                   placeholder="Select type"
-                  options={["Default", "Own", "Partner", "Temporary"]}
+                  options={["default", "own", "partner", "temporary"]}
                   selectedOption={watch("partnerType")}
                   onChange={(value) => setValue("partnerType", value)}
                   name="partnerType"
@@ -380,7 +380,7 @@ export const UpdateWarehouse = () => {
                 <DropdownInputProductForm
                   title="Contact Channel (Optional)"
                   placeholder="Select channel"
-                  options={["Mail", "Phone", "Email", "SMS"]}
+                  options={["whatsapp", "slack", "mail", "phone"]}
                   selectedOption={watch("contactChannel")}
                   onChange={(value) => setValue("contactChannel", value)}
                   name="contactChannel"
