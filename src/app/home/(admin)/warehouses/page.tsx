@@ -85,14 +85,6 @@ export default function WarehousesPage() {
               onClick={handleClearAllFilters}
             />
           </div>
-
-          <Button
-            size="small"
-            variant="primary"
-            body="Create Warehouse"
-            icon={<AddIcon />}
-            onClick={() => setAside("CreateWarehouse")}
-          />
         </div>
 
         {/* Tabla */}

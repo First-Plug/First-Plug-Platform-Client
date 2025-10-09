@@ -2,15 +2,22 @@ export interface Warehouse {
   id: string;
   name: string;
   country: string;
-  partnerType: "temporary" | "own" | "partner";
+  countryCode: string;
+  partnerType: "default" | "temporary" | "own" | "partner";
   isActive: boolean;
   tenantCount: number;
   totalProducts: number;
+  computers: number;
+  otherProducts: number;
+  distinctTenants: number;
+  hasStoredProducts: boolean;
 }
 
 export interface WarehouseTenantSummary {
+  tenantId: string;
   tenantName: string;
   companyName: string;
+  totalProducts: number;
   computers: number;
   otherProducts: number;
 }
@@ -41,11 +48,19 @@ export interface CreateWarehouseRequest {
 }
 
 export interface UpdateWarehouseRequest {
-  id: string;
-  name?: string;
-  country?: string;
-  partnerType?: "temporary" | "own" | "partner";
-  isActive?: boolean;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  apartment?: string;
+  phone?: string;
+  email?: string;
+  partnerType: string;
+  canal?: string;
+  contactPerson?: string;
+  additionalInfo?: string;
+  isActive: boolean;
 }
 
 export interface WarehouseStats {

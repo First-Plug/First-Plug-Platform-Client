@@ -21,7 +21,7 @@ export const useWarehousesTableColumns = ({
     ).sort();
 
     const countries = Array.from(
-      new Set(warehouses.map((warehouse) => warehouse.country))
+      new Set(warehouses.map((warehouse) => warehouse.countryCode))
     ).sort();
 
     const partnerTypes = Array.from(
@@ -46,9 +46,9 @@ export const useWarehousesTableColumns = ({
 
     return {
       names: names.map((name) => ({ label: name, value: name })),
-      countries: countries.map((country) => ({
-        label: countriesByCode[country] || country,
-        value: country,
+      countries: countries.map((countryCode) => ({
+        label: countriesByCode[countryCode] || countryCode,
+        value: countryCode,
       })),
       partnerTypes: partnerTypes.map((type) => ({ label: type, value: type })),
       activeStatuses: activeStatuses.map((status) => ({
@@ -84,7 +84,7 @@ export const useWarehousesTableColumns = ({
         filterOptions: filterOptions.names,
       },
       {
-        accessorKey: "country",
+        accessorKey: "countryCode",
         header: "Country",
         size: 100,
         meta: {
@@ -92,7 +92,7 @@ export const useWarehousesTableColumns = ({
           filterOptions: filterOptions.countries,
         },
         cell: ({ row }) => {
-          const countryCode = row.getValue("country") as string;
+          const countryCode = row.getValue("countryCode") as string;
           return <span>{countriesByCode[countryCode] || countryCode}</span>;
         },
         filterOptions: filterOptions.countries,
