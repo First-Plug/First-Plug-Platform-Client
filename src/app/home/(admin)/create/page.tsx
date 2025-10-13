@@ -128,7 +128,7 @@ export default function CreatePage() {
 
       // Construir el payload para la API
       const payload = {
-        tenantName: formData.tenant?.name || formData.tenant?.tenantName || "",
+        tenantName: formData.tenant?.tenantName || "",
         name: formData.name || "",
         category: categoryMap[formData.category?.name] || "Other",
         attributes: formData.attributes || [],
@@ -142,8 +142,6 @@ export default function CreatePage() {
         quantity: formData.quantity || 1,
         products: productsArray,
       };
-
-      console.log("Creando productos con payload:", payload);
 
       // Llamar al endpoint
       await bulkCreateMutation.mutateAsync(payload);
