@@ -12,6 +12,13 @@ export const useFetchDashboard = () => {
     useActivityLatest();
   const { user: updatedUser, isUserLoading, isUserFetching } = useFetchUser();
 
+  // Validación defensiva para asegurar que los datos sean arrays
+  const safeMembers = Array.isArray(members) ? members : [];
+  const safeAssets = Array.isArray(assets) ? assets : [];
+  const safeActivityLatest = Array.isArray(activityLatest)
+    ? activityLatest
+    : [];
+
   return {
     isLoading:
       isLoadingTeams ||
@@ -21,9 +28,9 @@ export const useFetchDashboard = () => {
       isUserLoading ||
       isUserFetching ||
       !updatedUser,
-    members,
-    assets,
-    activityLatest,
+    members: safeMembers,
+    assets: safeAssets,
+    activityLatest: safeActivityLatest,
     user: updatedUser,
   };
 };

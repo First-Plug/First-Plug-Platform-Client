@@ -10,8 +10,14 @@ export class ProductServices {
     return response.data;
   }
   static async getTableFormat(): Promise<ProductTable[]> {
-    const response = await HTTPRequests.get(`${BASE_URL}/api/products/table`);
-    return response.data;
+    try {
+      const response = await HTTPRequests.get(`${BASE_URL}/api/products/table`);
+      // Validación defensiva: asegurar que siempre retornemos un array
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error("Error fetching table format:", error);
+      return [];
+    }
   }
 
   static async getProductById(id: Product["_id"]): Promise<Product> {

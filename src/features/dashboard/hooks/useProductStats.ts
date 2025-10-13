@@ -16,8 +16,11 @@ export const useProductStats = (products: ProductTable[]) => {
     CATEGORIES[0]
   );
 
+  // Validación defensiva: asegurar que products sea un array válido
+  const safeProducts = Array.isArray(products) ? products : [];
+
   const categoryProducts = selectedCategory
-    ? products
+    ? safeProducts
         .filter(
           (table) =>
             table.category.toLowerCase() === selectedCategory.toLowerCase()

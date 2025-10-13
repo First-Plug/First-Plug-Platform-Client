@@ -5,8 +5,14 @@ type CreationMember = Omit<Omit<Member, "_id">, "__v">;
 
 export class Memberservices {
   static async getAllMembers(): Promise<Member[]> {
-    const response = await HTTPRequests.get(`${BASE_URL}/api/members`);
-    return response.data;
+    try {
+      const response = await HTTPRequests.get(`${BASE_URL}/api/members`);
+      // Validación defensiva: asegurar que siempre retornemos un array
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error("Error fetching members:", error);
+      return [];
+    }
   }
 
   static async getOneMember(id: Member["_id"]): Promise<Member> {
