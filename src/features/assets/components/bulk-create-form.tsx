@@ -475,7 +475,7 @@ export const BulkCreateForm: React.FC<{
                     !watch(`products.${index}.assignedMember`) ? (
                       <>
                         <DropdownInputProductForm
-                          options={["Our office", "FP warehouse"]}
+                          options={["Our office"]}
                           placeholder="Location"
                           title="Location*"
                           name={`products.${index}.location`}

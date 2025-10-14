@@ -493,7 +493,7 @@ export const CategoryForm = ({
               selectedAssignedMember === "" ? (
                 <>
                   <DropdownInputProductForm
-                    options={["Our office", "FP warehouse"]}
+                    options={["Our office"]}
                     placeholder="Location"
                     title="Location*"
                     name="location"
