@@ -6,6 +6,7 @@ import {
   PageLayout,
   PaginationAdvanced,
   useAsideStore,
+  BarLoader,
 } from "@/shared";
 
 import { DataTable } from "@/features/fp-tables";
@@ -39,6 +40,8 @@ export default function WarehousesPage() {
     tenantFilterOptions,
     selectedTenantName,
     handleSetTenantFilter,
+    isLoading,
+    error,
   } = useWarehousesTable();
 
   const columns = useWarehousesTableColumns({
@@ -47,6 +50,14 @@ export default function WarehousesPage() {
 
   const { getRowCanExpand, getRowId, renderSubComponent } =
     useWarehousesSubtableLogic();
+
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <BarLoader />
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout>

@@ -39,7 +39,7 @@ export default function CreatePage() {
     gpu: null,
     additionalInfo: null,
     attributes: [],
-    price: { amount: 0, currencyCode: "USD" },
+    price: { amount: null, currencyCode: "USD" },
     products: [],
   });
 
@@ -61,7 +61,7 @@ export default function CreatePage() {
           productCondition: null,
           recoverable: false,
           acquisitionDate: "",
-          price: { amount: 0, currencyCode: "USD" },
+          price: { amount: null, currencyCode: "USD" },
           additionalInfo: "",
           attributes: [],
           quantity: 1,
@@ -127,7 +127,7 @@ export default function CreatePage() {
       }
 
       // Construir el payload para la API
-      const payload = {
+      const payload: any = {
         tenantName: formData.tenant?.tenantName || "",
         name: formData.name || "",
         category: categoryMap[formData.category?.name] || "Other",
@@ -135,13 +135,17 @@ export default function CreatePage() {
         productCondition: formData.productCondition || "Optimal",
         recoverable: formData.recoverable || false,
         acquisitionDate: formData.acquisitionDate || "",
-        price: {
-          amount: formData.price?.amount || 0,
-          currencyCode: formData.price?.currencyCode || "USD",
-        },
         quantity: formData.quantity || 1,
         products: productsArray,
       };
+
+      // Solo agregar price si tiene un valor válido
+      if (formData.price?.amount && formData.price.amount > 0) {
+        payload.price = {
+          amount: formData.price.amount,
+          currencyCode: formData.price?.currencyCode || "USD",
+        };
+      }
 
       // Llamar al endpoint
       await bulkCreateMutation.mutateAsync(payload);
@@ -176,7 +180,7 @@ export default function CreatePage() {
         gpu: null,
         additionalInfo: null,
         attributes: [],
-        price: { amount: 0, currencyCode: "USD" },
+        price: { amount: null, currencyCode: "USD" },
         products: [],
       });
     } catch (error: any) {

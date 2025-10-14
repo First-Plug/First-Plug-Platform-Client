@@ -209,19 +209,15 @@ export const CreateProductStep3 = ({
 
     // Product Name es requerido si:
     // 1. Categoría es Merchandising
-    // 2. Categoría es Other
-    // 3. Modelo es Other (cualquier categoría)
+    // 2. Categoría NO es Other Y modelo es Other
     const isProductNameRequired =
       selectedCategory === "Merchandising" ||
-      selectedCategory === "Other" ||
-      model === "Other";
+      (selectedCategory !== "Other" && model === "Other");
 
     if (isProductNameRequired && (!productName || productName.trim() === "")) {
       let errorMessage = "Product Name is required.";
       if (selectedCategory === "Merchandising") {
         errorMessage = "Product Name is required for Merchandising.";
-      } else if (selectedCategory === "Other") {
-        errorMessage = "Product Name is required for Other category.";
       } else if (model === "Other") {
         errorMessage = "Product Name is required when model is Other.";
       }
@@ -463,8 +459,8 @@ export const CreateProductStep3 = ({
                     ...formData.price,
                     amount:
                       e.target.value === ""
-                        ? ""
-                        : parseFloat(e.target.value) || 0,
+                        ? null
+                        : parseFloat(e.target.value) || null,
                   };
                   onFormDataChange("price", newPrice);
                   setValue("price" as any, newPrice);

@@ -19,6 +19,12 @@ export const CreateProductConfirmation = ({
   onConfirm,
   onCancel,
 }: CreateProductConfirmationProps) => {
+  const warehouseCountry = formData.warehouse?.country || "";
+  const warehouseName = formData.warehouse?.name || "";
+  const warehouseInfo = warehouseCountry
+    ? `${warehouseName} (${warehouseCountry})`
+    : warehouseName;
+
   return (
     <Dialog open={true}>
       <DialogContent>
@@ -27,7 +33,7 @@ export const CreateProductConfirmation = ({
           <DialogDescription className="font-normal text-md">
             Are you sure you want to create <strong>{formData.quantity}</strong>{" "}
             product(s) for <strong>{formData.tenant?.tenantName}</strong> in the
-            warehouse <strong>{formData.warehouse?.name}</strong>?
+            warehouse <strong>{warehouseInfo}</strong>?
           </DialogDescription>
         </DialogHeader>
         <DialogDescription className="text-md">
