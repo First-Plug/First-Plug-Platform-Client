@@ -2,7 +2,7 @@ export const shipmentData = {
   fields: [
     {
       name: "country",
-      title: "Country",
+      title: "Country*",
       type: "dropdown",
       placeholder: "Country",
       options: [
@@ -198,32 +198,32 @@ export const shipmentData = {
         "Vietnam",
         "Yemen",
         "Zambia",
-        "Zimbabwe"
-      ]
+        "Zimbabwe",
+      ],
     },
     {
       name: "city",
       title: "City",
       type: "text",
-      placeholder: "City"
+      placeholder: "City",
     },
     {
       name: "zipCode",
       title: "Zip Code",
       type: "text",
-      placeholder: "zip code"
+      placeholder: "zip code",
     },
     {
       name: "address",
       title: "Address",
       type: "text",
-      placeholder: "Street, number"
+      placeholder: "Street, number",
     },
     {
       name: "apartment",
       title: "Apartment, Suite, etc.",
       type: "text",
-      placeholder: "PB B"
-    }
-  ]
+      placeholder: "PB B",
+    },
+  ],
 };
