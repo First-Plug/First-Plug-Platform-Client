@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/shared";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,6 +7,7 @@ import {
   zodCreateProductModel,
   InputProductForm,
   ProductDetail,
+  DropdownInputProductForm,
 } from "@/features/assets";
 import type { Product } from "@/features/assets";
 import { useWarehousesForCreate } from "../hooks/useWarehousesForCreate";
@@ -34,17 +35,23 @@ const ProductSerialNumbers = ({
   products: any[];
   onSerialNumberChange: (index: number, value: string) => void;
   onAdditionalInfoChange: (index: number, value: string) => void;
-  onWarehouseChange: (index: number, warehouseId: string) => void;
+  onWarehouseChange: (index: number, warehouseLabel: string) => void;
   errors: Record<string, string>;
   categoryName: string;
   warehouses: any[];
   isLoadingWarehouses: boolean;
 }) => {
-  // Crear un objeto Product compatible con ProductDetail (usando el primer producto como base)
+  // Ordenar warehouses alfabéticamente por nombre
+  const sortedWarehouses = useMemo(() => {
+    return warehouses
+      ? [...warehouses].sort((a, b) => a.name.localeCompare(b.name))
+      : [];
+  }, [warehouses]);
+
   const productForDetail: Product = {
     _id: `temp_base`,
     name: baseProduct.name || "",
-    serialNumber: "", // No mostrar serial number en el ProductDetail
+    serialNumber: "",
     category: (categoryName === "Computers"
       ? "Computer"
       : categoryName === "Monitors"
@@ -104,29 +111,31 @@ const ProductSerialNumbers = ({
             </h4>
             <div className="space-y-4">
               <div>
-                <label className="block mb-2 font-medium text-gray-700 text-sm">
-                  FP Warehouse <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={product.warehouse?.id || ""}
-                  onChange={(e) => onWarehouseChange(index, e.target.value)}
-                  disabled={isLoadingWarehouses}
-                  className={`shadow-sm px-3 py-2 border border-gray-300 focus:border-blue-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full ${
-                    isLoadingWarehouses ? "bg-gray-100 cursor-not-allowed" : ""
-                  }`}
-                >
-                  <option value="">
-                    {isLoadingWarehouses
+                <DropdownInputProductForm
+                  title="FP Warehouse"
+                  placeholder={
+                    isLoadingWarehouses
                       ? "Loading warehouses..."
-                      : "Select a warehouse"}
-                  </option>
-                  {!isLoadingWarehouses &&
-                    warehouses.map((warehouse) => (
-                      <option key={warehouse.id} value={warehouse.id}>
-                        {warehouse.name} ({warehouse.country})
-                      </option>
-                    ))}
-                </select>
+                      : "Select a warehouse"
+                  }
+                  options={
+                    !isLoadingWarehouses
+                      ? sortedWarehouses.map((w) => `${w.name} (${w.country})`)
+                      : []
+                  }
+                  selectedOption={
+                    product.warehouse
+                      ? `${product.warehouse.name} (${product.warehouse.country})`
+                      : ""
+                  }
+                  onChange={(warehouseLabel) =>
+                    onWarehouseChange(index, warehouseLabel)
+                  }
+                  name={`warehouse_${index}`}
+                  searchable={true}
+                  disabled={isLoadingWarehouses}
+                  required="required"
+                />
                 {errors[`warehouse_${index}`] && (
                   <p className="mt-1 text-red-500 text-xs">
                     {errors[`warehouse_${index}`]}
@@ -250,8 +259,10 @@ export const CreateProductStep4 = ({
     }
   };
 
-  const handleWarehouseChange = (index: number, warehouseId: string) => {
-    const selectedWarehouse = warehouses.find((w) => w.id === warehouseId);
+  const handleWarehouseChange = (index: number, warehouseLabel: string) => {
+    const selectedWarehouse = warehouses.find(
+      (w) => `${w.name} (${w.country})` === warehouseLabel
+    );
     const updatedProducts = products.map((product, i) =>
       i === index
         ? { ...product, warehouse: selectedWarehouse || null }

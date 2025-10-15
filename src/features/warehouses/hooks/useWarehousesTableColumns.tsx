@@ -17,12 +17,16 @@ export const useWarehousesTableColumns = ({
 }: UseWarehousesTableColumnsProps): ColumnDef<WarehouseDetails>[] => {
   const filterOptions = useMemo(() => {
     const names = Array.from(
-      new Set(warehouses.map((warehouse) => warehouse.name))
+      new Set(
+        warehouses
+          .map((warehouse) => warehouse.name)
+          .filter((name) => name !== "")
+      )
     ).sort();
 
     const countries = Array.from(
       new Set(warehouses.map((warehouse) => warehouse.countryCode))
-    ).sort();
+    );
 
     const partnerTypes = Array.from(
       new Set(warehouses.map((warehouse) => warehouse.partnerType))
@@ -45,11 +49,19 @@ export const useWarehousesTableColumns = ({
     );
 
     return {
-      names: names.map((name) => ({ label: name, value: name })),
-      countries: countries.map((countryCode) => ({
-        label: countriesByCode[countryCode] || countryCode,
-        value: countryCode,
-      })),
+      names: [
+        ...names.map((name) => ({
+          label: name,
+          value: name,
+        })),
+        { label: "No Name", value: "" },
+      ],
+      countries: countries
+        .map((countryCode) => ({
+          label: countriesByCode[countryCode] || countryCode,
+          value: countryCode,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
       partnerTypes: partnerTypes.map((type) => ({ label: type, value: type })),
       activeStatuses: activeStatuses.map((status) => ({
         label: status ? "Yes" : "No",
@@ -76,11 +88,16 @@ export const useWarehousesTableColumns = ({
           hasFilter: true,
           filterOptions: filterOptions.names,
         },
-        cell: ({ row }) => (
-          <div className="flex items-center">
-            <span className="font-medium">{row.getValue("name")}</span>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const name = row.getValue("name") as string;
+          return (
+            <div className="flex items-center">
+              <span className="font-medium">
+                {name === "" ? "No Name" : name}
+              </span>
+            </div>
+          );
+        },
         filterOptions: filterOptions.names,
       },
       {

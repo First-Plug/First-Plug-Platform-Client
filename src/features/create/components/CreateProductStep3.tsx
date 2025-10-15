@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/shared";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -65,6 +65,13 @@ export const CreateProductStep3 = ({
   // Cargar warehouses dinámicamente desde la API
   const { warehouses, isLoading: isLoadingWarehouses } =
     useWarehousesForCreate();
+
+  // Ordenar warehouses alfabéticamente por nombre
+  const sortedWarehouses = useMemo(() => {
+    return warehouses
+      ? [...warehouses].sort((a, b) => a.name.localeCompare(b.name))
+      : [];
+  }, [warehouses]);
 
   const isMoreThanTwoProducts = quantity >= 2;
   const shouldGoToStep4 = quantity >= 2;
@@ -209,10 +216,9 @@ export const CreateProductStep3 = ({
 
     // Product Name es requerido si:
     // 1. Categoría es Merchandising
-    // 2. Categoría NO es Other Y modelo es Other
+    // 2. Modelo es Other (en cualquier categoría, incluyendo Other)
     const isProductNameRequired =
-      selectedCategory === "Merchandising" ||
-      (selectedCategory !== "Other" && model === "Other");
+      selectedCategory === "Merchandising" || model === "Other";
 
     if (isProductNameRequired && (!productName || productName.trim() === "")) {
       let errorMessage = "Product Name is required.";
@@ -239,8 +245,10 @@ export const CreateProductStep3 = ({
     onFormDataChange("quantity", newQuantity);
   };
 
-  const handleWarehouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedWarehouse = warehouses.find((w) => w.id === e.target.value);
+  const handleWarehouseChange = (warehouseLabel: string) => {
+    const selectedWarehouse = sortedWarehouses.find(
+      (w) => `${w.name} (${w.country})` === warehouseLabel
+    );
     onFormDataChange("warehouse", selectedWarehouse || null);
   };
 
@@ -339,37 +347,31 @@ export const CreateProductStep3 = ({
 
           {/* FP Warehouse */}
           <div>
-            <label className="block mb-2 font-medium text-gray-700 text-sm">
-              FP Warehouse{" "}
-              {!isMoreThanTwoProducts && (
-                <span className="text-red-500">*</span>
-              )}
-            </label>
-            <select
-              value={formData.warehouse?.id || ""}
-              onChange={handleWarehouseChange}
-              disabled={isMoreThanTwoProducts || isLoadingWarehouses}
-              className={`shadow-sm px-3 py-2 border border-gray-300 focus:border-blue-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full ${
-                isMoreThanTwoProducts || isLoadingWarehouses
-                  ? "bg-gray-100 cursor-not-allowed"
-                  : ""
-              }`}
-            >
-              <option value="">
-                {isLoadingWarehouses
+            <DropdownInputProductForm
+              title="FP Warehouse"
+              placeholder={
+                isLoadingWarehouses
                   ? "Loading warehouses..."
                   : isMoreThanTwoProducts
                   ? "Will be configured per product"
-                  : "Select a warehouse"}
-              </option>
-              {!isMoreThanTwoProducts &&
-                !isLoadingWarehouses &&
-                warehouses.map((warehouse) => (
-                  <option key={warehouse.id} value={warehouse.id}>
-                    {warehouse.name} ({warehouse.country})
-                  </option>
-                ))}
-            </select>
+                  : "Select a warehouse"
+              }
+              options={
+                !isMoreThanTwoProducts && !isLoadingWarehouses
+                  ? sortedWarehouses.map((w) => `${w.name} (${w.country})`)
+                  : []
+              }
+              selectedOption={
+                formData.warehouse
+                  ? `${formData.warehouse.name} (${formData.warehouse.country})`
+                  : ""
+              }
+              onChange={handleWarehouseChange}
+              name="warehouse"
+              searchable={true}
+              disabled={isMoreThanTwoProducts || isLoadingWarehouses}
+              required={!isMoreThanTwoProducts ? "required" : undefined}
+            />
           </div>
 
           {/* Basic Product Information */}

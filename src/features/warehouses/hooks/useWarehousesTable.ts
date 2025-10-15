@@ -111,9 +111,13 @@ export function useWarehousesTable() {
 
         switch (column) {
           case "name":
-            return filterValues.some((value) =>
-              warehouse.name.toLowerCase().includes(value.toLowerCase())
-            );
+            return filterValues.some((value) => {
+              if (value === "") {
+                return warehouse.name === "";
+              }
+
+              return warehouse.name.toLowerCase().includes(value.toLowerCase());
+            });
           case "countryCode":
             return filterValues.some((value) =>
               warehouse.countryCode.toLowerCase().includes(value.toLowerCase())

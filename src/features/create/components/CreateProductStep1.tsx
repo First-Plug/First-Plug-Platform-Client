@@ -1,6 +1,7 @@
 "use client";
 import { Button, BarLoader } from "@/shared";
 import { useFetchTenants } from "@/features/tenants";
+import { DropdownInputProductForm } from "@/features/assets";
 
 interface CreateProductStep1Props {
   formData: any;
@@ -17,8 +18,14 @@ export const CreateProductStep1 = ({
 }: CreateProductStep1Props) => {
   const { data: tenants, isLoading, error } = useFetchTenants();
 
-  const handleTenantChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedTenant = tenants?.find((t) => t.id === e.target.value);
+  const sortedTenants = tenants
+    ? [...tenants].sort((a, b) => a.tenantName.localeCompare(b.tenantName))
+    : [];
+
+  const handleTenantChange = (tenantName: string) => {
+    const selectedTenant = sortedTenants.find(
+      (t) => t.tenantName === tenantName
+    );
     if (selectedTenant) {
       onFormDataChange("tenant", {
         id: selectedTenant.id,
@@ -65,24 +72,15 @@ export const CreateProductStep1 = ({
       </div>
 
       <div className="mb-6">
-        <label className="block mb-2 font-medium text-gray-700 text-sm">
-          Tenant
-        </label>
-        <select
-          value={
-            tenants?.find((t) => t.tenantName === formData.tenant?.tenantName)
-              ?.id || ""
-          }
+        <DropdownInputProductForm
+          title=""
+          placeholder="Select a tenant"
+          options={sortedTenants.map((t) => t.tenantName)}
+          selectedOption={formData.tenant?.tenantName || ""}
           onChange={handleTenantChange}
-          className="shadow-sm px-3 py-2 border border-gray-300 focus:border-blue-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-        >
-          <option value="">Select a tenant</option>
-          {tenants?.map((tenant) => (
-            <option key={tenant.id} value={tenant.id}>
-              {tenant.tenantName}
-            </option>
-          ))}
-        </select>
+          name="tenant"
+          searchable={true}
+        />
       </div>
 
       <div className="flex justify-between">
