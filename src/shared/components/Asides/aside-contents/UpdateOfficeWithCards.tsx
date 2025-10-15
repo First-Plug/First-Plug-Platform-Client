@@ -74,6 +74,15 @@ export const UpdateOfficeWithCards = () => {
       country: selectedTenant.office.country,
       zipCode: selectedTenant.office.zipCode,
       isDefault: selectedTenant.office.isDefault,
+      isActive: true,
+      isDeleted: false,
+      deletedAt: null,
+      tenantId: selectedTenant.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      __v: 0,
+      hasAssignedProducts: false,
+      hasActiveShipments: false,
     };
   }, [selectedTenant]);
 
