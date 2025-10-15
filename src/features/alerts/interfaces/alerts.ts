@@ -60,5 +60,8 @@ export const ALERTS_TYPES = [
   "errorCreateOffice",
   "errorDeleteOffice",
   "errorSetDefaultOffice",
+  "errorOfficeDuplicateName",
+  "errorOfficeHasProducts",
+  "errorOfficeIsDefault",
 ] as const;
 export type AlertType = (typeof ALERTS_TYPES)[number];

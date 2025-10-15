@@ -551,6 +551,33 @@ export const AlertProvider = () => {
         setAlert(undefined);
       },
     },
+    errorOfficeDuplicateName: {
+      title: "Error",
+      type: "error",
+      description:
+        "An office with this name already exists. Please use a different name.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorOfficeHasProducts: {
+      title: "Error",
+      type: "error",
+      description:
+        "Cannot delete this office because it has assigned products. Please reassign the products first.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorOfficeIsDefault: {
+      title: "Error",
+      type: "error",
+      description:
+        "Cannot delete the default office. Please set another office as default first.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;

@@ -2,21 +2,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { OfficeServices } from "../services/office.services";
 import { Office, UpdateOffice, CreateOffice } from "../types/settings.types";
 import { useAlertStore } from "@/shared";
-import { mockOffices } from "../data/mock-offices";
-
-// ========================================
-// MOCK DATA - TEMPORARY UNTIL API ENDPOINTS ARE READY
-// ========================================
-// Mock data storage - simple in-memory storage for demo purposes
-// TODO: Replace with real API calls when endpoints are available
-let mockOfficesData: Office[] = [...mockOffices];
+import { AxiosError } from "axios";
 
 export const useOffices = (): {
   offices: Office[];
   isLoading: boolean;
   error: any;
   createOffice: (data: CreateOffice) => void;
-  updateOffice: (id: string, data: UpdateOffice) => void;
+  updateOffice: (id: string, data: UpdateOffice) => Promise<Office>;
   deleteOffice: (id: string) => void;
   setDefaultOffice: (id: string) => void;
   isCreating: boolean;
@@ -27,129 +20,170 @@ export const useOffices = (): {
   const queryClient = useQueryClient();
   const { setAlert } = useAlertStore();
 
-  // Fetch all offices - Using mock data temporarily
-  // TODO: Replace with OfficeServices.getOffices() when API endpoint is ready
   const {
     data: offices = [],
     isLoading,
     error,
   } = useQuery<Office[]>({
     queryKey: ["offices"],
-    queryFn: async () => {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return mockOfficesData;
-    },
+    queryFn: () => OfficeServices.getOffices(),
     staleTime: 1000 * 60 * 5,
   });
-
-  // Create office mutation - MOCK VERSION
-  // TODO: Replace with OfficeServices.createOffice(data) when API endpoint is ready
   const createOfficeMutation = useMutation({
-    mutationFn: async (data: CreateOffice) => {
-      // Validar que el nombre sea único
-      const existingOffice = mockOfficesData.find(
-        (office) => office.name.toLowerCase() === data.name.toLowerCase()
-      );
-
-      if (existingOffice) {
-        throw new Error("An office with this name already exists");
-      }
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const newOffice: Office = {
-        _id: Date.now().toString(), // Simple ID generation for mock
-        ...data,
-        isDefault: mockOfficesData.length === 0, // First office is default
-      };
-      mockOfficesData.push(newOffice);
-      return newOffice;
-    },
+    mutationFn: (data: CreateOffice) => OfficeServices.createOffice(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       setAlert("officeCreatedSuccessfully");
     },
-    onError: (error) => {
+    onError: (error: AxiosError<{ message: string | string[] }>) => {
       console.error("Error creating office:", error);
-      setAlert("errorCreateOffice");
+
+      const errorMessage = error.response?.data?.message;
+      const errorString = Array.isArray(errorMessage)
+        ? errorMessage.join(", ")
+        : errorMessage || "";
+
+      if (
+        errorString.toLowerCase().includes("nombre") ||
+        errorString.toLowerCase().includes("name")
+      ) {
+        setAlert("errorOfficeDuplicateName");
+      } else if (
+        errorString.toLowerCase().includes("phone") ||
+        errorString.toLowerCase().includes("teléfono")
+      ) {
+        setAlert("dynamicWarning", {
+          title: "Invalid Phone Number",
+          description:
+            "The phone number format is invalid. Please use only numbers, spaces, and an optional + at the start (e.g., +543514567890).",
+        });
+      } else if (errorString.toLowerCase().includes("email")) {
+        setAlert("dynamicWarning", {
+          title: "Invalid Email",
+          description:
+            "The email format is invalid. Please enter a valid email address.",
+        });
+      } else {
+        setAlert("errorCreateOffice");
+      }
     },
   });
 
-  // Update office mutation
   const updateOfficeMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateOffice }) => {
-      // Si se está actualizando el nombre, validar que sea único
-      if (data.name) {
-        const existingOffice = mockOfficesData.find(
-          (office) =>
-            office._id !== id &&
-            office.name.toLowerCase() === data.name.toLowerCase()
+    mutationFn: ({ id, data }: { id: string; data: UpdateOffice }) =>
+      OfficeServices.updateOffice(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ["offices"] });
+
+      const previousOffices = queryClient.getQueryData<Office[]>(["offices"]);
+
+      queryClient.setQueryData<Office[]>(["offices"], (old) => {
+        if (!old) return old;
+        return old.map((office) =>
+          office._id === id ? { ...office, ...data } : office
         );
+      });
 
-        if (existingOffice) {
-          throw new Error("An office with this name already exists");
-        }
-      }
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const officeIndex = mockOfficesData.findIndex(
-        (office) => office._id === id
-      );
-      if (officeIndex !== -1) {
-        mockOfficesData[officeIndex] = {
-          ...mockOfficesData[officeIndex],
-          ...data,
-        };
-      }
-      return { _id: id, ...data } as Office;
+      return { previousOffices };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
       setAlert("officeUpdatedSuccessfully");
     },
-    onError: (error) => {
-      console.error("Error updating office:", error);
-      setAlert("errorUpdateOffice");
+    onError: (
+      error: AxiosError<{ message: string | string[] }>,
+      _variables,
+      context
+    ) => {
+      if (context?.previousOffices) {
+        queryClient.setQueryData(["offices"], context.previousOffices);
+      }
+
+      const errorMessage = error.response?.data?.message;
+      const errorString = Array.isArray(errorMessage)
+        ? errorMessage.join(", ")
+        : errorMessage || "";
+
+      if (
+        errorString.toLowerCase().includes("nombre") ||
+        errorString.toLowerCase().includes("name")
+      ) {
+        setAlert("errorOfficeDuplicateName");
+      } else if (
+        errorString.toLowerCase().includes("phone") ||
+        errorString.toLowerCase().includes("teléfono")
+      ) {
+        setAlert("dynamicWarning", {
+          title: "Invalid Phone Number",
+          description:
+            "The phone number format is invalid. Please use only numbers, spaces, and an optional + at the start (e.g., +543514567890).",
+        });
+      } else if (errorString.toLowerCase().includes("email")) {
+        setAlert("dynamicWarning", {
+          title: "Invalid Email",
+          description:
+            "The email format is invalid. Please enter a valid email address.",
+        });
+      } else {
+        setAlert("errorUpdateOffice");
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
     },
   });
 
-  // Delete office mutation
   const deleteOfficeMutation = useMutation({
-    mutationFn: async (id: string) => {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      mockOfficesData = mockOfficesData.filter((office) => office._id !== id);
-    },
+    mutationFn: (id: string) => OfficeServices.deleteOffice(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       setAlert("officeDeletedSuccessfully");
     },
-    onError: (error) => {
+    onError: (error: AxiosError<{ message: string }>) => {
       console.error("Error deleting office:", error);
-      setAlert("errorDeleteOffice");
+
+      const errorMessage = error.response?.data?.message || "";
+
+      if (errorMessage.toLowerCase().includes("productos")) {
+        setAlert("errorOfficeHasProducts");
+      } else if (errorMessage.toLowerCase().includes("default")) {
+        setAlert("errorOfficeIsDefault");
+      } else {
+        setAlert("errorDeleteOffice");
+      }
     },
   });
 
-  // Set default office mutation
   const setDefaultOfficeMutation = useMutation({
-    mutationFn: async (id: string) => {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      mockOfficesData = mockOfficesData.map((office) => ({
-        ...office,
-        isDefault: office._id === id,
-      }));
+    mutationFn: (id: string) => OfficeServices.setDefaultOffice(id),
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ["offices"] });
+
+      const previousOffices = queryClient.getQueryData<Office[]>(["offices"]);
+
+      queryClient.setQueryData<Office[]>(["offices"], (old) => {
+        if (!old) return old;
+        return old.map((office) => ({
+          ...office,
+          isDefault: office._id === id,
+        }));
+      });
+
+      return { previousOffices };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       setAlert("defaultOfficeUpdatedSuccessfully");
     },
-    onError: (error) => {
-      console.error("Error setting default office:", error);
+    onError: (error: AxiosError<{ message: string }>, _id, context) => {
+      if (context?.previousOffices) {
+        queryClient.setQueryData(["offices"], context.previousOffices);
+      }
       setAlert("errorSetDefaultOffice");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
     },
   });
 
@@ -157,8 +191,11 @@ export const useOffices = (): {
     createOfficeMutation.mutate(data);
   };
 
-  const updateOffice = (id: string, data: UpdateOffice) => {
-    updateOfficeMutation.mutate({ id, data });
+  const updateOffice = async (
+    id: string,
+    data: UpdateOffice
+  ): Promise<Office> => {
+    return updateOfficeMutation.mutateAsync({ id, data });
   };
 
   const deleteOffice = (id: string) => {

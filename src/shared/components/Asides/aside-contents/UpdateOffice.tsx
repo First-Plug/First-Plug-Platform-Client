@@ -20,13 +20,48 @@ import {
 import { DropdownInputProductForm } from "@/features/assets";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
+const phoneRegex = /^\+?[0-9\s]*$/;
+const onlyLetters = /^[A-Za-z\s\u00C0-\u00FF]*$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const updateOfficeSchema = z.object({
   name: z.string().min(1, "Office name is required"),
-  email: z.string().email("Invalid email format").optional().or(z.literal("")),
-  phone: z.string().optional().or(z.literal("")),
+
+  email: z
+    .string()
+    .refine((value) => value === "" || emailRegex.test(value), {
+      message: "Please enter a valid email address",
+    })
+    .optional()
+    .or(z.literal("")),
+
+  phone: z
+    .string()
+    .refine((value) => value === "" || phoneRegex.test(value), {
+      message:
+        "Phone number is invalid. Use only numbers, spaces, and optional + at the start",
+    })
+    .optional()
+    .or(z.literal("")),
+
   country: z.string().optional().or(z.literal("")),
-  state: z.string().optional().or(z.literal("")),
-  city: z.string().optional().or(z.literal("")),
+
+  state: z
+    .string()
+    .refine((value) => value === "" || onlyLetters.test(value), {
+      message: "State can only contain letters",
+    })
+    .optional()
+    .or(z.literal("")),
+
+  city: z
+    .string()
+    .refine((value) => value === "" || onlyLetters.test(value), {
+      message: "City can only contain letters",
+    })
+    .optional()
+    .or(z.literal("")),
+
   zipCode: z.string().optional().or(z.literal("")),
   address: z.string().optional().or(z.literal("")),
   apartment: z.string().optional().or(z.literal("")),
@@ -36,7 +71,6 @@ const updateOfficeSchema = z.object({
 type UpdateOfficeFormData = z.infer<typeof updateOfficeSchema>;
 
 export const UpdateOffice = () => {
-  // Crear lista de países con código y nombre
   const countryOptions = Object.entries(countriesByCode).map(
     ([code, name]) => ({
       code,
@@ -75,23 +109,16 @@ export const UpdateOffice = () => {
     formState: { errors, isDirty, isSubmitting },
   } = methods;
 
-  // Función para verificar si el botón Save debe estar habilitado
   const isSaveButtonEnabled = () => {
     if (isSubmitting) return false;
-
-    // Permitir que el botón esté habilitado si hay cambios,
-    // la validación se hará en onSubmit para mostrar errores
     return isDirty;
   };
 
   const onSubmit = async (data: UpdateOfficeFormData) => {
-    if (!selectedTenant && !selectedOffice) return;
+    if (!selectedTenant && !selectedOffice) {
+      return;
+    }
 
-    // Let Zod validation handle the validation first
-    // If we reach here, the form should be valid according to Zod schema
-
-    // Send all fields that have been modified (including empty strings to clear fields)
-    // Compare with original values to detect changes
     const originalData = {
       name: selectedOffice?.name || selectedTenant?.office?.name || "",
       email: selectedOffice?.email || selectedTenant?.office?.email || "",
@@ -107,62 +134,47 @@ export const UpdateOffice = () => {
 
     const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
       const originalValue = originalData[key as keyof typeof originalData];
-      // Include field if it has changed (including changes to empty string)
       if (value !== originalValue) {
-        acc[key as keyof UpdateOfficeFormData] = value || ""; // Send empty string to clear field
+        acc[key as keyof UpdateOfficeFormData] = value || "";
       }
       return acc;
     }, {} as Partial<UpdateOfficeFormData>);
 
-    // Only proceed if there are actual changes to send
     if (Object.keys(filteredData).length === 0) {
-      // No changes to save - just close the aside
       setAside(null);
       return;
     }
 
-    // Additional validation: if name is being changed to empty, don't allow it
     if (
       filteredData.name !== undefined &&
       (!filteredData.name || filteredData.name.trim() === "")
     ) {
-      console.log(
-        "❌ Validation failed: Office name is being changed to empty"
-      );
-      // Don't send the request, the validation should have been caught by Zod
       return;
     }
 
     try {
       if (selectedTenant) {
-        // Update tenant office
         await updateOfficeMutation.mutateAsync({
           tenantId: selectedTenant.id,
           data: filteredData,
         });
       } else if (selectedOffice) {
-        // Update individual office
-        updateOffice(selectedOffice._id, filteredData);
+        await updateOffice(selectedOffice._id, filteredData);
       }
       setAside(null);
-    } catch (error) {
-      console.error("Error updating office:", error);
-    }
+    } catch (error: any) {}
   };
 
   const handleGoBack = () => {
-    // Solo hacer pop si hay más de una sidebar en el stack
     if (stack.length > 1) {
       popAside();
     } else {
-      // Si solo hay una sidebar, cerrar todo
       setAside(null);
     }
   };
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header con botón de volver atrás */}
       <div className="flex items-center gap-3 mt-2">
         {stack.length > 1 && (
           <Button
@@ -180,7 +192,6 @@ export const UpdateOffice = () => {
       <div className="flex-1 overflow-y-auto">
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pr-4">
-            {/* Primera fila - Nombre y Email */}
             <div className="gap-4 grid grid-cols-2 mt-8">
               <FormField
                 control={methods.control}
@@ -224,7 +235,6 @@ export const UpdateOffice = () => {
               />
             </div>
 
-            {/* Segunda fila - Teléfono y País */}
             <div className="gap-4 grid grid-cols-2">
               <FormField
                 control={methods.control}
@@ -277,7 +287,6 @@ export const UpdateOffice = () => {
               />
             </div>
 
-            {/* Tercera fila - Estado y Ciudad */}
             <div className="gap-4 grid grid-cols-2">
               <FormField
                 control={methods.control}
@@ -320,7 +329,6 @@ export const UpdateOffice = () => {
               />
             </div>
 
-            {/* Cuarta fila - ZIP Code y Address */}
             <div className="gap-4 grid grid-cols-2">
               <FormField
                 control={methods.control}

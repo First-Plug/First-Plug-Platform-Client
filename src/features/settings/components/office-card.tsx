@@ -42,7 +42,10 @@ export const OfficeCard = ({
   };
 
   const handleSetDefault = () => {
-    // Solo hacer click si no es ya la oficina por defecto
+    if (isOfficeIncomplete()) {
+      return;
+    }
+
     if (!office.isDefault) {
       onSetDefault(office._id);
     }
@@ -52,7 +55,6 @@ export const OfficeCard = ({
     return countriesByCode[countryCode] || countryCode;
   };
 
-  // Función para verificar si la oficina tiene todos los datos obligatorios
   const isOfficeIncomplete = () => {
     const requiredFields = [
       "name",
@@ -97,25 +99,48 @@ export const OfficeCard = ({
 
         <div className="flex items-center gap-2">
           {/* Estrella para marcar oficina por defecto */}
-          <Button
-            variant="outline"
-            onClick={handleSetDefault}
-            disabled={isSettingDefault || office.isDefault}
-            className={`p-2 ${
-              office.isDefault
-                ? "hover:bg-yellow-50"
-                : "hover:bg-yellow-50 cursor-pointer"
-            }`}
-          >
-            <Star
-              className={`w-4 h-4 ${
-                office.isDefault
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-400 hover:text-yellow-400"
-              }`}
-              strokeWidth={2}
-            />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Button
+                    variant="outline"
+                    onClick={handleSetDefault}
+                    disabled={
+                      isSettingDefault ||
+                      office.isDefault ||
+                      isOfficeIncomplete()
+                    }
+                    className={`p-2 ${
+                      office.isDefault || isOfficeIncomplete()
+                        ? "hover:bg-yellow-50 cursor-not-allowed"
+                        : "hover:bg-yellow-50 cursor-pointer"
+                    }`}
+                  >
+                    <Star
+                      className={`w-4 h-4 ${
+                        office.isDefault
+                          ? "fill-yellow-400 text-yellow-400"
+                          : isOfficeIncomplete()
+                          ? "text-gray-300"
+                          : "text-gray-400 hover:text-yellow-400"
+                      }`}
+                      strokeWidth={2}
+                    />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              {(office.isDefault || isOfficeIncomplete()) && (
+                <TooltipContent className="bg-white">
+                  <p>
+                    {office.isDefault
+                      ? "This office is already set as default."
+                      : "Cannot set as default. Office has incomplete required data."}
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
 
           <Button variant="outline" onClick={handleEdit} className="p-2">
             <PenIcon
@@ -135,7 +160,8 @@ export const OfficeCard = ({
                       disabled={
                         isDeleting ||
                         office.isDefault ||
-                        office.hasActiveProducts === true
+                        office.hasAssignedProducts === true ||
+                        office.hasActiveShipments === true
                       }
                       trigger={
                         <Button
@@ -143,14 +169,16 @@ export const OfficeCard = ({
                           disabled={
                             isDeleting ||
                             office.isDefault ||
-                            office.hasActiveProducts === true
+                            office.hasAssignedProducts === true ||
+                            office.hasActiveShipments === true
                           }
                           className="hover:bg-red-50 p-2"
                         >
                           <TrashIcon
                             className={`w-4 h-4 ${
                               office.isDefault ||
-                              office.hasActiveProducts === true
+                              office.hasAssignedProducts === true ||
+                              office.hasActiveShipments === true
                                 ? "text-gray-400"
                                 : "text-red-600 hover:text-red-700"
                             }`}
@@ -161,12 +189,14 @@ export const OfficeCard = ({
                     />
                   </div>
                 </TooltipTrigger>
-                {(office.hasActiveProducts === true || office.isDefault) && (
+                {(office.hasAssignedProducts === true ||
+                  office.hasActiveShipments === true ||
+                  office.isDefault) && (
                   <TooltipContent className="bg-white">
                     <p>
                       {office.isDefault
                         ? "Default office cannot be deleted."
-                        : "Offices with recoverable products assigned or active shipments cannot be deleted."}
+                        : "Offices with assigned products or active shipments cannot be deleted."}
                     </p>
                   </TooltipContent>
                 )}

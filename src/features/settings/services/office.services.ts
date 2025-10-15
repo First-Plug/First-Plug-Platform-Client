@@ -34,10 +34,10 @@ export class OfficeServices {
     await HTTPRequests.delete(`${BASE_URL}/api/offices/${id}`);
   }
 
-  // Establecer oficina por defecto
+  // Establecer oficina por defecto (toggle)
   static async setDefaultOffice(id: string): Promise<Office> {
     const response = await HTTPRequests.patch(
-      `${BASE_URL}/api/offices/${id}/set-default`
+      `${BASE_URL}/api/offices/${id}/toggle-default`
     );
     return response.data;
   }

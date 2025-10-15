@@ -43,7 +43,16 @@ export interface Office {
   zipCode?: string;
   additionalInfo?: string;
   isDefault: boolean;
-  hasActiveProducts?: boolean; // true si tiene productos recoverables o envíos activos (no se puede eliminar)
+  isActive: boolean;
+  isDeleted: boolean;
+  deletedAt: string | null;
+  tenantId: string;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+  hasAssignedProducts?: boolean; // true si tiene productos asignados (no se puede eliminar)
+  hasActiveShipments?: boolean; // true si tiene envíos activos (no se puede eliminar)
+  hasActiveProducts?: boolean; // Propiedad legacy, ahora se usa hasAssignedProducts y hasActiveShipments
 }
 
 export interface CreateOffice {
