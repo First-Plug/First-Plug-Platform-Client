@@ -210,26 +210,31 @@ export const CreateOffice = () => {
                 name="country"
                 render={({ field }) => (
                   <FormItem>
-                    <DropdownInputProductForm
-                      title="Country *"
-                      placeholder="Select Country"
-                      options={countryOptions.map((option) => option.name)}
-                      selectedOption={
-                        field.value ? countriesByCode[field.value] : ""
-                      }
-                      onChange={(selectedCountryName) => {
-                        const countryCode = Object.entries(
-                          countriesByCode
-                        ).find(
-                          ([code, name]) => name === selectedCountryName
-                        )?.[0];
-                        field.onChange(countryCode || "");
-                      }}
-                      name="country"
-                      searchable={true}
-                      required="required"
-                      className="-mb-2"
-                    />
+                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                      Country *
+                    </FormLabel>
+                    <FormControl>
+                      <DropdownInputProductForm
+                        title=""
+                        placeholder="Select Country"
+                        options={countryOptions.map((option) => option.name)}
+                        selectedOption={
+                          field.value ? countriesByCode[field.value] : ""
+                        }
+                        onChange={(selectedCountryName) => {
+                          const countryCode = Object.entries(
+                            countriesByCode
+                          ).find(
+                            ([code, name]) => name === selectedCountryName
+                          )?.[0];
+                          field.onChange(countryCode || "");
+                        }}
+                        name="country"
+                        searchable={true}
+                        required="required"
+                        className="-mb-2"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -361,7 +366,7 @@ export const CreateOffice = () => {
                       <textarea
                         placeholder="Enter any additional information about the office"
                         {...field}
-                        className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[80px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
+                        className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-0 w-full min-h-[80px] placeholder:text-muted-foreground text-lg disabled:cursor-not-allowed"
                         rows={3}
                       />
                     </FormControl>
