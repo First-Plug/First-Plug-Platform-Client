@@ -42,14 +42,11 @@ export const OfficeCard = ({
   };
 
   const handleSetDefault = () => {
-    if (isOfficeIncomplete()) {
-      return;
-    }
-
     if (!office.isDefault) {
       onSetDefault(office._id);
     }
   };
+
   const getCountryName = (countryCode?: string) => {
     if (!countryCode) return "";
     return countriesByCode[countryCode] || countryCode;
@@ -106,13 +103,9 @@ export const OfficeCard = ({
                   <Button
                     variant="outline"
                     onClick={handleSetDefault}
-                    disabled={
-                      isSettingDefault ||
-                      office.isDefault ||
-                      isOfficeIncomplete()
-                    }
+                    disabled={isSettingDefault || office.isDefault}
                     className={`p-2 ${
-                      office.isDefault || isOfficeIncomplete()
+                      office.isDefault
                         ? "hover:bg-yellow-50 cursor-not-allowed"
                         : "hover:bg-yellow-50 cursor-pointer"
                     }`}
@@ -121,8 +114,6 @@ export const OfficeCard = ({
                       className={`w-4 h-4 ${
                         office.isDefault
                           ? "fill-yellow-400 text-yellow-400"
-                          : isOfficeIncomplete()
-                          ? "text-gray-300"
                           : "text-gray-400 hover:text-yellow-400"
                       }`}
                       strokeWidth={2}
@@ -130,13 +121,9 @@ export const OfficeCard = ({
                   </Button>
                 </div>
               </TooltipTrigger>
-              {(office.isDefault || isOfficeIncomplete()) && (
+              {office.isDefault && (
                 <TooltipContent className="bg-white">
-                  <p>
-                    {office.isDefault
-                      ? "This office is already set as default."
-                      : "Cannot set as default. Office has incomplete required data."}
-                  </p>
+                  <p>This office is already set as default.</p>
                 </TooltipContent>
               )}
             </Tooltip>
@@ -220,7 +207,7 @@ export const OfficeCard = ({
                 clipRule="evenodd"
               />
             </svg>
-            Incomplete Data
+            Incomplete Data for Shipment
           </span>
         </div>
       )}

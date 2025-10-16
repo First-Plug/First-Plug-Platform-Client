@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAsideStore, Button, LoaderSpinner, Input } from "@/shared";
@@ -40,6 +40,32 @@ const updateOfficeSchema = z.object({
 });
 
 type UpdateOfficeFormData = z.infer<typeof updateOfficeSchema>;
+
+// Campos requeridos para shipments
+const REQUIRED_FOR_SHIPMENTS = [
+  "name",
+  "phone",
+  "country",
+  "state",
+  "city",
+  "zipCode",
+  "address",
+];
+
+// Warning icon for required shipment fields
+const ShipmentRequiredBadge = () => (
+  <svg
+    className="w-4 h-4 text-yellow-600"
+    fill="currentColor"
+    viewBox="0 0 20 20"
+  >
+    <path
+      fillRule="evenodd"
+      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
 
 export const UpdateOfficeWithCards = () => {
   // Crear lista de países con código y nombre
@@ -143,6 +169,36 @@ export const UpdateOfficeWithCards = () => {
     handleSubmit,
     formState: { errors, isDirty, isSubmitting },
   } = methods;
+
+  // Watch all form values to make the warning reactive
+  const formValues = useWatch({ control: methods.control });
+
+  // Helper para verificar si un campo es requerido para shipments
+  const isRequiredForShipment = (fieldName: string) => {
+    return REQUIRED_FOR_SHIPMENTS.includes(fieldName);
+  };
+
+  // Verificar si un campo específico está incompleto
+  const isFieldIncomplete = (fieldName: string) => {
+    const value = formValues[fieldName as keyof UpdateOfficeFormData];
+    return !value || (typeof value === "string" && value.trim() === "");
+  };
+
+  // Verificar si faltan datos necesarios para shipments
+  const missingFields = useMemo(() => {
+    const missing: string[] = [];
+
+    REQUIRED_FOR_SHIPMENTS.forEach((field) => {
+      const value = formValues[field as keyof UpdateOfficeFormData];
+      if (!value || (typeof value === "string" && value.trim() === "")) {
+        missing.push(field);
+      }
+    });
+
+    return missing;
+  }, [formValues]);
+
+  const hasMissingData = missingFields.length > 0;
 
   // Función para verificar si el botón Save debe estar habilitado
   const isSaveButtonEnabled = () => {
@@ -354,6 +410,50 @@ export const UpdateOfficeWithCards = () => {
       <div className="flex-1 overflow-y-auto">
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pr-4">
+            {/* Warning para datos incompletos */}
+            {hasMissingData && (
+              <div className="flex items-start gap-3 bg-yellow-50 mt-6 p-4 border border-yellow-200 rounded-lg">
+                <svg
+                  className="flex-shrink-0 mt-0.5 w-5 h-5 text-yellow-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <div>
+                  <h3 className="font-medium text-yellow-800 text-sm">
+                    Incomplete Data for Shipments
+                  </h3>
+                  <p className="mt-1 text-yellow-700 text-sm">
+                    This office is missing required information for shipments.
+                    Please complete the following fields:{" "}
+                    <span className="font-medium">
+                      {missingFields
+                        .map((field) => {
+                          // Formatear nombres de campos
+                          const fieldLabels: Record<string, string> = {
+                            name: "Office Name",
+                            phone: "Contact Phone Number",
+                            country: "Country",
+                            state: "State",
+                            city: "City",
+                            zipCode: "Zip Code",
+                            address: "Address",
+                          };
+                          return fieldLabels[field] || field;
+                        })
+                        .join(", ")}
+                    </span>
+                    .
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Primera fila - Nombre y Email */}
             <div className="gap-4 grid grid-cols-2 mt-8">
               <FormField
@@ -361,7 +461,11 @@ export const UpdateOfficeWithCards = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Office Name</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      Office Name
+                      {isRequiredForShipment("name") &&
+                        isFieldIncomplete("name") && <ShipmentRequiredBadge />}
+                    </FormLabel>
                     <FormControl>
                       <FormInput
                         placeholder="Enter office name"
@@ -401,7 +505,11 @@ export const UpdateOfficeWithCards = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contact Phone Number</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      Contact Phone Number
+                      {isRequiredForShipment("phone") &&
+                        isFieldIncomplete("phone") && <ShipmentRequiredBadge />}
+                    </FormLabel>
                     <FormControl>
                       <FormInput
                         placeholder="+54 11 15466052"
@@ -419,7 +527,13 @@ export const UpdateOfficeWithCards = () => {
                 name="country"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Country</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      Country
+                      {isRequiredForShipment("country") &&
+                        isFieldIncomplete("country") && (
+                          <ShipmentRequiredBadge />
+                        )}
+                    </FormLabel>
                     <FormControl>
                       <Select
                         onValueChange={field.onChange}
@@ -462,7 +576,11 @@ export const UpdateOfficeWithCards = () => {
                 name="state"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>State</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      State
+                      {isRequiredForShipment("state") &&
+                        isFieldIncomplete("state") && <ShipmentRequiredBadge />}
+                    </FormLabel>
                     <FormControl>
                       <FormInput
                         placeholder="State"
@@ -480,7 +598,11 @@ export const UpdateOfficeWithCards = () => {
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>City</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      City
+                      {isRequiredForShipment("city") &&
+                        isFieldIncomplete("city") && <ShipmentRequiredBadge />}
+                    </FormLabel>
                     <FormControl>
                       <FormInput
                         placeholder="City"
@@ -501,7 +623,13 @@ export const UpdateOfficeWithCards = () => {
                 name="zipCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Zip Code</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      Zip Code
+                      {isRequiredForShipment("zipCode") &&
+                        isFieldIncomplete("zipCode") && (
+                          <ShipmentRequiredBadge />
+                        )}
+                    </FormLabel>
                     <FormControl>
                       <FormInput
                         placeholder="Zip Code"
@@ -519,7 +647,13 @@ export const UpdateOfficeWithCards = () => {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Address</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      Address
+                      {isRequiredForShipment("address") &&
+                        isFieldIncomplete("address") && (
+                          <ShipmentRequiredBadge />
+                        )}
+                    </FormLabel>
                     <FormControl>
                       <FormInput
                         placeholder="Address"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAsideStore, Button } from "@/shared";
@@ -19,6 +19,7 @@ import {
 } from "@/shared";
 import { DropdownInputProductForm } from "@/features/assets";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { useMemo } from "react";
 
 const phoneRegex = /^\+?[0-9\s]*$/;
 const onlyLetters = /^[A-Za-z\s\u00C0-\u00FF]*$/;
@@ -70,6 +71,32 @@ const updateOfficeSchema = z.object({
 
 type UpdateOfficeFormData = z.infer<typeof updateOfficeSchema>;
 
+// Campos requeridos para shipments
+const REQUIRED_FOR_SHIPMENTS = [
+  "name",
+  "phone",
+  "country",
+  "state",
+  "city",
+  "zipCode",
+  "address",
+];
+
+// Warning icon for required shipment fields
+const ShipmentRequiredBadge = () => (
+  <svg
+    className="w-4 h-4 text-yellow-600"
+    fill="currentColor"
+    viewBox="0 0 20 20"
+  >
+    <path
+      fillRule="evenodd"
+      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
 export const UpdateOffice = () => {
   const countryOptions = Object.entries(countriesByCode).map(
     ([code, name]) => ({
@@ -108,6 +135,36 @@ export const UpdateOffice = () => {
     handleSubmit,
     formState: { errors, isDirty, isSubmitting },
   } = methods;
+
+  // Watch all form values to make the warning reactive
+  const formValues = useWatch({ control: methods.control });
+
+  // Helper para verificar si un campo es requerido para shipments
+  const isRequiredForShipment = (fieldName: string) => {
+    return REQUIRED_FOR_SHIPMENTS.includes(fieldName);
+  };
+
+  // Verificar si un campo específico está incompleto
+  const isFieldIncomplete = (fieldName: string) => {
+    const value = formValues[fieldName as keyof UpdateOfficeFormData];
+    return !value || (typeof value === "string" && value.trim() === "");
+  };
+
+  // Verificar si faltan datos necesarios para shipments
+  const missingFields = useMemo(() => {
+    const missing: string[] = [];
+
+    REQUIRED_FOR_SHIPMENTS.forEach((field) => {
+      const value = formValues[field as keyof UpdateOfficeFormData];
+      if (!value || (typeof value === "string" && value.trim() === "")) {
+        missing.push(field);
+      }
+    });
+
+    return missing;
+  }, [formValues]);
+
+  const hasMissingData = missingFields.length > 0;
 
   const isSaveButtonEnabled = () => {
     if (isSubmitting) return false;
@@ -192,13 +249,39 @@ export const UpdateOffice = () => {
       <div className="flex-1 overflow-y-auto">
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pr-4">
+            {/* Warning para datos incompletos */}
+            {hasMissingData && (
+              <div className="flex items-start gap-3 bg-yellow-50 mt-6 p-4 border border-yellow-200 rounded-lg">
+                <svg
+                  className="flex-shrink-0 mt-0.5 w-5 h-5 text-yellow-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <div>
+                  <h3 className="font-medium text-yellow-800 text-sm">
+                    Incomplete Shipping Information
+                  </h3>
+                  <p className="mt-1 text-yellow-700 text-sm">
+                    This office is missing required details to create or process
+                    shipments.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="gap-4 grid grid-cols-2 mt-8">
               <FormField
                 control={methods.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                    <FormLabel className="flex items-center gap-2 ml-2 font-sans text-dark-grey text-sm">
                       Office Name
                     </FormLabel>
                     <FormControl>
@@ -241,8 +324,10 @@ export const UpdateOffice = () => {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                    <FormLabel className="flex items-center gap-2 ml-2 font-sans text-dark-grey text-sm">
                       Contact Phone Number
+                      {isRequiredForShipment("phone") &&
+                        isFieldIncomplete("phone") && <ShipmentRequiredBadge />}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -261,26 +346,35 @@ export const UpdateOffice = () => {
                 name="country"
                 render={({ field }) => (
                   <FormItem>
-                    <DropdownInputProductForm
-                      title="Country"
-                      placeholder="Select Country"
-                      options={countryOptions.map((option) => option.name)}
-                      selectedOption={
-                        field.value ? countriesByCode[field.value] : ""
-                      }
-                      onChange={(selectedCountryName) => {
-                        const countryCode = Object.entries(
-                          countriesByCode
-                        ).find(
-                          ([code, name]) => name === selectedCountryName
-                        )?.[0];
-                        field.onChange(countryCode || "");
-                      }}
-                      name="country"
-                      searchable={true}
-                      disabled={true}
-                      className="-mb-2"
-                    />
+                    <FormLabel className="flex items-center gap-2 ml-2 font-sans text-dark-grey text-sm">
+                      Country
+                      {isRequiredForShipment("country") &&
+                        isFieldIncomplete("country") && (
+                          <ShipmentRequiredBadge />
+                        )}
+                    </FormLabel>
+                    <FormControl>
+                      <DropdownInputProductForm
+                        title=""
+                        placeholder="Select Country"
+                        options={countryOptions.map((option) => option.name)}
+                        selectedOption={
+                          field.value ? countriesByCode[field.value] : ""
+                        }
+                        onChange={(selectedCountryName) => {
+                          const countryCode = Object.entries(
+                            countriesByCode
+                          ).find(
+                            ([code, name]) => name === selectedCountryName
+                          )?.[0];
+                          field.onChange(countryCode || "");
+                        }}
+                        name="country"
+                        searchable={true}
+                        disabled={true}
+                        className="-mb-2"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -293,8 +387,10 @@ export const UpdateOffice = () => {
                 name="state"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                    <FormLabel className="flex items-center gap-2 ml-2 font-sans text-dark-grey text-sm">
                       State
+                      {isRequiredForShipment("state") &&
+                        isFieldIncomplete("state") && <ShipmentRequiredBadge />}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -313,8 +409,10 @@ export const UpdateOffice = () => {
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                    <FormLabel className="flex items-center gap-2 ml-2 font-sans text-dark-grey text-sm">
                       City
+                      {isRequiredForShipment("city") &&
+                        isFieldIncomplete("city") && <ShipmentRequiredBadge />}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -335,8 +433,12 @@ export const UpdateOffice = () => {
                 name="zipCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                    <FormLabel className="flex items-center gap-2 ml-2 font-sans text-dark-grey text-sm">
                       Zip Code
+                      {isRequiredForShipment("zipCode") &&
+                        isFieldIncomplete("zipCode") && (
+                          <ShipmentRequiredBadge />
+                        )}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -355,8 +457,12 @@ export const UpdateOffice = () => {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="block ml-2 font-sans text-dark-grey text-sm">
+                    <FormLabel className="flex items-center gap-2 ml-2 font-sans text-dark-grey text-sm">
                       Address
+                      {isRequiredForShipment("address") &&
+                        isFieldIncomplete("address") && (
+                          <ShipmentRequiredBadge />
+                        )}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -410,7 +516,7 @@ export const UpdateOffice = () => {
                       <textarea
                         placeholder="Enter any additional information about the office"
                         {...field}
-                        className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[80px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
+                        className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-0 w-full min-h-[80px] placeholder:text-muted-foreground text-lg disabled:cursor-not-allowed"
                         rows={3}
                       />
                     </FormControl>
