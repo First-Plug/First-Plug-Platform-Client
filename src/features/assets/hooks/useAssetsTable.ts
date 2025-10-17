@@ -9,8 +9,9 @@ import { useProductStore } from "../store/product.store";
 const useAssetsTableFilterStore = createFilterStore();
 
 export function useAssetsTable(assets: ProductTable[]) {
-  const { onlyAvailable } = useProductStore();
+  const { onlyAvailable, selectedCountry } = useProductStore();
   const prevOnlyAvailableRef = useRef(onlyAvailable);
+  const prevSelectedCountryRef = useRef(selectedCountry);
 
   const filters = useAssetsTableFilterStore((s) => s.filters);
   const setOnFiltersChange = useAssetsTableFilterStore(
@@ -43,6 +44,13 @@ export function useAssetsTable(assets: ProductTable[]) {
       prevOnlyAvailableRef.current = onlyAvailable;
     }
   }, [onlyAvailable, resetToFirstPage]);
+
+  useEffect(() => {
+    if (prevSelectedCountryRef.current !== selectedCountry) {
+      resetToFirstPage();
+      prevSelectedCountryRef.current = selectedCountry;
+    }
+  }, [selectedCountry, resetToFirstPage]);
 
   const filteredAssets = useMemo(() => {
     // Primero aplicar filtros de la tabla sobre todos los assets
@@ -83,9 +91,39 @@ export function useAssetsTable(assets: ProductTable[]) {
       });
     });
 
-    let finalFiltered = tableFiltered;
+    let countryFiltered = tableFiltered;
+    if (selectedCountry) {
+      countryFiltered = tableFiltered
+        .map((asset) => {
+          const productsInCountry = asset.products.filter((product) => {
+            let productCountryCode = "";
+
+            if (product.office) {
+              productCountryCode = product.office.officeCountryCode;
+            } else if (product.fpWarehouse) {
+              productCountryCode = product.fpWarehouse.warehouseCountryCode;
+            } else if (product.memberData) {
+              productCountryCode = product.memberData.countryCode;
+            }
+
+            return (
+              productCountryCode.toUpperCase() === selectedCountry.toUpperCase()
+            );
+          });
+
+          if (productsInCountry.length === 0) return null;
+
+          return {
+            ...asset,
+            products: productsInCountry,
+          };
+        })
+        .filter((asset) => asset !== null) as ProductTable[];
+    }
+
+    let finalFiltered = countryFiltered;
     if (onlyAvailable) {
-      finalFiltered = tableFiltered
+      finalFiltered = countryFiltered
         .map((asset) => {
           const availableProducts = asset.products.filter(
             (product) => product.status === "Available" && !product.deleted
@@ -102,7 +140,7 @@ export function useAssetsTable(assets: ProductTable[]) {
     }
 
     return finalFiltered;
-  }, [assets, filters, onlyAvailable]);
+  }, [assets, filters, onlyAvailable, selectedCountry]);
 
   const paginatedAssets = useMemo(() => {
     if (!filteredAssets) return [];

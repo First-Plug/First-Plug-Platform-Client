@@ -11,6 +11,7 @@ import { DeleteAction } from "@/shared";
 import { ProductConditionCard } from "@/features/assets";
 import { ColumnDef } from "@tanstack/react-table";
 import { ActionButton } from "@/shared/components/Tables/Product";
+import { countriesByCode } from "@/shared";
 
 export function useProductsInnerTableColumns({
   products,
@@ -72,8 +73,25 @@ export function useProductsInnerTableColumns({
         cell: ({ getValue }) => <FormatedDate date={getValue<string>()} />,
       },
       {
-        accessorKey: "location",
-        header: "Location",
+        id: "location",
+        accessorFn: (row) => {
+          const location = row.location || "No Data";
+          let countryCode = "";
+
+          if (row.office) {
+            countryCode = row.office.officeCountryCode;
+          } else if (row.fpWarehouse) {
+            countryCode = row.fpWarehouse.warehouseCountryCode;
+          } else if (row.memberData) {
+            countryCode = row.memberData.countryCode;
+          }
+
+          const countryName = countryCode
+            ? countriesByCode[countryCode.toUpperCase()]
+            : null;
+          return countryName ? `${location} - ${countryName}` : location;
+        },
+        header: "Location + Country",
         size: 130,
         minSize: 110,
         maxSize: 150,
@@ -83,7 +101,23 @@ export function useProductsInnerTableColumns({
             const options = new Set<string>();
             allProducts.forEach((product) => {
               const location = product.location || "No Data";
-              options.add(location);
+              let countryCode = "";
+
+              if (product.office) {
+                countryCode = product.office.officeCountryCode;
+              } else if (product.fpWarehouse) {
+                countryCode = product.fpWarehouse.warehouseCountryCode;
+              } else if (product.memberData) {
+                countryCode = product.memberData.countryCode;
+              }
+
+              const countryName = countryCode
+                ? countriesByCode[countryCode.toUpperCase()]
+                : null;
+              const combinedValue = countryName
+                ? `${location} - ${countryName}`
+                : location;
+              options.add(combinedValue);
             });
             return Array.from(options)
               .sort()
@@ -93,8 +127,11 @@ export function useProductsInnerTableColumns({
               }));
           })(),
         },
-        cell: ({ getValue }) => (
-          <ProductLocation location={getValue<string>() as any} />
+        cell: ({ row }) => (
+          <ProductLocation
+            location={row.original.location as any}
+            product={row.original}
+          />
         ),
       },
       {

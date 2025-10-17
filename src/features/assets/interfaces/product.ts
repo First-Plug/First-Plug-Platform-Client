@@ -224,6 +224,28 @@ export const SHIPMENT_STATUS = [
 
 export type ShipmentStatus = (typeof SHIPMENT_STATUS)[number];
 
+export interface Office {
+  officeId: string;
+  officeCountryCode: string;
+  officeName: string;
+  assignedAt: string;
+  isDefault: boolean;
+}
+
+export interface FpWarehouse {
+  warehouseId: string;
+  warehouseName: string;
+  warehouseCountryCode: string;
+  assignedAt: string;
+}
+
+export interface MemberData {
+  memberId: string;
+  memberName: string;
+  memberEmail: string;
+  countryCode: string;
+}
+
 export interface Product {
   _id: string;
   name: string | null;
@@ -252,6 +274,11 @@ export interface Product {
   productCondition: ProductCondition;
   additionalInfo?: string;
   shipmentStatus?: ShipmentStatus;
+  office?: Office | null;
+  memberData?: MemberData | null;
+  fpWarehouse?: FpWarehouse | null;
+  officeId?: string | null;
+  warehouseId?: string | null;
 }
 
 export interface ProductTable {
