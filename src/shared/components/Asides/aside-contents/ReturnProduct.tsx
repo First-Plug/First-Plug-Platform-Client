@@ -15,13 +15,7 @@ import { buildValidationEntities, validateAfterAction } from "@/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShipmentValues } from "@/features/shipments";
 import { ShipmentWithFp } from "@/features/shipments";
-import {
-  Select,
-  SelectLabel,
-  SelectOption,
-  SelectOptions,
-  SelectTrigger,
-} from "@/features/shipments";
+import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 
 import { useAsideStore } from "@/shared";
 
@@ -236,25 +230,14 @@ export function ReturnProduct({
 
       <section className="flex items-end gap-4 w-full">
         <div className="flex-1 py-4">
-          <Select
+          <SelectDropdownOptions
+            label="Please select the new location"
+            placeholder="Location"
             value={newLocation || ""}
             onChange={(value) => setNewLocation(value as Location)}
-            className="w-full max-w-md"
-          >
-            <SelectLabel className="flex items-center gap-2">
-              <span className="font-semibold text-dark-grey">
-                Please select the new location
-              </span>
-            </SelectLabel>
-            <SelectTrigger className="flex mt-2" placeholder="Location" />
-            <SelectOptions>
-              {LOCATION.filter((e) => e !== "Employee").map((location) => (
-                <SelectOption value={location} key={location}>
-                  {location}
-                </SelectOption>
-              ))}
-            </SelectOptions>
-          </Select>
+            className="max-w-md"
+            required
+          />
         </div>
 
         <div className="flex-1 mb-4">

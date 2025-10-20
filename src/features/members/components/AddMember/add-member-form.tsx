@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared";
+import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateAsset, GenericAlertDialog } from "@/features/assets";
@@ -323,26 +324,14 @@ export const AddMemberForm = ({
               If you want to <strong>return</strong> this product, please select
               the new Location.
             </span>
-            <Select
-              onValueChange={(value) =>
-                handleSelectNoneOption(value as Location)
-              }
+            <SelectDropdownOptions
+              label="Location"
+              placeholder="Select Location"
               value={noneOption || ""}
-            >
-              <SelectTrigger className="w-1/2 font-semibold text-md">
-                <SelectValue placeholder="Select Location" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectGroup>
-                  <SelectLabel>Location</SelectLabel>
-                  {LOCATION.filter((e) => e !== "Employee").map((location) => (
-                    <SelectItem value={location} key={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+              onChange={(value) => handleSelectNoneOption(value as Location)}
+              options={LOCATION.filter((e) => e !== "Employee")}
+              className="w-1/2"
+            />
 
             <hr />
           </section>
