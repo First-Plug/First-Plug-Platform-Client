@@ -20,6 +20,7 @@ interface SelectDropdownOptionsProps {
   disabled?: boolean;
   required?: boolean;
   compact?: boolean;
+  productFormStyle?: boolean;
 }
 
 export default function SelectDropdownOptions({
@@ -33,6 +34,7 @@ export default function SelectDropdownOptions({
   disabled = false,
   required = false,
   compact = false,
+  productFormStyle = false,
 }: SelectDropdownOptionsProps) {
   const displayValue = value || placeholder;
 
@@ -44,35 +46,61 @@ export default function SelectDropdownOptions({
     setOpenGroups((prev) => ({ ...prev, [groupLabel]: !prev[groupLabel] }));
   };
 
+  // Función para manejar la apertura del dropdown
+  const handleOpenChange = (open: boolean) => {
+    if (disabled) return false;
+    return open;
+  };
+
   return (
     <div className={`w-full ${className}`}>
       {label && (
         <label
           className={`block font-sans text-dark-grey ${
-            compact ? "ml-2" : "mb-2"
+            productFormStyle ? "ml-2" : compact ? "ml-2" : "mb-2"
           }`}
         >
           {label}
         </label>
       )}
 
-      <DropdownMenu.Root>
+      <DropdownMenu.Root onOpenChange={handleOpenChange}>
         <DropdownMenu.Trigger asChild>
           <button
             disabled={disabled}
-            className={`relative disabled:opacity-50 border border-gray-300 focus:outline-none w-full font-sans text-black text-left cursor-pointer disabled:cursor-not-allowed ${
-              compact
+            className={`relative w-full font-sans text-left border border-gray-300 ${
+              disabled
+                ? productFormStyle
+                  ? "cursor-not-allowed pointer-events-none bg-light-grey"
+                  : "text-gray-400 bg-grey cursor-not-allowed opacity-50 pointer-events-none"
+                : "text-black cursor-pointer"
+            } ${
+              productFormStyle
+                ? "h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border text-black p-4 focus:outline-none"
+                : compact
                 ? "h-14 py-2 pl-4 pr-12 rounded-xl p-4"
                 : "py-3 pr-12 pl-4 rounded-md"
             }`}
           >
-            <span className={!value ? "text-gray-400" : "text-black"}>
+            <span
+              className={
+                disabled
+                  ? productFormStyle
+                    ? "text-disabled"
+                    : "text-gray-400 "
+                  : !value
+                  ? "text-gray-400"
+                  : "text-black"
+              }
+            >
               {displayValue}
             </span>
             <ChevronDown
-              className="top-1/2 right-3 absolute -translate-y-1/2 cursor-pointer transform"
+              className={`top-1/2 absolute -translate-y-1/2 cursor-pointer transform ${
+                productFormStyle ? "right-3" : "right-3"
+              }`}
               strokeWidth={2}
-              color="grey"
+              color={disabled && productFormStyle ? "#A0A0A0" : "grey"}
             />
           </button>
         </DropdownMenu.Trigger>

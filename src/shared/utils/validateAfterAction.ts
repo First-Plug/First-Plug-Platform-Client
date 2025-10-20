@@ -139,11 +139,8 @@ export const validateAfterAction = async (
         "Current holder"
       );
       allValidationPromises.push(Promise.resolve(memberMessages));
-    } else if (
-      source.type === "office" &&
-      (source.data as any).location === "Our office"
-    ) {
-      // Office validation es asíncrona
+    } else if (source.type === "office") {
+      // Office validation es asíncrona - validar cualquier oficina
       allValidationPromises.push(
         validateOffice(
           source as { type: "office"; data: any },
@@ -162,11 +159,8 @@ export const validateAfterAction = async (
         "Assigned member"
       );
       allValidationPromises.push(Promise.resolve(memberMessages));
-    } else if (
-      destination.type === "office" &&
-      (destination.data as any).location === "Our office"
-    ) {
-      // Office validation es asíncrona
+    } else if (destination.type === "office") {
+      // Office validation es asíncrona - validar cualquier oficina
       allValidationPromises.push(
         validateOffice(
           destination as { type: "office"; data: any },
@@ -223,27 +217,22 @@ export const buildValidationEntities = (
         email: product.assignedEmail,
       },
     };
-  } else if (product.location === "FP warehouse") {
-    source = {
-      type: "warehouse",
-      data: { location: "FP warehouse" },
-    };
-  } else if (product.location === "Our office") {
+  } else if (product.location && product.location !== "Employee") {
+    // Si el location no es "Employee", es una oficina
     source = {
       type: "office",
-      data: { ...sessionUser, location: "Our office" },
+      data: { ...sessionUser, location: product.location },
     };
   }
 
   // Determinar `destination`
   if (selectedMember) {
     destination = { type: "member", data: selectedMember };
-  } else if (noneOption === "FP warehouse") {
-    destination = { type: "warehouse", data: { location: "FP warehouse" } };
-  } else if (noneOption === "Our office") {
+  } else if (noneOption && noneOption !== "Employee") {
+    // Si noneOption no es "Employee", es una oficina
     destination = {
       type: "office",
-      data: { ...sessionUser, location: "Our office" },
+      data: { ...sessionUser, location: noneOption },
     };
   }
 
@@ -320,10 +309,6 @@ export const validateOnCreate = async (
 ): Promise<string[]> => {
   const missingMessages: string[] = [];
 
-  if (noneOption === "FP warehouse") {
-    return missingMessages;
-  }
-
   if (selectedMember) {
     const missingFields = getMissingFields(selectedMember);
     if (missingFields.length > 0) {
@@ -335,8 +320,8 @@ export const validateOnCreate = async (
           .join(", ")}`
       );
     }
-  } else if (noneOption === "Our office") {
-    // Usar la nueva función que obtiene datos de la oficina
+  } else if (noneOption && noneOption !== "Employee") {
+    // Si noneOption no es "Employee", es una oficina - validar datos de la oficina
     const officeValidation = await validateOfficeInfo();
     if (!officeValidation.isValid) {
       missingMessages.push(

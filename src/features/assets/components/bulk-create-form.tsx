@@ -21,6 +21,9 @@ import {
   getMemberFullName,
   useMemberStore,
 } from "@/features/members";
+import { useOffices } from "@/features/settings";
+import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 import { useSession } from "next-auth/react";
 
@@ -38,6 +41,7 @@ export const BulkCreateForm: React.FC<{
   const session = useSession();
   const sessionUser = session.data?.user;
   const { data: fetchedMembers } = useFetchMembers();
+  const { offices } = useOffices();
   const isLoading = status === "pending";
 
   const queryClient = useQueryClient();
@@ -100,6 +104,15 @@ export const BulkCreateForm: React.FC<{
 
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
+  );
+  const [locationOptionGroups, setLocationOptionGroups] = useState<
+    Array<{
+      label: string;
+      options: string[];
+    }>
+  >([]);
+  const [selectedOfficeIds, setSelectedOfficeIds] = useState<(string | null)[]>(
+    Array(numProducts).fill(null)
   );
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,7 +183,32 @@ export const BulkCreateForm: React.FC<{
       setAssignedEmailOptions(memberFullNames);
       setLoading(false);
     }
-  }, []);
+  }, [fetchedMembers]);
+
+  useEffect(() => {
+    if (offices && offices.length > 0) {
+      // Ordenar oficinas para que la por defecto aparezca primero
+      const sortedOffices = [...offices].sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1;
+        if (!a.isDefault && b.isDefault) return 1;
+        return 0;
+      });
+
+      // Crear grupos de opciones para el dropdown (igual que en los asides)
+      const groups = [
+        {
+          label: "Our offices",
+          options: sortedOffices.map((office) => {
+            const countryName = office.country
+              ? countriesByCode[office.country] || office.country
+              : "";
+            return `${countryName} - ${office.name}`;
+          }),
+        },
+      ];
+      setLocationOptionGroups(groups);
+    }
+  }, [offices]);
 
   const handleAssignedMemberChange = (
     selectedFullName: string,
@@ -187,6 +225,14 @@ export const BulkCreateForm: React.FC<{
     newSelectedLocations[index] = selectedFullName === "None" ? "" : "Employee";
     setSelectedLocations(newSelectedLocations);
     setValue(`products.${index}.location`, newSelectedLocations[index]);
+
+    // Si se selecciona un member (Employee), resetear el officeId
+    const newSelectedOfficeIds = [...selectedOfficeIds];
+    if (selectedFullName !== "None") {
+      newSelectedOfficeIds[index] = null;
+      (setValue as any)(`products.${index}.officeId`, undefined);
+    }
+    setSelectedOfficeIds(newSelectedOfficeIds);
 
     setIsLocationEnabled((prev) => {
       const newIsLocationEnabled = [...prev];
@@ -205,6 +251,13 @@ export const BulkCreateForm: React.FC<{
         setValue(`products.${i}.assignedMember`, selectedFullName);
         setValue(`products.${i}.location`, newSelectedLocations[index]);
         newSelectedLocations[i] = newSelectedLocations[index];
+
+        // También resetear officeId para todos si se selecciona member
+        if (selectedFullName !== "None") {
+          newSelectedOfficeIds[i] = null;
+          (setValue as any)(`products.${i}.officeId`, undefined);
+        }
+
         setIsLocationEnabled((prev) => {
           const newIsLocationEnabled = [...prev];
           newIsLocationEnabled[i] = selectedFullName === "None";
@@ -213,17 +266,36 @@ export const BulkCreateForm: React.FC<{
         clearErrors([`products.${i}.assignedEmail`, `products.${i}.location`]);
       }
       setSelectedLocations(newSelectedLocations);
+      setSelectedOfficeIds(newSelectedOfficeIds);
     }
   };
 
-  const handleLocationChange = (value: string, index: number) => {
-    setValue(`products.${index}.location`, value);
+  const handleLocationChange = (displayValue: string, index: number) => {
+    setValue(`products.${index}.location`, "Our office"); // Siempre enviar "Our office" cuando se selecciona una oficina
     const newSelectedLocations = [...selectedLocations];
-    newSelectedLocations[index] = value;
+    newSelectedLocations[index] = displayValue;
     setSelectedLocations(newSelectedLocations);
 
+    // Buscar la oficina seleccionada por el formato "country - name" y guardar su ID
+    const selectedOffice = offices?.find((office) => {
+      const countryName = office.country
+        ? countriesByCode[office.country] || office.country
+        : "";
+      return `${countryName} - ${office.name}` === displayValue;
+    });
+    const newSelectedOfficeIds = [...selectedOfficeIds];
+
+    if (selectedOffice) {
+      newSelectedOfficeIds[index] = selectedOffice._id;
+      (setValue as any)(`products.${index}.officeId`, selectedOffice._id);
+    } else {
+      newSelectedOfficeIds[index] = null;
+      (setValue as any)(`products.${index}.officeId`, undefined);
+    }
+    setSelectedOfficeIds(newSelectedOfficeIds);
+
     const firstProductLocation = watch("products.0.location");
-    if (assignAll && firstProductLocation !== value) {
+    if (assignAll && firstProductLocation !== "Our office") {
       setAssignAll(false);
       return;
     }
@@ -231,12 +303,23 @@ export const BulkCreateForm: React.FC<{
     if (assignAll) {
       for (let i = 0; i < numProducts; i++) {
         if (i !== index) {
-          setValue(`products.${i}.location`, value);
-          newSelectedLocations[i] = value;
+          setValue(`products.${i}.location`, "Our office");
+          newSelectedLocations[i] = displayValue;
+
+          // También propagar el officeId
+          if (selectedOffice) {
+            newSelectedOfficeIds[i] = selectedOffice._id;
+            (setValue as any)(`products.${i}.officeId`, selectedOffice._id);
+          } else {
+            newSelectedOfficeIds[i] = null;
+            (setValue as any)(`products.${i}.officeId`, undefined);
+          }
+
           clearErrors([`products.${i}.location`]);
         }
       }
       setSelectedLocations(newSelectedLocations);
+      setSelectedOfficeIds(newSelectedOfficeIds);
     }
   };
 
@@ -291,6 +374,10 @@ export const BulkCreateForm: React.FC<{
         ...initialProductData,
         assignedEmail: productData.assignedEmail,
         location: productData.location,
+        officeId:
+          location && location !== "Employee"
+            ? productData.officeId
+            : undefined,
         serialNumber: productData.serialNumber,
         recoverable: productData.recoverable,
         status,
@@ -355,7 +442,8 @@ export const BulkCreateForm: React.FC<{
         }
       }
 
-      if (location === "Our office") {
+      if (location && location !== "Employee") {
+        // Si el location es una oficina (no "Employee"), validar la información de billing
         const isBillingValid = validateCompanyBillingInfo(sessionUser);
 
         if (!isBillingValid) {
@@ -474,23 +562,18 @@ export const BulkCreateForm: React.FC<{
                     {watch(`products.${index}.assignedMember`) === "None" ||
                     !watch(`products.${index}.assignedMember`) ? (
                       <>
-                        <DropdownInputProductForm
-                          options={["Our office"]}
+                        <SelectDropdownOptions
+                          label="Location*"
                           placeholder="Location"
-                          title="Location*"
-                          name={`products.${index}.location`}
-                          selectedOption={selectedLocations[index]}
-                          onChange={(value: string) => {
-                            const newSelectedLocations = [...selectedLocations];
-                            newSelectedLocations[index] = value;
-                            setSelectedLocations(newSelectedLocations);
-                            setValue(`products.${index}.location`, value);
-                            clearErrors(`products.${index}.location`);
-                            handleLocationChange(value, index);
-                          }}
-                          required="required"
+                          value={selectedLocations[index] || ""}
+                          onChange={(value: string) =>
+                            handleLocationChange(value, index)
+                          }
+                          optionGroups={locationOptionGroups}
                           className="w-full"
                           disabled={!isLocationEnabled[index]}
+                          required
+                          productFormStyle={true}
                         />
                         <div className="min-h-[24px]">
                           {errors.products &&

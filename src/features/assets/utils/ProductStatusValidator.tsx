@@ -117,7 +117,12 @@ export const ProductStatusValidator: React.FC<ProductStatusValidatorProps> = ({
       } else {
         newStatus = "valid";
       }
-    } else if (relocation === "Our office" && !validateBillingInfo(user)) {
+    } else if (
+      relocation &&
+      relocation !== "Employee" &&
+      !validateBillingInfo(user)
+    ) {
+      // Si el location es una oficina (no "Employee"), validar billing info
       newStatus = "not-billing-information";
     }
 

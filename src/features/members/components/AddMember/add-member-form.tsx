@@ -286,7 +286,7 @@ export const AddMemberForm = ({
       setSelectedOfficeId(null);
     } else {
       // Extraer el ID de la oficina del valor seleccionado (formato: "country - name")
-      const selectedOffice = offices.find((office) => {
+      const selectedOffice = sortedOffices.find((office) => {
         const countryName = office.country
           ? countriesByCode[office.country] || office.country
           : "";
@@ -308,11 +308,18 @@ export const AddMemberForm = ({
     setValidationError(null);
   };
 
+  // Ordenar oficinas para que la por defecto aparezca primero
+  const sortedOffices = [...offices].sort((a, b) => {
+    if (a.isDefault && !b.isDefault) return -1;
+    if (!a.isDefault && b.isDefault) return 1;
+    return 0;
+  });
+
   // Crear grupos de opciones para el dropdown
   const locationOptionGroups = [
     {
       label: "Our offices",
-      options: offices.map((office) => {
+      options: sortedOffices.map((office) => {
         const countryName = office.country
           ? countriesByCode[office.country] || office.country
           : "";

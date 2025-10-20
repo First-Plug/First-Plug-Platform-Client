@@ -15,7 +15,7 @@ import { useMemberStore } from "../store/member.store";
 import { useOffices } from "@/features/settings/hooks/use-offices";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
-const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
+const DROPDOWN_OPTIONS = ["FP warehouse"];
 
 interface ExtendedUser extends Partial<User> {
   personalEmail?: string;
@@ -85,7 +85,15 @@ export const RequestOffBoardingForm = ({
   const { setSelectedMember } = useMemberStore();
 
   const { offices, isLoading: loadingOffices } = useOffices();
-  const officeLabels = offices.map((o) => {
+
+  // Ordenar oficinas para que la por defecto aparezca primero
+  const sortedOffices = [...offices].sort((a, b) => {
+    if (a.isDefault && !b.isDefault) return -1;
+    if (!a.isDefault && b.isDefault) return 1;
+    return 0;
+  });
+
+  const officeLabels = sortedOffices.map((o) => {
     const countryName = o.country
       ? countriesByCode[o.country] || o.country
       : "";
@@ -107,9 +115,10 @@ export const RequestOffBoardingForm = ({
   const relocation = watch(`products.${index}.relocation`);
 
   const handleDropdown = (relocation: string) => {
-    if (relocation === "My office") {
+    // Verificar si es una oficina específica
+    if (isOfficeLabel(relocation)) {
       if (!validateBillingInfo(session.user)) {
-        setValue(`products.${index}.relocation`, "My office");
+        setValue(`products.${index}.relocation`, relocation);
         setValue(`products.${index}.available`, false);
         setValue(`products.${index}.newMember`, "None", {
           shouldValidate: true,
@@ -118,7 +127,7 @@ export const RequestOffBoardingForm = ({
           shouldValidate: true,
         });
       } else {
-        setValue(`products.${index}.relocation`, "My office");
+        setValue(`products.${index}.relocation`, relocation);
         setValue(`products.${index}.available`, true);
         setValue(`products.${index}.newMember`, "None", {
           shouldValidate: true,
@@ -377,6 +386,11 @@ export const RequestOffBoardingForm = ({
     setValue,
   ]);
 
+  // Actualizar las opciones del dropdown cuando cambien las oficinas
+  useEffect(() => {
+    setDropdownOptions(DROPDOWN_OPTIONS);
+  }, [officeLabels]);
+
   // Helpers de oficinas
   const officeGroups = [
     {
@@ -389,11 +403,11 @@ export const RequestOffBoardingForm = ({
 
   const handleSelectLocation = (selectedValue: string) => {
     if (isOfficeLabel(selectedValue)) {
-      // set relocation as My office pero guardar oficina elegida
-      setValue(`products.${index}.relocation`, "My office", {
+      // set relocation con el nombre real de la oficina
+      setValue(`products.${index}.relocation`, selectedValue, {
         shouldValidate: true,
       });
-      const office = offices.find((o) => {
+      const office = sortedOffices.find((o) => {
         const countryName = o.country
           ? countriesByCode[o.country] || o.country
           : "";
@@ -405,7 +419,7 @@ export const RequestOffBoardingForm = ({
       setValue(`products.${index}.officeLabel`, selectedValue, {
         shouldValidate: false,
       });
-      handleDropdown("My office");
+      handleDropdown(selectedValue);
     } else {
       handleDropdown(selectedValue);
     }
@@ -525,7 +539,7 @@ export const RequestOffBoardingForm = ({
                   onChange={(selectedValue: string) =>
                     handleSelectLocation(selectedValue)
                   }
-                  options={dropdownOptions.filter((o) => o !== "My office")}
+                  options={dropdownOptions}
                   optionGroups={officeGroups}
                   disabled={isDisabledDropdown}
                   required

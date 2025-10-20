@@ -63,6 +63,9 @@ export function useAssetsTable(assets: ProductTable[]) {
             return filterValues.some((value) => asset.category === value);
           case "name":
             // Usar el primer producto del asset original para el filtro de nombre
+            if (!asset.products || asset.products.length === 0) {
+              return false;
+            }
             const product = asset.products[0];
             const brand = product.attributes.find(
               (attr) => attr.key === "brand"
@@ -95,6 +98,10 @@ export function useAssetsTable(assets: ProductTable[]) {
     if (selectedCountry) {
       countryFiltered = tableFiltered
         .map((asset) => {
+          if (!asset.products || asset.products.length === 0) {
+            return null;
+          }
+
           const productsInCountry = asset.products.filter((product) => {
             const productCountryCode = product.countryCode || "";
             return (
@@ -116,6 +123,10 @@ export function useAssetsTable(assets: ProductTable[]) {
     if (onlyAvailable) {
       finalFiltered = countryFiltered
         .map((asset) => {
+          if (!asset.products || asset.products.length === 0) {
+            return null;
+          }
+
           const availableProducts = asset.products.filter(
             (product) => product.status === "Available" && !product.deleted
           );
