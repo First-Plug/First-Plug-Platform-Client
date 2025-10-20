@@ -55,7 +55,7 @@ export default function useActions() {
     product,
     currentMember,
   }: {
-    location: Location;
+    location: Location | "FP warehouse";
     product: Product;
     currentMember?: Member;
   }) => {

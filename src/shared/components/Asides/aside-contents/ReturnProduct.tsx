@@ -43,7 +43,9 @@ export function ReturnProduct({
   const queryClient = useQueryClient();
   const { offices, isLoading: loadingOffices } = useOffices();
   const [isRemoving, setIsRemoving] = useState(false);
-  const [newLocation, setNewLocation] = useState<Location>(null);
+  const [newLocation, setNewLocation] = useState<Location | "FP warehouse">(
+    null
+  );
   const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
   const [returnStatus, setReturnStatus] = useState<RelocateStatus>(undefined);
   const [genericAlertData, setGenericAlertData] = useState({
@@ -105,7 +107,7 @@ export function ReturnProduct({
     }
   };
 
-  const handleRemoveItems = async (location: Location) => {
+  const handleRemoveItems = async (location: Location | "FP warehouse") => {
     if (!location) {
       console.error("Location is required for return");
       return;
