@@ -15,20 +15,8 @@ interface ProductLocationProps {
 }
 
 export function ProductLocation({ location, product }: ProductLocationProps) {
-  let countryCode: string | null = null;
-
-  if (product) {
-    if (product.office) {
-      countryCode = product.office.officeCountryCode;
-    } else if (product.fpWarehouse) {
-      countryCode = product.fpWarehouse.warehouseCountryCode;
-    } else if (product.memberData) {
-      countryCode = product.memberData.countryCode;
-    }
-  }
-
-  const countryName = countryCode
-    ? countriesByCode[countryCode.toUpperCase()]
+  const countryName = product?.countryCode
+    ? countriesByCode[product?.countryCode.toUpperCase()]
     : null;
 
   return (
@@ -43,20 +31,20 @@ export function ProductLocation({ location, product }: ProductLocationProps) {
         } rounded-md`}
       >
         {location ? location : "No Location"}
-        {countryCode && (
+        {product?.countryCode && (
           <TooltipProvider>
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <span>
                   <CountryFlag
-                    countryName={countryCode}
+                    countryName={product?.countryCode}
                     size={14}
                     className="rounded-sm"
                   />
                 </span>
               </TooltipTrigger>
               <TooltipContent className="bg-blue/80 text-white text-xs">
-                {countryName || countryCode}
+                {countryName || product?.countryCode}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

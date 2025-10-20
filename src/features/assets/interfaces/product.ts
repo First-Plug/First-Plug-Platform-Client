@@ -276,9 +276,8 @@ export interface Product {
   additionalInfo?: string;
   shipmentStatus?: ShipmentStatus;
   office?: Office | null;
-  memberData?: MemberData | null;
-  fpWarehouse?: FpWarehouse | null;
-  warehouseId?: string | null;
+
+  countryCode?: string;
 }
 
 export interface ProductTable {

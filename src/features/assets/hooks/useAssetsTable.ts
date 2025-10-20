@@ -96,16 +96,7 @@ export function useAssetsTable(assets: ProductTable[]) {
       countryFiltered = tableFiltered
         .map((asset) => {
           const productsInCountry = asset.products.filter((product) => {
-            let productCountryCode = "";
-
-            if (product.office) {
-              productCountryCode = product.office.officeCountryCode;
-            } else if (product.fpWarehouse) {
-              productCountryCode = product.fpWarehouse.warehouseCountryCode;
-            } else if (product.memberData) {
-              productCountryCode = product.memberData.countryCode;
-            }
-
+            const productCountryCode = product.countryCode || "";
             return (
               productCountryCode.toUpperCase() === selectedCountry.toUpperCase()
             );

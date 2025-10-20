@@ -57,18 +57,8 @@ export function useProductsFiltering(
 
             case "location":
               const location = product.location || "No Data";
-              let countryCode = "";
-
-              if (product.office) {
-                countryCode = product.office.officeCountryCode;
-              } else if (product.fpWarehouse) {
-                countryCode = product.fpWarehouse.warehouseCountryCode;
-              } else if (product.memberData) {
-                countryCode = product.memberData.countryCode;
-              }
-
-              const countryName = countryCode
-                ? countriesByCode[countryCode.toUpperCase()]
+              const countryName = product.countryCode
+                ? countriesByCode[product.countryCode.toUpperCase()]
                 : null;
               const locationWithCountry = countryName
                 ? `${location} - ${countryName}`

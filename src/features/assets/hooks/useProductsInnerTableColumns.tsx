@@ -76,18 +76,8 @@ export function useProductsInnerTableColumns({
         id: "location",
         accessorFn: (row) => {
           const location = row.location || "No Data";
-          let countryCode = "";
-
-          if (row.office) {
-            countryCode = row.office.officeCountryCode;
-          } else if (row.fpWarehouse) {
-            countryCode = row.fpWarehouse.warehouseCountryCode;
-          } else if (row.memberData) {
-            countryCode = row.memberData.countryCode;
-          }
-
-          const countryName = countryCode
-            ? countriesByCode[countryCode.toUpperCase()]
+          const countryName = row.countryCode
+            ? countriesByCode[row.countryCode.toUpperCase()]
             : null;
           return countryName ? `${location} - ${countryName}` : location;
         },
@@ -101,23 +91,13 @@ export function useProductsInnerTableColumns({
             const options = new Set<string>();
             allProducts.forEach((product) => {
               const location = product.location || "No Data";
-              let countryCode = "";
-
-              if (product.office) {
-                countryCode = product.office.officeCountryCode;
-              } else if (product.fpWarehouse) {
-                countryCode = product.fpWarehouse.warehouseCountryCode;
-              } else if (product.memberData) {
-                countryCode = product.memberData.countryCode;
-              }
-
-              const countryName = countryCode
-                ? countriesByCode[countryCode.toUpperCase()]
+              const countryName = product.countryCode
+                ? countriesByCode[product.countryCode.toUpperCase()]
                 : null;
-              const combinedValue = countryName
+              const locationWithCountry = countryName
                 ? `${location} - ${countryName}`
                 : location;
-              options.add(combinedValue);
+              options.add(locationWithCountry);
             });
             return Array.from(options)
               .sort()
