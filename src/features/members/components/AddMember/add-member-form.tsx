@@ -27,6 +27,8 @@ import { useShipmentValues } from "@/features/shipments";
 import { Shipment } from "@/features/shipments";
 import { useAsideStore, useAlertStore } from "@/shared";
 import { CategoryIcons } from "@/features/assets";
+import { useOffices } from "@/features/settings/hooks/use-offices";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface BackendResponse extends Product {
   shipment?: Shipment;
@@ -58,8 +60,10 @@ export const AddMemberForm = ({
   const { shipmentValue, onSubmitDropdown } = useShipmentValues();
 
   const { data: allMembers, isLoading: loadingMembers } = useFetchMembers();
+  const { offices, isLoading: loadingOffices } = useOffices();
   const [searchedMembers, setSearchedMembers] = useState<Member[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
+  const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [genericAlertData, setGenericAlertData] = useState({
     title: "",
@@ -178,7 +182,11 @@ export const AddMemberForm = ({
             return currentProduct.status;
           return "Available";
         })(),
-        location: noneOption || "Our office",
+        location: noneOption === "FP warehouse" ? "FP warehouse" : "Our office",
+        officeId:
+          noneOption === "FP warehouse"
+            ? undefined
+            : selectedOfficeId || undefined,
         category: currentProduct.category,
         attributes: currentProduct.attributes,
         name: currentProduct.name,
@@ -269,17 +277,49 @@ export const AddMemberForm = ({
     }
   };
 
-  const handleSelectNoneOption = (option: string) => {
+  const handleSelectNoneOption = (displayValue: string) => {
     handleSelectedMembers(null);
-    setNoneOption(option);
+    setNoneOption(displayValue);
+
+    // Si seleccionó FP warehouse, no hay officeId
+    if (displayValue === "FP warehouse") {
+      setSelectedOfficeId(null);
+    } else {
+      // Extraer el ID de la oficina del valor seleccionado (formato: "country - name")
+      const selectedOffice = offices.find((office) => {
+        const countryName = office.country
+          ? countriesByCode[office.country] || office.country
+          : "";
+        return `${countryName} - ${office.name}` === displayValue;
+      });
+
+      if (selectedOffice) {
+        setSelectedOfficeId(selectedOffice._id);
+      }
+    }
+
     setValidationError(null);
   };
 
   const handleSelectMember = (member: Member | null) => {
     handleSelectedMembers(member);
     setNoneOption(null);
+    setSelectedOfficeId(null);
     setValidationError(null);
   };
+
+  // Crear grupos de opciones para el dropdown
+  const locationOptionGroups = [
+    {
+      label: "Our offices",
+      options: offices.map((office) => {
+        const countryName = office.country
+          ? countriesByCode[office.country] || office.country
+          : "";
+        return `${countryName} - ${office.name}`;
+      }),
+    },
+  ];
 
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [showErrorDialogOurOffice, setShowErrorDialogOurOffice] =
@@ -326,11 +366,15 @@ export const AddMemberForm = ({
             </span>
             <SelectDropdownOptions
               label="Location"
-              placeholder="Select Location"
+              placeholder={
+                loadingOffices ? "Loading offices..." : "Select Location"
+              }
               value={noneOption || ""}
-              onChange={(value) => handleSelectNoneOption(value as Location)}
-              options={LOCATION.filter((e) => e !== "Employee")}
+              onChange={(value) => handleSelectNoneOption(value)}
+              options={["FP warehouse"]}
+              optionGroups={locationOptionGroups}
               className="w-1/2"
+              disabled={loadingOffices}
             />
 
             <hr />

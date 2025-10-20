@@ -12,6 +12,8 @@ import { Controller, useFormContext } from "react-hook-form";
 
 import { useAsideStore } from "@/shared";
 import { useMemberStore } from "../store/member.store";
+import { useOffices } from "@/features/settings/hooks/use-offices";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
 
@@ -82,6 +84,14 @@ export const RequestOffBoardingForm = ({
 }: Props) => {
   const { setSelectedMember } = useMemberStore();
 
+  const { offices, isLoading: loadingOffices } = useOffices();
+  const officeLabels = offices.map((o) => {
+    const countryName = o.country
+      ? countriesByCode[o.country] || o.country
+      : "";
+    return `${countryName} - ${o.name}`;
+  });
+
   const { data: session } = useSession();
   const router = useRouter();
   const { setValue, watch, control } = useFormContext();
@@ -128,6 +138,11 @@ export const RequestOffBoardingForm = ({
       setValue(`products.${index}.product`, products[index], {
         shouldValidate: true,
       });
+      // Limpiar officeId cuando se elige FP warehouse
+      setValue(`products.${index}.officeId`, undefined, {
+        shouldValidate: false,
+      });
+      setValue(`products.${index}.officeLabel`, "", { shouldValidate: false });
     }
 
     if (relocation === "New employee") {
@@ -362,6 +377,40 @@ export const RequestOffBoardingForm = ({
     setValue,
   ]);
 
+  // Helpers de oficinas
+  const officeGroups = [
+    {
+      label: "Our offices",
+      options: officeLabels,
+    },
+  ];
+
+  const isOfficeLabel = (val: string) => officeLabels.includes(val);
+
+  const handleSelectLocation = (selectedValue: string) => {
+    if (isOfficeLabel(selectedValue)) {
+      // set relocation as My office pero guardar oficina elegida
+      setValue(`products.${index}.relocation`, "My office", {
+        shouldValidate: true,
+      });
+      const office = offices.find((o) => {
+        const countryName = o.country
+          ? countriesByCode[o.country] || o.country
+          : "";
+        return `${countryName} - ${o.name}` === selectedValue;
+      });
+      setValue(`products.${index}.officeId`, office?._id, {
+        shouldValidate: false,
+      });
+      setValue(`products.${index}.officeLabel`, selectedValue, {
+        shouldValidate: false,
+      });
+      handleDropdown("My office");
+    } else {
+      handleDropdown(selectedValue);
+    }
+  };
+
   return (
     <PageLayout>
       <section className={`space-y-4 ${className}`}>
@@ -462,24 +511,25 @@ export const RequestOffBoardingForm = ({
               }}
             />
           </div>
-          <div className="flex- bg-green-200 p-4">
+          <div className="flex- p-4">
             <Controller
               name={`products.${index}.relocation`}
               control={control}
-              render={({ field: { onChange, value, name } }) => (
+              render={({ field: { value } }) => (
                 <SelectDropdownOptions
                   label="New Location*"
-                  placeholder="New Location"
-                  value={value || ""}
-                  onChange={(selectedValue: string) => {
-                    if (value !== selectedValue) {
-                      onChange(selectedValue);
-                      handleDropdown(selectedValue);
-                    }
-                  }}
-                  options={dropdownOptions}
+                  placeholder={
+                    loadingOffices ? "Loading offices..." : "New Location"
+                  }
+                  value={isOfficeLabel(value) ? value : value || ""}
+                  onChange={(selectedValue: string) =>
+                    handleSelectLocation(selectedValue)
+                  }
+                  options={dropdownOptions.filter((o) => o !== "My office")}
+                  optionGroups={officeGroups}
                   disabled={isDisabledDropdown}
                   required
+                  compact
                 />
               )}
             />

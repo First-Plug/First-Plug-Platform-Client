@@ -259,6 +259,7 @@ export interface Product {
   updatedAt?: string;
   deletedAt?: string | null;
   location?: string;
+  officeId?: string;
   assignedEmail?: string;
   assignedMember?: string;
   serialNumber: string | null;
@@ -277,7 +278,6 @@ export interface Product {
   office?: Office | null;
   memberData?: MemberData | null;
   fpWarehouse?: FpWarehouse | null;
-  officeId?: string | null;
   warehouseId?: string | null;
 }
 

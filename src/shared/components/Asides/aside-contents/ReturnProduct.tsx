@@ -18,6 +18,8 @@ import { ShipmentWithFp } from "@/features/shipments";
 import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 
 import { useAsideStore } from "@/shared";
+import { useOffices } from "@/features/settings/hooks/use-offices";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface IRemoveItems {
   product: Product;
@@ -39,8 +41,10 @@ export function ReturnProduct({
   const { shipmentValue, onSubmitDropdown, isShipmentValueValid } =
     useShipmentValues();
   const queryClient = useQueryClient();
+  const { offices, isLoading: loadingOffices } = useOffices();
   const [isRemoving, setIsRemoving] = useState(false);
   const [newLocation, setNewLocation] = useState<Location>(null);
+  const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
   const [returnStatus, setReturnStatus] = useState<RelocateStatus>(undefined);
   const [genericAlertData, setGenericAlertData] = useState({
     title: "",
@@ -49,6 +53,19 @@ export function ReturnProduct({
   });
 
   const { unassignProduct } = useActions();
+
+  // Crear grupos de opciones para el dropdown
+  const locationOptionGroups = [
+    {
+      label: "Our offices",
+      options: offices.map((office) => {
+        const countryName = office.country
+          ? countriesByCode[office.country] || office.country
+          : "";
+        return `${countryName} - ${office.name}`;
+      }),
+    },
+  ];
 
   const router = useRouter();
   const { data: session } = useSession();
@@ -59,6 +76,27 @@ export function ReturnProduct({
   const [missingOfficeData, setMissingOfficeData] = useState("");
 
   const selectedMember = queryClient.getQueryData<Member>(["selectedMember"]);
+
+  const handleLocationChange = (displayValue: string) => {
+    setNewLocation(displayValue as Location);
+
+    // Si seleccionó FP warehouse, no hay officeId
+    if (displayValue === "FP warehouse") {
+      setSelectedOfficeId(null);
+    } else {
+      // Extraer el ID de la oficina del valor seleccionado (formato: "country - name")
+      const selectedOffice = offices.find((office) => {
+        const countryName = office.country
+          ? countriesByCode[office.country] || office.country
+          : "";
+        return `${countryName} - ${office.name}` === displayValue;
+      });
+
+      if (selectedOffice) {
+        setSelectedOfficeId(selectedOffice._id);
+      }
+    }
+  };
 
   const handleRemoveItems = async (location: Location) => {
     if (!location) {
@@ -94,9 +132,9 @@ export function ReturnProduct({
     const { source, destination } = buildValidationEntities(
       product,
       allMembers,
-      location === "Our office" ? null : selectedMember,
+      null,
       sessionUserData,
-      location
+      "Our office"
     );
 
     // Always validate the source (Current Holder)
@@ -122,34 +160,31 @@ export function ReturnProduct({
       console.warn("Validation warnings for current holder detected.");
     }
 
-    if (location === "Our office") {
-      const missingMessages = await validateAfterAction(source, destination);
+    const missingMessages = await validateAfterAction(source, destination);
 
-      if (missingMessages.length > 0) {
-        const formattedMessages = missingMessages
-          .map(
-            (message) =>
-              `<div class="mb-2"><span>${message
-                .replace(
-                  /Current holder \((.*?)\)/,
-                  "Current holder (<strong>$1</strong>)"
-                )
-                .replace(
-                  /Assigned location \((.*?)\)/,
-                  "Assigned location (<strong>$1</strong>)"
-                )}</span></div>`
-          )
-          .join("");
+    if (missingMessages.length > 0) {
+      const formattedMessages = missingMessages
+        .map(
+          (message) =>
+            `<div class="mb-2"><span>${message
+              .replace(
+                /Current holder \((.*?)\)/,
+                "Current holder (<strong>$1</strong>)"
+              )
+              .replace(
+                /Assigned location \((.*?)\)/,
+                "Assigned location (<strong>$1</strong>)"
+              )}</span></div>`
+        )
+        .join("");
 
-        setGenericAlertData({
-          title:
-            "The return was completed successfully, but details are missing",
-          description: formattedMessages,
-          isOpen: true,
-        });
+      setGenericAlertData({
+        title: "The return was completed successfully, but details are missing",
+        description: formattedMessages,
+        isOpen: true,
+      });
 
-        console.warn("Validation warnings for destination detected.");
-      }
+      console.warn("Validation warnings for destination detected.");
     }
 
     setIsRemoving(true);
@@ -168,6 +203,12 @@ export function ReturnProduct({
       const productToSend = {
         ...product,
         status,
+        location:
+          newLocation === "FP warehouse" ? "FP warehouse" : "Our office",
+        officeId:
+          newLocation === "FP warehouse"
+            ? undefined
+            : selectedOfficeId || undefined,
         fp_shipment: shipmentValue.shipment === "yes",
         desirableDate: {
           origin: shipmentValue.pickupDate,
@@ -176,7 +217,8 @@ export function ReturnProduct({
       };
 
       await unassignProduct({
-        location,
+        location:
+          newLocation === "FP warehouse" ? "FP warehouse" : "Our office",
         product: productToSend,
         currentMember: selectedMember,
       });
@@ -232,10 +274,13 @@ export function ReturnProduct({
         <div className="flex-1 py-4">
           <SelectDropdownOptions
             label="Please select the new location"
-            placeholder="Location"
+            placeholder={loadingOffices ? "Loading offices..." : "Location"}
             value={newLocation || ""}
-            onChange={(value) => setNewLocation(value as Location)}
+            onChange={handleLocationChange}
+            options={["FP warehouse"]}
+            optionGroups={locationOptionGroups}
             className="max-w-md"
+            disabled={loadingOffices}
             required
           />
         </div>
