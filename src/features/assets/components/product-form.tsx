@@ -322,10 +322,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       productCondition:
         data.productCondition ?? initialData?.productCondition ?? "Optimal",
       additionalInfo: data.additionalInfo || "",
-      officeId:
-        data.location && data.location !== "Employee"
-          ? data.officeId
-          : undefined,
+      officeId: data.location === "Our office" ? data.officeId : undefined,
       attributes: attributes.map((attr) => {
         const initialAttr = initialData?.attributes.find(
           (ia) => ia.key === attr.key

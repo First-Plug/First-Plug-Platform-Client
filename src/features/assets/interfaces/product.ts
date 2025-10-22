@@ -397,6 +397,7 @@ export const zodCreateProductModel = z
       required_error: "Location is required",
       invalid_type_error: "Invalid location",
     }),
+    officeId: z.string().optional(),
     status: z.string().optional(),
     productCondition: z.string({
       required_error: "Product Condition is required",
