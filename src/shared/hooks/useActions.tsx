@@ -74,6 +74,8 @@ export default function useActions() {
       fp_shipment: product.fp_shipment,
       desirableDate: product.desirableDate,
       productCondition: product.productCondition || "Optimal",
+      ...(product.officeId &&
+        location !== "FP warehouse" && { officeId: product.officeId }),
     };
     if (product.assignedMember) {
       updatedProduct.lastAssigned =

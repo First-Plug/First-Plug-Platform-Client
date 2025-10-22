@@ -151,7 +151,6 @@ export const RequestOffBoardingForm = ({
       setValue(`products.${index}.officeId`, undefined, {
         shouldValidate: false,
       });
-      setValue(`products.${index}.officeLabel`, "", { shouldValidate: false });
     }
 
     if (relocation === "New employee") {
@@ -414,9 +413,6 @@ export const RequestOffBoardingForm = ({
         return `${countryName} - ${o.name}` === selectedValue;
       });
       setValue(`products.${index}.officeId`, office?._id, {
-        shouldValidate: false,
-      });
-      setValue(`products.${index}.officeLabel`, selectedValue, {
         shouldValidate: false,
       });
       handleDropdown(selectedValue);

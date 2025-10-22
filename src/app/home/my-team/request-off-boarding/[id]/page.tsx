@@ -28,6 +28,7 @@ export interface ProductOffBoarding {
   relocation: DropdownOption;
   available: boolean;
   newMember?: any;
+  officeId?: string;
 }
 
 export default function RequestOffBoardingPage({
@@ -131,19 +132,29 @@ export default function RequestOffBoardingPage({
 
   const onSubmit = async (data: any) => {
     const sendData = data.products.map((productToSend) => {
+      const payload: any = {
+        product: productToSend.product,
+        relocation: productToSend.relocation,
+        available: productToSend.available,
+        fp_shipment: shipmentValue.shipment === "yes",
+        desirableDate: {
+          origin: shipmentValue.pickupDate,
+          destination: shipmentValue.deliveredDate,
+        },
+      };
+
       if (productToSend.newMember !== "None") {
-        productToSend.newMember = members.find(
+        payload.newMember = members.find(
           (member) => member.fullName === productToSend.newMember
         );
       }
 
-      productToSend.fp_shipment = shipmentValue.shipment === "yes";
-      productToSend.desirableDate = {
-        origin: shipmentValue.pickupDate,
-        destination: shipmentValue.deliveredDate,
-      };
+      // Incluir officeId si existe
+      if (productToSend.officeId) {
+        payload.officeId = productToSend.officeId;
+      }
 
-      return productToSend;
+      return payload;
     });
 
     setIsLoading(true);
