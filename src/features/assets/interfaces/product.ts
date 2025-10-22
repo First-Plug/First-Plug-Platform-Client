@@ -260,6 +260,7 @@ export interface Product {
   deletedAt?: string | null;
   location?: string;
   officeId?: string;
+  officeName?: string;
   assignedEmail?: string;
   assignedMember?: string;
   serialNumber: string | null;
