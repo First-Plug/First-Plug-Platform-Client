@@ -20,6 +20,10 @@ import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 import { useAsideStore } from "@/shared";
 import { useOffices } from "@/features/settings/hooks/use-offices";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import {
+  useInternationalShipmentDetection,
+  InternationalShipmentWarning,
+} from "@/shared";
 
 interface IRemoveItems {
   product: Product;
@@ -42,12 +46,17 @@ export function ReturnProduct({
     useShipmentValues();
   const queryClient = useQueryClient();
   const { offices, isLoading: loadingOffices } = useOffices();
+  const { isInternationalShipment, buildInternationalValidationEntities } =
+    useInternationalShipmentDetection();
   const [isRemoving, setIsRemoving] = useState(false);
   const [newLocation, setNewLocation] = useState<Location | "FP warehouse">(
     null
   );
   const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
   const [returnStatus, setReturnStatus] = useState<RelocateStatus>(undefined);
+  const [showInternationalWarning, setShowInternationalWarning] =
+    useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [genericAlertData, setGenericAlertData] = useState({
     title: "",
     description: "",
@@ -56,14 +65,12 @@ export function ReturnProduct({
 
   const { unassignProduct } = useActions();
 
-  // Ordenar oficinas para que la por defecto aparezca primero
   const sortedOffices = [...offices].sort((a, b) => {
     if (a.isDefault && !b.isDefault) return -1;
     if (!a.isDefault && b.isDefault) return 1;
     return 0;
   });
 
-  // Crear grupos de opciones para el dropdown
   const locationOptionGroups = [
     {
       label: "Our offices",
@@ -89,11 +96,9 @@ export function ReturnProduct({
   const handleLocationChange = (displayValue: string) => {
     setNewLocation(displayValue as Location);
 
-    // Si seleccionó FP warehouse, no hay officeId
     if (displayValue === "FP warehouse") {
       setSelectedOfficeId(null);
     } else {
-      // Extraer el ID de la oficina del valor seleccionado (formato: "country - name")
       const selectedOffice = sortedOffices.find((office) => {
         const countryName = office.country
           ? countriesByCode[office.country] || office.country
@@ -109,17 +114,14 @@ export function ReturnProduct({
 
   const handleRemoveItems = async (location: Location | "FP warehouse") => {
     if (!location) {
-      console.error("Location is required for return");
       return;
     }
     const currentHolder = selectedMember;
     if (!Array.isArray(selectedProducts) || selectedProducts.length === 0) {
-      console.error("No products selected for return");
       return;
     }
 
     if (!selectedMember || typeof selectedMember !== "object") {
-      console.error("Selected member is not valid");
       return;
     }
 
@@ -134,19 +136,18 @@ export function ReturnProduct({
     const allMembers = queryClient.getQueryData<Member[]>(["members"]);
 
     if (!allMembers || allMembers.length === 0) {
-      console.error("Member list is empty or unavailable.");
       return { source: null, destination: null };
     }
 
-    const { source, destination } = buildValidationEntities(
+    const { source, destination } = buildInternationalValidationEntities(
       product,
       allMembers,
       null,
       sessionUserData,
-      "Our office"
+      "Our office",
+      null
     );
 
-    // Always validate the source (Current Holder)
     const missingMessagesForSource = await validateAfterAction(source, null);
 
     if (missingMessagesForSource.length > 0) {
@@ -165,8 +166,6 @@ export function ReturnProduct({
         description: formattedMessages,
         isOpen: true,
       });
-
-      console.warn("Validation warnings for current holder detected.");
     }
 
     const missingMessages = await validateAfterAction(source, destination);
@@ -192,10 +191,21 @@ export function ReturnProduct({
         description: formattedMessages,
         isOpen: true,
       });
-
-      console.warn("Validation warnings for destination detected.");
     }
 
+    const isInternational = isInternationalShipment(source, destination);
+    const requiresFpShipment = shipmentValue.shipment === "yes";
+
+    if (isInternational && requiresFpShipment) {
+      setPendingAction(() => () => executeReturn());
+      setShowInternationalWarning(true);
+      return;
+    }
+
+    await executeReturn();
+  };
+
+  const executeReturn = async () => {
     setIsRemoving(true);
     try {
       const status = (() => {
@@ -236,11 +246,23 @@ export function ReturnProduct({
 
       onRemoveSuccess();
     } catch (error) {
-      console.error("Error returning product:", error);
       setReturnStatus("error");
     } finally {
       setIsRemoving(false);
     }
+  };
+
+  const handleConfirmInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
+
+  const handleCancelInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    setPendingAction(null);
   };
 
   return (
@@ -324,6 +346,12 @@ export function ReturnProduct({
           )}
         </div>
       </section>
+
+      <InternationalShipmentWarning
+        isOpen={showInternationalWarning}
+        onConfirm={handleConfirmInternationalShipment}
+        onCancel={handleCancelInternationalShipment}
+      />
     </div>
   );
 }

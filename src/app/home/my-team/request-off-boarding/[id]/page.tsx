@@ -17,7 +17,14 @@ import { ShipmentWithFp } from "@/features/shipments";
 import { Member } from "@/features/members";
 import { Memberservices } from "@/features/members";
 
-import { useAsideStore, useAlertStore } from "@/shared";
+import {
+  useAsideStore,
+  useAlertStore,
+  useInternationalShipmentDetection,
+  InternationalShipmentWarning,
+} from "@/shared";
+import { useSession } from "next-auth/react";
+import { useOffices } from "@/features/settings/hooks/use-offices";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
@@ -39,6 +46,11 @@ export default function RequestOffBoardingPage({
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [showInternationalWarning, setShowInternationalWarning] =
+    useState(false);
+  const [pendingOffboardingData, setPendingOffboardingData] = useState<
+    any | null
+  >(null);
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -46,10 +58,15 @@ export default function RequestOffBoardingPage({
     useShipmentValues();
 
   const { data: members = [] } = useFetchMembers();
+  const { offices } = useOffices();
+  const { data: session } = useSession();
 
   const { setAlert } = useAlertStore();
   const { isClosed } = useAsideStore();
   const { setMemberOffBoarding } = useMemberStore();
+
+  const { isInternationalShipment, buildInternationalValidationEntities } =
+    useInternationalShipmentDetection();
 
   const methods = useForm({
     defaultValues: {
@@ -149,7 +166,6 @@ export default function RequestOffBoardingPage({
         );
       }
 
-      // Incluir officeId si existe
       if (productToSend.officeId) {
         payload.officeId = productToSend.officeId;
       }
@@ -157,6 +173,50 @@ export default function RequestOffBoardingPage({
       return payload;
     });
 
+    const requiresFpShipment = shipmentValue.shipment === "yes";
+    let hasInternationalShipment = false;
+
+    if (requiresFpShipment && selectedMember) {
+      const sessionUserData = {
+        country: (session?.user as any)?.country,
+        city: (session?.user as any)?.city,
+        state: (session?.user as any)?.state,
+        zipCode: (session?.user as any)?.zipCode,
+        address: (session?.user as any)?.address,
+        phone: (session?.user as any)?.phone,
+      };
+
+      for (const productData of sendData) {
+        const product = productData.product;
+        const destinationMember = productData.newMember;
+        const officeId = productData.officeId;
+
+        const { source, destination } = buildInternationalValidationEntities(
+          product,
+          members,
+          destinationMember || null,
+          sessionUserData,
+          destinationMember ? null : productData.relocation,
+          officeId || null
+        );
+
+        if (isInternationalShipment(source, destination)) {
+          hasInternationalShipment = true;
+          break;
+        }
+      }
+    }
+
+    if (hasInternationalShipment) {
+      setPendingOffboardingData(sendData);
+      setShowInternationalWarning(true);
+      return;
+    }
+
+    await executeOffboarding(sendData);
+  };
+
+  const executeOffboarding = async (sendData: any) => {
     setIsLoading(true);
 
     try {
@@ -170,11 +230,23 @@ export default function RequestOffBoardingPage({
 
       router.push("/home/my-team");
     } catch (error) {
-      console.error("Error al realizar offboarding:", error);
       setAlert("errorOffboarding");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleConfirmInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    if (pendingOffboardingData) {
+      executeOffboarding(pendingOffboardingData);
+      setPendingOffboardingData(null);
+    }
+  };
+
+  const handleCancelInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    setPendingOffboardingData(null);
   };
 
   return (
@@ -243,6 +315,12 @@ export default function RequestOffBoardingPage({
           </div>
         </form>
       </FormProvider>
+
+      <InternationalShipmentWarning
+        isOpen={showInternationalWarning}
+        onConfirm={handleConfirmInternationalShipment}
+        onCancel={handleCancelInternationalShipment}
+      />
     </PageLayout>
   );
 }

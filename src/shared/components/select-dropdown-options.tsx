@@ -40,13 +40,11 @@ export default function SelectDropdownOptions({
 
   const groupsToRender = optionGroups;
 
-  // Estado para expandir/colapsar grupos
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const toggleGroup = (groupLabel: string) => {
     setOpenGroups((prev) => ({ ...prev, [groupLabel]: !prev[groupLabel] }));
   };
 
-  // Función para manejar la apertura del dropdown
   const handleOpenChange = (open: boolean) => {
     if (disabled) return false;
     return open;
@@ -72,7 +70,7 @@ export default function SelectDropdownOptions({
               disabled
                 ? productFormStyle
                   ? "cursor-not-allowed pointer-events-none bg-light-grey"
-                  : "text-gray-400 bg-grey cursor-not-allowed opacity-50 pointer-events-none"
+                  : "text-disabled bg-light-grey cursor-not-allowed pointer-events-none"
                 : "text-black cursor-pointer"
             } ${
               productFormStyle
@@ -84,13 +82,7 @@ export default function SelectDropdownOptions({
           >
             <span
               className={
-                disabled
-                  ? productFormStyle
-                    ? "text-disabled"
-                    : "text-gray-400 "
-                  : !value
-                  ? "text-gray-400"
-                  : "text-black"
+                disabled ? "text-disabled" : !value ? "text-grey" : "text-black"
               }
             >
               {displayValue}
@@ -100,7 +92,7 @@ export default function SelectDropdownOptions({
                 productFormStyle ? "right-3" : "right-3"
               }`}
               strokeWidth={2}
-              color={disabled && productFormStyle ? "#A0A0A0" : "grey"}
+              color={disabled ? "#A0A0A0" : "#AEB1B7"}
             />
           </button>
         </DropdownMenu.Trigger>

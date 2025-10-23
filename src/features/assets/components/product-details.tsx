@@ -22,6 +22,10 @@ import { useSession } from "next-auth/react";
 import { useAsideStore } from "@/shared";
 import { useFetchMembers } from "@/features/members";
 import { CategoryIcons } from "@/features/assets";
+import {
+  useInternationalShipmentDetection,
+  InternationalShipmentWarning,
+} from "@/shared";
 
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = function MembersList({
@@ -62,7 +66,13 @@ const MembersList = function MembersList({
     description: "",
     isOpen: false,
   });
+  const [showInternationalWarning, setShowInternationalWarning] =
+    useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const router = useRouter();
+
+  const { isInternationalShipment, buildInternationalValidationEntities } =
+    useInternationalShipmentDetection();
 
   const { isShipmentValueValid, onSubmitDropdown, shipmentValue } =
     useShipmentValues();
@@ -151,9 +161,21 @@ const MembersList = function MembersList({
         description: formattedMessages,
         isOpen: true,
       });
-      console.warn("Validation warnings detected, proceeding with relocation.");
     }
 
+    const isInternational = isInternationalShipment(source, destination);
+    const requiresFpShipment = shipmentValue.shipment === "yes";
+
+    if (isInternational && requiresFpShipment) {
+      setPendingAction(() => () => executeRelocation());
+      setShowInternationalWarning(true);
+      return;
+    }
+
+    await executeRelocation();
+  };
+
+  const executeRelocation = async () => {
     setRelocating(true);
     try {
       const productToSend = {
@@ -185,6 +207,19 @@ const MembersList = function MembersList({
     } finally {
       setRelocating(false);
     }
+  };
+
+  const handleConfirmInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
+
+  const handleCancelInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    setPendingAction(null);
   };
 
   return (
@@ -304,6 +339,12 @@ const MembersList = function MembersList({
           </div>
         </div>
       )}
+
+      <InternationalShipmentWarning
+        isOpen={showInternationalWarning}
+        onConfirm={handleConfirmInternationalShipment}
+        onCancel={handleCancelInternationalShipment}
+      />
     </section>
   );
 };

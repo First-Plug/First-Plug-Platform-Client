@@ -29,6 +29,8 @@ import { useAsideStore, useAlertStore } from "@/shared";
 import { CategoryIcons } from "@/features/assets";
 import { useOffices } from "@/features/settings/hooks/use-offices";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { useInternationalShipmentDetection } from "@/shared/hooks/useInternationalShipmentDetection";
+import { InternationalShipmentWarning } from "@/shared/components/InternationalShipmentWarning";
 
 interface BackendResponse extends Product {
   shipment?: Shipment;
@@ -71,9 +73,14 @@ export const AddMemberForm = ({
   });
 
   const [isAssigning, setIsAssigning] = useState(false);
+  const [showInternationalWarning, setShowInternationalWarning] =
+    useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   const { setAlert } = useAlertStore();
   const { setAside, closeAside } = useAsideStore();
+  const { isInternationalShipment, buildInternationalValidationEntities } =
+    useInternationalShipmentDetection();
 
   const { mutate: updateAssetMutation } = useUpdateAsset();
 
@@ -115,64 +122,53 @@ export const AddMemberForm = ({
       return;
     }
 
-    setIsAssigning(true);
+    const { source, destination } = buildInternationalValidationEntities(
+      currentProduct,
+      allMembers || [],
+      selectedMember,
+      session?.user,
+      noneOption,
+      selectedOfficeId
+    );
 
-    let source: ValidationEntity | null = null;
-    let destination: ValidationEntity | null = null;
+    const isInternational = isInternationalShipment(source, destination);
+    const requiresFpShipment = shipmentValue.shipment === "yes";
+
+    if (isInternational && requiresFpShipment) {
+      setPendingAction(() => () => executeAssignment(source, destination));
+      setShowInternationalWarning(true);
+      return;
+    }
+
+    await executeAssignment(source, destination);
+  };
+
+  const handleConfirmInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
+
+  const handleCancelInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    setPendingAction(null);
+  };
+
+  const executeAssignment = async (
+    source: { type: "member" | "office" | "warehouse"; data: any } | null,
+    destination: { type: "member" | "office" | "warehouse"; data: any } | null
+  ) => {
+    if (!currentProduct || !actionType) return;
+
+    setIsAssigning(true);
 
     try {
       const actionLabel =
         actionType === "ReassignProduct"
           ? "Reassign Product"
           : "Assign Product";
-
-      const currentMemberData = allMembers.find(
-        (member) => member.email === currentProduct.assignedEmail
-      );
-
-      if (currentMemberData) {
-        source = {
-          type: "member",
-          data: currentMemberData,
-        };
-      } else if (currentProduct.assignedEmail) {
-        const assignedMemberParts = currentProduct.assignedMember
-          ? currentProduct.assignedMember.split(" ")
-          : ["", ""];
-        source = {
-          type: "member",
-          data: {
-            firstName: assignedMemberParts[0] || "",
-            lastName: assignedMemberParts[1] || "",
-            email: currentProduct.assignedEmail,
-          },
-        };
-      } else if (
-        currentProduct.location === "Our office" ||
-        currentProduct.location === "FP warehouse"
-      ) {
-        source = {
-          type: "office",
-          data: { ...session?.user, location: currentProduct.location },
-        };
-      } else {
-        source = {
-          type: "office",
-          data: { location: "Unknown" },
-        };
-      }
-
-      if (selectedMember) {
-        destination = {
-          type: "member",
-          data: selectedMember,
-        };
-      } else if (noneOption) {
-        destination = {
-          type: "office",
-          data: { ...session?.user, location: noneOption },
-        };
-      }
 
       const baseProduct: Partial<Product> & { actionType: string } = {
         assignedEmail: "",
@@ -262,7 +258,6 @@ export const AddMemberForm = ({
             }
           },
           onError: (error) => {
-            console.error("Error during save action:", error);
             setAlert("errorAssignedProduct");
           },
           onSettled: () => {
@@ -271,7 +266,6 @@ export const AddMemberForm = ({
         }
       );
     } catch (error) {
-      console.error("Error during save action:", error);
       setAlert("errorAssignedProduct");
       setIsAssigning(false);
     }
@@ -281,11 +275,9 @@ export const AddMemberForm = ({
     handleSelectedMembers(null);
     setNoneOption(displayValue);
 
-    // Si seleccionó FP warehouse, no hay officeId
     if (displayValue === "FP warehouse") {
       setSelectedOfficeId(null);
     } else {
-      // Extraer el ID de la oficina del valor seleccionado (formato: "country - name")
       const selectedOffice = sortedOffices.find((office) => {
         const countryName = office.country
           ? countriesByCode[office.country] || office.country
@@ -308,14 +300,12 @@ export const AddMemberForm = ({
     setValidationError(null);
   };
 
-  // Ordenar oficinas para que la por defecto aparezca primero
   const sortedOffices = [...offices].sort((a, b) => {
     if (a.isDefault && !b.isDefault) return -1;
     if (!a.isDefault && b.isDefault) return 1;
     return 0;
   });
 
-  // Crear grupos de opciones para el dropdown
   const locationOptionGroups = [
     {
       label: "Our offices",
@@ -472,6 +462,12 @@ export const AddMemberForm = ({
           </Button>
         </div>
       </aside>
+
+      <InternationalShipmentWarning
+        isOpen={showInternationalWarning}
+        onConfirm={handleConfirmInternationalShipment}
+        onCancel={handleCancelInternationalShipment}
+      />
     </section>
   );
 };
