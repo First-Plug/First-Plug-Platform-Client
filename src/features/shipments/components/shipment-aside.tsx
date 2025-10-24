@@ -189,9 +189,19 @@ export const ShipmentAside = () => {
       ? members?.find((m) => m.email === destination.assignedEmail)
       : null;
 
-  const filteredLocations = LOCATION.filter(
+  const localLocations = [...LOCATION, "FP warehouse"];
+  const filteredLocations = localLocations.filter(
     (location) => location !== shipment.origin && location !== "Employee"
   );
+
+  const destinationLocation =
+    destination.type === "location" ? destination.location : "";
+  if (
+    destinationLocation &&
+    !localLocations.includes(destinationLocation as any)
+  ) {
+    filteredLocations.push(destinationLocation);
+  }
 
   return (
     <div

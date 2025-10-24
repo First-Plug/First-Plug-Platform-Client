@@ -129,12 +129,41 @@ export const OfficeCard = ({
             </Tooltip>
           </TooltipProvider>
 
-          <Button variant="outline" onClick={handleEdit} className="p-2">
-            <PenIcon
-              className="w-4 h-4 text-blue hover:text-blue/70"
-              strokeWidth={2}
-            />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Button
+                    variant="outline"
+                    onClick={handleEdit}
+                    disabled={office.hasActiveShipments === true}
+                    className={`p-2 ${
+                      office.hasActiveShipments === true
+                        ? "cursor-not-allowed opacity-50"
+                        : ""
+                    }`}
+                  >
+                    <PenIcon
+                      className={`w-4 h-4 ${
+                        office.hasActiveShipments === true
+                          ? "text-gray-400"
+                          : "text-blue hover:text-blue/70"
+                      }`}
+                      strokeWidth={2}
+                    />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              {office.hasActiveShipments === true && (
+                <TooltipContent className="bg-white">
+                  <p>
+                    Offices involved in a shipment that&apos;s &quot;On the
+                    way&quot; cannot be edited.
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
           {canDelete && (
             <TooltipProvider>
               <Tooltip>

@@ -47,6 +47,7 @@ interface DeleteAlertProps {
   teamId?: string;
   onConfirm?: () => void;
   trigger?: React.ReactNode;
+  tooltipMessage?: string;
 }
 export const DeleteAction = ({
   type,
@@ -55,6 +56,7 @@ export const DeleteAction = ({
   trigger,
   teamId,
   disabled,
+  tooltipMessage,
 }: DeleteAlertProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -286,7 +288,9 @@ export const DeleteAction = ({
     },
   };
   const { title, description, deleteAction } = DeleteConfig[type];
-  const shouldShowTooltip = type === "product" && disabled;
+  const shouldShowTooltip =
+    (type === "product" && disabled) ||
+    (type === "shipment" && disabled && tooltipMessage);
 
   return (
     <>
@@ -313,9 +317,11 @@ export const DeleteAction = ({
               <TooltipContent
                 side="bottom"
                 align="end"
-                className="z-50 bg-blue/80 p-2 rounded-md font-normal text-white text-xs"
+                className="z-50 bg-white p-2 rounded-md font-normal text-xs"
               >
-                Products with active shipments cannot be deleted.
+                {type === "product"
+                  ? "Products with active shipments cannot be deleted."
+                  : tooltipMessage}
                 <TooltipArrow className="fill-blue/80" />
               </TooltipContent>
             )}
