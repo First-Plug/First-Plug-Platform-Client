@@ -98,6 +98,9 @@ export const useUpdateAsset = () => {
         queryClient.invalidateQueries({ queryKey: ["shipments"] });
       }
 
+      // Invalidar la query de offices cuando se envía un producto a una oficina
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
+
       return response; // Retornamos directamente la respuesta sin envolverla en un objeto
     },
   });

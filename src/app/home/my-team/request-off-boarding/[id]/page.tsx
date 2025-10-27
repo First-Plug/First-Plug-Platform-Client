@@ -227,6 +227,7 @@ export default function RequestOffBoardingPage({
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
 
       router.push("/home/my-team");
     } catch (error) {

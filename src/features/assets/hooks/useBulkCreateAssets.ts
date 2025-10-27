@@ -23,6 +23,7 @@ export const useBulkCreateAssets = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
     },
     onError: (error: any) => {
       const message =
