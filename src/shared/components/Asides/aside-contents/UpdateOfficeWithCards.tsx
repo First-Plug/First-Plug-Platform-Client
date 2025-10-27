@@ -109,6 +109,7 @@ export const UpdateOfficeWithCards = () => {
       __v: 0,
       hasAssignedProducts: false,
       hasActiveShipments: false,
+      hasOnTheWayShipment: false,
     };
   }, [selectedTenant]);
 

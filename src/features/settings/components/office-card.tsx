@@ -136,16 +136,16 @@ export const OfficeCard = ({
                   <Button
                     variant="outline"
                     onClick={handleEdit}
-                    disabled={office.hasActiveShipments === true}
+                    disabled={office.hasOnTheWayShipment === true}
                     className={`p-2 ${
-                      office.hasActiveShipments === true
+                      office.hasOnTheWayShipment === true
                         ? "cursor-not-allowed opacity-50"
                         : ""
                     }`}
                   >
                     <PenIcon
                       className={`w-4 h-4 ${
-                        office.hasActiveShipments === true
+                        office.hasOnTheWayShipment === true
                           ? "text-gray-400"
                           : "text-blue hover:text-blue/70"
                       }`}
@@ -154,7 +154,7 @@ export const OfficeCard = ({
                   </Button>
                 </div>
               </TooltipTrigger>
-              {office.hasActiveShipments === true && (
+              {office.hasOnTheWayShipment === true && (
                 <TooltipContent className="bg-white">
                   <p>
                     Offices involved in a shipment that&apos;s &quot;On the

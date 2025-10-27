@@ -52,6 +52,7 @@ export interface Office {
   __v?: number;
   hasAssignedProducts?: boolean; // true si tiene productos asignados (no se puede eliminar)
   hasActiveShipments?: boolean; // true si tiene envíos activos (no se puede eliminar)
+  hasOnTheWayShipment?: boolean; // true si tiene un shipment "On The Way" (no se puede editar)
   hasActiveProducts?: boolean; // Propiedad legacy, ahora se usa hasAssignedProducts y hasActiveShipments
 }
 

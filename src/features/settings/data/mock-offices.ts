@@ -23,6 +23,7 @@ export const mockOffices: Office[] = [
     __v: 0,
     hasAssignedProducts: false,
     hasActiveShipments: false,
+    hasOnTheWayShipment: false,
   },
   {
     _id: "2",
@@ -46,6 +47,7 @@ export const mockOffices: Office[] = [
     __v: 0,
     hasAssignedProducts: true,
     hasActiveShipments: true,
+    hasOnTheWayShipment: false,
   },
   {
     _id: "3",
@@ -69,6 +71,7 @@ export const mockOffices: Office[] = [
     __v: 0,
     hasAssignedProducts: false,
     hasActiveShipments: false,
+    hasOnTheWayShipment: false,
   },
   {
     _id: "4",
@@ -93,6 +96,7 @@ export const mockOffices: Office[] = [
     __v: 0,
     hasAssignedProducts: false,
     hasActiveShipments: false,
+    hasOnTheWayShipment: false,
   },
   {
     _id: "5",
@@ -116,5 +120,6 @@ export const mockOffices: Office[] = [
     __v: 0,
     hasAssignedProducts: false,
     hasActiveShipments: false,
+    hasOnTheWayShipment: false,
   },
 ];
