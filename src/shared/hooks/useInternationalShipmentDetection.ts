@@ -42,7 +42,7 @@ export const useInternationalShipmentDetection = () => {
       source = {
         type: "warehouse",
         data: {
-          country: warehouseCountry || "UNKNOWN",
+          country: warehouseCountry,
           location: "FP warehouse",
         },
       };
@@ -78,8 +78,23 @@ export const useInternationalShipmentDetection = () => {
         },
       };
     } else if (noneOption === "FP warehouse") {
-      const warehouseCountry =
-        product.countryCode || product.office?.officeCountryCode || null;
+      // Cuando se asigna a FP warehouse, usar el país del origen
+      // Si el origen es una oficina, usar el país de esa oficina
+      let warehouseCountry = null;
+
+      if (source?.type === "office") {
+        warehouseCountry = source.data.country;
+      } else if (source?.type === "member") {
+        warehouseCountry = source.data.country;
+      } else if (source?.type === "warehouse") {
+        warehouseCountry = source.data.country;
+      }
+
+      // Fallback al país del producto si no hay source
+      if (!warehouseCountry) {
+        warehouseCountry =
+          product.countryCode || product.office?.officeCountryCode || null;
+      }
 
       destination = {
         type: "warehouse",

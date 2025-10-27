@@ -90,7 +90,12 @@ export const AssignProduct = function () {
         handleSelectedMembers={handleSelectedMembers}
         members={filteredMembers}
         currentProduct={cachedProduct}
-        showNoneOption={type === "ReassignProduct"}
+        showNoneOption={
+          type === "ReassignProduct" ||
+          (type === "AssignProduct" &&
+            (cachedProduct?.location === "FP warehouse" ||
+              cachedProduct?.location === "Our office"))
+        }
         actionType={type as "AssignProduct" | "ReassignProduct"}
       />
     </div>

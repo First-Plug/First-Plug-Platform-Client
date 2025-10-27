@@ -156,7 +156,7 @@ export const CURRENCY_CODES = [
   "TBC",
 ] as const;
 
-export const LOCATION = ["Our office", "Employee"] as const;
+export const LOCATION = ["Our office", "Employee", "FP warehouse"] as const;
 export type Location = (typeof LOCATION)[number];
 
 export const CATEGORIES = [
