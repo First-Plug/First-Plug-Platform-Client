@@ -78,10 +78,13 @@ export const useInternationalShipmentDetection = () => {
         },
       };
     } else if (noneOption === "FP warehouse") {
+      const warehouseCountry =
+        product.countryCode || product.office?.officeCountryCode || null;
+
       destination = {
         type: "warehouse",
         data: {
-          country: "US",
+          country: warehouseCountry,
           location: "FP warehouse",
         },
       };

@@ -144,8 +144,8 @@ export function ReturnProduct({
       allMembers,
       null,
       sessionUserData,
-      "Our office",
-      null
+      location,
+      location === "FP warehouse" ? null : selectedOfficeId
     );
 
     const missingMessagesForSource = await validateAfterAction(source, null);
