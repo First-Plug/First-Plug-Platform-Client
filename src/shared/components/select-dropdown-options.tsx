@@ -58,6 +58,11 @@ export default function SelectDropdownOptions({
     if (options.includes(val)) {
       return val;
     }
+    // Si el valor existe pero no está en las opciones, devolverlo tal cual
+    // Esto es útil para casos de update donde el valor viene de la base de datos
+    if (val && val !== "") {
+      return val;
+    }
     return placeholder;
   };
 
@@ -105,7 +110,7 @@ export default function SelectDropdownOptions({
           >
             <div
               className={`flex items-center gap-2 ${
-                disabled ? "text-disabled" : !value ? "text-grey" : "text-black"
+                !value ? "text-grey" : "text-black"
               }`}
             >
               {typeof displayValue === "string" ? (

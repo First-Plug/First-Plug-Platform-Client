@@ -156,7 +156,7 @@ export const CURRENCY_CODES = [
   "TBC",
 ] as const;
 
-export const LOCATION = ["Our office", "Employee"] as const;
+export const LOCATION = ["Our office", "Employee", "FP warehouse"] as const;
 export type Location = (typeof LOCATION)[number];
 
 export const CATEGORIES = [
@@ -394,10 +394,14 @@ export const zodCreateProductModel = z
     updatedAt: z.string().optional(),
     deletedAt: z.string().optional().nullable(),
     deleted: z.boolean().optional(),
-    location: z.enum(LOCATION, {
-      required_error: "Location is required",
-      invalid_type_error: "Invalid location",
-    }),
+    location: z.union([
+      z.enum(LOCATION, {
+        required_error: "Location is required",
+        invalid_type_error: "Invalid location",
+      }),
+      z.literal(""),
+      z.undefined(),
+    ]),
     officeId: z.string().optional(),
     status: z.string().optional(),
     productCondition: z.string({

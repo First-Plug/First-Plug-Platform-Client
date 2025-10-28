@@ -360,7 +360,10 @@ export const BulkCreateForm: React.FC<{
         isValid = false;
       }
 
-      if (!location || location === "Location") {
+      if (
+        (!assignedMember || assignedMember === "None") &&
+        (!location || location === "" || location === "Location")
+      ) {
         methods.setError(`products.${index}.location`, {
           type: "manual",
           message: "Location is required",

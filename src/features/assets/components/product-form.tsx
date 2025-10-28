@@ -270,6 +270,19 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       return;
     }
 
+    // Validar location si no hay member seleccionado
+    const location = watch("location");
+    if (
+      (!finalAssignedEmail || finalAssignedEmail === "None") &&
+      (!location || location === "")
+    ) {
+      methods.setError("location", {
+        type: "manual",
+        message: "Location is required",
+      });
+      return;
+    }
+
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
     const allMembers = queryClient.getQueryData<Member[]>(["members"]);
     const selectedMember =
@@ -467,12 +480,29 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           "productCondition",
         ];
         requiredFields.forEach((field) => {
-          changes[field] = formatData[field];
+          // Normalizar "location" a "FP warehouse" si es "FP Warehouse"
+          if (
+            field === "location" &&
+            formatData[field]?.toLowerCase() === "fp warehouse"
+          ) {
+            changes[field] = "FP warehouse";
+          } else {
+            changes[field] = formatData[field];
+          }
         });
 
         Object.keys(formatData).forEach((key) => {
-          if (formatData[key] !== initialData[key]) {
-            changes[key] = formatData[key];
+          // Excluir solo "officeId" del update
+          if (key !== "officeId" && formatData[key] !== initialData[key]) {
+            // Normalizar "location" a "FP warehouse" si es "FP Warehouse"
+            if (
+              key === "location" &&
+              formatData[key]?.toLowerCase() === "fp warehouse"
+            ) {
+              changes[key] = "FP warehouse";
+            } else {
+              changes[key] = formatData[key];
+            }
           }
         });
 
@@ -501,6 +531,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           }
         );
       } else {
+        // Validar que "FP warehouse" no se use en create
+        if (formatData.location === "FP warehouse") {
+          setErrorMessage(
+            "FP warehouse location is not allowed for product creation. Please use 'Our office' instead."
+          );
+          setShowErrorDialog(true);
+          setIsProcessing(false);
+          return;
+        }
+
         if (quantity > 1) {
           setBulkInitialData(formatData);
           setShowBulkCreate(true);

@@ -102,42 +102,72 @@ export const CategoryForm = ({
         return 0;
       });
 
+      // Obtener countryCode del producto si está disponible
+      const productCountryCode = formState?.countryCode as string | undefined;
+
       // Crear grupos de opciones para el dropdown con banderas
       const groups = [
         {
           label: "Our offices",
-          options: sortedOffices.map((office) => {
-            const countryName = office.country
-              ? countriesByCode[office.country] || office.country
-              : "";
-            const displayLabel = `${countryName} - ${office.name}`;
+          options: [
+            ...sortedOffices.map((office) => {
+              const countryName = office.country
+                ? countriesByCode[office.country] || office.country
+                : "";
+              const displayLabel = `${countryName} - ${office.name}`;
 
-            return {
-              display: (
-                <>
-                  {office.country && (
-                    <CountryFlag
-                      countryName={office.country}
-                      size={16}
-                      className="rounded-sm"
-                    />
-                  )}
-                  <span className="truncate">{displayLabel}</span>
-                </>
-              ),
-              value: displayLabel,
-            };
-          }),
+              return {
+                display: (
+                  <>
+                    {office.country && (
+                      <CountryFlag
+                        countryName={office.country}
+                        size={16}
+                        className="rounded-sm"
+                      />
+                    )}
+                    <span className="truncate">{displayLabel}</span>
+                  </>
+                ),
+                value: displayLabel,
+              };
+            }),
+            // Agregar "FP warehouse" como opción válida solo en modo update
+            ...(isUpdate
+              ? [
+                  {
+                    display: productCountryCode ? (
+                      <>
+                        <CountryFlag
+                          countryName={productCountryCode}
+                          size={16}
+                          className="rounded-sm"
+                        />
+                        <span className="truncate">
+                          {countriesByCode[productCountryCode.toUpperCase()] ||
+                            productCountryCode}{" "}
+                          - FP warehouse
+                        </span>
+                      </>
+                    ) : (
+                      <span className="truncate">FP warehouse</span>
+                    ),
+                    value: "FP warehouse",
+                  },
+                ]
+              : []),
+          ],
         },
       ];
       setLocationOptionGroups(groups);
     }
-  }, [offices]);
+  }, [offices, isUpdate, formState?.countryCode]);
 
   useEffect(() => {
-    if (isUpdate && !manualChange) {
+    if (isUpdate && !manualChange && offices && offices.length > 0) {
       const assignedMember = formState.assignedMember as string;
       const assignedEmail = formState.assignedEmail as string;
+      const location = formState.location as string;
 
       const selectedMember = fetchedMembers.find(
         (member) => `${member.firstName} ${member.lastName}` === assignedMember
@@ -148,8 +178,63 @@ export const CategoryForm = ({
       );
       setValue("assignedMember", assignedMember || "");
       setAssignedEmail(selectedMember?.email || assignedEmail || "");
-      setSelectedLocation(formState.location as string);
-      setValue("location", formState.location);
+
+      // Transformar location al formato correcto para el dropdown
+      let locationToDisplay = location;
+
+      // Normalizar "FP Warehouse" a "FP warehouse" si viene con mayúscula
+      if (location === "FP Warehouse") {
+        locationToDisplay = "FP warehouse";
+      }
+
+      // Si es FP warehouse y tiene countryCode, agregar el país al display
+      if (locationToDisplay === "FP warehouse") {
+        const productCountryCode = formState?.countryCode as string | undefined;
+        if (productCountryCode) {
+          const countryName =
+            countriesByCode[productCountryCode.toUpperCase()] ||
+            productCountryCode;
+          locationToDisplay = `${countryName} - FP warehouse`;
+        }
+      } else if (
+        locationToDisplay &&
+        locationToDisplay !== "Employee" &&
+        locationToDisplay !== "FP warehouse"
+      ) {
+        // Primero intentar buscar por officeName si está disponible
+        let office = formState.officeName
+          ? offices?.find((o) => o.name === formState.officeName)
+          : null;
+
+        // Si no se encontró, buscar por location
+        if (!office) {
+          office = offices?.find((office) => office.name === location);
+        }
+
+        if (office) {
+          const countryName = office.country
+            ? countriesByCode[office.country] || office.country
+            : "";
+          locationToDisplay = `${countryName} - ${office.name}`;
+          setSelectedOfficeId(office._id);
+          setValue("officeId", office._id);
+        } else {
+          // Si no se encuentra la oficina, usar location tal cual
+          locationToDisplay = location;
+        }
+      }
+
+      // Para FP warehouse, el value debe ser solo "FP warehouse" para que coincida con las opciones
+      const finalLocationValue =
+        location === "FP Warehouse" || location === "FP warehouse"
+          ? "FP warehouse"
+          : locationToDisplay;
+
+      setSelectedLocation(finalLocationValue);
+      // Guardar el valor normalizado (FP warehouse con w minúscula)
+      const normalizedLocation =
+        location === "FP Warehouse" ? "FP warehouse" : location;
+      setValue("location", normalizedLocation);
       setValue("productCondition", formState.productCondition || "Optimal");
     }
   }, [
@@ -159,6 +244,8 @@ export const CategoryForm = ({
     setValue,
     setAssignedEmail,
     manualChange,
+    offices,
+    locationOptionGroups,
   ]);
 
   const handleInputChange = (name: keyof FieldValues, value: string) => {
@@ -176,7 +263,7 @@ export const CategoryForm = ({
       setValue("assignedEmail", "");
       setValue("assignedMember", "");
       setSelectedLocation("");
-      setValue("location", "");
+      setValue("location", undefined);
       clearErrors(["assignedEmail", "assignedMember", "location"]);
 
       // Actualiza la referencia
@@ -186,8 +273,20 @@ export const CategoryForm = ({
 
   const handleLocationChange = (displayValue: string) => {
     setSelectedLocation(displayValue);
-    setValue("location", "Our office"); // Siempre enviar "Our office" cuando se selecciona una oficina
     clearErrors("location");
+
+    // Si es "FP warehouse" (con o sin país), establecer la location directamente
+    if (
+      displayValue === "FP warehouse" ||
+      displayValue.includes(" - FP warehouse")
+    ) {
+      setValue("location", "FP warehouse");
+      setSelectedOfficeId(null);
+      setValue("officeId", undefined);
+      return;
+    }
+
+    setValue("location", "Our office"); // Siempre enviar "Our office" cuando se selecciona una oficina
 
     // Buscar la oficina seleccionada por el formato "country - name" y obtener su ID
     const selectedOffice = offices?.find((office) => {
@@ -248,7 +347,7 @@ export const CategoryForm = ({
       setValue("assignedMember", "");
       setValue("assignedEmail", "");
       setSelectedAssignedMember("");
-      setValue("location", "");
+      setValue("location", undefined);
       setSelectedLocation("");
       setSelectedOfficeId(null);
       setValue("officeId", undefined);
