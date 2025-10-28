@@ -313,10 +313,35 @@ export const AddMemberForm = ({
     return 0;
   });
 
+  // Detectar la officeId actual del producto
+  let currentProductOfficeId = currentProduct?.officeId;
+
+  // Si no hay officeId pero hay office object, usar ese
+  if (!currentProductOfficeId && currentProduct?.office) {
+    currentProductOfficeId = currentProduct.office.officeId;
+  }
+
+  // Si aún no hay officeId, intentar buscar por officeName
+  if (
+    !currentProductOfficeId &&
+    currentProduct?.officeName &&
+    sortedOffices.length > 0
+  ) {
+    const matchingOffice = sortedOffices.find(
+      (office) => office.name === currentProduct.officeName
+    );
+    currentProductOfficeId = matchingOffice?._id;
+  }
+
+  // Filtrar la location actual de las opciones disponibles
+  const availableOffices = currentProductOfficeId
+    ? sortedOffices.filter((office) => office._id !== currentProductOfficeId)
+    : sortedOffices;
+
   const locationOptionGroups = [
     {
       label: "Our offices",
-      options: sortedOffices.map((office) => {
+      options: availableOffices.map((office) => {
         const countryName = office.country
           ? countriesByCode[office.country] || office.country
           : "";
@@ -341,6 +366,11 @@ export const AddMemberForm = ({
     },
   ];
 
+  // Construir opciones de location disponibles
+  const locationOptions = [
+    ...(currentProduct?.location !== "FP warehouse" ? ["FP warehouse"] : []),
+  ];
+
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [showErrorDialogOurOffice, setShowErrorDialogOurOffice] =
     useState(false);
@@ -348,7 +378,7 @@ export const AddMemberForm = ({
   const [missingOfficeData, setMissingOfficeData] = useState("");
 
   return (
-    <section className="flex flex-col gap-6 h-full">
+    <section className="flex flex-col gap-6 px-2 h-full">
       <GenericAlertDialog
         open={showErrorDialog}
         onClose={() => {
@@ -379,10 +409,10 @@ export const AddMemberForm = ({
       />
       <div className="w-full h-[90%]">
         {showNoneOption && (
-          <section className="flex flex-col gap-2">
+          <section className="flex flex-col gap-4 mb-6">
             <span className="font-medium text-dark-grey">
-              If you want to <strong>return</strong> this product, please select
-              the new Location.
+              If you want to reassign this product, please select the new
+              Location.
             </span>
             <SelectDropdownOptions
               label="Location"
@@ -391,28 +421,25 @@ export const AddMemberForm = ({
               }
               value={noneOption || ""}
               onChange={(value) => handleSelectNoneOption(value)}
-              options={["FP warehouse"]}
+              options={locationOptions}
               optionGroups={locationOptionGroups}
-              className="w-1/2"
+              className="w-full"
               disabled={loadingOffices}
             />
-
-            <hr />
           </section>
         )}
         {validationError && (
           <p className="text-md text-red-500">{validationError}</p>
         )}
         <div
-          className={`flex flex-col gap-4 items-start ${
+          className={`flex flex-col gap-6 items-start ${
             actionType === "AssignProduct" ? "h-[80%]" : "h-[65%]"
           }`}
         >
           {showNoneOption && (
             <p className="font-medium text-dark-grey">
-              If you want to <strong>relocate</strong> this product, please
-              select the <strong>employee</strong> to whom this item will be
-              assigned.
+              If you&apos;d like to assign this product, please choose the
+              employee to whom it will be assigned.
             </p>
           )}
 
@@ -423,10 +450,10 @@ export const AddMemberForm = ({
               className="w-full"
             />
           </div>
-          <div className="flex flex-col gap-2 pt-4 w-full h-full overflow-y-auto scrollbar-custom">
+          <div className="flex flex-col gap-3 pt-2 w-full h-full overflow-y-auto scrollbar-custom">
             {displayedMembers.map((member) => (
               <div
-                className={`flex gap-2 items-center py-2 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue `}
+                className={`flex gap-3 items-center py-3 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue `}
                 key={member._id}
                 onClick={() => handleSelectMember(member)}
               >
@@ -469,11 +496,13 @@ export const AddMemberForm = ({
             ))}
           </div>
         </div>
-        <div className="mt-4 w-80">
-          <ShipmentWithFp
-            onSubmit={onSubmitDropdown}
-            destinationMember={selectedMember}
-          />
+        <div className="mt-6">
+          <div className="[&_form]:!w-full [&_*]:!max-w-none [&_span.font-semibold]:!font-sans [&_span.font-semibold]:!font-normal [&_span.font-semibold]:!text-[16px]">
+            <ShipmentWithFp
+              onSubmit={onSubmitDropdown}
+              destinationMember={selectedMember}
+            />
+          </div>
         </div>
       </div>
 
