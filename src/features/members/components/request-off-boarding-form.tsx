@@ -10,7 +10,14 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Controller, useFormContext } from "react-hook-form";
 
-import { useAsideStore } from "@/shared";
+import {
+  useAsideStore,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import { useMemberStore } from "../store/member.store";
 import { useOffices } from "@/features/settings/hooks/use-offices";
 import { countriesByCode } from "@/shared/constants/country-codes";
@@ -394,7 +401,39 @@ export const RequestOffBoardingForm = ({
   const officeGroups = [
     {
       label: "Our offices",
-      options: officeLabels,
+      options: sortedOffices.map((office) => {
+        const countryName = office.country
+          ? countriesByCode[office.country] || office.country
+          : "";
+        const displayLabel = `${countryName} - ${office.name}`;
+
+        return {
+          display: (
+            <>
+              {office.country && (
+                <TooltipProvider>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <CountryFlag
+                          countryName={office.country}
+                          size={16}
+                          className="rounded-sm"
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-blue/80 text-white text-xs">
+                      {countryName || office.country}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              <span className="truncate">{displayLabel}</span>
+            </>
+          ),
+          value: displayLabel,
+        };
+      }),
     },
   ];
 
@@ -458,11 +497,36 @@ export const RequestOffBoardingForm = ({
                 return (
                   <DropdownInputProductForm
                     name={name}
+                    selectedOption={selectedFullName}
                     options={[
                       "None",
-                      ...members.map(
-                        (member) => `${member.firstName} ${member.lastName}`
-                      ),
+                      ...members.map((member) => ({
+                        display: (
+                          <>
+                            {member.country && (
+                              <TooltipProvider>
+                                <Tooltip delayDuration={300}>
+                                  <TooltipTrigger asChild>
+                                    <div>
+                                      <CountryFlag
+                                        countryName={member.country}
+                                        size={16}
+                                        className="rounded-sm"
+                                      />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="bg-blue/80 text-white text-xs">
+                                    {countriesByCode[member.country] ||
+                                      member.country}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                            <span>{`${member.firstName} ${member.lastName}`}</span>
+                          </>
+                        ),
+                        value: `${member.firstName} ${member.lastName}`,
+                      })),
                     ]}
                     placeholder="Reassigned Member"
                     title="Reassigned Member*"
@@ -515,7 +579,6 @@ export const RequestOffBoardingForm = ({
                       onChange(selectedValue);
                     }}
                     searchable={true}
-                    selectedOption={selectedFullName}
                   />
                 );
               }}

@@ -3,10 +3,16 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import React from "react";
+
+interface OptionItem {
+  display: React.ReactNode;
+  value: string;
+}
 
 interface OptionGroup {
   label: string;
-  options: string[];
+  options: (string | OptionItem)[];
 }
 
 interface SelectDropdownOptionsProps {
@@ -36,9 +42,26 @@ export default function SelectDropdownOptions({
   compact = false,
   productFormStyle = false,
 }: SelectDropdownOptionsProps) {
-  const displayValue = value || placeholder;
-
   const groupsToRender = optionGroups;
+
+  // Buscar el display personalizado si el valor seleccionado está en los optionGroups
+  const getDisplayForValue = (val: string): React.ReactNode => {
+    for (const group of optionGroups) {
+      for (const option of group.options) {
+        const optionValue = typeof option === "string" ? option : option.value;
+        if (optionValue === val) {
+          return typeof option === "string" ? option : option.display;
+        }
+      }
+    }
+    // Si no encuentra en optionGroups, buscar en options simples
+    if (options.includes(val)) {
+      return val;
+    }
+    return placeholder;
+  };
+
+  const displayValue = value ? getDisplayForValue(value) : placeholder;
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const toggleGroup = (groupLabel: string) => {
@@ -80,13 +103,17 @@ export default function SelectDropdownOptions({
                 : "py-3 pr-12 pl-4 rounded-md"
             }`}
           >
-            <span
-              className={
+            <div
+              className={`flex items-center gap-2 ${
                 disabled ? "text-disabled" : !value ? "text-grey" : "text-black"
-              }
+              }`}
             >
-              {displayValue}
-            </span>
+              {typeof displayValue === "string" ? (
+                <span>{displayValue}</span>
+              ) : (
+                displayValue
+              )}
+            </div>
             <ChevronDown
               className={`top-1/2 absolute -translate-y-1/2 cursor-pointer transform ${
                 productFormStyle ? "right-3" : "right-3"
@@ -137,18 +164,26 @@ export default function SelectDropdownOptions({
                   </button>
                   {isOpen && (
                     <div className="pl-1">
-                      {group.options.map((option) => (
-                        <DropdownMenu.Item
-                          key={option}
-                          onSelect={() => onChange(option)}
-                          className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-sm leading-4 cursor-pointer"
-                          title={option}
-                        >
-                          <span className="max-w-[200px] truncate">
-                            {option}
-                          </span>
-                        </DropdownMenu.Item>
-                      ))}
+                      {group.options.map((option, optIdx) => {
+                        const optionValue =
+                          typeof option === "string" ? option : option.value;
+                        const optionDisplay =
+                          typeof option === "string" ? option : option.display;
+                        return (
+                          <DropdownMenu.Item
+                            key={`${optionValue}-${optIdx}`}
+                            onSelect={() => onChange(optionValue)}
+                            className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-sm leading-4 cursor-pointer"
+                            title={
+                              typeof option === "string" ? option : optionValue
+                            }
+                          >
+                            <div className="flex items-center gap-2 max-w-[200px]">
+                              {optionDisplay}
+                            </div>
+                          </DropdownMenu.Item>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

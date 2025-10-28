@@ -3,10 +3,12 @@ import React from "react";
 interface PrdouctModelDetailProps {
   product: Product;
   isOffboardingStyles?: boolean;
+  isChecked?: boolean;
 }
 export const PrdouctModelDetail = ({
   product,
   isOffboardingStyles,
+  isChecked = false,
 }: PrdouctModelDetailProps) => {
   if (!product) return null;
   const { attributes } = product;
@@ -46,11 +48,20 @@ export const PrdouctModelDetail = ({
   return (
     <div className="flex flex-col">
       {product.category === "Merchandising" ? (
-        <div className="flex gap-1 font-semibold text-md">
+        <div className="flex items-center gap-2 font-semibold text-md">
           <span>{product.name}</span>
+          {product.serialNumber && product.serialNumber.trim() !== "" && (
+            <span
+              className={`font-normal transition-colors duration-300 ${
+                isChecked ? "text-white" : "text-gray-600"
+              }`}
+            >
+              #{product.serialNumber}
+            </span>
+          )}
         </div>
       ) : (
-        <div className="flex gap-1 text-md">
+        <div className="flex items-center gap-2 text-md">
           <span className="font-semibold">
             {attributes.filter((at) => at.key === "brand")[0]?.value || "-"}
           </span>
@@ -62,6 +73,15 @@ export const PrdouctModelDetail = ({
             product.name.trim() !== "" && (
               <span className="font-normal">- {product.name}</span>
             )}
+          {product.serialNumber && product.serialNumber.trim() !== "" && (
+            <span
+              className={`font-normal transition-colors duration-300 ${
+                isChecked ? "text-white" : "text-gray-600"
+              }`}
+            >
+              #{product.serialNumber}
+            </span>
+          )}
         </div>
       )}
       <div

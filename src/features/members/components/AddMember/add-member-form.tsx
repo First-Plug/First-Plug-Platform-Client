@@ -31,6 +31,13 @@ import { useOffices } from "@/features/settings/hooks/use-offices";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { useInternationalShipmentDetection } from "@/shared/hooks/useInternationalShipmentDetection";
 import { InternationalShipmentWarning } from "@/shared/components/InternationalShipmentWarning";
+import {
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 
 interface BackendResponse extends Product {
   shipment?: Shipment;
@@ -313,7 +320,23 @@ export const AddMemberForm = ({
         const countryName = office.country
           ? countriesByCode[office.country] || office.country
           : "";
-        return `${countryName} - ${office.name}`;
+        const displayLabel = `${countryName} - ${office.name}`;
+
+        return {
+          display: (
+            <>
+              {office.country && (
+                <CountryFlag
+                  countryName={office.country}
+                  size={16}
+                  className="rounded-sm"
+                />
+              )}
+              <span className="truncate">{displayLabel}</span>
+            </>
+          ),
+          value: displayLabel,
+        };
       }),
     },
   ];
@@ -407,11 +430,29 @@ export const AddMemberForm = ({
                 key={member._id}
                 onClick={() => handleSelectMember(member)}
               >
-                <input
-                  type="checkbox"
-                  checked={member._id === selectedMember?._id}
-                />
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={member._id === selectedMember?._id}
+                  />
+                  {member.country && (
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <div>
+                            <CountryFlag
+                              countryName={member.country}
+                              size={18}
+                              className="rounded-sm"
+                            />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-blue/80 text-white text-xs">
+                          {countriesByCode[member.country] || member.country}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                   <p className="font-bold text-black">
                     {member.firstName} {member.lastName}
                   </p>
@@ -420,7 +461,9 @@ export const AddMemberForm = ({
                       ? member.team
                       : member.team?.name}
                   </span>
-                  <CategoryIcons products={member.products} />
+                </div>
+                <div className="flex items-center gap-3 ml-auto">
+                  <CategoryIcons products={member.products || []} />
                 </div>
               </div>
             ))}

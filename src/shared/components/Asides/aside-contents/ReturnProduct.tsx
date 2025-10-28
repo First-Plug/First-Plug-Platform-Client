@@ -3,7 +3,15 @@ import { LOCATION, Location, Product } from "@/features/assets";
 import React, { Dispatch, SetStateAction, useState } from "react";
 import { ProductDetail } from "@/features/assets";
 import { RelocateStatus } from "@/features/assets/components/product-details";
-import { Button, LoaderSpinner } from "@/shared";
+import {
+  Button,
+  LoaderSpinner,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import useActions from "@/shared/hooks/useActions";
 
 import { Member } from "@/features/members";
@@ -78,7 +86,34 @@ export function ReturnProduct({
         const countryName = office.country
           ? countriesByCode[office.country] || office.country
           : "";
-        return `${countryName} - ${office.name}`;
+        const displayLabel = `${countryName} - ${office.name}`;
+
+        return {
+          display: (
+            <>
+              {office.country && (
+                <TooltipProvider>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <CountryFlag
+                          countryName={office.country}
+                          size={16}
+                          className="rounded-sm"
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-blue/80 text-white text-xs">
+                      {countryName || office.country}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              <span className="truncate">{displayLabel}</span>
+            </>
+          ),
+          value: displayLabel,
+        };
       }),
     },
   ];

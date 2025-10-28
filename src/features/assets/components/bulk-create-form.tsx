@@ -2,7 +2,13 @@
 
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { Button, PageLayout, SectionTitle, BarLoader } from "@/shared";
+import {
+  Button,
+  PageLayout,
+  SectionTitle,
+  BarLoader,
+  CountryFlag,
+} from "@/shared";
 
 import {
   DropdownInputProductForm,
@@ -108,7 +114,7 @@ export const BulkCreateForm: React.FC<{
   const [locationOptionGroups, setLocationOptionGroups] = useState<
     Array<{
       label: string;
-      options: string[];
+      options: Array<string | { display: React.ReactNode; value: string }>;
     }>
   >([]);
   const [selectedOfficeIds, setSelectedOfficeIds] = useState<(string | null)[]>(
@@ -194,7 +200,7 @@ export const BulkCreateForm: React.FC<{
         return 0;
       });
 
-      // Crear grupos de opciones para el dropdown (igual que en los asides)
+      // Crear grupos de opciones para el dropdown con banderas
       const groups = [
         {
           label: "Our offices",
@@ -202,7 +208,23 @@ export const BulkCreateForm: React.FC<{
             const countryName = office.country
               ? countriesByCode[office.country] || office.country
               : "";
-            return `${countryName} - ${office.name}`;
+            const displayLabel = `${countryName} - ${office.name}`;
+
+            return {
+              display: (
+                <>
+                  {office.country && (
+                    <CountryFlag
+                      countryName={office.country}
+                      size={16}
+                      className="rounded-sm"
+                    />
+                  )}
+                  <span className="truncate">{displayLabel}</span>
+                </>
+              ),
+              value: displayLabel,
+            };
           }),
         },
       ];

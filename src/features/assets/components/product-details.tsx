@@ -25,7 +25,13 @@ import { CategoryIcons } from "@/features/assets";
 import {
   useInternationalShipmentDetection,
   InternationalShipmentWarning,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/shared";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = function MembersList({
@@ -264,6 +270,19 @@ const MembersList = function MembersList({
               }
               onClick={() => setSelectedMember(null)}
             >
+              {selectedMember.country && (
+                <div className="group relative">
+                  <CountryFlag
+                    countryName={selectedMember.country}
+                    size={16}
+                    className="rounded-sm"
+                  />
+                  <span className="hidden group-hover:block bottom-full left-1/2 z-50 absolute bg-blue/80 mb-2 px-2 py-1 rounded text-white text-xs whitespace-nowrap -translate-x-1/2 transform">
+                    {countriesByCode[selectedMember.country] ||
+                      selectedMember.country}
+                  </span>
+                </div>
+              )}
               <p className="font-semibold text-black">
                 {selectedMember.fullName}
               </p>
@@ -323,7 +342,25 @@ const MembersList = function MembersList({
                       onChange={() => handleSelectMember(member)}
                     />
                   )}
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
+                    {member.country && (
+                      <TooltipProvider>
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <div>
+                              <CountryFlag
+                                countryName={member.country}
+                                size={18}
+                                className="rounded-sm"
+                              />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-blue/80 text-white text-xs">
+                            {countriesByCode[member.country] || member.country}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                     <p className="font-bold text-black">
                       {member.firstName} {member.lastName}
                     </p>
@@ -332,7 +369,9 @@ const MembersList = function MembersList({
                         ? member.team
                         : member.team?.name}
                     </span>
-                    <CategoryIcons products={member.products} />
+                  </div>
+                  <div className="flex items-center gap-3 ml-auto">
+                    <CategoryIcons products={member.products || []} />
                   </div>
                 </div>
               ))}
@@ -403,6 +442,7 @@ export const ProductDetail = ({
             <PrdouctModelDetail
               product={product}
               isOffboardingStyles={isOffboardingStyles}
+              isChecked={isChecked}
             />
           </section>
           {isRelocating && (

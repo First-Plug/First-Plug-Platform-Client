@@ -5,7 +5,7 @@ import { Category, Location } from "@/features/assets";
 import { CATEGORIES } from "@/features/assets/interfaces/product";
 
 import { FieldValues, useFormContext } from "react-hook-form";
-import { Skeleton } from "@/shared";
+import { Skeleton, CountryFlag } from "@/shared";
 import {
   QuantityCounter,
   RecoverableSwitch,
@@ -70,7 +70,7 @@ export const CategoryForm = ({
   const [locationOptionGroups, setLocationOptionGroups] = useState<
     Array<{
       label: string;
-      options: string[];
+      options: Array<string | { display: React.ReactNode; value: string }>;
     }>
   >([]);
 
@@ -102,7 +102,7 @@ export const CategoryForm = ({
         return 0;
       });
 
-      // Crear grupos de opciones para el dropdown (igual que en los asides)
+      // Crear grupos de opciones para el dropdown con banderas
       const groups = [
         {
           label: "Our offices",
@@ -110,7 +110,23 @@ export const CategoryForm = ({
             const countryName = office.country
               ? countriesByCode[office.country] || office.country
               : "";
-            return `${countryName} - ${office.name}`;
+            const displayLabel = `${countryName} - ${office.name}`;
+
+            return {
+              display: (
+                <>
+                  {office.country && (
+                    <CountryFlag
+                      countryName={office.country}
+                      size={16}
+                      className="rounded-sm"
+                    />
+                  )}
+                  <span className="truncate">{displayLabel}</span>
+                </>
+              ),
+              value: displayLabel,
+            };
           }),
         },
       ];
