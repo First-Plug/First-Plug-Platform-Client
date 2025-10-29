@@ -89,6 +89,7 @@ export const useOffices = (): {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
       setAlert("officeUpdatedSuccessfully");
     },
     onError: (
