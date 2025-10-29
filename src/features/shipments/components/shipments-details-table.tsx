@@ -61,7 +61,11 @@ export const ShipmentDetailsTable = ({ data }: Props) => {
         accessorKey: "origin",
         header: "Origin / Pickup Date",
         cell: () => {
-          const originCountry = data.originDetails?.country;
+          const originCountry =
+            data.originDetails?.country ||
+            (data.origin === "FP warehouse"
+              ? data.destinationDetails?.country
+              : undefined);
           return (
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
@@ -93,7 +97,11 @@ export const ShipmentDetailsTable = ({ data }: Props) => {
         accessorKey: "destination",
         header: "Destination / Delivery Date",
         cell: () => {
-          const destinationCountry = data.destinationDetails?.country;
+          const destinationCountry =
+            data.destinationDetails?.country ||
+            (data.destination === "FP warehouse"
+              ? data.originDetails?.country
+              : undefined);
           return (
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
@@ -123,7 +131,7 @@ export const ShipmentDetailsTable = ({ data }: Props) => {
         },
       },
     ],
-    []
+    [data]
   );
 
   const table = useReactTable({
