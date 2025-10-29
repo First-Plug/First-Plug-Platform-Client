@@ -66,6 +66,7 @@ export const useUpdateEntityAsset = () => {
 
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
       if (showSuccessAlert) {
         setAlert("updateStock");
       }
