@@ -24,6 +24,7 @@ type EmptyCardType =
   | "registererror"
   | "noStockMember"
   | "actionHistory"
+  | "offices"
   | "noResultsWithFilters";
 
 type TConfig = {
@@ -93,6 +94,13 @@ const Config: Record<EmptyCardType, TConfig> = {
     link: "/my-stock",
     linkText: "Shop Now",
   },
+  offices: {
+    image: "/world.svg",
+    paragraphstrong: "You don’t have any offices set up yet.",
+    paragraph: "Click “Add Office” to create your first one.",
+    ButtonIcon: () => <AddIcon />,
+    buttonText: "Add Office",
+  },
   registerok: {
     image: "/world.svg",
     paragraphstrong: "Congratulations!",
@@ -160,6 +168,7 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
     }
 
     if (type === "members") setAside("LoadMembers");
+    if (type === "offices") setAside("CreateOffice");
     if (type === "registerok") {
       return signOut({ callbackUrl: "http://localhost:3000/login" });
     }
@@ -178,7 +187,7 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
           <Image src={image} alt={paragraph} fill />
         </div>
         {paragraphstrong && (
-          <p className="mb-2 font-semibold text-black text-xl">
+          <p className="mb-2 font-semibold text-black text-lg">
             {paragraphstrong}
           </p>
         )}

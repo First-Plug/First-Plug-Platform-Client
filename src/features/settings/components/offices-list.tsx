@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useOffices } from "../hooks/use-offices";
 import { OfficeCard } from "./office-card";
 import { Button, LoaderSpinner, Input, useAsideStore } from "@/shared";
+import { EmptyOffices } from "./empty-offices";
 import { Building, Plus, Search } from "lucide-react";
 import { Office } from "../types/settings.types";
 import { countriesByCode } from "@/shared/constants/country-codes";
@@ -29,18 +30,15 @@ export const OfficesList = () => {
     const searchTermLower = searchTerm.toLowerCase();
 
     return offices.filter((office: Office) => {
-      // Búsqueda básica: nombre, ciudad, email
       const basicMatch =
         office.name.toLowerCase().includes(searchTermLower) ||
         office.city?.toLowerCase().includes(searchTermLower) ||
         office.email?.toLowerCase().includes(searchTermLower);
 
-      // Búsqueda por código de país
       const countryCodeMatch = office.country
         ?.toLowerCase()
         .includes(searchTermLower);
 
-      // Búsqueda por nombre completo del país
       let countryNameMatch = false;
       if (office.country && countriesByCode[office.country]) {
         const fullCountryName = countriesByCode[office.country];
@@ -49,7 +47,6 @@ export const OfficesList = () => {
           .includes(searchTermLower);
       }
 
-      // Búsqueda por estado
       const stateMatch = office.state?.toLowerCase().includes(searchTermLower);
 
       return basicMatch || countryCodeMatch || countryNameMatch || stateMatch;
@@ -76,13 +73,17 @@ export const OfficesList = () => {
     );
   }
 
+  if (!isLoading && (!offices || offices.length === 0)) {
+    return <EmptyOffices />;
+  }
+
   return (
     <div>
       {/* Header */}
       <div className="flex justify-end items-center">
         <Button
           onClick={handleAddOffice}
-          variant="primary"
+          variant="secondary"
           size="small"
           className="flex items-center"
         >
@@ -110,24 +111,8 @@ export const OfficesList = () => {
 
       {/* Offices Grid */}
       {filteredOffices.length === 0 ? (
-        <div className="py-12 text-center">
-          <Building className="mx-auto w-12 h-12 text-gray-400" />
-          <h3 className="mt-2 font-medium text-gray-900 text-sm">
-            {searchTerm ? "No offices found" : "No offices yet"}
-          </h3>
-          <p className="mt-1 text-gray-500 text-sm">
-            {searchTerm
-              ? "Try adjusting your search terms."
-              : "Get started by adding your first office location."}
-          </p>
-          {!searchTerm && (
-            <div className="mt-6">
-              <Button onClick={handleAddOffice} variant="primary">
-                <Plus className="mr-2 w-4 h-4" />
-                Add Office
-              </Button>
-            </div>
-          )}
+        <div className="py-12 text-gray-500 text-sm text-center">
+          No results for current filters.
         </div>
       ) : (
         <div className="gap-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mt-4">

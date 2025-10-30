@@ -3,14 +3,13 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared";
 import { ProfileSettings } from "./profile-settings";
 import { CompanySettings } from "./company-settings";
-import { OfficeSettings } from "./office-settings";
 import { SecuritySettings } from "./security-settings";
 
 export const SettingsLayout = () => {
   return (
     <div className="px-6 py-4 w-full">
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid grid-cols-4 mb-4 w-full">
+        <TabsList className="grid grid-cols-3 mb-4 w-full">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <svg
               className="w-4 h-4"
@@ -45,28 +44,6 @@ export const SettingsLayout = () => {
             Company
           </TabsTrigger>
 
-          <TabsTrigger value="office" className="flex items-center gap-2">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-            Offices
-          </TabsTrigger>
 
           <TabsTrigger value="security" className="flex items-center gap-2">
             <svg
@@ -94,9 +71,6 @@ export const SettingsLayout = () => {
           <CompanySettings />
         </TabsContent>
 
-        <TabsContent value="office">
-          <OfficeSettings />
-        </TabsContent>
 
         <TabsContent value="security">
           <SecuritySettings />

@@ -56,7 +56,6 @@ export const Sidebar = () => {
             className="flex justify-center items-center"
           >
             <div className="relative flex justify-center items-center w-full h-full">
-              {/* Logo grande - se desvanece suavemente */}
               <div
                 className={`flex items-center justify-center transition-all duration-300 ease-in-out ${
                   isSidebarSmall
@@ -77,7 +76,6 @@ export const Sidebar = () => {
                   }}
                 />
               </div>
-              {/* Logo pequeño - aparece suavemente */}
               <div
                 className={`flex items-center justify-center transition-all duration-300 ease-in-out ${
                   isSidebarSmall
@@ -218,6 +216,15 @@ export const Sidebar = () => {
               onMouseEnter={() => {
                 prefetchAssets();
               }}
+            />
+
+            <SidebarLink
+              isSmall={isSidebarSmall}
+              icon={<BuildingIcon />}
+              title="Offices"
+              href="/home/offices"
+              isActive={pathArray.includes("offices")}
+              onMouseEnter={() => {}}
             />
 
             <SidebarLink
