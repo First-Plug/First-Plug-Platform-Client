@@ -38,15 +38,12 @@ export function ColumnFilterPopover({
   const [loading, setLoading] = useState(false);
   const fetchedRef = useRef(false);
 
-  // Decide qué opciones mostrar
   const currentOptions = fetchOptions ? asyncOptions || [] : options;
 
-  // Filtrar por búsqueda
   const visibleOptions = currentOptions.filter((opt) =>
     opt.label.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Handler para seleccionar/deseleccionar una opción individual
   const handleToggle = (val: string) => {
     if (pendingSelected.includes(val)) {
       setPendingSelected(pendingSelected.filter((v) => v !== val));
@@ -55,7 +52,6 @@ export function ColumnFilterPopover({
     }
   };
 
-  // Handler para Select All: selecciona/desmarca solo las opciones visibles (filtradas por búsqueda)
   const handleSelectAll = () => {
     const visibleValues = visibleOptions.map((opt) => opt.value);
     const allVisibleSelected =
@@ -72,13 +68,11 @@ export function ColumnFilterPopover({
     }
   };
 
-  // Determinar si Select All debe estar marcado: solo si todas las opciones visibles están seleccionadas
   const visibleValues = visibleOptions.map((opt) => opt.value);
   const isAllVisibleSelected =
     visibleValues.length > 0 &&
     visibleValues.every((v) => pendingSelected.includes(v));
 
-  // Al abrir el popover, inicializar pendingSelected con value y limpiar el search
   const handleOpenChange = async (open: boolean) => {
     setOpen(open);
     if (open) {
@@ -100,14 +94,12 @@ export function ColumnFilterPopover({
     }
   };
 
-  // Al aplicar, llamar a onChange
   const handleApply = () => {
     onChange?.(pendingSelected);
     setOpen(false);
     setSearch("");
   };
 
-  // Al cancelar, limpiar selección y llamar a onChange con []
   const handleCancel = () => {
     setPendingSelected([]);
     onChange?.([]);

@@ -122,7 +122,6 @@ export const RequestOffBoardingForm = ({
   const relocation = watch(`products.${index}.relocation`);
 
   const handleDropdown = (relocation: string) => {
-    // Verificar si es una oficina específica
     if (isOfficeLabel(relocation)) {
       if (!validateBillingInfo(session.user)) {
         setValue(`products.${index}.relocation`, relocation);

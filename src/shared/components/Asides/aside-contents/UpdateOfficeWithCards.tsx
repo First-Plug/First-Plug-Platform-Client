@@ -113,7 +113,6 @@ export const UpdateOfficeWithCards = () => {
     };
   }, [selectedTenant]);
 
-  // Filtrar oficinas basado en el término de búsqueda (solo la oficina del tenant)
   const filteredOffices: Office[] = useMemo(() => {
     if (!tenantOffice) return [];
 
@@ -122,18 +121,15 @@ export const UpdateOfficeWithCards = () => {
     const office = tenantOffice;
     const searchTermLower = searchTerm.toLowerCase();
 
-    // Búsqueda básica: nombre, ciudad, email
     const basicMatch =
       office.name.toLowerCase().includes(searchTermLower) ||
       office.city?.toLowerCase().includes(searchTermLower) ||
       office.email?.toLowerCase().includes(searchTermLower);
 
-    // Búsqueda por código de país
     const countryCodeMatch = office.country
       ?.toLowerCase()
       .includes(searchTermLower);
 
-    // Búsqueda por nombre completo del país
     let countryNameMatch = false;
     if (office.country && countriesByCode[office.country]) {
       const fullCountryName = countriesByCode[office.country];
@@ -142,7 +138,6 @@ export const UpdateOfficeWithCards = () => {
         .includes(searchTermLower);
     }
 
-    // Búsqueda por estado
     const stateMatch = office.state?.toLowerCase().includes(searchTermLower);
 
     const matchesSearch =
@@ -267,11 +262,9 @@ export const UpdateOfficeWithCards = () => {
   };
 
   const handleGoBack = () => {
-    // Solo hacer pop si hay más de una sidebar en el stack
     if (stack.length > 1) {
       popAside();
     } else {
-      // Si solo hay una sidebar, cerrar todo
       setAside(null);
     }
   };
@@ -295,7 +288,6 @@ export const UpdateOfficeWithCards = () => {
 
     return (
       <div className="flex flex-col h-full">
-        {/* Header con información del tenant */}
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-3">
             {stack.length > 1 && (

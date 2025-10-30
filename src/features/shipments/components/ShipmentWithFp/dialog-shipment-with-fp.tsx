@@ -25,7 +25,7 @@ interface Props {
   deliveredDate: AsapOrDateValue;
   onDeliveredDateChange: (val: AsapOrDateValue) => void;
   onSave: () => void;
-  onCancel: () => void; // Agregar un prop para manejar el cancel
+  onCancel: () => void;
   destinationMember: Member | null;
 }
 
@@ -37,19 +37,18 @@ export const DialogShipmentWithFp = ({
   deliveredDate,
   onDeliveredDateChange,
   onSave,
-  onCancel, // Recibir el método de cancelación
+  onCancel,
   destinationMember,
 }: Props) => {
   const { shouldShowWarning, joinDate } = useMemo(
     () => checkMemberJoinDate(destinationMember),
     [destinationMember]
   );
-  // Manejar el cierre del diálogo cuando se hace clic fuera
   const handleClose = (open: boolean) => {
     if (!open) {
-      onCancel(); // Limpiar las fechas al cerrar el diálogo
+      onCancel();
     }
-    onOpenChange(open); // Cambiar el estado del diálogo
+    onOpenChange(open);
   };
 
   const parseToDate = (val: AsapOrDateValue): Date | null => {
@@ -67,7 +66,6 @@ export const DialogShipmentWithFp = ({
     const delivered = parseToDate(deliveredDate);
 
     if (pickup && delivered) {
-      // Cambiar la lógica para permitir las fechas iguales
       return !isBefore(pickup, delivered) && !isEqual(pickup, delivered);
     }
 
@@ -131,8 +129,8 @@ export const DialogShipmentWithFp = ({
                 className="px-6 rounded-md"
                 variant="secondary"
                 onClick={() => {
-                  onCancel(); // Llamar a la función onCancel
-                  onOpenChange(false); // Cerrar el diálogo
+                  onCancel();
+                  onOpenChange(false);
                 }}
               >
                 Cancel
@@ -142,7 +140,7 @@ export const DialogShipmentWithFp = ({
                 disabled={isEmptyField || isInvalidDateRange}
                 onClick={() => {
                   onSave();
-                  onOpenChange(false); // Cerrar el diálogo
+                  onOpenChange(false);
                 }}
               >
                 Save
