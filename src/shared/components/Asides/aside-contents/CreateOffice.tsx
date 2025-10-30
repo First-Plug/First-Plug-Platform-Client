@@ -103,7 +103,11 @@ export const CreateOffice = () => {
       };
 
       createOffice(officeData);
-      setAside(null);
+      if (stack.length > 1) {
+        popAside();
+      } else {
+        setAside(null);
+      }
     } catch (error) {
       console.error("Error creating office:", error);
     }

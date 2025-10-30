@@ -160,7 +160,7 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
     additionalOnClick,
   } = Config[type];
 
-  const { setAside } = useAsideStore();
+  const { setAside, pushAside } = useAsideStore();
 
   const handleActions = () => {
     if (type === "stock") {
@@ -168,7 +168,7 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
     }
 
     if (type === "members") setAside("LoadMembers");
-    if (type === "offices") setAside("CreateOffice");
+    if (type === "offices") pushAside("CreateOffice");
     if (type === "registerok") {
       return signOut({ callbackUrl: "http://localhost:3000/login" });
     }

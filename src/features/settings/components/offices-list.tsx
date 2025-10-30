@@ -19,7 +19,7 @@ export const OfficesList = () => {
     isSettingDefault,
   } = useOffices();
 
-  const { setAside } = useAsideStore();
+  const { pushAside } = useAsideStore();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredOffices: Office[] = useMemo(() => {
@@ -54,7 +54,7 @@ export const OfficesList = () => {
   }, [offices, searchTerm]);
 
   const handleAddOffice = () => {
-    setAside("CreateOffice");
+    pushAside("CreateOffice");
   };
 
   const handleDeleteOffice = (id: string) => {

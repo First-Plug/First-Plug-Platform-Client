@@ -70,6 +70,8 @@ export const AddMemberForm = ({
 
   const { data: allMembers, isLoading: loadingMembers } = useFetchMembers();
   const { offices, isLoading: loadingOffices } = useOffices();
+
+  const ADD_OFFICE_VALUE = "__ADD_OFFICE__";
   const [searchedMembers, setSearchedMembers] = useState<Member[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
   const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
@@ -85,7 +87,7 @@ export const AddMemberForm = ({
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   const { setAlert } = useAlertStore();
-  const { setAside, closeAside } = useAsideStore();
+  const { setAside, closeAside, pushAside } = useAsideStore();
   const { isInternationalShipment, buildInternationalValidationEntities } =
     useInternationalShipmentDetection();
 
@@ -279,6 +281,10 @@ export const AddMemberForm = ({
   };
 
   const handleSelectNoneOption = (displayValue: string) => {
+    if (displayValue === ADD_OFFICE_VALUE) {
+      pushAside("CreateOffice");
+      return;
+    }
     handleSelectedMembers(null);
     setNoneOption(displayValue);
 
@@ -341,28 +347,34 @@ export const AddMemberForm = ({
   const locationOptionGroups = [
     {
       label: "Our offices",
-      options: availableOffices.map((office) => {
-        const countryName = office.country
-          ? countriesByCode[office.country] || office.country
-          : "";
-        const displayLabel = `${countryName} - ${office.name}`;
+      options: [
+        ...availableOffices.map((office) => {
+          const countryName = office.country
+            ? countriesByCode[office.country] || office.country
+            : "";
+          const displayLabel = `${countryName} - ${office.name}`;
 
-        return {
-          display: (
-            <>
-              {office.country && (
-                <CountryFlag
-                  countryName={office.country}
-                  size={16}
-                  className="rounded-sm"
-                />
-              )}
-              <span className="truncate">{displayLabel}</span>
-            </>
-          ),
-          value: displayLabel,
-        };
-      }),
+          return {
+            display: (
+              <>
+                {office.country && (
+                  <CountryFlag
+                    countryName={office.country}
+                    size={16}
+                    className="rounded-sm"
+                  />
+                )}
+                <span className="truncate">{displayLabel}</span>
+              </>
+            ),
+            value: displayLabel,
+          };
+        }),
+        {
+          display: <span className="font-medium text-blue">+ Add Office</span>,
+          value: ADD_OFFICE_VALUE,
+        },
+      ],
     },
   ];
 

@@ -44,6 +44,8 @@ export const BulkCreateForm: React.FC<{
   setIsProcessing?: (isProcessing: boolean) => void;
 }> = ({ initialData, quantity, onBack, isProcessing, setIsProcessing }) => {
   const { mutate: bulkCreateAssets, status } = useBulkCreateAssets();
+
+  const ADD_OFFICE_VALUE = "__ADD_OFFICE__";
   const session = useSession();
   const sessionUser = session.data?.user;
   const { data: fetchedMembers } = useFetchMembers();
@@ -52,7 +54,7 @@ export const BulkCreateForm: React.FC<{
 
   const queryClient = useQueryClient();
 
-  const { setAside } = useAsideStore();
+  const { pushAside } = useAsideStore();
   const { setSelectedMember } = useMemberStore();
 
   const numProducts = quantity;
@@ -204,28 +206,36 @@ export const BulkCreateForm: React.FC<{
       const groups = [
         {
           label: "Our offices",
-          options: sortedOffices.map((office) => {
-            const countryName = office.country
-              ? countriesByCode[office.country] || office.country
-              : "";
-            const displayLabel = `${countryName} - ${office.name}`;
+          options: [
+            ...sortedOffices.map((office) => {
+              const countryName = office.country
+                ? countriesByCode[office.country] || office.country
+                : "";
+              const displayLabel = `${countryName} - ${office.name}`;
 
-            return {
+              return {
+                display: (
+                  <>
+                    {office.country && (
+                      <CountryFlag
+                        countryName={office.country}
+                        size={16}
+                        className="rounded-sm"
+                      />
+                    )}
+                    <span className="truncate">{displayLabel}</span>
+                  </>
+                ),
+                value: displayLabel,
+              };
+            }),
+            {
               display: (
-                <>
-                  {office.country && (
-                    <CountryFlag
-                      countryName={office.country}
-                      size={16}
-                      className="rounded-sm"
-                    />
-                  )}
-                  <span className="truncate">{displayLabel}</span>
-                </>
+                <span className="font-medium text-blue">+ Add Office</span>
               ),
-              value: displayLabel,
-            };
-          }),
+              value: ADD_OFFICE_VALUE,
+            },
+          ],
         },
       ];
       setLocationOptionGroups(groups);
@@ -293,6 +303,10 @@ export const BulkCreateForm: React.FC<{
   };
 
   const handleLocationChange = (displayValue: string, index: number) => {
+    if (displayValue === ADD_OFFICE_VALUE) {
+      pushAside("CreateOffice");
+      return;
+    }
     setValue(`products.${index}.location`, "Our office"); // Siempre enviar "Our office" cuando se selecciona una oficina
     const newSelectedLocations = [...selectedLocations];
     newSelectedLocations[index] = displayValue;
@@ -656,7 +670,7 @@ export const BulkCreateForm: React.FC<{
                           return newStatuses;
                         });
                       }}
-                      setAside={setAside}
+                      setAside={pushAside}
                     />
                   </div>
                 </div>

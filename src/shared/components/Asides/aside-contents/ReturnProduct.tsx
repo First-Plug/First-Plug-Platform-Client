@@ -48,7 +48,7 @@ export function ReturnProduct({
   onRemoveSuccess,
   className = "",
 }: IRemoveItems & { className?: string }) {
-  const { closeAside } = useAsideStore();
+  const { closeAside, pushAside } = useAsideStore();
 
   const { shipmentValue, onSubmitDropdown, isShipmentValueValid } =
     useShipmentValues();
@@ -79,42 +79,49 @@ export function ReturnProduct({
     return 0;
   });
 
+  const ADD_OFFICE_VALUE = "__ADD_OFFICE__";
   const locationOptionGroups = [
     {
       label: "Our offices",
-      options: sortedOffices.map((office) => {
-        const countryName = office.country
-          ? countriesByCode[office.country] || office.country
-          : "";
-        const displayLabel = `${countryName} - ${office.name}`;
+      options: [
+        ...sortedOffices.map((office) => {
+          const countryName = office.country
+            ? countriesByCode[office.country] || office.country
+            : "";
+          const displayLabel = `${countryName} - ${office.name}`;
 
-        return {
-          display: (
-            <>
-              {office.country && (
-                <TooltipProvider>
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <CountryFlag
-                          countryName={office.country}
-                          size={16}
-                          className="rounded-sm"
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-blue/80 text-white text-xs">
-                      {countryName || office.country}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              <span className="truncate">{displayLabel}</span>
-            </>
-          ),
-          value: displayLabel,
-        };
-      }),
+          return {
+            display: (
+              <>
+                {office.country && (
+                  <TooltipProvider>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <CountryFlag
+                            countryName={office.country}
+                            size={16}
+                            className="rounded-sm"
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-blue/80 text-white text-xs">
+                        {countryName || office.country}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                <span className="truncate">{displayLabel}</span>
+              </>
+            ),
+            value: displayLabel,
+          };
+        }),
+        {
+          display: <span className="font-medium text-blue">+ Add Office</span>,
+          value: ADD_OFFICE_VALUE,
+        },
+      ],
     },
   ];
 
@@ -129,6 +136,10 @@ export function ReturnProduct({
   const selectedMember = queryClient.getQueryData<Member>(["selectedMember"]);
 
   const handleLocationChange = (displayValue: string) => {
+    if (displayValue === ADD_OFFICE_VALUE) {
+      pushAside("CreateOffice");
+      return;
+    }
     setNewLocation(displayValue as Location);
 
     if (displayValue === "FP warehouse") {

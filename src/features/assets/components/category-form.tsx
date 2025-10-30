@@ -19,6 +19,7 @@ import { useFetchMembers } from "@/features/members";
 import { useOffices } from "@/features/settings";
 import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { useAsideStore } from "@/shared";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -76,6 +77,8 @@ export const CategoryForm = ({
 
   const { data: fetchedMembers = [], isLoading } = useFetchMembers();
   const { offices, isLoading: isLoadingOffices } = useOffices();
+  const { pushAside } = useAsideStore();
+  const ADD_OFFICE_VALUE = "__ADD_OFFICE__";
   const selectedModel = watch("model");
 
   const [showNameInput, setShowNameInput] = useState(false);
@@ -132,6 +135,12 @@ export const CategoryForm = ({
                 value: displayLabel,
               };
             }),
+            {
+              display: (
+                <span className="font-medium text-blue">+ Add Office</span>
+              ),
+              value: ADD_OFFICE_VALUE,
+            },
             // Agregar "FP warehouse" como opción válida solo en modo update
             ...(isUpdate
               ? [
@@ -272,6 +281,10 @@ export const CategoryForm = ({
   }, [selectedCategory, isUpdate, setValue, setAssignedEmail, clearErrors]);
 
   const handleLocationChange = (displayValue: string) => {
+    if (displayValue === ADD_OFFICE_VALUE) {
+      pushAside("CreateOffice");
+      return;
+    }
     setSelectedLocation(displayValue);
     clearErrors("location");
 
