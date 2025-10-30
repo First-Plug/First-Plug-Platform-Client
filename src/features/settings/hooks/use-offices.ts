@@ -139,6 +139,7 @@ export const useOffices = (): {
     mutationFn: (id: string) => OfficeServices.deleteOffice(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
       setAlert("officeDeletedSuccessfully");
     },
     onError: (error: AxiosError<{ message: string }>) => {
