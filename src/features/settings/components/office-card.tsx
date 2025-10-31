@@ -104,10 +104,12 @@ export const OfficeCard = ({
                     variant="outline"
                     onClick={handleSetDefault}
                     disabled={isSettingDefault || office.isDefault}
-                    className={`p-2 ${
-                      office.isDefault
-                        ? "hover:bg-yellow-50 cursor-not-allowed"
-                        : "hover:bg-yellow-50 cursor-pointer"
+                    className={`p-2 rounded-full transition-colors ${
+                      isOfficeIncomplete()
+                        ? "bg-red-50/50 hover:bg-yellow-50"
+                        : "bg-transparent hover:bg-yellow-50"
+                    } ${
+                      office.isDefault ? "cursor-not-allowed" : "cursor-pointer"
                     }`}
                   >
                     <Star
@@ -132,20 +134,26 @@ export const OfficeCard = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div>
+                <div
+                  className={`inline-block ${
+                    office.hasOnTheWayShipments ? "cursor-not-allowed" : ""
+                  }`}
+                >
                   <Button
                     variant="outline"
                     onClick={handleEdit}
-                    disabled={office.hasOnTheWayShipment === true}
-                    className={`p-2 ${
-                      office.hasOnTheWayShipment === true
-                        ? "cursor-not-allowed opacity-50"
-                        : ""
+                    disabled={office.hasOnTheWayShipments}
+                    className={`p-2 rounded-full transition-colors ${
+                      office.hasOnTheWayShipments
+                        ? "cursor-not-allowed opacity-50 pointer-events-none bg-transparent"
+                        : isOfficeIncomplete()
+                        ? "bg-red-50/50 hover:bg-hoverBlue"
+                        : "bg-transparent hover:bg-hoverBlue"
                     }`}
                   >
                     <PenIcon
                       className={`w-4 h-4 ${
-                        office.hasOnTheWayShipment === true
+                        office.hasOnTheWayShipments
                           ? "text-gray-400"
                           : "text-blue hover:text-blue/70"
                       }`}
@@ -154,14 +162,13 @@ export const OfficeCard = ({
                   </Button>
                 </div>
               </TooltipTrigger>
-              {office.hasOnTheWayShipment === true && (
-                <TooltipContent className="bg-white">
-                  <p>
-                    Offices involved in a shipment that&apos;s &quot;On the
-                    way&quot; cannot be edited.
-                  </p>
-                </TooltipContent>
-              )}
+              <TooltipContent className="bg-white">
+                <p>
+                  {office.hasOnTheWayShipments
+                    ? 'Offices involved in a shipment that\'s "On the way" cannot be edited'
+                    : "Edit office"}
+                </p>
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
           {canDelete && (
@@ -176,8 +183,8 @@ export const OfficeCard = ({
                       disabled={
                         isDeleting ||
                         office.isDefault ||
-                        office.hasAssignedProducts === true ||
-                        office.hasActiveShipments === true
+                        office.hasAssignedProducts ||
+                        office.hasActiveShipments
                       }
                       trigger={
                         <Button
@@ -185,16 +192,39 @@ export const OfficeCard = ({
                           disabled={
                             isDeleting ||
                             office.isDefault ||
-                            office.hasAssignedProducts === true ||
-                            office.hasActiveShipments === true
+                            office.hasAssignedProducts ||
+                            office.hasActiveShipments
                           }
-                          className="hover:bg-red-50 p-2"
+                          className={`p-2 rounded-full transition-colors ${
+                            isOfficeIncomplete() &&
+                            !isDeleting &&
+                            !office.isDefault &&
+                            !office.hasAssignedProducts &&
+                            !office.hasActiveShipments
+                              ? "bg-red-50/50 hover:bg-red-50"
+                              : "bg-transparent"
+                          } ${
+                            !isDeleting &&
+                            !office.isDefault &&
+                            !office.hasAssignedProducts &&
+                            !office.hasActiveShipments &&
+                            !isOfficeIncomplete()
+                              ? "hover:bg-red-50"
+                              : ""
+                          } ${
+                            isDeleting ||
+                            office.isDefault ||
+                            office.hasAssignedProducts ||
+                            office.hasActiveShipments
+                              ? "cursor-not-allowed"
+                              : ""
+                          }`}
                         >
                           <TrashIcon
                             className={`w-4 h-4 ${
                               office.isDefault ||
-                              office.hasAssignedProducts === true ||
-                              office.hasActiveShipments === true
+                              office.hasAssignedProducts ||
+                              office.hasActiveShipments
                                 ? "text-gray-400"
                                 : "text-red-600 hover:text-red-700"
                             }`}
@@ -205,8 +235,8 @@ export const OfficeCard = ({
                     />
                   </div>
                 </TooltipTrigger>
-                {(office.hasAssignedProducts === true ||
-                  office.hasActiveShipments === true ||
+                {(office.hasAssignedProducts ||
+                  office.hasActiveShipments ||
                   office.isDefault) && (
                   <TooltipContent className="bg-white">
                     <p>
