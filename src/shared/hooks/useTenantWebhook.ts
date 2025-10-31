@@ -40,6 +40,11 @@ export function useTenantWebSocket(tenantId: string) {
         queryClient.refetchQueries({ queryKey: ["officeDefault"] });
       });
 
+      socket.on("offices", (data) => {
+        queryClient.invalidateQueries({ queryKey: ["offices"] });
+        queryClient.refetchQueries({ queryKey: ["offices"] });
+      });
+
       socket.on("user-profile-updated", (data) => {
         queryClient.invalidateQueries({ queryKey: ["userProfile"] });
         queryClient.refetchQueries({ queryKey: ["userProfile"] });
