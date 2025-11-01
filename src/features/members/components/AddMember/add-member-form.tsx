@@ -27,7 +27,7 @@ import { useShipmentValues } from "@/features/shipments";
 import { Shipment } from "@/features/shipments";
 import { useAsideStore, useAlertStore } from "@/shared";
 import { CategoryIcons } from "@/features/assets";
-import { useOffices } from "@/features/settings/hooks/use-offices";
+import { useOffices, useOfficeStore } from "@/features/settings";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { useInternationalShipmentDetection } from "@/shared/hooks/useInternationalShipmentDetection";
 import { InternationalShipmentWarning } from "@/shared/components/InternationalShipmentWarning";
@@ -90,6 +90,7 @@ export const AddMemberForm = ({
   const { setAside, closeAside, pushAside } = useAsideStore();
   const { isInternationalShipment, buildInternationalValidationEntities } =
     useInternationalShipmentDetection();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
 
   const { mutate: updateAssetMutation } = useUpdateAsset();
 
@@ -99,6 +100,25 @@ export const AddMemberForm = ({
   useEffect(() => {
     setSearchedMembers(members);
   }, [members]);
+
+  // Detectar cuando se crea una nueva oficina
+  useEffect(() => {
+    if (newlyCreatedOffice) {
+      // Seleccionar automáticamente la nueva oficina
+      const countryName = newlyCreatedOffice.country
+        ? countriesByCode[newlyCreatedOffice.country] ||
+          newlyCreatedOffice.country
+        : "";
+      const displayLabel = `${countryName} - ${newlyCreatedOffice.name}`;
+
+      setNoneOption(displayLabel);
+      setSelectedOfficeId(newlyCreatedOffice._id);
+      setValidationError(null);
+
+      // Limpiar la oficina recién creada después de usarla
+      clearNewlyCreatedOffice();
+    }
+  }, [newlyCreatedOffice, clearNewlyCreatedOffice]);
 
   const handleSearch = (query: string) => {
     setSearchedMembers(
@@ -427,9 +447,9 @@ export const AddMemberForm = ({
               Location.
             </span>
             <SelectDropdownOptions
-              label="Location"
+              label="New Location"
               placeholder={
-                loadingOffices ? "Loading offices..." : "Select Location"
+                loadingOffices ? "Loading offices..." : "Select new location"
               }
               value={noneOption || ""}
               onChange={(value) => handleSelectNoneOption(value)}

@@ -95,7 +95,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     linkText: "Shop Now",
   },
   offices: {
-    image: "/world.svg",
+    image: "/empty-offices.png",
     paragraphstrong: "You don’t have any offices set up yet.",
     paragraph: "Click “Add Office” to create your first one.",
     ButtonIcon: () => <AddIcon />,
@@ -181,7 +181,11 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
       <div className="flex flex-col items-center mt-[-50px]">
         <div
           className={` ${
-            type === "noStockMember" ? "w-32 h-32" : "w-52 h-52"
+            type === "noStockMember"
+              ? "w-32 h-32"
+              : type === "offices"
+              ? "w-72 h-72"
+              : "w-52 h-52"
           } relative`}
         >
           <Image src={image} alt={paragraph} fill />

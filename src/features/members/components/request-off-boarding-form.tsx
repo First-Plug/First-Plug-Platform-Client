@@ -19,7 +19,7 @@ import {
   TooltipTrigger,
 } from "@/shared";
 import { useMemberStore } from "../store/member.store";
-import { useOffices } from "@/features/settings/hooks/use-offices";
+import { useOffices, useOfficeStore } from "@/features/settings";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
 const DROPDOWN_OPTIONS = ["FP warehouse"];
@@ -111,6 +111,7 @@ export const RequestOffBoardingForm = ({
   const router = useRouter();
   const { setValue, watch, control } = useFormContext();
   const { pushAside, isClosed } = useAsideStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
 
   const [formStatus, setFormStatus] = useState<string>("none");
   const [applyToAll, setApplyToAll] = useState(false);
@@ -230,6 +231,66 @@ export const RequestOffBoardingForm = ({
 
     return () => subscription.unsubscribe();
   }, [applyToAll, watch, totalProducts, isPropagating]);
+
+  // Detectar cuando se crea una nueva oficina
+  useEffect(() => {
+    if (newlyCreatedOffice) {
+      // Seleccionar automáticamente la nueva oficina
+      const countryName = newlyCreatedOffice.country
+        ? countriesByCode[newlyCreatedOffice.country] ||
+          newlyCreatedOffice.country
+        : "";
+      const displayLabel = `${countryName} - ${newlyCreatedOffice.name}`;
+
+      // Verificar que el newMember sea "None" antes de aplicar
+      const currentNewMember = watch(`products.${index}.newMember`);
+      if (currentNewMember === "None" || !currentNewMember) {
+        // Aplicar al producto actual
+        setValue(`products.${index}.relocation`, displayLabel, {
+          shouldValidate: true,
+        });
+        setValue(`products.${index}.officeId`, newlyCreatedOffice._id, {
+          shouldValidate: false,
+        });
+        setValue(`products.${index}.available`, true, {
+          shouldValidate: true,
+        });
+        setValue(`products.${index}.product`, products[index], {
+          shouldValidate: true,
+        });
+
+        // Si applyToAll está activado, aplicar a todos
+        if (applyToAll && index === 0) {
+          for (let i = 1; i < totalProducts; i++) {
+            setValue(`products.${i}.relocation`, displayLabel, {
+              shouldValidate: true,
+            });
+            setValue(`products.${i}.officeId`, newlyCreatedOffice._id, {
+              shouldValidate: false,
+            });
+            setValue(`products.${i}.available`, true, {
+              shouldValidate: true,
+            });
+            setValue(`products.${i}.product`, products[i], {
+              shouldValidate: true,
+            });
+          }
+        }
+      }
+
+      // Limpiar la oficina recién creada después de usarla
+      clearNewlyCreatedOffice();
+    }
+  }, [
+    newlyCreatedOffice,
+    index,
+    watch,
+    setValue,
+    applyToAll,
+    totalProducts,
+    products,
+    clearNewlyCreatedOffice,
+  ]);
 
   const getStatus = () => {
     if (relocation === "New employee") {

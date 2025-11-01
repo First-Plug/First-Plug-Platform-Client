@@ -35,6 +35,7 @@ import { useSession } from "next-auth/react";
 
 import type { Member } from "@/features/members";
 import { useAlertStore, useAsideStore } from "@/shared";
+import { useOfficeStore } from "@/features/settings";
 
 export const BulkCreateForm: React.FC<{
   initialData: any;
@@ -56,6 +57,7 @@ export const BulkCreateForm: React.FC<{
 
   const { pushAside } = useAsideStore();
   const { setSelectedMember } = useMemberStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
 
   const numProducts = quantity;
 
@@ -241,6 +243,49 @@ export const BulkCreateForm: React.FC<{
       setLocationOptionGroups(groups);
     }
   }, [offices]);
+
+  // Detectar cuando se crea una nueva oficina
+  useEffect(() => {
+    if (newlyCreatedOffice) {
+      // Seleccionar automáticamente la nueva oficina para todos los productos
+      const countryName = newlyCreatedOffice.country
+        ? countriesByCode[newlyCreatedOffice.country] ||
+          newlyCreatedOffice.country
+        : "";
+      const displayLabel = `${countryName} - ${newlyCreatedOffice.name}`;
+
+      // Aplicar a todos los productos que tengan "None" seleccionado
+      const newSelectedLocations = [...selectedLocations];
+      const newSelectedOfficeIds = [...selectedOfficeIds];
+
+      for (let i = 0; i < numProducts; i++) {
+        const currentAssignedMember = watch(`products.${i}.assignedMember`);
+        if (currentAssignedMember === "None" || !currentAssignedMember) {
+          newSelectedLocations[i] = displayLabel;
+          newSelectedOfficeIds[i] = newlyCreatedOffice._id;
+
+          setValue(`products.${i}.location`, "Our office");
+          (setValue as any)(`products.${i}.officeId`, newlyCreatedOffice._id);
+          clearErrors(`products.${i}.location`);
+        }
+      }
+
+      setSelectedLocations(newSelectedLocations);
+      setSelectedOfficeIds(newSelectedOfficeIds);
+
+      // Limpiar la oficina recién creada después de usarla
+      clearNewlyCreatedOffice();
+    }
+  }, [
+    newlyCreatedOffice,
+    numProducts,
+    watch,
+    setValue,
+    clearErrors,
+    selectedLocations,
+    selectedOfficeIds,
+    clearNewlyCreatedOffice,
+  ]);
 
   const handleAssignedMemberChange = (
     selectedFullName: string,

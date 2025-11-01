@@ -3,6 +3,7 @@ import { OfficeServices } from "../services/office.services";
 import { Office, UpdateOffice, CreateOffice } from "../types/settings.types";
 import { useAlertStore } from "@/shared";
 import { AxiosError } from "axios";
+import { useOfficeStore } from "../store/office.store";
 
 export const useOffices = (): {
   offices: Office[];
@@ -19,6 +20,7 @@ export const useOffices = (): {
 } => {
   const queryClient = useQueryClient();
   const { setAlert } = useAlertStore();
+  const { setNewlyCreatedOffice } = useOfficeStore();
 
   const {
     data: offices = [],
@@ -31,9 +33,11 @@ export const useOffices = (): {
   });
   const createOfficeMutation = useMutation({
     mutationFn: (data: CreateOffice) => OfficeServices.createOffice(data),
-    onSuccess: () => {
+    onSuccess: (newOffice) => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       setAlert("officeCreatedSuccessfully");
+      // Notificar que se creó una nueva oficina
+      setNewlyCreatedOffice(newOffice);
     },
     onError: (error: AxiosError<{ message: string | string[] }>) => {
       console.error("Error creating office:", error);

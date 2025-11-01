@@ -16,7 +16,7 @@ import {
   InputProductForm,
 } from "@/features/assets";
 import { useFetchMembers } from "@/features/members";
-import { useOffices } from "@/features/settings";
+import { useOffices, useOfficeStore } from "@/features/settings";
 import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { useAsideStore } from "@/shared";
@@ -78,6 +78,7 @@ export const CategoryForm = ({
   const { data: fetchedMembers = [], isLoading } = useFetchMembers();
   const { offices, isLoading: isLoadingOffices } = useOffices();
   const { pushAside } = useAsideStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
   const ADD_OFFICE_VALUE = "__ADD_OFFICE__";
   const selectedModel = watch("model");
 
@@ -171,6 +172,27 @@ export const CategoryForm = ({
       setLocationOptionGroups(groups);
     }
   }, [offices, isUpdate, formState?.countryCode]);
+
+  // Detectar cuando se crea una nueva oficina
+  useEffect(() => {
+    if (newlyCreatedOffice) {
+      // Seleccionar automáticamente la nueva oficina
+      const countryName = newlyCreatedOffice.country
+        ? countriesByCode[newlyCreatedOffice.country] ||
+          newlyCreatedOffice.country
+        : "";
+      const displayLabel = `${countryName} - ${newlyCreatedOffice.name}`;
+
+      setSelectedLocation(displayLabel);
+      setValue("location", "Our office");
+      setSelectedOfficeId(newlyCreatedOffice._id);
+      setValue("officeId", newlyCreatedOffice._id);
+      clearErrors("location");
+
+      // Limpiar la oficina recién creada después de usarla
+      clearNewlyCreatedOffice();
+    }
+  }, [newlyCreatedOffice, setValue, clearErrors, clearNewlyCreatedOffice]);
 
   useEffect(() => {
     if (isUpdate && !manualChange && offices && offices.length > 0) {

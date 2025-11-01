@@ -1,6 +1,6 @@
 "use client";
 import { LOCATION, Location, Product } from "@/features/assets";
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { ProductDetail } from "@/features/assets";
 import { RelocateStatus } from "@/features/assets/components/product-details";
 import {
@@ -26,7 +26,7 @@ import { ShipmentWithFp } from "@/features/shipments";
 import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 
 import { useAsideStore } from "@/shared";
-import { useOffices } from "@/features/settings/hooks/use-offices";
+import { useOffices, useOfficeStore } from "@/features/settings";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import {
   useInternationalShipmentDetection,
@@ -49,6 +49,7 @@ export function ReturnProduct({
   className = "",
 }: IRemoveItems & { className?: string }) {
   const { closeAside, pushAside } = useAsideStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
 
   const { shipmentValue, onSubmitDropdown, isShipmentValueValid } =
     useShipmentValues();
@@ -134,6 +135,24 @@ export function ReturnProduct({
   const [missingOfficeData, setMissingOfficeData] = useState("");
 
   const selectedMember = queryClient.getQueryData<Member>(["selectedMember"]);
+
+  // Detectar cuando se crea una nueva oficina
+  useEffect(() => {
+    if (newlyCreatedOffice) {
+      // Seleccionar automáticamente la nueva oficina
+      const countryName = newlyCreatedOffice.country
+        ? countriesByCode[newlyCreatedOffice.country] ||
+          newlyCreatedOffice.country
+        : "";
+      const displayLabel = `${countryName} - ${newlyCreatedOffice.name}`;
+
+      setNewLocation(displayLabel as Location);
+      setSelectedOfficeId(newlyCreatedOffice._id);
+
+      // Limpiar la oficina recién creada después de usarla
+      clearNewlyCreatedOffice();
+    }
+  }, [newlyCreatedOffice, clearNewlyCreatedOffice]);
 
   const handleLocationChange = (displayValue: string) => {
     if (displayValue === ADD_OFFICE_VALUE) {

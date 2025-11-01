@@ -130,7 +130,7 @@ export default function SelectDropdownOptions({
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
           <DropdownMenu.Content
-            className="z-50 bg-white shadow-lg p-1 border border-gray-200 rounded-md min-w-[var(--radix-dropdown-menu-trigger-width)] max-h-60 overflow-y-auto text-gray-900 text-sm"
+            className="z-50 bg-white shadow-lg p-1 border border-gray-200 rounded-md w-auto min-w-[var(--radix-dropdown-menu-trigger-width)] max-w-[400px] max-h-60 overflow-y-auto text-gray-900 text-sm"
             sideOffset={4}
           >
             {/* Renderizar opciones simples si se proporcionan */}
@@ -138,10 +138,10 @@ export default function SelectDropdownOptions({
               <DropdownMenu.Item
                 key={option}
                 onSelect={() => onChange(option)}
-                className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-sm leading-4 cursor-pointer"
+                className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-sm leading-4 whitespace-nowrap cursor-pointer"
                 title={option}
               >
-                <span className="max-w-[200px] truncate">{option}</span>
+                <span>{option}</span>
               </DropdownMenu.Item>
             ))}
 
@@ -178,12 +178,12 @@ export default function SelectDropdownOptions({
                           <DropdownMenu.Item
                             key={`${optionValue}-${optIdx}`}
                             onSelect={() => onChange(optionValue)}
-                            className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-sm leading-4 cursor-pointer"
+                            className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-sm leading-4 whitespace-nowrap cursor-pointer"
                             title={
                               typeof option === "string" ? option : optionValue
                             }
                           >
-                            <div className="flex items-center gap-2 max-w-[200px]">
+                            <div className="flex items-center gap-2">
                               {optionDisplay}
                             </div>
                           </DropdownMenu.Item>
