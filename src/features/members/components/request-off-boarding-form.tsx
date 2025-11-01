@@ -9,6 +9,7 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Controller, useFormContext } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   useAsideStore,
@@ -19,10 +20,21 @@ import {
   TooltipTrigger,
 } from "@/shared";
 import { useMemberStore } from "../store/member.store";
-import { useOffices, useOfficeStore } from "@/features/settings";
+import { useOffices, useOfficeStore, Office } from "@/features/settings";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
 const DROPDOWN_OPTIONS = ["FP warehouse"];
+
+// Campos requeridos para que una oficina esté completa
+const REQUIRED_OFFICE_FIELDS = [
+  "name",
+  "phone",
+  "country",
+  "state",
+  "city",
+  "zipCode",
+  "address",
+] as const;
 
 interface ExtendedUser extends Partial<User> {
   personalEmail?: string;
@@ -79,6 +91,15 @@ export const validateMemberBillingInfo = (user: ExtendedUser): boolean => {
   return isValid;
 };
 
+const validateOfficeComplete = (office: Office | undefined): boolean => {
+  if (!office) return false;
+
+  return REQUIRED_OFFICE_FIELDS.every((field) => {
+    const value = office[field as keyof Office];
+    return value !== undefined && value !== null && String(value).trim() !== "";
+  });
+};
+
 export const RequestOffBoardingForm = ({
   product,
   products,
@@ -112,12 +133,15 @@ export const RequestOffBoardingForm = ({
   const { setValue, watch, control } = useFormContext();
   const { pushAside, isClosed } = useAsideStore();
   const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
+  const queryClient = useQueryClient();
 
   const [formStatus, setFormStatus] = useState<string>("none");
   const [applyToAll, setApplyToAll] = useState(false);
   const [isPropagating, setIsPropagating] = useState(false);
   const [dropdownOptions, setDropdownOptions] = useState(DROPDOWN_OPTIONS);
   const [isDisabledDropdown, setIsDisabledDropdown] = useState(true);
+  const [selectedOfficeForUpdate, setSelectedOfficeForUpdate] =
+    useState<Office | null>(null);
 
   const selectedMember = watch(`products.${index}.newMember`);
   const relocation = watch(`products.${index}.relocation`);
@@ -310,6 +334,23 @@ export const RequestOffBoardingForm = ({
       }
     }
 
+    // Validar si es una oficina seleccionada (no "FP warehouse" ni "New employee")
+    if (isOfficeLabel(relocation)) {
+      const selectedOffice = sortedOffices.find((o) => {
+        const countryName = o.country
+          ? countriesByCode[o.country] || o.country
+          : "";
+        return `${countryName} - ${o.name}` === relocation;
+      });
+
+      if (selectedOffice) {
+        setSelectedOfficeForUpdate(selectedOffice);
+        if (!validateOfficeComplete(selectedOffice)) {
+          return "not-office-complete";
+        }
+      }
+    }
+
     setDropdownOptions(["My office", "FP warehouse"]);
     if (!applyToAll) {
       setIsDisabledDropdown(false);
@@ -322,7 +363,8 @@ export const RequestOffBoardingForm = ({
 
     if (
       newStatus === "not-member-available" ||
-      newStatus === "not-billing-information"
+      newStatus === "not-billing-information" ||
+      newStatus === "not-office-complete"
     ) {
       const currentAvailableValue = watch(`products.${index}.available`);
 
@@ -353,7 +395,8 @@ export const RequestOffBoardingForm = ({
 
       if (
         newStatus === "not-member-available" ||
-        newStatus === "not-billing-information"
+        newStatus === "not-billing-information" ||
+        newStatus === "not-office-complete"
       ) {
         const currentAvailableValue = watch(`products.${index}.available`);
 
@@ -431,6 +474,10 @@ export const RequestOffBoardingForm = ({
 
       setSelectedMember(foundMember);
       pushAside("EditMember");
+    } else if (status === "not-office-complete" && selectedOfficeForUpdate) {
+      // Setear la oficina seleccionada en queryClient para que UpdateOffice la pueda usar
+      queryClient.setQueryData(["selectedOffice"], selectedOfficeForUpdate);
+      pushAside("UpdateOffice");
     }
   };
 
@@ -688,6 +735,12 @@ export const RequestOffBoardingForm = ({
             {formStatus === "not-member-available" && (
               <Button size="default" onClick={() => handleClick(formStatus)}>
                 Complete Shipment Details
+              </Button>
+            )}
+
+            {formStatus === "not-office-complete" && (
+              <Button size="default" onClick={() => handleClick(formStatus)}>
+                Complete Office Details
               </Button>
             )}
           </div>

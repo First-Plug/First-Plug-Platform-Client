@@ -76,6 +76,32 @@ export default function RequestOffBoardingPage({
 
   const { handleSubmit, watch } = methods;
 
+  // Deshabilitar scroll del navegador y del layout padre
+  useEffect(() => {
+    // Deshabilitar scroll del body
+    document.body.style.overflow = "hidden";
+
+    // Deshabilitar scroll del layout padre (section)
+    const mainSection = document.querySelector("section.overflow-y-auto");
+    let originalOverflow = "";
+
+    if (mainSection instanceof HTMLElement) {
+      originalOverflow = mainSection.style.overflow || "auto";
+      mainSection.style.overflow = "hidden";
+    }
+
+    return () => {
+      // Restaurar scroll del body
+      document.body.style.overflow = "auto";
+
+      // Restaurar scroll del layout padre
+      const section = document.querySelector("section");
+      if (section instanceof HTMLElement) {
+        section.style.overflow = originalOverflow || "auto";
+      }
+    };
+  }, []);
+
   useEffect(() => {
     Memberservices.getOneMember(params.id).then((res) => {
       setMemberOffBoarding(`${res.firstName} ${res.lastName}`);
@@ -272,13 +298,11 @@ export default function RequestOffBoardingPage({
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="w-full h-screen overflow-y-auto scrollbar-custom">
-            <div className="pr-4">
+            <div className="pr-4 pb-48">
               <div className="flex-1">
                 {selectedMember?.products
                   ?.filter((product) => product.recoverable === true)
                   .map((product, index, array) => {
-                    const isLastItem = index === array.length - 1;
-
                     return (
                       <RequestOffBoardingForm
                         key={product._id}
@@ -295,7 +319,7 @@ export default function RequestOffBoardingPage({
                         members={members.filter(
                           (member) => member.email !== selectedMember.email
                         )}
-                        className={isLastItem ? "mb-[300px]" : ""}
+                        className=""
                         setIsButtonDisabled={setIsButtonDisabled}
                         onFormStatusChange={handleFormStatusChange}
                       />
