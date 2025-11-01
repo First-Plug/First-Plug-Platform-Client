@@ -113,7 +113,7 @@ export type CsvInfo = {
 
 export const CSVUrls = {
   MyTeam: "/api/members/bulkcreate",
-  MyStock: "/api/products/bulkcreate",
+  MyStock: "/api/products/bulkcreate-csv",
 } as const;
 
 export const CSVTeamplates = {
