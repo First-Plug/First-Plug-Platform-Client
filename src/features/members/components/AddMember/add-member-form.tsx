@@ -368,28 +368,30 @@ export const AddMemberForm = ({
     {
       label: "Our offices",
       options: [
-        ...availableOffices.map((office) => {
-          const countryName = office.country
-            ? countriesByCode[office.country] || office.country
-            : "";
-          const displayLabel = `${countryName} - ${office.name}`;
+        ...(availableOffices && availableOffices.length > 0
+          ? availableOffices.map((office) => {
+              const countryName = office.country
+                ? countriesByCode[office.country] || office.country
+                : "";
+              const displayLabel = `${countryName} - ${office.name}`;
 
-          return {
-            display: (
-              <>
-                {office.country && (
-                  <CountryFlag
-                    countryName={office.country}
-                    size={16}
-                    className="rounded-sm"
-                  />
-                )}
-                <span className="truncate">{displayLabel}</span>
-              </>
-            ),
-            value: displayLabel,
-          };
-        }),
+              return {
+                display: (
+                  <>
+                    {office.country && (
+                      <CountryFlag
+                        countryName={office.country}
+                        size={16}
+                        className="rounded-sm"
+                      />
+                    )}
+                    <span className="truncate">{displayLabel}</span>
+                  </>
+                ),
+                value: displayLabel,
+              };
+            })
+          : []),
         {
           display: <span className="font-medium text-blue">+ Add Office</span>,
           value: ADD_OFFICE_VALUE,

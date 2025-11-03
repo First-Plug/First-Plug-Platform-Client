@@ -98,79 +98,81 @@ export const CategoryForm = ({
   }, [fetchedMembers]);
 
   useEffect(() => {
-    if (offices && offices.length > 0) {
-      // Ordenar oficinas para que la por defecto aparezca primero
-      const sortedOffices = [...offices].sort((a, b) => {
-        if (a.isDefault && !b.isDefault) return -1;
-        if (!a.isDefault && b.isDefault) return 1;
-        return 0;
-      });
+    // Ordenar oficinas para que la por defecto aparezca primero
+    const sortedOffices = offices
+      ? [...offices].sort((a, b) => {
+          if (a.isDefault && !b.isDefault) return -1;
+          if (!a.isDefault && b.isDefault) return 1;
+          return 0;
+        })
+      : [];
 
-      // Obtener countryCode del producto si está disponible
-      const productCountryCode = formState?.countryCode as string | undefined;
+    // Obtener countryCode del producto si está disponible
+    const productCountryCode = formState?.countryCode as string | undefined;
 
-      // Crear grupos de opciones para el dropdown con banderas
-      const groups = [
-        {
-          label: "Our offices",
-          options: [
-            ...sortedOffices.map((office) => {
-              const countryName = office.country
-                ? countriesByCode[office.country] || office.country
-                : "";
-              const displayLabel = `${countryName} - ${office.name}`;
+    // Crear grupos de opciones para el dropdown con banderas
+    const groups = [
+      {
+        label: "Our offices",
+        options: [
+          ...(sortedOffices && sortedOffices.length > 0
+            ? sortedOffices.map((office) => {
+                const countryName = office.country
+                  ? countriesByCode[office.country] || office.country
+                  : "";
+                const displayLabel = `${countryName} - ${office.name}`;
 
-              return {
-                display: (
-                  <>
-                    {office.country && (
-                      <CountryFlag
-                        countryName={office.country}
-                        size={16}
-                        className="rounded-sm"
-                      />
-                    )}
-                    <span className="truncate">{displayLabel}</span>
-                  </>
-                ),
-                value: displayLabel,
-              };
-            }),
-            {
-              display: (
-                <span className="font-medium text-blue">+ Add Office</span>
-              ),
-              value: ADD_OFFICE_VALUE,
-            },
-            // Agregar "FP warehouse" como opción válida solo en modo update
-            ...(isUpdate
-              ? [
-                  {
-                    display: productCountryCode ? (
-                      <>
+                return {
+                  display: (
+                    <>
+                      {office.country && (
                         <CountryFlag
-                          countryName={productCountryCode}
+                          countryName={office.country}
                           size={16}
                           className="rounded-sm"
                         />
-                        <span className="truncate">
-                          {countriesByCode[productCountryCode.toUpperCase()] ||
-                            productCountryCode}{" "}
-                          - FP warehouse
-                        </span>
-                      </>
-                    ) : (
-                      <span className="truncate">FP warehouse</span>
-                    ),
-                    value: "FP warehouse",
-                  },
-                ]
-              : []),
-          ],
-        },
-      ];
-      setLocationOptionGroups(groups);
-    }
+                      )}
+                      <span className="truncate">{displayLabel}</span>
+                    </>
+                  ),
+                  value: displayLabel,
+                };
+              })
+            : []),
+          {
+            display: (
+              <span className="font-medium text-blue">+ Add Office</span>
+            ),
+            value: ADD_OFFICE_VALUE,
+          },
+          // Agregar "FP warehouse" como opción válida solo en modo update
+          ...(isUpdate
+            ? [
+                {
+                  display: productCountryCode ? (
+                    <>
+                      <CountryFlag
+                        countryName={productCountryCode}
+                        size={16}
+                        className="rounded-sm"
+                      />
+                      <span className="truncate">
+                        {countriesByCode[productCountryCode.toUpperCase()] ||
+                          productCountryCode}{" "}
+                        - FP warehouse
+                      </span>
+                    </>
+                  ) : (
+                    <span className="truncate">FP warehouse</span>
+                  ),
+                  value: "FP warehouse",
+                },
+              ]
+            : []),
+        ],
+      },
+    ];
+    setLocationOptionGroups(groups);
   }, [offices, isUpdate, formState?.countryCode]);
 
   // Detectar cuando se crea una nueva oficina

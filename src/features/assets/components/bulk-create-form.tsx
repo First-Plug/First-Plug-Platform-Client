@@ -196,52 +196,54 @@ export const BulkCreateForm: React.FC<{
   }, [fetchedMembers]);
 
   useEffect(() => {
-    if (offices && offices.length > 0) {
-      // Ordenar oficinas para que la por defecto aparezca primero
-      const sortedOffices = [...offices].sort((a, b) => {
-        if (a.isDefault && !b.isDefault) return -1;
-        if (!a.isDefault && b.isDefault) return 1;
-        return 0;
-      });
+    // Ordenar oficinas para que la por defecto aparezca primero
+    const sortedOffices = offices
+      ? [...offices].sort((a, b) => {
+          if (a.isDefault && !b.isDefault) return -1;
+          if (!a.isDefault && b.isDefault) return 1;
+          return 0;
+        })
+      : [];
 
-      // Crear grupos de opciones para el dropdown con banderas
-      const groups = [
-        {
-          label: "Our offices",
-          options: [
-            ...sortedOffices.map((office) => {
-              const countryName = office.country
-                ? countriesByCode[office.country] || office.country
-                : "";
-              const displayLabel = `${countryName} - ${office.name}`;
+    // Crear grupos de opciones para el dropdown con banderas
+    const groups = [
+      {
+        label: "Our offices",
+        options: [
+          ...(sortedOffices && sortedOffices.length > 0
+            ? sortedOffices.map((office) => {
+                const countryName = office.country
+                  ? countriesByCode[office.country] || office.country
+                  : "";
+                const displayLabel = `${countryName} - ${office.name}`;
 
-              return {
-                display: (
-                  <>
-                    {office.country && (
-                      <CountryFlag
-                        countryName={office.country}
-                        size={16}
-                        className="rounded-sm"
-                      />
-                    )}
-                    <span className="truncate">{displayLabel}</span>
-                  </>
-                ),
-                value: displayLabel,
-              };
-            }),
-            {
-              display: (
-                <span className="font-medium text-blue">+ Add Office</span>
-              ),
-              value: ADD_OFFICE_VALUE,
-            },
-          ],
-        },
-      ];
-      setLocationOptionGroups(groups);
-    }
+                return {
+                  display: (
+                    <>
+                      {office.country && (
+                        <CountryFlag
+                          countryName={office.country}
+                          size={16}
+                          className="rounded-sm"
+                        />
+                      )}
+                      <span className="truncate">{displayLabel}</span>
+                    </>
+                  ),
+                  value: displayLabel,
+                };
+              })
+            : []),
+          {
+            display: (
+              <span className="font-medium text-blue">+ Add Office</span>
+            ),
+            value: ADD_OFFICE_VALUE,
+          },
+        ],
+      },
+    ];
+    setLocationOptionGroups(groups);
   }, [offices]);
 
   // Detectar cuando se crea una nueva oficina
