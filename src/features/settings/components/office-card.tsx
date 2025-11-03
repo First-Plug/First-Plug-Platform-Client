@@ -182,7 +182,6 @@ export const OfficeCard = ({
                       onConfirm={() => onDelete(office._id)}
                       disabled={
                         isDeleting ||
-                        office.isDefault ||
                         office.hasAssignedProducts ||
                         office.hasActiveShipments
                       }
@@ -191,21 +190,18 @@ export const OfficeCard = ({
                           variant="outline"
                           disabled={
                             isDeleting ||
-                            office.isDefault ||
                             office.hasAssignedProducts ||
                             office.hasActiveShipments
                           }
                           className={`p-2 rounded-full transition-colors ${
                             isOfficeIncomplete() &&
                             !isDeleting &&
-                            !office.isDefault &&
                             !office.hasAssignedProducts &&
                             !office.hasActiveShipments
                               ? "bg-red-50/50 hover:bg-red-50"
                               : "bg-transparent"
                           } ${
                             !isDeleting &&
-                            !office.isDefault &&
                             !office.hasAssignedProducts &&
                             !office.hasActiveShipments &&
                             !isOfficeIncomplete()
@@ -213,7 +209,6 @@ export const OfficeCard = ({
                               : ""
                           } ${
                             isDeleting ||
-                            office.isDefault ||
                             office.hasAssignedProducts ||
                             office.hasActiveShipments
                               ? "cursor-not-allowed"
@@ -222,7 +217,6 @@ export const OfficeCard = ({
                         >
                           <TrashIcon
                             className={`w-4 h-4 ${
-                              office.isDefault ||
                               office.hasAssignedProducts ||
                               office.hasActiveShipments
                                 ? "text-gray-400"
@@ -235,14 +229,11 @@ export const OfficeCard = ({
                     />
                   </div>
                 </TooltipTrigger>
-                {(office.hasAssignedProducts ||
-                  office.hasActiveShipments ||
-                  office.isDefault) && (
+                {(office.hasAssignedProducts || office.hasActiveShipments) && (
                   <TooltipContent className="bg-white">
                     <p>
-                      {office.isDefault
-                        ? "Default office cannot be deleted."
-                        : "Offices with assigned products or active shipments cannot be deleted."}
+                      Offices with assigned products or active shipments cannot
+                      be deleted.
                     </p>
                   </TooltipContent>
                 )}
