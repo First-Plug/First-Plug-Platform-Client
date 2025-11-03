@@ -180,7 +180,12 @@ export default function SelectDropdownOptions({
                             onSelect={() => onChange(optionValue)}
                             className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-sm leading-4 whitespace-nowrap cursor-pointer"
                             title={
-                              typeof option === "string" ? option : optionValue
+                              typeof option === "string"
+                                ? option
+                                : optionValue.startsWith("__") &&
+                                  optionValue.endsWith("__")
+                                ? undefined
+                                : optionValue
                             }
                           >
                             <div className="flex items-center gap-2">
