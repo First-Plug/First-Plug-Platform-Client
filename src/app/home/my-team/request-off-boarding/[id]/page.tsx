@@ -76,32 +76,6 @@ export default function RequestOffBoardingPage({
 
   const { handleSubmit, watch } = methods;
 
-  // Deshabilitar scroll del navegador y del layout padre
-  useEffect(() => {
-    // Deshabilitar scroll del body
-    document.body.style.overflow = "hidden";
-
-    // Deshabilitar scroll del layout padre (section)
-    const mainSection = document.querySelector("section.overflow-y-auto");
-    let originalOverflow = "";
-
-    if (mainSection instanceof HTMLElement) {
-      originalOverflow = mainSection.style.overflow || "auto";
-      mainSection.style.overflow = "hidden";
-    }
-
-    return () => {
-      // Restaurar scroll del body
-      document.body.style.overflow = "auto";
-
-      // Restaurar scroll del layout padre
-      const section = document.querySelector("section");
-      if (section instanceof HTMLElement) {
-        section.style.overflow = originalOverflow || "auto";
-      }
-    };
-  }, []);
-
   useEffect(() => {
     Memberservices.getOneMember(params.id).then((res) => {
       setMemberOffBoarding(`${res.firstName} ${res.lastName}`);
@@ -278,74 +252,80 @@ export default function RequestOffBoardingPage({
 
   return (
     <PageLayout>
-      <div className="flex flex-col gap-2">
-        <div>
-          <h2>
-            All recoverable assets will be requested and the member will be
-            removed from your team.
-          </h2>
-
-          <span>Please confirm the relocation of each product.</span>
-        </div>
-      </div>
-      <div className="mt-4 mb-4 w-80">
-        <ShipmentWithFp
-          onSubmit={onSubmitDropdown}
-          destinationMember={selectedMember}
-        />
-      </div>
-
-      <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="w-full h-screen overflow-y-auto scrollbar-custom">
-            <div className="pr-4 pb-48">
-              <div className="flex-1">
-                {selectedMember?.products
-                  ?.filter((product) => product.recoverable === true)
-                  .map((product, index, array) => {
-                    return (
-                      <RequestOffBoardingForm
-                        key={product._id}
-                        product={product}
-                        products={selectedMember?.products?.filter(
-                          (product) => product.recoverable === true
-                        )}
-                        index={index}
-                        totalProducts={
-                          selectedMember.products.filter(
-                            (product) => product.recoverable === true
-                          ).length
-                        }
-                        members={members.filter(
-                          (member) => member.email !== selectedMember.email
-                        )}
-                        className=""
-                        setIsButtonDisabled={setIsButtonDisabled}
-                        onFormStatusChange={handleFormStatusChange}
-                      />
-                    );
-                  })}
-              </div>
+      <div className="flex flex-col h-full">
+        {/* Header Section */}
+        <div className="flex-shrink-0 mb-4">
+          <div className="flex flex-col gap-2 mb-4">
+            <div>
+              <h2>
+                All recoverable assets will be requested and the member will be
+                removed from your team.
+              </h2>
+              <span>Please confirm the relocation of each product.</span>
             </div>
-            <aside className="bottom-0 absolute flex justify-end items-center bg-white p-2 border-t w-[80%] h-[10%]">
+          </div>
+          <div className="w-80">
+            <ShipmentWithFp
+              onSubmit={onSubmitDropdown}
+              destinationMember={selectedMember}
+            />
+          </div>
+        </div>
+
+        {/* Main Content - Scrollable */}
+        <FormProvider {...methods}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col flex-1 min-h-0"
+          >
+            <div className="flex-1 pr-4 overflow-y-auto scrollbar-custom">
+              {selectedMember?.products
+                ?.filter((product) => product.recoverable === true)
+                .map((product, index, array) => {
+                  return (
+                    <RequestOffBoardingForm
+                      key={product._id}
+                      product={product}
+                      products={selectedMember?.products?.filter(
+                        (product) => product.recoverable === true
+                      )}
+                      index={index}
+                      totalProducts={
+                        selectedMember.products.filter(
+                          (product) => product.recoverable === true
+                        ).length
+                      }
+                      members={members.filter(
+                        (member) => member.email !== selectedMember.email
+                      )}
+                      className=""
+                      setIsButtonDisabled={setIsButtonDisabled}
+                      onFormStatusChange={handleFormStatusChange}
+                    />
+                  );
+                })}
+            </div>
+
+            {/* Footer - Fixed at Bottom */}
+            <div className="flex flex-shrink-0 justify-end items-center bg-white mt-4 py-4 border-t">
               <Button
                 variant="primary"
-                className="mr-[39px] rounded-lg w-[200px] h-[40px]"
+                className="mr-8 rounded-lg w-[200px] h-[40px]"
                 type="submit"
                 disabled={isButtonDisabled || !isShipmentValueValid()}
               >
                 {isLoading ? <LoaderSpinner /> : "Confirm offboard"}
               </Button>
-            </aside>
-          </div>
-        </form>
-      </FormProvider>
+            </div>
+          </form>
+        </FormProvider>
 
-      <InternationalShipmentWarning
-        isOpen={showInternationalWarning}
-        onConfirm={handleConfirmInternationalShipment}
-        onCancel={handleCancelInternationalShipment}
-      />
+        <InternationalShipmentWarning
+          isOpen={showInternationalWarning}
+          onConfirm={handleConfirmInternationalShipment}
+          onCancel={handleCancelInternationalShipment}
+        />
+      </div>
     </PageLayout>
   );
 }

@@ -1,5 +1,5 @@
 "use client";
-import { Button, PageLayout, SectionTitle } from "@/shared";
+import { Button, SectionTitle } from "@/shared";
 import { ProductDetail } from "@/features/assets";
 import { Product } from "@/features/assets";
 import { User } from "@/features/auth";
@@ -591,174 +591,164 @@ export const RequestOffBoardingForm = ({
   };
 
   return (
-    <PageLayout>
-      <section className={`space-y-4 ${className}`}>
-        {index === 0 && totalProducts > 1 && (
-          <div className="flex items-center mt-2">
-            {/* <input
-                type="checkbox"
-                className="mr-2"
-                checked={applyToAll}
-                onChange={handleAssignAllChange}
-              />
-              <p className="font-semibold text-md">
-                Apply &quot;Product 1&quot; settings to all Products
-              </p> */}
-          </div>
-        )}
-
-        <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
-        <div className="flex space-x-2">
-          <div className="p-4 lg:min-w-[35vw]">
-            <ProductDetail product={product} />
-          </div>
-          <div className="flex-3 p-4">
-            <Controller
-              name={`products.${index}.newMember`}
-              control={control}
-              render={({ field: { onChange, value, name } }) => {
-                const selectedFullName =
-                  value && typeof value === "object"
-                    ? `${value.firstName} ${value.lastName}`
-                    : value === ""
-                    ? "None"
-                    : value;
-
-                return (
-                  <DropdownInputProductForm
-                    name={name}
-                    selectedOption={selectedFullName}
-                    options={[
-                      "None",
-                      ...members.map((member) => ({
-                        display: (
-                          <>
-                            {member.country && (
-                              <TooltipProvider>
-                                <Tooltip delayDuration={300}>
-                                  <TooltipTrigger asChild>
-                                    <div>
-                                      <CountryFlag
-                                        countryName={member.country}
-                                        size={16}
-                                        className="rounded-sm"
-                                      />
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="bg-blue/80 text-white text-xs">
-                                    {countriesByCode[member.country] ||
-                                      member.country}
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                            <span>{`${member.firstName} ${member.lastName}`}</span>
-                          </>
-                        ),
-                        value: `${member.firstName} ${member.lastName}`,
-                      })),
-                    ]}
-                    placeholder="Reassigned Member"
-                    title="Reassigned Member*"
-                    onChange={(selectedValue: string) => {
-                      const selectedMember = members.find(
-                        (member) =>
-                          `${member.firstName} ${member.lastName}` ===
-                          selectedValue
-                      );
-
-                      if (selectedValue === "None") {
-                        setValue(`products.${index}.newMember`, "None", {
-                          shouldValidate: true,
-                        });
-                        setValue(`products.${index}.relocation`, "", {
-                          shouldValidate: true,
-                        });
-                        setValue(`products.${index}.available`, true, {
-                          shouldValidate: true,
-                        });
-                        setValue(`products.${index}.product`, products[index], {
-                          shouldValidate: true,
-                        });
-                        setDropdownOptions(["My office", "FP warehouse"]);
-                        setIsDisabledDropdown(false);
-                      } else if (selectedMember) {
-                        setValue(
-                          `products.${index}.newMember`,
-                          selectedMember,
-                          {
-                            shouldValidate: true,
-                          }
-                        );
-                        setValue(
-                          `products.${index}.relocation`,
-                          "New employee",
-                          {
-                            shouldValidate: true,
-                          }
-                        );
-                        setValue(`products.${index}.available`, true, {
-                          shouldValidate: true,
-                        });
-                        setValue(`products.${index}.product`, products[index], {
-                          shouldValidate: true,
-                        });
-                        setDropdownOptions(DROPDOWN_OPTIONS);
-                        setIsDisabledDropdown(true);
-                      }
-                      onChange(selectedValue);
-                    }}
-                    searchable={true}
-                  />
-                );
-              }}
+    <section className={`space-y-4 mb-6 ${className}`}>
+      {index === 0 && totalProducts > 1 && (
+        <div className="flex items-center mt-2">
+          {/* <input
+              type="checkbox"
+              className="mr-2"
+              checked={applyToAll}
+              onChange={handleAssignAllChange}
             />
-          </div>
-          <div className="flex- p-4">
-            <Controller
-              name={`products.${index}.relocation`}
-              control={control}
-              render={({ field: { value } }) => (
-                <SelectDropdownOptions
-                  label="New Location*"
-                  placeholder={
-                    loadingOffices ? "Loading offices..." : "New Location"
-                  }
-                  value={isOfficeLabel(value) ? value : value || ""}
-                  onChange={(selectedValue: string) =>
-                    handleSelectLocation(selectedValue)
-                  }
-                  options={dropdownOptions}
-                  optionGroups={officeGroups}
-                  disabled={isDisabledDropdown}
-                  required
-                  compact
-                  searchable
-                />
-              )}
-            />
-          </div>
-          <div className="flex flex-1 items-center p-2">
-            {formStatus === "not-billing-information" && (
-              <Button size="default" onClick={() => handleClick(formStatus)}>
-                Complete Company Details
-              </Button>
-            )}
-
-            {formStatus === "not-member-available" && (
-              <Button size="default" onClick={() => handleClick(formStatus)}>
-                Complete Shipment Details
-              </Button>
-            )}
-
-            {formStatus === "not-office-complete" && (
-              <Button size="default" onClick={() => handleClick(formStatus)}>
-                Complete Office Details
-              </Button>
-            )}
-          </div>
+            <p className="font-semibold text-md">
+              Apply &quot;Product 1&quot; settings to all Products
+            </p> */}
         </div>
-      </section>
-    </PageLayout>
+      )}
+
+      <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
+      <div className="flex space-x-2">
+        <div className="p-4 lg:min-w-[35vw]">
+          <ProductDetail product={product} />
+        </div>
+        <div className="flex-3 p-4">
+          <Controller
+            name={`products.${index}.newMember`}
+            control={control}
+            render={({ field: { onChange, value, name } }) => {
+              const selectedFullName =
+                value && typeof value === "object"
+                  ? `${value.firstName} ${value.lastName}`
+                  : value === ""
+                  ? "None"
+                  : value;
+
+              return (
+                <DropdownInputProductForm
+                  name={name}
+                  selectedOption={selectedFullName}
+                  options={[
+                    "None",
+                    ...members.map((member) => ({
+                      display: (
+                        <>
+                          {member.country && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <div>
+                                    <CountryFlag
+                                      countryName={member.country}
+                                      size={16}
+                                      className="rounded-sm"
+                                    />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {countriesByCode[member.country] ||
+                                    member.country}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <span>{`${member.firstName} ${member.lastName}`}</span>
+                        </>
+                      ),
+                      value: `${member.firstName} ${member.lastName}`,
+                    })),
+                  ]}
+                  placeholder="Reassigned Member"
+                  title="Reassigned Member*"
+                  onChange={(selectedValue: string) => {
+                    const selectedMember = members.find(
+                      (member) =>
+                        `${member.firstName} ${member.lastName}` ===
+                        selectedValue
+                    );
+
+                    if (selectedValue === "None") {
+                      setValue(`products.${index}.newMember`, "None", {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.relocation`, "", {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.available`, true, {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.product`, products[index], {
+                        shouldValidate: true,
+                      });
+                      setDropdownOptions(["My office", "FP warehouse"]);
+                      setIsDisabledDropdown(false);
+                    } else if (selectedMember) {
+                      setValue(`products.${index}.newMember`, selectedMember, {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.relocation`, "New employee", {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.available`, true, {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.product`, products[index], {
+                        shouldValidate: true,
+                      });
+                      setDropdownOptions(DROPDOWN_OPTIONS);
+                      setIsDisabledDropdown(true);
+                    }
+                    onChange(selectedValue);
+                  }}
+                  searchable={true}
+                />
+              );
+            }}
+          />
+        </div>
+        <div className="flex- p-4">
+          <Controller
+            name={`products.${index}.relocation`}
+            control={control}
+            render={({ field: { value } }) => (
+              <SelectDropdownOptions
+                label="New Location*"
+                placeholder={
+                  loadingOffices ? "Loading offices..." : "New Location"
+                }
+                value={isOfficeLabel(value) ? value : value || ""}
+                onChange={(selectedValue: string) =>
+                  handleSelectLocation(selectedValue)
+                }
+                options={dropdownOptions}
+                optionGroups={officeGroups}
+                disabled={isDisabledDropdown}
+                required
+                compact
+                searchable
+              />
+            )}
+          />
+        </div>
+        <div className="flex flex-1 items-center p-2">
+          {formStatus === "not-billing-information" && (
+            <Button size="default" onClick={() => handleClick(formStatus)}>
+              Complete Company Details
+            </Button>
+          )}
+
+          {formStatus === "not-member-available" && (
+            <Button size="default" onClick={() => handleClick(formStatus)}>
+              Complete Shipment Details
+            </Button>
+          )}
+
+          {formStatus === "not-office-complete" && (
+            <Button size="default" onClick={() => handleClick(formStatus)}>
+              Complete Office Details
+            </Button>
+          )}
+        </div>
+      </div>
+    </section>
   );
 };
