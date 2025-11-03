@@ -35,7 +35,10 @@ import { useSession } from "next-auth/react";
 
 import type { Member } from "@/features/members";
 import { useAlertStore, useAsideStore } from "@/shared";
-import { useOfficeStore } from "@/features/settings";
+import {
+  useOfficeStore,
+  useOfficeCreationContext,
+} from "@/features/settings";
 
 export const BulkCreateForm: React.FC<{
   initialData: any;
@@ -57,7 +60,10 @@ export const BulkCreateForm: React.FC<{
 
   const { pushAside } = useAsideStore();
   const { setSelectedMember } = useMemberStore();
-  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
+  const { newlyCreatedOffice, creationContext, clearNewlyCreatedOffice } =
+    useOfficeStore();
+  const { setProductIndex: setOfficeCreationContext } =
+    useOfficeCreationContext();
 
   const numProducts = quantity;
 
@@ -248,28 +254,31 @@ export const BulkCreateForm: React.FC<{
 
   // Detectar cuando se crea una nueva oficina
   useEffect(() => {
-    if (newlyCreatedOffice) {
-      // Seleccionar automáticamente la nueva oficina para todos los productos
+    if (newlyCreatedOffice && creationContext !== null) {
+      // Seleccionar automáticamente la nueva oficina
       const countryName = newlyCreatedOffice.country
         ? countriesByCode[newlyCreatedOffice.country] ||
           newlyCreatedOffice.country
         : "";
       const displayLabel = `${countryName} - ${newlyCreatedOffice.name}`;
 
-      // Aplicar a todos los productos que tengan "None" seleccionado
+      // Aplicar solo al producto específico que activó la creación
       const newSelectedLocations = [...selectedLocations];
       const newSelectedOfficeIds = [...selectedOfficeIds];
 
-      for (let i = 0; i < numProducts; i++) {
-        const currentAssignedMember = watch(`products.${i}.assignedMember`);
-        if (currentAssignedMember === "None" || !currentAssignedMember) {
-          newSelectedLocations[i] = displayLabel;
-          newSelectedOfficeIds[i] = newlyCreatedOffice._id;
+      const currentAssignedMember = watch(
+        `products.${creationContext}.assignedMember`
+      );
+      if (currentAssignedMember === "None" || !currentAssignedMember) {
+        newSelectedLocations[creationContext] = displayLabel;
+        newSelectedOfficeIds[creationContext] = newlyCreatedOffice._id;
 
-          setValue(`products.${i}.location`, "Our office");
-          (setValue as any)(`products.${i}.officeId`, newlyCreatedOffice._id);
-          clearErrors(`products.${i}.location`);
-        }
+        setValue(`products.${creationContext}.location`, "Our office");
+        (setValue as any)(
+          `products.${creationContext}.officeId`,
+          newlyCreatedOffice._id
+        );
+        clearErrors(`products.${creationContext}.location`);
       }
 
       setSelectedLocations(newSelectedLocations);
@@ -280,6 +289,7 @@ export const BulkCreateForm: React.FC<{
     }
   }, [
     newlyCreatedOffice,
+    creationContext,
     numProducts,
     watch,
     setValue,
@@ -351,6 +361,7 @@ export const BulkCreateForm: React.FC<{
 
   const handleLocationChange = (displayValue: string, index: number) => {
     if (displayValue === ADD_OFFICE_VALUE) {
+      setOfficeCreationContext(index);
       pushAside("CreateOffice");
       return;
     }

@@ -3,7 +3,10 @@ import { OfficeServices } from "../services/office.services";
 import { Office, UpdateOffice, CreateOffice } from "../types/settings.types";
 import { useAlertStore } from "@/shared";
 import { AxiosError } from "axios";
-import { useOfficeStore } from "../store/office.store";
+import {
+  useOfficeStore,
+  useOfficeCreationContext,
+} from "../store/office.store";
 
 export const useOffices = (): {
   offices: Office[];
@@ -21,6 +24,7 @@ export const useOffices = (): {
   const queryClient = useQueryClient();
   const { setAlert } = useAlertStore();
   const { setNewlyCreatedOffice } = useOfficeStore();
+  const { productIndex } = useOfficeCreationContext();
 
   const {
     data: offices = [],
@@ -36,8 +40,8 @@ export const useOffices = (): {
     onSuccess: (newOffice) => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       setAlert("officeCreatedSuccessfully");
-      // Notificar que se creó una nueva oficina
-      setNewlyCreatedOffice(newOffice);
+      // Notificar que se creó una nueva oficina con el contexto del producto
+      setNewlyCreatedOffice(newOffice, productIndex ?? undefined);
     },
     onError: (error: AxiosError<{ message: string | string[] }>) => {
       console.error("Error creating office:", error);

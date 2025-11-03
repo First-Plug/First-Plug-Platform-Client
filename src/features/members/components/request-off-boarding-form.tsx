@@ -20,7 +20,12 @@ import {
   TooltipTrigger,
 } from "@/shared";
 import { useMemberStore } from "../store/member.store";
-import { useOffices, useOfficeStore, Office } from "@/features/settings";
+import {
+  useOffices,
+  useOfficeStore,
+  useOfficeCreationContext,
+  Office,
+} from "@/features/settings";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
 const DROPDOWN_OPTIONS = ["FP warehouse"];
@@ -132,7 +137,10 @@ export const RequestOffBoardingForm = ({
   const router = useRouter();
   const { setValue, watch, control } = useFormContext();
   const { pushAside, isClosed } = useAsideStore();
-  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
+  const { newlyCreatedOffice, creationContext, clearNewlyCreatedOffice } =
+    useOfficeStore();
+  const { setProductIndex: setOfficeCreationContext } =
+    useOfficeCreationContext();
   const queryClient = useQueryClient();
 
   const [formStatus, setFormStatus] = useState<string>("none");
@@ -258,7 +266,7 @@ export const RequestOffBoardingForm = ({
 
   // Detectar cuando se crea una nueva oficina
   useEffect(() => {
-    if (newlyCreatedOffice) {
+    if (newlyCreatedOffice && creationContext === index) {
       // Seleccionar automáticamente la nueva oficina
       const countryName = newlyCreatedOffice.country
         ? countriesByCode[newlyCreatedOffice.country] ||
@@ -307,6 +315,7 @@ export const RequestOffBoardingForm = ({
     }
   }, [
     newlyCreatedOffice,
+    creationContext,
     index,
     watch,
     setValue,
@@ -557,6 +566,7 @@ export const RequestOffBoardingForm = ({
 
   const handleSelectLocation = (selectedValue: string) => {
     if (selectedValue === ADD_OFFICE_VALUE) {
+      setOfficeCreationContext(index);
       pushAside("CreateOffice");
       return;
     }
