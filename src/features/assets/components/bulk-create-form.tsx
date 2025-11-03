@@ -671,6 +671,7 @@ export const BulkCreateForm: React.FC<{
                           disabled={!isLocationEnabled[index]}
                           required
                           productFormStyle={true}
+                          searchable
                         />
                         <div className="min-h-[24px]">
                           {errors.products &&

@@ -37,12 +37,25 @@ const getMissingFields = (selectedMember: any): string[] => {
   return missingFields;
 };
 
-const validateOfficeInfo = async (): Promise<{
+const validateOfficeInfo = async (
+  officeId: string | null | undefined
+): Promise<{
   isValid: boolean;
   missingFields: string;
+  skipValidation?: boolean;
 }> => {
+  if (!officeId) {
+    console.error("Office ID not provided for validation");
+    // No mostrar este error al usuario, es un problema del sistema
+    return {
+      isValid: true,
+      missingFields: "",
+      skipValidation: true,
+    };
+  }
+
   try {
-    const office = await OfficeServices.getDefaultOffice();
+    const office = await OfficeServices.getOfficeById(officeId);
 
     const requiredFields = [
       "country",
@@ -109,13 +122,17 @@ export const validateAfterAction = async (
     role: "Assigned location"
   ): Promise<string[]> => {
     const officeMessages: string[] = [];
-    const officeValidation = await validateOfficeInfo();
+    const officeValidation = await validateOfficeInfo(entity.data.officeId);
+
+    // Si skipValidation es true, no agregar mensajes de error
+    if (officeValidation.skipValidation) {
+      return officeMessages;
+    }
 
     if (!officeValidation.isValid) {
+      const officeName = entity.data.name || entity.data.location || "Office";
       officeMessages.push(
-        `${role} (${entity.data.location || "Office"}) is missing: ${
-          officeValidation.missingFields
-        }`
+        `${role} (${officeName}) is missing: ${officeValidation.missingFields}`
       );
     }
 
@@ -186,7 +203,8 @@ export const buildValidationEntities = (
   allMembers: Member[] = [],
   selectedMember?: Member | null,
   sessionUser?: Partial<User>,
-  noneOption?: string | null
+  noneOption?: string | null,
+  selectedOfficeId?: string | null
 ) => {
   let source: { type: "member" | "office" | "warehouse"; data: any } | null =
     null;
@@ -221,7 +239,11 @@ export const buildValidationEntities = (
     // Si el location no es "Employee", es una oficina
     source = {
       type: "office",
-      data: { ...sessionUser, location: product.location },
+      data: {
+        ...sessionUser,
+        location: product.location,
+        officeId: product.officeId,
+      },
     };
   }
 
@@ -232,7 +254,11 @@ export const buildValidationEntities = (
     // Si noneOption no es "Employee", es una oficina
     destination = {
       type: "office",
-      data: { ...sessionUser, location: noneOption },
+      data: {
+        ...sessionUser,
+        location: noneOption,
+        officeId: selectedOfficeId,
+      },
     };
   }
 
@@ -254,7 +280,8 @@ export const validateProductAssignment = async (
   setGenericAlertData: (data: { title: string; description: string }) => void,
   setShowErrorDialog: (show: boolean) => void,
   sessionUser: Partial<User>,
-  noneOption: string | null
+  noneOption: string | null,
+  selectedOfficeId?: string | null
 ): Promise<ValidationResult> => {
   const allMembers = queryClient.getQueryData<Member[]>(["members"]);
 
@@ -263,7 +290,8 @@ export const validateProductAssignment = async (
     allMembers || [],
     selectedMember,
     sessionUser,
-    noneOption
+    noneOption,
+    selectedOfficeId
   );
 
   const missingMessages = await validateAfterAction(source, destination);
@@ -305,7 +333,8 @@ export const validateProductAssignment = async (
 export const validateOnCreate = async (
   selectedMember: Member | null,
   sessionUser: Partial<User>,
-  noneOption: string | null
+  noneOption: string | null,
+  selectedOfficeId?: string | null
 ): Promise<string[]> => {
   const missingMessages: string[] = [];
 
@@ -321,8 +350,8 @@ export const validateOnCreate = async (
       );
     }
   } else if (noneOption && noneOption !== "Employee") {
-    // Si noneOption no es "Employee", es una oficina - validar datos de la oficina
-    const officeValidation = await validateOfficeInfo();
+    // Si noneOption no es "Employee", es una oficina - validar datos de la oficina específica
+    const officeValidation = await validateOfficeInfo(selectedOfficeId);
     if (!officeValidation.isValid) {
       missingMessages.push(
         `Assigned location (<strong>${noneOption}</strong>) is missing: ${officeValidation.missingFields}`

@@ -151,6 +151,12 @@ export const AddMemberForm = ({
       return;
     }
 
+    console.log("handleSaveClick - State:", {
+      noneOption,
+      selectedOfficeId,
+      selectedMember,
+    });
+
     const { source, destination } = buildInternationalValidationEntities(
       currentProduct,
       allMembers || [],
@@ -160,10 +166,23 @@ export const AddMemberForm = ({
       selectedOfficeId
     );
 
+    console.log("Validation entities built:", {
+      source,
+      destination,
+      hasDestinationOfficeId: destination?.data?.officeId,
+    });
+
     const isInternational = isInternationalShipment(source, destination);
     const requiresFpShipment = shipmentValue.shipment === "yes";
 
+    console.log("International shipment check result:", {
+      isInternational,
+      requiresFpShipment,
+      willShowWarning: isInternational && requiresFpShipment,
+    });
+
     if (isInternational && requiresFpShipment) {
+      console.log("Showing international shipment warning");
       setPendingAction(() => () => executeAssignment(source, destination));
       setShowInternationalWarning(true);
       return;
@@ -224,6 +243,13 @@ export const AddMemberForm = ({
         },
         price: currentProduct.price,
       };
+
+      console.log("Product to send to backend:", {
+        location: baseProduct.location,
+        officeId: baseProduct.officeId,
+        noneOption,
+        selectedOfficeId,
+      });
 
       const updatedProduct = selectedMember
         ? {
@@ -308,18 +334,35 @@ export const AddMemberForm = ({
     handleSelectedMembers(null);
     setNoneOption(displayValue);
 
+    console.log("handleSelectNoneOption called with:", {
+      displayValue,
+      sortedOfficesCount: sortedOffices.length,
+    });
+
     if (displayValue === "FP warehouse") {
       setSelectedOfficeId(null);
+      console.log("Set officeId to null for FP warehouse");
     } else {
+      // Buscar la oficina por el displayLabel
       const selectedOffice = sortedOffices.find((office) => {
         const countryName = office.country
           ? countriesByCode[office.country] || office.country
           : "";
-        return `${countryName} - ${office.name}` === displayValue;
+        const label = `${countryName} - ${office.name}`;
+        console.log(`Comparing "${label}" with "${displayValue}"`);
+        return label === displayValue;
       });
 
       if (selectedOffice) {
+        console.log("Office found! Setting officeId:", selectedOffice._id);
         setSelectedOfficeId(selectedOffice._id);
+      } else {
+        // Si no encuentra la oficina, limpiar el officeId
+        console.error(
+          `❌ Office not found for display value: "${displayValue}"`
+        );
+        console.log("Available offices:", sortedOffices);
+        setSelectedOfficeId(null);
       }
     }
 
@@ -459,6 +502,7 @@ export const AddMemberForm = ({
               optionGroups={locationOptionGroups}
               className="w-full"
               disabled={loadingOffices}
+              searchable
             />
           </section>
         )}

@@ -495,6 +495,7 @@ export const CategoryForm = ({
                   disabled={true}
                   required
                   productFormStyle={true}
+                  searchable
                 />
                 <div className="min-h-[24px]">
                   {errors.location && (
@@ -718,6 +719,7 @@ export const CategoryForm = ({
                     disabled={!isLocationEnabled || quantity > 1}
                     required
                     productFormStyle={true}
+                    searchable
                   />
                   <div className="min-h-[24px]">
                     {errors.location && (

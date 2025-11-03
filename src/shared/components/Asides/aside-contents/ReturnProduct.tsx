@@ -380,6 +380,7 @@ export function ReturnProduct({
             className="max-w-md"
             disabled={loadingOffices}
             required
+            searchable
           />
         </div>
 

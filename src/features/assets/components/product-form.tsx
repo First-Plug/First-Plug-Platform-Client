@@ -303,7 +303,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           address: (sessionUser as any)?.address,
           phone: (sessionUser as any)?.phone,
         },
-        adjustedNoneOption
+        adjustedNoneOption,
+        data.officeId
       );
     }
 

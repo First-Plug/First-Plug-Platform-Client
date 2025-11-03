@@ -733,6 +733,7 @@ export const RequestOffBoardingForm = ({
                   disabled={isDisabledDropdown}
                   required
                   compact
+                  searchable
                 />
               )}
             />
