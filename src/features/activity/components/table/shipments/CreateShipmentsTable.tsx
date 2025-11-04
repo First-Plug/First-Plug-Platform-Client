@@ -5,13 +5,51 @@ import {
   TableRow,
   TableHead,
   TableCell,
+  countriesByCode,
 } from "@/shared";
-import type { Shipment } from "@/features/shipments";
+import type { Shipment, Details } from "@/features/shipments";
 import { formatDate } from "@/shared";
 
 interface ShipmentsTableProps {
   data: Shipment | Shipment[];
 }
+
+// Helper para formatear ubicación con país
+const formatLocationWithCountry = (
+  location: string,
+  details?: Details
+): string => {
+  const countryCode = details?.country;
+  const countryName = countryCode
+    ? countriesByCode[countryCode] || countryCode
+    : "";
+
+  // Si es Our office, intentar mostrar el nombre específico de la oficina
+  if (location === "Our office" && countryName) {
+    return `${location} (${countryName})`;
+  }
+
+  // Si es FP warehouse, mostrar con país
+  if (location === "FP warehouse" && countryName) {
+    return `${location} (${countryName})`;
+  }
+
+  // Si es Employee (legacy), mostrar con país
+  if (location === "Employee" && countryName) {
+    return `${location} (${countryName})`;
+  }
+
+  // Para miembros asignados u otras ubicaciones con país
+  if (countryName && location !== "Our office" && location !== "FP warehouse") {
+    // Si ya tiene formato "Nombre (País)", no duplicar
+    if (location.includes("(") && location.includes(")")) {
+      return location;
+    }
+    return `${location} (${countryName})`;
+  }
+
+  return location || "N/A";
+};
 
 const CreateShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
   const normalizedData: Shipment[] = Array.isArray(data) ? data : [data];
@@ -72,18 +110,24 @@ const CreateShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
                   {snapshot.serialNumber || "N/A"}
                 </TableCell>
                 <TableCell className="px-4 py-2 border-r text-xs">
-                  {shipment.origin || ""}
+                  {formatLocationWithCountry(
+                    shipment.origin,
+                    shipment.originDetails
+                  )}
                   {" / "}
-                  {shipment.originDetails.desirableDate === "ASAP"
+                  {shipment.originDetails?.desirableDate === "ASAP"
                     ? "ASAP"
-                    : formatDate(shipment.originDetails.desirableDate)}
+                    : formatDate(shipment.originDetails?.desirableDate)}
                 </TableCell>
                 <TableCell className="px-4 py-2 text-xs">
-                  {shipment.destination || ""}
+                  {formatLocationWithCountry(
+                    shipment.destination,
+                    shipment.destinationDetails
+                  )}
                   {" / "}
-                  {shipment.destinationDetails.desirableDate === "ASAP"
+                  {shipment.destinationDetails?.desirableDate === "ASAP"
                     ? "ASAP"
-                    : formatDate(shipment.destinationDetails.desirableDate)}
+                    : formatDate(shipment.destinationDetails?.desirableDate)}
                 </TableCell>
               </TableRow>
             ))

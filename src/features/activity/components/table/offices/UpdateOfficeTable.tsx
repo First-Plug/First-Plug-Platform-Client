@@ -115,16 +115,19 @@ const UpdateOfficesTable: React.FC<OfficesTableProps> = ({ data }) => {
       <TableHeader>
         <TableRow className="bg-light-grey border-gray-200 rounded-md">
           <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
-            Office Name
+            Original Name
+          </TableHead>
+          <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
+            Country
           </TableHead>
           <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
             Updated Field
           </TableHead>
           <TableHead className="px-4 py-3 border-r font-semibold text-black text-start">
-            Old Value
+            Old Data
           </TableHead>
           <TableHead className="px-4 py-3 font-semibold text-black text-start">
-            New Value
+            New Data
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -133,6 +136,11 @@ const UpdateOfficesTable: React.FC<OfficesTableProps> = ({ data }) => {
           <TableRow key={index}>
             <TableCell className="px-4 py-2 border-r text-xs">
               {data.oldData.name}
+            </TableCell>
+            <TableCell className="px-4 py-2 border-r text-xs">
+              {data.oldData.country
+                ? countriesByCode[data.oldData.country] || data.oldData.country
+                : "-"}
             </TableCell>
             <TableCell className="px-4 py-2 border-r text-xs">
               {translateField(change.field)}

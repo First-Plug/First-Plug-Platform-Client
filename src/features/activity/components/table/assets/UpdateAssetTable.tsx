@@ -21,6 +21,7 @@ interface AssetsTableProps {
 }
 
 const getUpdatedFields = (oldData: Product, newData: Product) => {
+  console.log(oldData, newData);
   const changes: { field: string; oldValue: any; newValue: any }[] = [];
 
   Object.keys({ ...oldData, ...newData }).forEach((key) => {
@@ -29,16 +30,46 @@ const getUpdatedFields = (oldData: Product, newData: Product) => {
     }
 
     if (key === "attributes") {
-      const oldAttributes = oldData.attributes || [];
-      const newAttributes = newData.attributes || [];
+      const oldAttrs = oldData.attributes;
+      const newAttrs = newData.attributes;
 
-      newAttributes.forEach((newAttr) => {
-        const oldAttr = oldAttributes.find((attr) => attr.key === newAttr.key);
-        if (!oldAttr || oldAttr.value !== newAttr.value) {
+      // Normalizar ambos a objeto para comparación consistente
+      let oldAttrsObj: Record<string, any> = {};
+      let newAttrsObj: Record<string, any> = {};
+
+      // Convertir oldAttrs a objeto
+      if (Array.isArray(oldAttrs)) {
+        oldAttrs.forEach((attr) => {
+          oldAttrsObj[attr.key] = attr.value;
+        });
+      } else if (typeof oldAttrs === "object" && oldAttrs !== null) {
+        oldAttrsObj = oldAttrs as any;
+      }
+
+      // Convertir newAttrs a objeto
+      if (Array.isArray(newAttrs)) {
+        newAttrs.forEach((attr) => {
+          newAttrsObj[attr.key] = attr.value;
+        });
+      } else if (typeof newAttrs === "object" && newAttrs !== null) {
+        newAttrsObj = newAttrs as any;
+      }
+
+      // Comparar todos los atributos
+      const allKeys = new Set([
+        ...Object.keys(oldAttrsObj),
+        ...Object.keys(newAttrsObj),
+      ]);
+
+      allKeys.forEach((attrKey) => {
+        const oldValue = oldAttrsObj[attrKey];
+        const newValue = newAttrsObj[attrKey];
+
+        if (oldValue !== newValue) {
           changes.push({
-            field: `${newAttr.key}`,
-            oldValue: oldAttr ? oldAttr.value : "-",
-            newValue: newAttr.value,
+            field: attrKey,
+            oldValue: oldValue ?? "-",
+            newValue: newValue ?? "-",
           });
         }
       });
@@ -138,8 +169,33 @@ const translateField = (field: string) => {
   return fieldTranslations[field] || field;
 };
 
+// Helper para obtener valor de atributo (maneja objeto y array)
+const getAttributeValue = (
+  attributes: any,
+  key: string
+): string | undefined => {
+  if (!attributes) return undefined;
+
+  // Si es array
+  if (Array.isArray(attributes)) {
+    return attributes.find((attr) => attr.key === key)?.value;
+  }
+
+  // Si es objeto
+  if (typeof attributes === "object") {
+    return attributes[key];
+  }
+
+  return undefined;
+};
+
 const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
+  console.log(data);
   const updatedFields = getUpdatedFields(data.oldData, data.newData);
+
+  // Usar newData para campos que no cambiaron (category, name, serialNumber)
+  // porque oldData solo contiene los campos que se actualizaron
+  const productInfo = data.newData || data.oldData;
 
   return (
     <Table>
@@ -169,21 +225,19 @@ const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
         {updatedFields.map((change, index) => (
           <TableRow key={index}>
             <TableCell className="px-4 py-2 border-r text-xs">
-              {data.oldData.category}
+              {productInfo.category || "-"}
             </TableCell>
             <TableCell className="px-4 py-2 border-r text-xs">
               {[
-                data.oldData.attributes?.find((attr) => attr.key === "brand")
-                  ?.value,
-                data.oldData.attributes?.find((attr) => attr.key === "model")
-                  ?.value,
-                data.oldData.name,
+                getAttributeValue(productInfo.attributes, "brand"),
+                getAttributeValue(productInfo.attributes, "model"),
+                productInfo.name,
               ]
                 .filter(Boolean)
-                .join(" ")}
+                .join(" ") || "-"}
             </TableCell>
             <TableCell className="px-4 py-2 border-r text-xs">
-              {data.oldData.serialNumber || "-"}
+              {productInfo.serialNumber || "-"}
             </TableCell>
             <TableCell className="px-4 py-2 border-r text-xs">
               {translateField(change.field)}

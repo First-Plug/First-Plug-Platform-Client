@@ -20,8 +20,16 @@ interface Asset {
   serialNumber: string;
   location?: string;
   assignedMember?: string;
+  assignedEmail?: string;
+  officeName?: string;
+  countryCode?: string;
   attributes?: AssetAttribute[];
   recoverable: boolean;
+  office?: {
+    officeId: string;
+    officeCountryCode: string;
+    officeName: string;
+  };
 }
 
 interface AssetsTableProps {

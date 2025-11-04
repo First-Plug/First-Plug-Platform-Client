@@ -18,7 +18,9 @@ import UpdateShipmentsTable from "../components/table/shipments/UpdateShipmentsT
 import CancelShipmentsTable from "../components/table/shipments/CancelShipmentsTable";
 import ConsolidateShipmentsTable from "../components/table/shipments/ConsolidateShipmentsTable";
 import CreateShipmentsTable from "../components/table/shipments/CreateShipmentsTable";
+import CreateOfficesTable from "../components/table/offices/CreateOfficeTable";
 import UpdateOfficesTable from "../components/table/offices/UpdateOfficeTable";
+import DeleteOfficesTable from "../components/table/offices/DeleteOfficeTable";
 
 export function useActivitySubtableLogic() {
   const getRowCanExpand = (row: Row<any>) => {
@@ -97,10 +99,14 @@ export function useActivitySubtableLogic() {
         );
       }
     } else if (itemType === "offices") {
-      if (actionType === "update") {
+      if (actionType === "create" || actionType === "bulk-create") {
+        return <CreateOfficesTable data={changes.newData || []} />;
+      } else if (actionType === "update") {
         return (
           <UpdateOfficesTable data={changes || { oldData: [], newData: [] }} />
         );
+      } else if (actionType === "delete") {
+        return <DeleteOfficesTable data={changes.oldData || []} />;
       }
     }
 
