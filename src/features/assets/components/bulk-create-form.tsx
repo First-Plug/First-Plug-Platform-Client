@@ -35,10 +35,7 @@ import { useSession } from "next-auth/react";
 
 import type { Member } from "@/features/members";
 import { useAlertStore, useAsideStore } from "@/shared";
-import {
-  useOfficeStore,
-  useOfficeCreationContext,
-} from "@/features/settings";
+import { useOfficeStore, useOfficeCreationContext } from "@/features/settings";
 
 export const BulkCreateForm: React.FC<{
   initialData: any;
@@ -580,25 +577,38 @@ export const BulkCreateForm: React.FC<{
     const firstAssignedEmail = watch(`products.0.assignedEmail`);
     const firstAssignedMember = watch(`products.0.assignedMember`);
     const firstLocation = watch(`products.0.location`);
+    const firstOfficeId = (watch as any)(`products.0.officeId`);
 
     if (!assignAll) {
       const newSelectedLocations = [...selectedLocations];
+      const newSelectedOfficeIds = [...selectedOfficeIds];
+
       for (let index = 1; index < numProducts; index++) {
         setValue(`products.${index}.assignedEmail`, firstAssignedEmail);
         setValue(`products.${index}.assignedMember`, firstAssignedMember);
         setValue(`products.${index}.location`, firstLocation);
-        newSelectedLocations[index] = firstLocation;
+
+        // Propagar el displayLabel del dropdown, no el valor "Our office"
+        newSelectedLocations[index] = selectedLocations[0];
+
+        // Propagar también el officeId
+        if (firstOfficeId) {
+          newSelectedOfficeIds[index] = firstOfficeId;
+          (setValue as any)(`products.${index}.officeId`, firstOfficeId);
+        }
+
         setIsLocationEnabled((prev) => {
           const newIsLocationEnabled = [...prev];
           newIsLocationEnabled[index] = firstAssignedMember === "None";
           return newIsLocationEnabled;
         });
-        clearErrors([
+        (clearErrors as any)([
           `products.${index}.assignedEmail`,
           `products.${index}.location`,
         ]);
       }
       setSelectedLocations(newSelectedLocations);
+      setSelectedOfficeIds(newSelectedOfficeIds);
     }
   };
 
