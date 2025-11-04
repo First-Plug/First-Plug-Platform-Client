@@ -91,15 +91,70 @@ export const useInternationalShipmentDetection = () => {
           };
         }
       } else {
-        // Si no hay officeId pero está en Our office, usar datos del sessionUser
-        console.warn("Product location is 'Our office' but no officeId found");
-        source = {
-          type: "office",
-          data: {
-            country: sessionUser?.country || "UNKNOWN",
-            location: "Our office",
-          },
-        };
+        // Si no hay officeId pero está en Our office, intentar buscar la oficina real del producto
+        let foundOffice = null;
+
+        // 1. Intentar usar product.office?.officeId si existe (más confiable)
+        if (product.office?.officeId && offices && offices.length > 0) {
+          foundOffice = offices.find(
+            (office) => office._id === product.office.officeId
+          );
+        }
+
+        // 2. Si no se encontró, buscar por nombre de oficina del producto (búsqueda exacta)
+        if (
+          !foundOffice &&
+          product.officeName &&
+          offices &&
+          offices.length > 0
+        ) {
+          foundOffice = offices.find(
+            (office) => office.name === product.officeName
+          );
+        }
+
+        // 3. Si aún no se encontró, buscar por nombre de oficina del objeto office
+        if (
+          !foundOffice &&
+          product.office?.officeName &&
+          offices &&
+          offices.length > 0
+        ) {
+          foundOffice = offices.find(
+            (office) => office.name === product.office.officeName
+          );
+        }
+
+        if (foundOffice) {
+          source = {
+            type: "office",
+            data: { ...foundOffice, officeId: foundOffice._id },
+          };
+        } else {
+          // Si no se encuentra ninguna oficina, crear objeto básico sin officeId
+          // usando los datos del producto si están disponibles
+          const officeCountry =
+            product.countryCode ||
+            product.office?.officeCountryCode ||
+            sessionUser?.country ||
+            "UNKNOWN";
+
+          // Intentar usar el officeId del objeto office aunque no esté en el array
+          const fallbackOfficeId = product.office?.officeId || undefined;
+
+          source = {
+            type: "office",
+            data: {
+              country: officeCountry,
+              location: "Our office",
+              name:
+                product.officeName ||
+                product.office?.officeName ||
+                "Our office",
+              officeId: fallbackOfficeId,
+            },
+          };
+        }
       }
     }
 
@@ -167,13 +222,6 @@ export const useInternationalShipmentDetection = () => {
       }
     }
 
-    console.log("buildInternationalValidationEntities result:", {
-      source,
-      destination,
-      noneOption,
-      selectedOfficeId,
-    });
-
     return { source, destination };
   };
 
@@ -182,31 +230,12 @@ export const useInternationalShipmentDetection = () => {
       source: ValidationEntity | null,
       destination: ValidationEntity | null
     ): boolean => {
-      console.log("isInternationalShipment check:", {
-        source: source
-          ? {
-              type: source.type,
-              country: source.data.country,
-              hasOfficeId: !!source.data.officeId,
-            }
-          : null,
-        destination: destination
-          ? {
-              type: destination.type,
-              country: destination.data.country,
-              hasOfficeId: !!destination.data.officeId,
-            }
-          : null,
-      });
-
       if (!source || !destination) {
-        console.log("Missing source or destination");
         return false;
       }
 
       // No verificar envíos internacionales para warehouse
       if (source.type === "warehouse" || destination.type === "warehouse") {
-        console.log("Source or destination is warehouse, not international");
         return false;
       }
 
@@ -216,24 +245,12 @@ export const useInternationalShipmentDetection = () => {
       sourceCountry = source.data.country || null;
       destinationCountry = destination.data.country || null;
 
-      console.log("Countries comparison:", {
-        sourceType: source.type,
-        destinationType: destination.type,
-        sourceCountry,
-        destinationCountry,
-        sourceData: source.data,
-        destinationData: destination.data,
-      });
-
       if (!sourceCountry || !destinationCountry) {
-        console.log("Missing country data");
         return false;
       }
 
       const isInternational =
         sourceCountry.toUpperCase() !== destinationCountry.toUpperCase();
-
-      console.log("Is international shipment?", isInternational);
 
       return isInternational;
     };

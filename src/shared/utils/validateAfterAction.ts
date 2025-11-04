@@ -119,9 +119,23 @@ export const validateAfterAction = async (
   // Función para validar office (asíncrona) - RETORNA mensajes
   const validateOffice = async (
     entity: { type: "office"; data: any },
-    role: "Assigned location"
+    role: "Current location" | "Assigned location"
   ): Promise<string[]> => {
     const officeMessages: string[] = [];
+    const officeName = entity.data.name || entity.data.location || "Office";
+
+    // Verificar que tenemos officeId antes de validar
+    if (!entity.data?.officeId) {
+      console.warn(
+        `Office ID missing for ${role} (${officeName}). Cannot validate office data.`
+      );
+      // Mostrar mensaje al usuario indicando que falta el ID de la oficina
+      officeMessages.push(
+        `${role} (${officeName}) cannot be validated: Office ID is missing`
+      );
+      return officeMessages;
+    }
+
     const officeValidation = await validateOfficeInfo(entity.data.officeId);
 
     // Si skipValidation es true, no agregar mensajes de error
@@ -130,7 +144,6 @@ export const validateAfterAction = async (
     }
 
     if (!officeValidation.isValid) {
-      const officeName = entity.data.name || entity.data.location || "Office";
       officeMessages.push(
         `${role} (${officeName}) is missing: ${officeValidation.missingFields}`
       );
@@ -147,7 +160,7 @@ export const validateAfterAction = async (
   // Recopilar TODOS los mensajes de validación
   const allValidationPromises: Promise<string[]>[] = [];
 
-  // Validar SOURCE
+  // Validar SOURCE (origen) - SIEMPRE se valida si existe
   if (source) {
     if (source.type === "member") {
       // Member validation es síncrona, la convertimos a Promise
@@ -157,17 +170,18 @@ export const validateAfterAction = async (
       );
       allValidationPromises.push(Promise.resolve(memberMessages));
     } else if (source.type === "office") {
-      // Office validation es asíncrona - validar cualquier oficina
+      // Office validation es asíncrona - validar oficina de ORIGEN
       allValidationPromises.push(
         validateOffice(
           source as { type: "office"; data: any },
-          "Assigned location"
+          "Current location"
         )
       );
     }
+    // Si es warehouse, no se valida (no requiere datos de envío)
   }
 
-  // Validar DESTINATION
+  // Validar DESTINATION (destino) - SIEMPRE se valida si existe
   if (destination) {
     if (destination.type === "member") {
       // Member validation es síncrona, la convertimos a Promise
@@ -177,7 +191,7 @@ export const validateAfterAction = async (
       );
       allValidationPromises.push(Promise.resolve(memberMessages));
     } else if (destination.type === "office") {
-      // Office validation es asíncrona - validar cualquier oficina
+      // Office validation es asíncrona - validar oficina de DESTINO
       allValidationPromises.push(
         validateOffice(
           destination as { type: "office"; data: any },
@@ -185,12 +199,14 @@ export const validateAfterAction = async (
         )
       );
     }
+    // Si es warehouse, no se valida (no requiere datos de envío)
   }
 
-  // Esperar a que TODAS las validaciones terminen
+  // Esperar a que TODAS las validaciones terminen (tanto origen como destino)
   const allResults = await Promise.all(allValidationPromises);
 
   // Combinar TODOS los mensajes en un solo array
+  // Esto incluirá mensajes de origen Y destino si ambos tienen problemas
   allResults.forEach((messages) => {
     missingMessages.push(...messages);
   });
@@ -212,21 +228,20 @@ export const buildValidationEntities = (
     type: "member" | "office" | "warehouse";
     data: any;
   } | null = null;
-  // Determinar `source`
+
+  // Determinar `source` basado en la ubicación actual del producto
   const currentMemberData = allMembers.find(
     (member) => member.email === product.assignedEmail
   );
 
-  if (!currentMemberData) {
+  if (currentMemberData) {
+    // El producto está asignado a un miembro
+    source = { type: "member", data: currentMemberData };
+  } else if (product.assignedEmail && !currentMemberData) {
+    // Tiene assignedEmail pero no encontramos el miembro en la lista
     console.warn(
       `No member found for email ${product.assignedEmail}. Check the member data or product assignment.`
     );
-    return { source: null, destination: null };
-  }
-
-  if (currentMemberData) {
-    source = { type: "member", data: currentMemberData };
-  } else if (product.assignedEmail) {
     source = {
       type: "member",
       data: {
@@ -236,13 +251,18 @@ export const buildValidationEntities = (
       },
     };
   } else if (product.location && product.location !== "Employee") {
-    // Si el location no es "Employee", es una oficina
+    // Si el location no es "Employee", es una oficina de origen
+    // Intentar usar product.officeId primero, luego product.office?.officeId, luego product.officeName
+    const officeId = product.officeId || product.office?.officeId || undefined;
+    const officeName =
+      product.officeName || product.office?.officeName || product.location;
+
     source = {
       type: "office",
       data: {
-        ...sessionUser,
+        name: officeName,
         location: product.location,
-        officeId: product.officeId,
+        officeId: officeId,
       },
     };
   }
@@ -251,11 +271,11 @@ export const buildValidationEntities = (
   if (selectedMember) {
     destination = { type: "member", data: selectedMember };
   } else if (noneOption && noneOption !== "Employee") {
-    // Si noneOption no es "Employee", es una oficina
+    // Si noneOption no es "Employee", es una oficina de destino
     destination = {
       type: "office",
       data: {
-        ...sessionUser,
+        name: noneOption,
         location: noneOption,
         officeId: selectedOfficeId,
       },
@@ -308,6 +328,10 @@ export const validateProductAssignment = async (
             .replace(
               /Assigned member \((.*?)\)/,
               "Assigned member (<strong>$1</strong>)"
+            )
+            .replace(
+              /Current location \((.*?)\)/,
+              "Current location (<strong>$1</strong>)"
             )
             .replace(
               /Assigned location \((.*?)\)/,

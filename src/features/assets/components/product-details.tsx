@@ -155,6 +155,10 @@ const MembersList = function MembersList({
                 "Assigned member (<strong>$1</strong>)"
               )
               .replace(
+                /Current location \((.*?)\)/,
+                "Current location (<strong>$1</strong>)"
+              )
+              .replace(
                 /Assigned location \((.*?)\)/,
                 "Assigned location (<strong>$1</strong>)"
               )}</span></div>`
