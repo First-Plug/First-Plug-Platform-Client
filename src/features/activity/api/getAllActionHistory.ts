@@ -21,7 +21,6 @@ export const getAllActionHistory = async (
 
     return response.data as HistorialResponse;
   } catch (error) {
-    console.log(error);
     throw error;
   }
 };

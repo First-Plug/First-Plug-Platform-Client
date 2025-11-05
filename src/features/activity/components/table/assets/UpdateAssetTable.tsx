@@ -21,7 +21,6 @@ interface AssetsTableProps {
 }
 
 const getUpdatedFields = (oldData: Product, newData: Product) => {
-  console.log(oldData, newData);
   const changes: { field: string; oldValue: any; newValue: any }[] = [];
 
   Object.keys({ ...oldData, ...newData }).forEach((key) => {
@@ -190,12 +189,10 @@ const getAttributeValue = (
 };
 
 const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
-  console.log(data);
   const updatedFields = getUpdatedFields(data.oldData, data.newData);
 
-  // Usar newData para campos que no cambiaron (category, name, serialNumber)
-  // porque oldData solo contiene los campos que se actualizaron
-  const productInfo = data.newData || data.oldData;
+  // Usar oldData para mostrar los datos originales del producto
+  const originalProduct = data.oldData;
 
   return (
     <Table>
@@ -225,19 +222,19 @@ const UpdateAssetsTable: React.FC<AssetsTableProps> = ({ data }) => {
         {updatedFields.map((change, index) => (
           <TableRow key={index}>
             <TableCell className="px-4 py-2 border-r text-xs">
-              {productInfo.category || "-"}
+              {originalProduct.category || "-"}
             </TableCell>
             <TableCell className="px-4 py-2 border-r text-xs">
               {[
-                getAttributeValue(productInfo.attributes, "brand"),
-                getAttributeValue(productInfo.attributes, "model"),
-                productInfo.name,
+                getAttributeValue(originalProduct.attributes, "brand"),
+                getAttributeValue(originalProduct.attributes, "model"),
+                originalProduct.name,
               ]
                 .filter(Boolean)
                 .join(" ") || "-"}
             </TableCell>
             <TableCell className="px-4 py-2 border-r text-xs">
-              {productInfo.serialNumber || "-"}
+              {originalProduct.serialNumber || "-"}
             </TableCell>
             <TableCell className="px-4 py-2 border-r text-xs">
               {translateField(change.field)}
