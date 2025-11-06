@@ -96,7 +96,10 @@ export const useOffices = (): {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
-      queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      queryClient.invalidateQueries({ 
+        queryKey: ["shipments"],
+        refetchType: "active" // Force refetch even if stale
+      });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       setAlert("officeUpdatedSuccessfully");
     },
