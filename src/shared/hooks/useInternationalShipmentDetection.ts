@@ -234,11 +234,6 @@ export const useInternationalShipmentDetection = () => {
         return false;
       }
 
-      // No verificar envíos internacionales para warehouse
-      if (source.type === "warehouse" || destination.type === "warehouse") {
-        return false;
-      }
-
       let sourceCountry: string | null = null;
       let destinationCountry: string | null = null;
 
