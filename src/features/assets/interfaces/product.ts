@@ -279,6 +279,7 @@ export interface Product {
   office?: Office | null;
 
   countryCode?: string;
+  country?: string;
 }
 
 export interface ProductTable {
