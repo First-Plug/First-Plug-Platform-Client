@@ -5,7 +5,6 @@ import {
   TableRow,
   TableHead,
   TableCell,
-  countriesByCode,
 } from "@/shared";
 import { Member } from "@/features/members";
 
@@ -59,7 +58,7 @@ const DeleteMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                   : "-"}
               </TableCell>
               <TableCell className="px-4 py-2 border-r text-xs">
-                {countriesByCode[member.country] || member.country}
+                {member.country || "-"}
               </TableCell>
               <TableCell className="flex flex-col px-4 py-2 text-xs">
                 {member.products.length > 0

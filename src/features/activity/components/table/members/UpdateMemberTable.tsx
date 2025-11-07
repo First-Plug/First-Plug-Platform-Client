@@ -5,7 +5,6 @@ import {
   TableRow,
   TableHead,
   TableCell,
-  countriesByCode,
 } from "@/shared";
 import { type Member } from "@/features/members";
 import { type Team } from "@/features/teams";
@@ -98,10 +97,6 @@ const translateField = (field: string) => {
 };
 
 const formatValue = (value: any, field?: string) => {
-  if (field === "country") {
-    return countriesByCode[value as string] || value;
-  }
-
   if (field === "birthDate" || field === "startDate") {
     if (typeof value === "string") {
       if (value.includes("T") && value.includes("Z")) {

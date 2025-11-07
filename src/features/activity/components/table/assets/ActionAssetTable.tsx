@@ -20,15 +20,7 @@ interface Asset {
   serialNumber: string;
   location?: string;
   assignedMember?: string;
-  assignedEmail?: string;
-  officeName?: string;
-  countryCode?: string;
   attributes?: AssetAttribute[];
-  office?: {
-    officeId: string;
-    officeCountryCode: string;
-    officeName: string;
-  };
 }
 
 interface AssetsTableProps {
