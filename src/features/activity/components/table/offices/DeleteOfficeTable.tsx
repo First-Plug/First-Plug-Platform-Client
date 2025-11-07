@@ -12,7 +12,9 @@ import { Office } from "@/features/settings";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface NonRecoverableProduct {
-  name: string;
+  brand?: string;
+  model?: string;
+  name?: string;
   serialNumber: string;
 }
 
@@ -102,7 +104,9 @@ const DeleteOfficesTable: React.FC<OfficesTableProps> = ({ data }) => {
                   )}
                 </TableCell>
                 <TableCell className="px-4 py-2 border-r text-xs">
-                  {product.name || "-"}
+                  {[product.brand, product.model, product.name]
+                    .filter(Boolean)
+                    .join(" ") || "-"}
                 </TableCell>
                 <TableCell className="px-4 py-2 text-xs">
                   {product.serialNumber || "-"}
