@@ -31,7 +31,6 @@ interface AssetsTableProps {
 }
 
 const ActionAssetTable: React.FC<AssetsTableProps> = ({ data }) => {
-  console.log(data);
   const oldData: Asset[] = Array.isArray(data.oldData)
     ? data.oldData
     : [data.oldData];
