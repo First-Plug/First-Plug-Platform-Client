@@ -34,16 +34,19 @@ export const useMembersTable = (members: Member[]) => {
 
   // Función para filtrar los miembros según los filtros aplicados
   const filteredMembers = useMemo(() => {
-    if (!members || Object.keys(filters).length === 0) {
+    // Validación defensiva: asegurar que members sea un array válido
+    const safeMembers = Array.isArray(members) ? members : [];
+
+    if (!safeMembers || Object.keys(filters).length === 0) {
       // Ordenar por fecha de creación (startDate) de más reciente a más antigua
-      return [...members].sort((a, b) => {
+      return [...safeMembers].sort((a, b) => {
         const dateA = new Date(a.startDate || "");
         const dateB = new Date(b.startDate || "");
         return dateB.getTime() - dateA.getTime();
       });
     }
 
-    const filtered = members.filter((member) => {
+    const filtered = safeMembers.filter((member) => {
       return Object.entries(filters).every(([column, filterValues]) => {
         if (filterValues.length === 0) return true;
 

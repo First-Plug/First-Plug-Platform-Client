@@ -151,7 +151,10 @@ export const ComputerUpgradeTable = ({
   handleSlackNotification,
 }: ComputerUpgradeTableProps) => {
   const computersWithStatus = useMemo(() => {
-    const realProducts = products
+    // Validación defensiva: asegurar que products sea un array válido
+    const safeProducts = Array.isArray(products) ? products : [];
+
+    const realProducts = safeProducts
       .filter((product) => product.category === "Computer")
       .map((product) => {
         const acquisitionDate = product.acquisitionDate

@@ -18,9 +18,11 @@ export const QueryProvider = ({ children }: Props) => {
       defaultOptions: {
         queries: {
           gcTime: 1000 * 60 * 30,
+          staleTime: 0, // Los datos siempre se consideran stale
           refetchOnWindowFocus: true,
           refetchOnMount: true,
           refetchOnReconnect: true,
+          retry: 2, // Reintentar 2 veces en caso de error
         },
       },
     });
@@ -58,8 +60,17 @@ export const QueryProvider = ({ children }: Props) => {
           persister,
           maxAge: 1000 * 60 * 60 * 24,
         });
+
+        // Forzar refetch de queries críticas después de restaurar
+        queryClient.invalidateQueries({ queryKey: ["members"] });
+        queryClient.invalidateQueries({ queryKey: ["assets"] });
+        queryClient.invalidateQueries({ queryKey: ["activityLatest"] });
+        queryClient.invalidateQueries({ queryKey: ["user"] });
       } catch (error) {
         console.error("Error restaurando los datos persistidos:", error);
+        // Si hay error al restaurar, limpiar cache y forzar refetch
+        queryClient.clear();
+        queryClient.invalidateQueries();
       }
     };
     restoreData();
