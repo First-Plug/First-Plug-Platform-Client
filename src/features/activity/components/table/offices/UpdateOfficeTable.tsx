@@ -36,14 +36,12 @@ const getUpdatedFields = (oldData: Office, newData: Office) => {
     const newValue = newData[key as keyof Office];
 
     if (key === "isDefault") {
-      const oldDefault = (oldValue as boolean) ? "Yes" : "No";
-      const newDefault = (newValue as boolean) ? "Yes" : "No";
-
-      if (oldDefault !== newDefault) {
+      // Guardar el valor boolean original, formatValue() lo convertirá
+      if (oldValue !== newValue) {
         changes.push({
           field: key,
-          oldValue: oldDefault,
-          newValue: newDefault,
+          oldValue: oldValue, // Mantener como boolean
+          newValue: newValue, // Mantener como boolean
         });
       }
     } else {
@@ -99,7 +97,8 @@ const formatValue = (value: any, field?: string) => {
   }
 
   if (field === "isDefault") {
-    return value ? "Yes" : "No";
+    // Convertir boolean a "Yes" o "No"
+    return value === true ? "Yes" : "No";
   }
 
   return value.toString();
@@ -145,8 +144,7 @@ const UpdateOfficesTable: React.FC<OfficesTableProps> = ({ data }) => {
                       <div className="flex items-center gap-2">
                         <CountryFlag countryName={countryCode} size={15} />
                         <span>
-                          {countriesByCode[countryCode] ||
-                            data.oldData.country}
+                          {countriesByCode[countryCode] || data.oldData.country}
                         </span>
                       </div>
                     ) : (
