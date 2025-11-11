@@ -31,6 +31,8 @@ export default function Login() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
+
   const handleSumbit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -76,83 +78,101 @@ export default function Login() {
   };
 
   return (
-    <section className="flex">
-      <Image
-        src="/svg/loginSvg.svg"
-        alt="img"
-        width={540}
-        height={960}
-        className="p-15 w-[50%] h-screen object-cover"
-        priority
-      />
+    <>
+      <section className="flex">
+        <Image
+          src="/svg/loginSvg.svg"
+          alt="img"
+          width={540}
+          height={960}
+          className="p-15 w-[50%] h-screen object-cover"
+          priority
+        />
 
-      <article className="flex justify-center w-[50%] h-screen">
-        <AuthForm title="Welcome Back!" login onSubmit={handleSumbit}>
-          <div className="space-y-3 text-md">
-            <Input
-              title="Email"
-              placeholder="user@mail.com"
-              {...emailInput}
-              required
-            />
+        <article className="flex justify-center items-center w-[50%] h-screen">
+          {isMaintenanceMode ? (
+            <div className="flex flex-col justify-center items-center space-y-6 py-8 max-w-md">
+              <div className="space-y-4 text-center">
+                <h2 className="font-bold text-blue text-2xl">
+                  We&apos;re improving your experience!
+                </h2>
+                <p className="text-gray-600 text-md">
+                  The platform will be down for maintenance today. Thanks for
+                  your patience — we&apos;ll be back shortly.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <AuthForm title="Welcome Back!" login onSubmit={handleSumbit}>
+              <>
+                <div className="space-y-3 text-md">
+                  <Input
+                    title="Email"
+                    placeholder="user@mail.com"
+                    {...emailInput}
+                    required
+                  />
 
-            <Input
-              isLogin
-              title="Password"
-              type="password"
-              placeholder="Password"
-              {...passWordInput}
-              required
-            />
-          </div>
+                  <Input
+                    isLogin
+                    title="Password"
+                    type="password"
+                    placeholder="Password"
+                    {...passWordInput}
+                    required
+                  />
+                </div>
 
-          <div className="flex justify-end">
-            <AlertDialog>
-              <AlertDialogTrigger className="w-1/3">
-                <Button variant="text">Forgot Password ?</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="font-inter">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    <h2 className="font-semibold text-black text-xl">
-                      Forgot Password ?
-                    </h2>
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    <div className="text-md">
-                      <p>
-                        Looks like you&apos;ve forgotten your password.
-                        Don&apos;t worry, we&apos;ve got you covered. Simply
-                        send an email to
-                        <b className="text-black"> hola@firstplug.co </b>
-                        requesting a password reset, and we&apos;ll get you back
-                        into your account in no time.
-                      </p>
-                    </div>
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogAction>OK</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-          <Button
-            type="submit"
-            disabled={
-              isLoading ||
-              !emailInput.value ||
-              !passWordInput.value ||
-              emailInput.error !== null
-            }
-            variant={isLoading ? "text" : "primary"}
-            className="rounded-md"
-          >
-            {isLoading && <LoaderSpinner />}
-            Log In
-          </Button>
-        </AuthForm>
-      </article>
-    </section>
+                <div className="flex justify-end">
+                  <AlertDialog>
+                    <AlertDialogTrigger className="w-1/3">
+                      <Button variant="text">Forgot Password ?</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="font-inter">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          <h2 className="font-semibold text-black text-xl">
+                            Forgot Password ?
+                          </h2>
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          <div className="text-md">
+                            <p>
+                              Looks like you&apos;ve forgotten your password.
+                              Don&apos;t worry, we&apos;ve got you covered.
+                              Simply send an email to
+                              <b className="text-black"> hola@firstplug.co </b>
+                              requesting a password reset, and we&apos;ll get
+                              you back into your account in no time.
+                            </p>
+                          </div>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogAction>OK</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+                <Button
+                  type="submit"
+                  disabled={
+                    isLoading ||
+                    !emailInput.value ||
+                    !passWordInput.value ||
+                    emailInput.error !== null
+                  }
+                  variant={isLoading ? "text" : "primary"}
+                  className="rounded-md"
+                >
+                  {isLoading && <LoaderSpinner />}
+                  Log In
+                </Button>
+              </>
+            </AuthForm>
+          )}
+        </article>
+      </section>
+    </>
   );
 }
