@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DialogShipmentWithFp } from "./dialog-shipment-with-fp";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { AsapOrDateValue } from "./asap-or-date";
 import {
   Tooltip,
@@ -31,35 +31,30 @@ export const ShipmentWithFp = ({ onSubmit, destinationMember }: Props) => {
   const [pickupDate, setPickupDate] = useState<AsapOrDateValue>("");
   const [deliveredDate, setDeliveredDate] = useState<AsapOrDateValue>("");
 
-  // Obtener el valor del dropdown
   const shipmentValue = watch("shipment");
 
   const handleDropdownChange = (value: string) => {
-    // Si el valor del dropdown es 'yes', abrir el diálogo
     if (value === "yes") {
       setIsDialogOpen(true);
     } else {
       setIsDialogOpen(false);
-      // Resetear las fechas cuando se selecciona "no"
       setPickupDate("");
       setDeliveredDate("");
-      onSubmit({ shipment: "no" }); // Realiza el submit cuando el valor es "no"
+      onSubmit({ shipment: "no" });
     }
     setValue("shipment", value);
   };
 
   const handleDialogSave = () => {
-    // Actualiza el valor del dropdown después de guardar
     setValue("shipment", "yes");
-    setIsDialogOpen(false); // Cierra el diálogo después de guardar
-    onSubmit({ shipment: "yes", pickupDate, deliveredDate }); // Realiza el submit cuando es "yes" y las fechas están completas
+    setIsDialogOpen(false);
+    onSubmit({ shipment: "yes", pickupDate, deliveredDate });
   };
 
   const handleDialogCancel = () => {
-    // Limpiar las fechas y el valor del dropdown cuando se cancela
     setPickupDate("");
     setDeliveredDate("");
-    setValue("shipment", ""); // Limpiar el valor del dropdown
+    setValue("shipment", "");
     onSubmit(null);
   };
 

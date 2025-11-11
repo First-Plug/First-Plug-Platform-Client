@@ -3,10 +3,14 @@ import React from "react";
 interface PrdouctModelDetailProps {
   product: Product;
   isOffboardingStyles?: boolean;
+  isChecked?: boolean;
+  hideSerialNumber?: boolean;
 }
 export const PrdouctModelDetail = ({
   product,
   isOffboardingStyles,
+  isChecked = false,
+  hideSerialNumber = false,
 }: PrdouctModelDetailProps) => {
   if (!product) return null;
   const { attributes } = product;
@@ -46,21 +50,47 @@ export const PrdouctModelDetail = ({
   return (
     <div className="flex flex-col">
       {product.category === "Merchandising" ? (
-        <div className="flex gap-1 font-semibold text-md">
-          <span>{product.name}</span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 font-semibold text-md">
+            <span>{product.name}</span>
+          </div>
+          {!hideSerialNumber &&
+            product.serialNumber &&
+            product.serialNumber.trim() !== "" && (
+              <div
+                className={`font-normal text-md transition-colors duration-300 ${
+                  isChecked ? "text-white" : "text-black"
+                }`}
+              >
+                Serial Number: {product.serialNumber}
+              </div>
+            )}
         </div>
       ) : (
-        <div className="flex gap-1 text-md">
-          <span className="font-semibold">
-            {attributes.filter((at) => at.key === "brand")[0]?.value || "-"}
-          </span>
-          <span className="font-normal">
-            {attributes.filter((at) => at.key === "model")[0]?.value || "-"}
-          </span>
-          {modelValue === "Other" &&
-            product.name &&
-            product.name.trim() !== "" && (
-              <span className="font-normal">- {product.name}</span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-md">
+            <span className="font-semibold">
+              {attributes.filter((at) => at.key === "brand")[0]?.value || "-"}
+            </span>
+            <span className="font-normal">
+              {attributes.filter((at) => at.key === "model")[0]?.value || "-"}
+            </span>
+            {modelValue === "Other" &&
+              product.name &&
+              product.name.trim() !== "" && (
+                <span className="font-normal">- {product.name}</span>
+              )}
+          </div>
+          {!hideSerialNumber &&
+            product.serialNumber &&
+            product.serialNumber.trim() !== "" && (
+              <div
+                className={`font-normal text-md transition-colors duration-300 ${
+                  isChecked ? "text-white" : "text-black"
+                }`}
+              >
+                Serial Number: {product.serialNumber}
+              </div>
             )}
         </div>
       )}

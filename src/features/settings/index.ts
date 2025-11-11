@@ -12,6 +12,9 @@ export * from "./components/settings-layout";
 export * from "./components/profile-settings";
 export * from "./components/company-settings";
 export * from "./components/office-settings";
+export * from "./components/offices-list";
+export * from "./components/office-card";
+export * from "./components/office-modal";
 export * from "./components/security-settings";
 export * from "./components/recoverable-config-form";
 export * from "./components/computer-expiration-config";
@@ -27,6 +30,7 @@ export * from "./hooks/useFetchUserSettings";
 export * from "./hooks/use-profile-settings";
 export * from "./hooks/use-company-settings";
 export * from "./hooks/use-office-settings";
+export * from "./hooks/use-offices";
 export * from "./hooks/use-security-settings";
 
 // Services
@@ -42,3 +46,9 @@ export * from "./types/settings.types";
 export * from "./schemas/profile.schema";
 export * from "./schemas/office.schema";
 export * from "./schemas/security.schema";
+
+// Data
+export * from "./data/mock-offices";
+
+// Store
+export * from "./store/office.store";

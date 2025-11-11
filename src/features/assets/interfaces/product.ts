@@ -156,7 +156,7 @@ export const CURRENCY_CODES = [
   "TBC",
 ] as const;
 
-export const LOCATION = ["Our office", "FP warehouse", "Employee"] as const;
+export const LOCATION = ["Our office", "Employee", "FP warehouse"] as const;
 export type Location = (typeof LOCATION)[number];
 
 export const CATEGORIES = [
@@ -224,6 +224,28 @@ export const SHIPMENT_STATUS = [
 
 export type ShipmentStatus = (typeof SHIPMENT_STATUS)[number];
 
+export interface Office {
+  officeId: string;
+  officeCountryCode: string;
+  officeName: string;
+  assignedAt: string;
+  isDefault: boolean;
+}
+
+export interface FpWarehouse {
+  warehouseId: string;
+  warehouseName: string;
+  warehouseCountryCode: string;
+  assignedAt: string;
+}
+
+export interface MemberData {
+  memberId: string;
+  memberName: string;
+  memberEmail: string;
+  countryCode: string;
+}
+
 export interface Product {
   _id: string;
   name: string | null;
@@ -237,6 +259,8 @@ export interface Product {
   updatedAt?: string;
   deletedAt?: string | null;
   location?: string;
+  officeId?: string;
+  officeName?: string;
   assignedEmail?: string;
   assignedMember?: string;
   serialNumber: string | null;
@@ -252,6 +276,10 @@ export interface Product {
   productCondition: ProductCondition;
   additionalInfo?: string;
   shipmentStatus?: ShipmentStatus;
+  office?: Office | null;
+
+  countryCode?: string;
+  country?: string;
 }
 
 export interface ProductTable {
@@ -367,12 +395,20 @@ export const zodCreateProductModel = z
     updatedAt: z.string().optional(),
     deletedAt: z.string().optional().nullable(),
     deleted: z.boolean().optional(),
-    location: z.enum(LOCATION, {
-      required_error: "Location is required",
-      invalid_type_error: "Invalid location",
-    }),
+    location: z.union([
+      z.enum(LOCATION, {
+        required_error: "Location is required",
+        invalid_type_error: "Invalid location",
+      }),
+      z.literal(""),
+      z.undefined(),
+    ]),
+    officeId: z.string().optional(),
     status: z.string().optional(),
-    productCondition: z.string().optional(),
+    productCondition: z.string({
+      required_error: "Product Condition is required",
+      invalid_type_error: "Invalid product condition",
+    }),
     additionalInfo: z.string().optional(),
     price: z
       .object({

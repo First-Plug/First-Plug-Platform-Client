@@ -64,7 +64,7 @@ export const useUpdateAsset = () => {
       console.error("Error al actualizar el asset:", error);
     },
 
-    onSuccess: (response, { id, showSuccessAlert = true }) => {
+    onSuccess: async (response, { id, showSuccessAlert = true }) => {
       if (isProduct(response)) {
         queryClient.setQueryData<Product[]>(["assets"], (oldAssets = []) =>
           oldAssets.map((asset) =>
@@ -81,13 +81,25 @@ export const useUpdateAsset = () => {
         }
       }
 
-      queryClient.invalidateQueries({ queryKey: ["assets"] });
+      // Invalidar y refetchear inmediatamente para forzar la actualización
+      await queryClient.invalidateQueries({
+        queryKey: ["assets"],
+        refetchType: "active",
+      });
+      await queryClient.refetchQueries({
+        queryKey: ["assets"],
+        type: "active",
+      });
+
       queryClient.invalidateQueries({ queryKey: ["members"] });
 
       // Invalidar la query de shipments si se creó uno nuevo
       if (!isProduct(response) && "shipment" in response) {
         queryClient.invalidateQueries({ queryKey: ["shipments"] });
       }
+
+      // Invalidar la query de offices cuando se envía un producto a una oficina
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
 
       return response; // Retornamos directamente la respuesta sin envolverla en un objeto
     },

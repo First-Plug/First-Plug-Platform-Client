@@ -120,9 +120,11 @@ export const BulkCreateValidator: React.FC<BulkCreateValidatorProps> = ({
         newStatus = "valid";
       }
     } else if (
-      relocation === "Our office" &&
+      relocation &&
+      relocation !== "Employee" &&
       !validateCompanyBillingInfo(user)
     ) {
+      // Si el location es una oficina (no "Employee"), validar company billing info
       newStatus = "not-company-details";
     }
 

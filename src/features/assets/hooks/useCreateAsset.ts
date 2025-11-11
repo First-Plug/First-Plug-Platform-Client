@@ -9,6 +9,7 @@ export const useCreateAsset = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
       // setAlert("createProduct");
     },
     onError: () => {

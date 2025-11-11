@@ -37,12 +37,25 @@ const getMissingFields = (selectedMember: any): string[] => {
   return missingFields;
 };
 
-const validateOfficeInfo = async (): Promise<{
+const validateOfficeInfo = async (
+  officeId: string | null | undefined
+): Promise<{
   isValid: boolean;
   missingFields: string;
+  skipValidation?: boolean;
 }> => {
+  if (!officeId) {
+    console.error("Office ID not provided for validation");
+    // No mostrar este error al usuario, es un problema del sistema
+    return {
+      isValid: true,
+      missingFields: "",
+      skipValidation: true,
+    };
+  }
+
   try {
-    const office = await OfficeServices.getDefaultOffice();
+    const office = await OfficeServices.getOfficeById(officeId);
 
     const requiredFields = [
       "country",
@@ -106,16 +119,33 @@ export const validateAfterAction = async (
   // Función para validar office (asíncrona) - RETORNA mensajes
   const validateOffice = async (
     entity: { type: "office"; data: any },
-    role: "Assigned location"
+    role: "Current location" | "Assigned location"
   ): Promise<string[]> => {
     const officeMessages: string[] = [];
-    const officeValidation = await validateOfficeInfo();
+    const officeName = entity.data.name || entity.data.location || "Office";
+
+    // Verificar que tenemos officeId antes de validar
+    if (!entity.data?.officeId) {
+      console.warn(
+        `Office ID missing for ${role} (${officeName}). Cannot validate office data.`
+      );
+      // Mostrar mensaje al usuario indicando que falta el ID de la oficina
+      officeMessages.push(
+        `${role} (${officeName}) cannot be validated: Office ID is missing`
+      );
+      return officeMessages;
+    }
+
+    const officeValidation = await validateOfficeInfo(entity.data.officeId);
+
+    // Si skipValidation es true, no agregar mensajes de error
+    if (officeValidation.skipValidation) {
+      return officeMessages;
+    }
 
     if (!officeValidation.isValid) {
       officeMessages.push(
-        `${role} (${entity.data.location || "Office"}) is missing: ${
-          officeValidation.missingFields
-        }`
+        `${role} (${officeName}) is missing: ${officeValidation.missingFields}`
       );
     }
 
@@ -130,7 +160,7 @@ export const validateAfterAction = async (
   // Recopilar TODOS los mensajes de validación
   const allValidationPromises: Promise<string[]>[] = [];
 
-  // Validar SOURCE
+  // Validar SOURCE (origen) - SIEMPRE se valida si existe
   if (source) {
     if (source.type === "member") {
       // Member validation es síncrona, la convertimos a Promise
@@ -139,21 +169,19 @@ export const validateAfterAction = async (
         "Current holder"
       );
       allValidationPromises.push(Promise.resolve(memberMessages));
-    } else if (
-      source.type === "office" &&
-      (source.data as any).location === "Our office"
-    ) {
-      // Office validation es asíncrona
+    } else if (source.type === "office") {
+      // Office validation es asíncrona - validar oficina de ORIGEN
       allValidationPromises.push(
         validateOffice(
           source as { type: "office"; data: any },
-          "Assigned location"
+          "Current location"
         )
       );
     }
+    // Si es warehouse, no se valida (no requiere datos de envío)
   }
 
-  // Validar DESTINATION
+  // Validar DESTINATION (destino) - SIEMPRE se valida si existe
   if (destination) {
     if (destination.type === "member") {
       // Member validation es síncrona, la convertimos a Promise
@@ -162,11 +190,8 @@ export const validateAfterAction = async (
         "Assigned member"
       );
       allValidationPromises.push(Promise.resolve(memberMessages));
-    } else if (
-      destination.type === "office" &&
-      (destination.data as any).location === "Our office"
-    ) {
-      // Office validation es asíncrona
+    } else if (destination.type === "office") {
+      // Office validation es asíncrona - validar oficina de DESTINO
       allValidationPromises.push(
         validateOffice(
           destination as { type: "office"; data: any },
@@ -174,12 +199,14 @@ export const validateAfterAction = async (
         )
       );
     }
+    // Si es warehouse, no se valida (no requiere datos de envío)
   }
 
-  // Esperar a que TODAS las validaciones terminen
+  // Esperar a que TODAS las validaciones terminen (tanto origen como destino)
   const allResults = await Promise.all(allValidationPromises);
 
   // Combinar TODOS los mensajes en un solo array
+  // Esto incluirá mensajes de origen Y destino si ambos tienen problemas
   allResults.forEach((messages) => {
     missingMessages.push(...messages);
   });
@@ -192,7 +219,8 @@ export const buildValidationEntities = (
   allMembers: Member[] = [],
   selectedMember?: Member | null,
   sessionUser?: Partial<User>,
-  noneOption?: string | null
+  noneOption?: string | null,
+  selectedOfficeId?: string | null
 ) => {
   let source: { type: "member" | "office" | "warehouse"; data: any } | null =
     null;
@@ -200,21 +228,20 @@ export const buildValidationEntities = (
     type: "member" | "office" | "warehouse";
     data: any;
   } | null = null;
-  // Determinar `source`
+
+  // Determinar `source` basado en la ubicación actual del producto
   const currentMemberData = allMembers.find(
     (member) => member.email === product.assignedEmail
   );
 
-  if (!currentMemberData) {
+  if (currentMemberData) {
+    // El producto está asignado a un miembro
+    source = { type: "member", data: currentMemberData };
+  } else if (product.assignedEmail && !currentMemberData) {
+    // Tiene assignedEmail pero no encontramos el miembro en la lista
     console.warn(
       `No member found for email ${product.assignedEmail}. Check the member data or product assignment.`
     );
-    return { source: null, destination: null };
-  }
-
-  if (currentMemberData) {
-    source = { type: "member", data: currentMemberData };
-  } else if (product.assignedEmail) {
     source = {
       type: "member",
       data: {
@@ -223,27 +250,35 @@ export const buildValidationEntities = (
         email: product.assignedEmail,
       },
     };
-  } else if (product.location === "FP warehouse") {
-    source = {
-      type: "warehouse",
-      data: { location: "FP warehouse" },
-    };
-  } else if (product.location === "Our office") {
+  } else if (product.location && product.location !== "Employee") {
+    // Si el location no es "Employee", es una oficina de origen
+    // Intentar usar product.officeId primero, luego product.office?.officeId, luego product.officeName
+    const officeId = product.officeId || product.office?.officeId || undefined;
+    const officeName =
+      product.officeName || product.office?.officeName || product.location;
+
     source = {
       type: "office",
-      data: { ...sessionUser, location: "Our office" },
+      data: {
+        name: officeName,
+        location: product.location,
+        officeId: officeId,
+      },
     };
   }
 
   // Determinar `destination`
   if (selectedMember) {
     destination = { type: "member", data: selectedMember };
-  } else if (noneOption === "FP warehouse") {
-    destination = { type: "warehouse", data: { location: "FP warehouse" } };
-  } else if (noneOption === "Our office") {
+  } else if (noneOption && noneOption !== "Employee") {
+    // Si noneOption no es "Employee", es una oficina de destino
     destination = {
       type: "office",
-      data: { ...sessionUser, location: "Our office" },
+      data: {
+        name: noneOption,
+        location: noneOption,
+        officeId: selectedOfficeId,
+      },
     };
   }
 
@@ -265,7 +300,8 @@ export const validateProductAssignment = async (
   setGenericAlertData: (data: { title: string; description: string }) => void,
   setShowErrorDialog: (show: boolean) => void,
   sessionUser: Partial<User>,
-  noneOption: string | null
+  noneOption: string | null,
+  selectedOfficeId?: string | null
 ): Promise<ValidationResult> => {
   const allMembers = queryClient.getQueryData<Member[]>(["members"]);
 
@@ -274,7 +310,8 @@ export const validateProductAssignment = async (
     allMembers || [],
     selectedMember,
     sessionUser,
-    noneOption
+    noneOption,
+    selectedOfficeId
   );
 
   const missingMessages = await validateAfterAction(source, destination);
@@ -291,6 +328,10 @@ export const validateProductAssignment = async (
             .replace(
               /Assigned member \((.*?)\)/,
               "Assigned member (<strong>$1</strong>)"
+            )
+            .replace(
+              /Current location \((.*?)\)/,
+              "Current location (<strong>$1</strong>)"
             )
             .replace(
               /Assigned location \((.*?)\)/,
@@ -316,13 +357,10 @@ export const validateProductAssignment = async (
 export const validateOnCreate = async (
   selectedMember: Member | null,
   sessionUser: Partial<User>,
-  noneOption: string | null
+  noneOption: string | null,
+  selectedOfficeId?: string | null
 ): Promise<string[]> => {
   const missingMessages: string[] = [];
-
-  if (noneOption === "FP warehouse") {
-    return missingMessages;
-  }
 
   if (selectedMember) {
     const missingFields = getMissingFields(selectedMember);
@@ -335,9 +373,9 @@ export const validateOnCreate = async (
           .join(", ")}`
       );
     }
-  } else if (noneOption === "Our office") {
-    // Usar la nueva función que obtiene datos de la oficina
-    const officeValidation = await validateOfficeInfo();
+  } else if (noneOption && noneOption !== "Employee") {
+    // Si noneOption no es "Employee", es una oficina - validar datos de la oficina específica
+    const officeValidation = await validateOfficeInfo(selectedOfficeId);
     if (!officeValidation.isValid) {
       missingMessages.push(
         `Assigned location (<strong>${noneOption}</strong>) is missing: ${officeValidation.missingFields}`

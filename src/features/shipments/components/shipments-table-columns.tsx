@@ -225,6 +225,19 @@ export const useShipmentsTableColumns = ({
             row.original.shipment_status !== "In Preparation" &&
             row.original.shipment_status !== "On Hold - Missing Data";
 
+          const getDeleteTooltipMessage = () => {
+            if (row.original.shipment_status === "On The Way") {
+              return 'Shipments that are "On the way" cannot be cancelled.';
+            }
+            if (
+              row.original.shipment_status === "Received" ||
+              row.original.shipment_status === "Cancelled"
+            ) {
+              return "Canceled or received shipments cannot be deleted.";
+            }
+            return "";
+          };
+
           return (
             <div className="flex gap-1">
               <EditShipment shipment={row.original} isDisabled={isDisabled} />
@@ -232,6 +245,7 @@ export const useShipmentsTableColumns = ({
                 type="shipment"
                 id={row.original._id}
                 disabled={isDisabled}
+                tooltipMessage={getDeleteTooltipMessage()}
               />
             </div>
           );

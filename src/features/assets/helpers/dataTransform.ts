@@ -17,6 +17,8 @@ export const transformData = (rawData: any[]): ProductTable[] => {
       updatedAt: item.updatedAt || "",
       deletedAt: item.deletedAt || null,
       location: item.location || "Unknown",
+      officeId: item.officeId || undefined,
+      officeName: item.officeName || undefined,
       assignedEmail: item.assignedEmail || "",
       assignedMember: item.assignedMember || "",
       serialNumber: item.serialNumber || null,

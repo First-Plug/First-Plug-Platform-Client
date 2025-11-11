@@ -7,7 +7,7 @@ import {
   TableCell,
 } from "@/shared";
 import { Product } from "@/features/assets";
-import MemberNameAndLocation from "../../member-name/MemberNameAndLocation";
+import MemberNameAndLocationWithCountry from "../../member-name/MemberNameAndLocationWithCountry";
 
 interface AssetAttribute {
   key: string;
@@ -86,10 +86,12 @@ const ActionAssetTable: React.FC<AssetsTableProps> = ({ data }) => {
                 {asset.serialNumber || "N/A"}
               </TableCell>
               <TableCell className="px-4 py-2 border-r text-xs">
-                <MemberNameAndLocation product={asset as Product} />
+                <MemberNameAndLocationWithCountry product={asset as Product} />
               </TableCell>
               <TableCell className="px-4 py-2 text-xs">
-                <MemberNameAndLocation product={newData[index] as Product} />
+                <MemberNameAndLocationWithCountry
+                  product={newData[index] as Product}
+                />
               </TableCell>
             </TableRow>
           ))

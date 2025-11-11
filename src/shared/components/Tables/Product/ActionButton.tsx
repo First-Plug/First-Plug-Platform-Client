@@ -21,12 +21,18 @@ export function ActionButton({ product }: ActionButtonProps) {
   const queryClient = useQueryClient();
   const { prefetchAssignData } = usePrefetchAssignData(product._id);
 
-  const handleAssignAction = () => {
-    queryClient.setQueryData(["selectedProduct"], product);
-    setAside("AssignProduct");
-  };
-
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Unificar ambas acciones para que abran el mismo componente
+  const handleAssignAction = () => {
+    if (product.assignedEmail && !product.assignedMember) {
+      setIsModalOpen(true);
+      return;
+    }
+
+    queryClient.setQueryData(["selectedProduct"], product);
+    setAside("ReassignProduct");
+  };
 
   const handleReassignAction = () => {
     if (product.assignedEmail && !product.assignedMember) {

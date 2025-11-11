@@ -11,6 +11,7 @@ import { DeleteAction } from "@/shared";
 import { ProductConditionCard } from "@/features/assets";
 import { ColumnDef } from "@tanstack/react-table";
 import { ActionButton } from "@/shared/components/Tables/Product";
+import { countriesByCode } from "@/shared";
 
 export function useProductsInnerTableColumns({
   products,
@@ -72,8 +73,15 @@ export function useProductsInnerTableColumns({
         cell: ({ getValue }) => <FormatedDate date={getValue<string>()} />,
       },
       {
-        accessorKey: "location",
-        header: "Location",
+        id: "location",
+        accessorFn: (row) => {
+          const location = row.location || "No Data";
+          const countryName = row.countryCode
+            ? countriesByCode[row.countryCode.toUpperCase()]
+            : null;
+          return countryName ? `${location} - ${countryName}` : location;
+        },
+        header: "Location + Country",
         size: 130,
         minSize: 110,
         maxSize: 150,
@@ -83,7 +91,13 @@ export function useProductsInnerTableColumns({
             const options = new Set<string>();
             allProducts.forEach((product) => {
               const location = product.location || "No Data";
-              options.add(location);
+              const countryName = product.countryCode
+                ? countriesByCode[product.countryCode.toUpperCase()]
+                : null;
+              const locationWithCountry = countryName
+                ? `${location} - ${countryName}`
+                : location;
+              options.add(locationWithCountry);
             });
             return Array.from(options)
               .sort()
@@ -93,8 +107,11 @@ export function useProductsInnerTableColumns({
               }));
           })(),
         },
-        cell: ({ getValue }) => (
-          <ProductLocation location={getValue<string>() as any} />
+        cell: ({ row }) => (
+          <ProductLocation
+            location={row.original.location as any}
+            product={row.original}
+          />
         ),
       },
       {

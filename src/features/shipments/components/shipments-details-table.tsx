@@ -6,6 +6,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
+  CountryFlag,
 } from "@/shared";
 import {
   useReactTable,
@@ -17,6 +18,7 @@ import { useMemo } from "react";
 
 import type { Shipment } from "@/features/shipments";
 import { ProductImage, PrdouctModelDetail } from "@/features/assets";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface Props {
   data: Shipment;
@@ -59,9 +61,28 @@ export const ShipmentDetailsTable = ({ data }: Props) => {
         accessorKey: "origin",
         header: "Origin / Pickup Date",
         cell: () => {
+          const originCountry =
+            data.originDetails?.country ||
+            (data.origin === "FP warehouse"
+              ? data.destinationDetails?.country
+              : undefined);
           return (
             <div className="flex flex-col">
-              <span className="font-medium">{data.origin ?? "—"}</span>
+              <div className="flex items-center gap-2">
+                {originCountry && (
+                  <div className="group relative">
+                    <CountryFlag
+                      countryName={originCountry}
+                      size={16}
+                      className="rounded-sm"
+                    />
+                    <span className="hidden group-hover:block bottom-full left-1/2 z-50 absolute bg-blue/80 mb-2 px-2 py-1 rounded text-white text-xs whitespace-nowrap -translate-x-1/2 transform">
+                      {countriesByCode[originCountry] || originCountry}
+                    </span>
+                  </div>
+                )}
+                <span className="font-medium">{data.origin ?? "—"}</span>
+              </div>
               <span className="text-gray-700">
                 Pickup Date:{" "}
                 {data.originDetails?.desirableDate
@@ -76,9 +97,29 @@ export const ShipmentDetailsTable = ({ data }: Props) => {
         accessorKey: "destination",
         header: "Destination / Delivery Date",
         cell: () => {
+          const destinationCountry =
+            data.destinationDetails?.country ||
+            (data.destination === "FP warehouse"
+              ? data.originDetails?.country
+              : undefined);
           return (
             <div className="flex flex-col">
-              <span className="font-medium">{data.destination}</span>
+              <div className="flex items-center gap-2">
+                {destinationCountry && (
+                  <div className="group relative">
+                    <CountryFlag
+                      countryName={destinationCountry}
+                      size={16}
+                      className="rounded-sm"
+                    />
+                    <span className="hidden group-hover:block bottom-full left-1/2 z-50 absolute bg-blue/80 mb-2 px-2 py-1 rounded text-white text-xs whitespace-nowrap -translate-x-1/2 transform">
+                      {countriesByCode[destinationCountry] ||
+                        destinationCountry}
+                    </span>
+                  </div>
+                )}
+                <span className="font-medium">{data.destination}</span>
+              </div>
               <span className="text-gray-700">
                 Delivery Date:{" "}
                 {data.destinationDetails?.desirableDate
@@ -90,7 +131,7 @@ export const ShipmentDetailsTable = ({ data }: Props) => {
         },
       },
     ],
-    []
+    [data]
   );
 
   const table = useReactTable({

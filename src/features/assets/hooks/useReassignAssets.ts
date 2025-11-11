@@ -37,6 +37,7 @@ export const useReassignAssets = () => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
     },
   });
 };

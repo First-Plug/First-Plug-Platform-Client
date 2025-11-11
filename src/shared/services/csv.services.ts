@@ -5,7 +5,7 @@ import { CreateMemberZodModel } from "@/features/members";
 export class CsvServices {
   static async bulkCreateProducts(data: PrdouctModelZod[]) {
     const response = await HTTPRequests.post(
-      `${BASE_URL}/api/products/bulkcreate`,
+      `${BASE_URL}/api/products/bulkcreate-csv`,
       data
     );
     return response.data;

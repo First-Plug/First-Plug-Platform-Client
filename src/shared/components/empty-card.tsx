@@ -24,6 +24,7 @@ type EmptyCardType =
   | "registererror"
   | "noStockMember"
   | "actionHistory"
+  | "offices"
   | "noResultsWithFilters";
 
 type TConfig = {
@@ -93,6 +94,13 @@ const Config: Record<EmptyCardType, TConfig> = {
     link: "/my-stock",
     linkText: "Shop Now",
   },
+  offices: {
+    image: "/empty-offices.png",
+    paragraphstrong: "You don’t have any offices set up yet.",
+    paragraph: "Click “Add Office” to create your first one.",
+    ButtonIcon: () => <AddIcon />,
+    buttonText: "Add Office",
+  },
   registerok: {
     image: "/world.svg",
     paragraphstrong: "Congratulations!",
@@ -152,7 +160,7 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
     additionalOnClick,
   } = Config[type];
 
-  const { setAside } = useAsideStore();
+  const { setAside, pushAside } = useAsideStore();
 
   const handleActions = () => {
     if (type === "stock") {
@@ -160,6 +168,7 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
     }
 
     if (type === "members") setAside("LoadMembers");
+    if (type === "offices") pushAside("CreateOffice");
     if (type === "registerok") {
       return signOut({ callbackUrl: "http://localhost:3000/login" });
     }
@@ -172,13 +181,17 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
       <div className="flex flex-col items-center mt-[-50px]">
         <div
           className={` ${
-            type === "noStockMember" ? "w-32 h-32" : "w-52 h-52"
+            type === "noStockMember"
+              ? "w-32 h-32"
+              : type === "offices"
+              ? "w-72 h-72"
+              : "w-52 h-52"
           } relative`}
         >
           <Image src={image} alt={paragraph} fill />
         </div>
         {paragraphstrong && (
-          <p className="mb-2 font-semibold text-black text-xl">
+          <p className="mb-2 font-semibold text-black text-lg">
             {paragraphstrong}
           </p>
         )}

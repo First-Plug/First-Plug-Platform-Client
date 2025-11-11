@@ -2,14 +2,10 @@
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Member } from "@/features/members";
-import { TeamCard, CountryFlag } from "@/shared";
+import { TeamCard, CountryFlag, countriesByCode } from "@/shared";
 import { ActionsTableMembers } from "@/features/members";
 import { FormatedDate } from "@/shared/components/Tables";
-import {
-  getCountryDisplay,
-  getCountryNameForFilter,
-  months,
-} from "@/features/members/utils/countryUtils";
+import { months } from "@/features/members/utils/countryUtils";
 
 interface UseMembersTableColumnsProps {
   members: Member[];
@@ -43,26 +39,18 @@ export const useMembersTableColumns = ({
         meta: {
           hasFilter: true,
           filterOptions: (() => {
-            // Crear un mapeo de países normalizados
-            const countryMapping = new Map<string, string[]>();
+            const uniqueCountryCodes = new Set<string>();
 
-            members?.forEach((m: Member) => {
-              if (m.country) {
-                const normalizedName = getCountryNameForFilter(m.country);
-                if (normalizedName) {
-                  if (!countryMapping.has(normalizedName)) {
-                    countryMapping.set(normalizedName, []);
-                  }
-                  countryMapping.get(normalizedName)!.push(m.country);
-                }
+            members?.forEach((member: Member) => {
+              if (member.country) {
+                uniqueCountryCodes.add(member.country);
               }
             });
 
-            // Crear opciones de filtro con nombres normalizados
-            const filterOptions = Array.from(countryMapping.entries())
-              .map(([normalizedName, originalNames]) => ({
-                label: normalizedName,
-                value: originalNames.join("|"), // Usar pipe como separador para múltiples valores
+            const filterOptions = Array.from(uniqueCountryCodes)
+              .map((code) => ({
+                label: countriesByCode[code] ?? code,
+                value: code,
               }))
               .sort((a, b) => a.label.localeCompare(b.label));
 
@@ -75,15 +63,10 @@ export const useMembersTableColumns = ({
             return <span>-</span>;
           }
 
-          const countryDisplay = getCountryDisplay(country);
-          if (!countryDisplay) {
-            return <span>{country}</span>;
-          }
-
           return (
             <div className="flex items-center gap-2">
               <CountryFlag countryName={country} size={15} />
-              <span>{countryDisplay.name}</span>
+              <span>{countriesByCode[country]}</span>
             </div>
           );
         },

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { type UseBoundStore } from "zustand";
 import { type Product } from "@/features/assets";
+import { countriesByCode } from "@/shared";
 
 export function useProductsFiltering(
   products: Product[],
@@ -56,7 +57,13 @@ export function useProductsFiltering(
 
             case "location":
               const location = product.location || "No Data";
-              return filterValues.includes(location);
+              const countryName = product.countryCode
+                ? countriesByCode[product.countryCode.toUpperCase()]
+                : null;
+              const locationWithCountry = countryName
+                ? `${location} - ${countryName}`
+                : location;
+              return filterValues.includes(locationWithCountry);
 
             default:
               return true;

@@ -44,7 +44,7 @@ export const zodCreateMemberModel = z.object({
     })
     .optional(),
   city: z.string().trim().optional(),
-  country: z.string().trim().optional(),
+  country: z.string().min(1, { message: "Country is required" }).trim(),
   zipCode: z.string().trim().optional(),
   address: z.string().trim().optional(),
   apartment: z.string().trim().optional(),

@@ -1,5 +1,6 @@
 import type { Product } from "@/features/assets";
 import EmailTooltip from "./EmailTooltip";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 import { ArrowRight } from "lucide-react";
 
@@ -19,11 +20,26 @@ export default function MemberName({ product }: { product: Product }) {
     );
   }
 
-  return product.assignedMember ? (
-    <span className="font-semibold">{product.assignedMember}</span>
-  ) : product.assignedEmail ? (
-    <EmailTooltip email={product.assignedEmail} />
-  ) : (
-    <span className="text-black">-</span>
-  );
+  // Si está asignado a un miembro, mostrar el nombre del miembro
+  if (product.assignedMember) {
+    return <span className="font-semibold">{product.assignedMember}</span>;
+  }
+
+  // Si tiene email asignado, mostrar el email
+  if (product.assignedEmail) {
+    return <EmailTooltip email={product.assignedEmail} />;
+  }
+
+  // Si está en "Our office" y tiene officeName, mostrar el nombre de la oficina
+  if (product.location === "Our office" && product.officeName) {
+    return <span className="font-semibold">{product.officeName}</span>;
+  }
+
+  // Si está en "Our office" pero no tiene información de oficina, mostrar "Our office"
+  if (product.location === "Our office") {
+    return <span className="font-semibold">Our office</span>;
+  }
+
+  // Por defecto, mostrar "-"
+  return <span className="text-black">-</span>;
 }

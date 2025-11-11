@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared";
+import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpdateAsset, GenericAlertDialog } from "@/features/assets";
@@ -26,6 +27,17 @@ import { useShipmentValues } from "@/features/shipments";
 import { Shipment } from "@/features/shipments";
 import { useAsideStore, useAlertStore } from "@/shared";
 import { CategoryIcons } from "@/features/assets";
+import { useOffices, useOfficeStore } from "@/features/settings";
+import { countriesByCode } from "@/shared/constants/country-codes";
+import { useInternationalShipmentDetection } from "@/shared/hooks/useInternationalShipmentDetection";
+import { InternationalShipmentWarning } from "@/shared/components/InternationalShipmentWarning";
+import {
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 
 interface BackendResponse extends Product {
   shipment?: Shipment;
@@ -57,8 +69,12 @@ export const AddMemberForm = ({
   const { shipmentValue, onSubmitDropdown } = useShipmentValues();
 
   const { data: allMembers, isLoading: loadingMembers } = useFetchMembers();
+  const { offices, isLoading: loadingOffices } = useOffices();
+
+  const ADD_OFFICE_VALUE = "__ADD_OFFICE__";
   const [searchedMembers, setSearchedMembers] = useState<Member[]>(members);
   const [noneOption, setNoneOption] = useState<string | null>(null);
+  const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [genericAlertData, setGenericAlertData] = useState({
     title: "",
@@ -66,9 +82,15 @@ export const AddMemberForm = ({
   });
 
   const [isAssigning, setIsAssigning] = useState(false);
+  const [showInternationalWarning, setShowInternationalWarning] =
+    useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   const { setAlert } = useAlertStore();
-  const { setAside, closeAside } = useAsideStore();
+  const { setAside, closeAside, pushAside } = useAsideStore();
+  const { isInternationalShipment, buildInternationalValidationEntities } =
+    useInternationalShipmentDetection();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
 
   const { mutate: updateAssetMutation } = useUpdateAsset();
 
@@ -78,6 +100,25 @@ export const AddMemberForm = ({
   useEffect(() => {
     setSearchedMembers(members);
   }, [members]);
+
+  // Detectar cuando se crea una nueva oficina
+  useEffect(() => {
+    if (newlyCreatedOffice) {
+      // Seleccionar automáticamente la nueva oficina
+      const countryName = newlyCreatedOffice.country
+        ? countriesByCode[newlyCreatedOffice.country] ||
+          newlyCreatedOffice.country
+        : "";
+      const displayLabel = `${countryName} - ${newlyCreatedOffice.name}`;
+
+      setNoneOption(displayLabel);
+      setSelectedOfficeId(newlyCreatedOffice._id);
+      setValidationError(null);
+
+      // Limpiar la oficina recién creada después de usarla
+      clearNewlyCreatedOffice();
+    }
+  }, [newlyCreatedOffice, clearNewlyCreatedOffice]);
 
   const handleSearch = (query: string) => {
     setSearchedMembers(
@@ -110,64 +151,53 @@ export const AddMemberForm = ({
       return;
     }
 
-    setIsAssigning(true);
+    const { source, destination } = buildInternationalValidationEntities(
+      currentProduct,
+      allMembers || [],
+      selectedMember,
+      session?.user,
+      noneOption,
+      selectedOfficeId
+    );
 
-    let source: ValidationEntity | null = null;
-    let destination: ValidationEntity | null = null;
+    const isInternational = isInternationalShipment(source, destination);
+    const requiresFpShipment = shipmentValue.shipment === "yes";
+
+    if (isInternational && requiresFpShipment) {
+      setPendingAction(() => () => executeAssignment(source, destination));
+      setShowInternationalWarning(true);
+      return;
+    }
+
+    await executeAssignment(source, destination);
+  };
+
+  const handleConfirmInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
+
+  const handleCancelInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    setPendingAction(null);
+  };
+
+  const executeAssignment = async (
+    source: { type: "member" | "office" | "warehouse"; data: any } | null,
+    destination: { type: "member" | "office" | "warehouse"; data: any } | null
+  ) => {
+    if (!currentProduct || !actionType) return;
+
+    setIsAssigning(true);
 
     try {
       const actionLabel =
         actionType === "ReassignProduct"
           ? "Reassign Product"
           : "Assign Product";
-
-      const currentMemberData = allMembers.find(
-        (member) => member.email === currentProduct.assignedEmail
-      );
-
-      if (currentMemberData) {
-        source = {
-          type: "member",
-          data: currentMemberData,
-        };
-      } else if (currentProduct.assignedEmail) {
-        const assignedMemberParts = currentProduct.assignedMember
-          ? currentProduct.assignedMember.split(" ")
-          : ["", ""];
-        source = {
-          type: "member",
-          data: {
-            firstName: assignedMemberParts[0] || "",
-            lastName: assignedMemberParts[1] || "",
-            email: currentProduct.assignedEmail,
-          },
-        };
-      } else if (
-        currentProduct.location === "Our office" ||
-        currentProduct.location === "FP warehouse"
-      ) {
-        source = {
-          type: "office",
-          data: { ...session?.user, location: currentProduct.location },
-        };
-      } else {
-        source = {
-          type: "office",
-          data: { location: "Unknown" },
-        };
-      }
-
-      if (selectedMember) {
-        destination = {
-          type: "member",
-          data: selectedMember,
-        };
-      } else if (noneOption) {
-        destination = {
-          type: "office",
-          data: { ...session?.user, location: noneOption },
-        };
-      }
 
       const baseProduct: Partial<Product> & { actionType: string } = {
         assignedEmail: "",
@@ -177,7 +207,11 @@ export const AddMemberForm = ({
             return currentProduct.status;
           return "Available";
         })(),
-        location: noneOption || "Our office",
+        location: noneOption === "FP warehouse" ? "FP warehouse" : "Our office",
+        officeId:
+          noneOption === "FP warehouse"
+            ? undefined
+            : selectedOfficeId || undefined,
         category: currentProduct.category,
         attributes: currentProduct.attributes,
         name: currentProduct.name,
@@ -235,6 +269,10 @@ export const AddMemberForm = ({
                         "Assigned member (<strong>$1</strong>)"
                       )
                       .replace(
+                        /Current location \((.*?)\)/,
+                        "Current location (<strong>$1</strong>)"
+                      )
+                      .replace(
                         /Assigned location \((.*?)\)/,
                         "Assigned location (<strong>$1</strong>)"
                       )}</span></div>`
@@ -253,7 +291,6 @@ export const AddMemberForm = ({
             }
           },
           onError: (error) => {
-            console.error("Error during save action:", error);
             setAlert("errorAssignedProduct");
           },
           onSettled: () => {
@@ -262,23 +299,120 @@ export const AddMemberForm = ({
         }
       );
     } catch (error) {
-      console.error("Error during save action:", error);
       setAlert("errorAssignedProduct");
       setIsAssigning(false);
     }
   };
 
-  const handleSelectNoneOption = (option: string) => {
+  const handleSelectNoneOption = (displayValue: string) => {
+    if (displayValue === ADD_OFFICE_VALUE) {
+      pushAside("CreateOffice");
+      return;
+    }
     handleSelectedMembers(null);
-    setNoneOption(option);
+    setNoneOption(displayValue);
+
+    if (displayValue === "FP warehouse") {
+      setSelectedOfficeId(null);
+    } else {
+      // Buscar la oficina por el displayLabel
+      const selectedOffice = sortedOffices.find((office) => {
+        const countryName = office.country
+          ? countriesByCode[office.country] || office.country
+          : "";
+        const label = `${countryName} - ${office.name}`;
+        return label === displayValue;
+      });
+
+      if (selectedOffice) {
+        setSelectedOfficeId(selectedOffice._id);
+      } else {
+        // Si no encuentra la oficina, limpiar el officeId
+        setSelectedOfficeId(null);
+      }
+    }
+
     setValidationError(null);
   };
 
   const handleSelectMember = (member: Member | null) => {
     handleSelectedMembers(member);
     setNoneOption(null);
+    setSelectedOfficeId(null);
     setValidationError(null);
   };
+
+  const sortedOffices = [...offices].sort((a, b) => {
+    if (a.isDefault && !b.isDefault) return -1;
+    if (!a.isDefault && b.isDefault) return 1;
+    return 0;
+  });
+
+  // Detectar la officeId actual del producto
+  let currentProductOfficeId = currentProduct?.officeId;
+
+  // Si no hay officeId pero hay office object, usar ese
+  if (!currentProductOfficeId && currentProduct?.office) {
+    currentProductOfficeId = currentProduct.office.officeId;
+  }
+
+  // Si aún no hay officeId, intentar buscar por officeName
+  if (
+    !currentProductOfficeId &&
+    currentProduct?.officeName &&
+    sortedOffices.length > 0
+  ) {
+    const matchingOffice = sortedOffices.find(
+      (office) => office.name === currentProduct.officeName
+    );
+    currentProductOfficeId = matchingOffice?._id;
+  }
+
+  // Filtrar la location actual de las opciones disponibles
+  const availableOffices = currentProductOfficeId
+    ? sortedOffices.filter((office) => office._id !== currentProductOfficeId)
+    : sortedOffices;
+
+  const locationOptionGroups = [
+    {
+      label: "Our offices",
+      options: [
+        ...(availableOffices && availableOffices.length > 0
+          ? availableOffices.map((office) => {
+              const countryName = office.country
+                ? countriesByCode[office.country] || office.country
+                : "";
+              const displayLabel = `${countryName} - ${office.name}`;
+
+              return {
+                display: (
+                  <>
+                    {office.country && (
+                      <CountryFlag
+                        countryName={office.country}
+                        size={16}
+                        className="rounded-sm"
+                      />
+                    )}
+                    <span className="truncate">{displayLabel}</span>
+                  </>
+                ),
+                value: displayLabel,
+              };
+            })
+          : []),
+        {
+          display: <span className="font-medium text-blue">+ Add Office</span>,
+          value: ADD_OFFICE_VALUE,
+        },
+      ],
+    },
+  ];
+
+  // Construir opciones de location disponibles
+  const locationOptions = [
+    ...(currentProduct?.location !== "FP warehouse" ? ["FP warehouse"] : []),
+  ];
 
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [showErrorDialogOurOffice, setShowErrorDialogOurOffice] =
@@ -287,7 +421,7 @@ export const AddMemberForm = ({
   const [missingOfficeData, setMissingOfficeData] = useState("");
 
   return (
-    <section className="flex flex-col gap-6 h-full">
+    <section className="flex flex-col gap-6 px-2 h-full">
       <GenericAlertDialog
         open={showErrorDialog}
         onClose={() => {
@@ -318,48 +452,38 @@ export const AddMemberForm = ({
       />
       <div className="w-full h-[90%]">
         {showNoneOption && (
-          <section className="flex flex-col gap-2">
+          <section className="flex flex-col gap-4 mb-6">
             <span className="font-medium text-dark-grey">
-              If you want to <strong>return</strong> this product, please select
-              the new Location.
+              If you want to reassign this product, please select the new
+              Location.
             </span>
-            <Select
-              onValueChange={(value) =>
-                handleSelectNoneOption(value as Location)
+            <SelectDropdownOptions
+              label="New Location"
+              placeholder={
+                loadingOffices ? "Loading offices..." : "Select new location"
               }
               value={noneOption || ""}
-            >
-              <SelectTrigger className="w-1/2 font-semibold text-md">
-                <SelectValue placeholder="Select Location" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectGroup>
-                  <SelectLabel>Location</SelectLabel>
-                  {LOCATION.filter((e) => e !== "Employee").map((location) => (
-                    <SelectItem value={location} key={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            <hr />
+              onChange={(value) => handleSelectNoneOption(value)}
+              options={locationOptions}
+              optionGroups={locationOptionGroups}
+              className="w-full"
+              disabled={loadingOffices}
+              searchable
+            />
           </section>
         )}
         {validationError && (
           <p className="text-md text-red-500">{validationError}</p>
         )}
         <div
-          className={`flex flex-col gap-4 items-start ${
+          className={`flex flex-col gap-6 items-start ${
             actionType === "AssignProduct" ? "h-[80%]" : "h-[65%]"
           }`}
         >
           {showNoneOption && (
             <p className="font-medium text-dark-grey">
-              If you want to <strong>relocate</strong> this product, please
-              select the <strong>employee</strong> to whom this item will be
-              assigned.
+              If you&apos;d like to assign this product, please choose the
+              employee to whom it will be assigned.
             </p>
           )}
 
@@ -370,18 +494,36 @@ export const AddMemberForm = ({
               className="w-full"
             />
           </div>
-          <div className="flex flex-col gap-2 pt-4 w-full h-full overflow-y-auto scrollbar-custom">
+          <div className="flex flex-col gap-3 pt-2 w-full h-full overflow-y-auto scrollbar-custom">
             {displayedMembers.map((member) => (
               <div
-                className={`flex gap-2 items-center py-2 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue `}
+                className={`flex gap-3 items-center py-3 px-4 border cursor-pointer rounded-md transition-all duration-300 hover:bg-hoverBlue `}
                 key={member._id}
                 onClick={() => handleSelectMember(member)}
               >
-                <input
-                  type="checkbox"
-                  checked={member._id === selectedMember?._id}
-                />
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={member._id === selectedMember?._id}
+                  />
+                  {member.country && (
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <div>
+                            <CountryFlag
+                              countryName={member.country}
+                              size={18}
+                              className="rounded-sm"
+                            />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-blue/80 text-white text-xs">
+                          {countriesByCode[member.country] || member.country}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                   <p className="font-bold text-black">
                     {member.firstName} {member.lastName}
                   </p>
@@ -390,17 +532,21 @@ export const AddMemberForm = ({
                       ? member.team
                       : member.team?.name}
                   </span>
-                  <CategoryIcons products={member.products} />
+                </div>
+                <div className="flex items-center gap-3 ml-auto">
+                  <CategoryIcons products={member.products || []} />
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="mt-4 w-80">
-          <ShipmentWithFp
-            onSubmit={onSubmitDropdown}
-            destinationMember={selectedMember}
-          />
+        <div className="mt-6">
+          <div className="[&_form]:!w-full [&_*]:!max-w-none [&_span.font-semibold]:!font-sans [&_span.font-semibold]:!font-normal [&_span.font-semibold]:!text-[16px]">
+            <ShipmentWithFp
+              onSubmit={onSubmitDropdown}
+              destinationMember={selectedMember}
+            />
+          </div>
         </div>
       </div>
 
@@ -432,6 +578,12 @@ export const AddMemberForm = ({
           </Button>
         </div>
       </aside>
+
+      <InternationalShipmentWarning
+        isOpen={showInternationalWarning}
+        onConfirm={handleConfirmInternationalShipment}
+        onCancel={handleCancelInternationalShipment}
+      />
     </section>
   );
 };

@@ -43,6 +43,7 @@ export default function useActions() {
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
       return response;
     } catch (error) {
       console.error(`Error relocating product ${product._id}:`, error);
@@ -55,7 +56,7 @@ export default function useActions() {
     product,
     currentMember,
   }: {
-    location: Location;
+    location: Location | "FP warehouse";
     product: Product;
     currentMember?: Member;
   }) => {
@@ -74,6 +75,8 @@ export default function useActions() {
       fp_shipment: product.fp_shipment,
       desirableDate: product.desirableDate,
       productCondition: product.productCondition || "Optimal",
+      ...(product.officeId &&
+        location !== "FP warehouse" && { officeId: product.officeId }),
     };
     if (product.assignedMember) {
       updatedProduct.lastAssigned =
@@ -88,6 +91,7 @@ export default function useActions() {
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
       return response;
     } catch (error) {
       console.error("Error unassigning product:", error);

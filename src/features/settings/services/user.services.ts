@@ -97,7 +97,7 @@ export class UserServices {
   static async notifyBirthdayGiftInterest(email: string, tenantName: string) {
     try {
       const response = await HTTPRequests.post(
-        `${BASE_URL}/api/user/notify-birthday-gift`,
+        `${BASE_URL}/api/tenants/notify-birthday-gift`,
         {
           email,
           tenantName,
@@ -113,7 +113,7 @@ export class UserServices {
   static async notifyShop(email: string, tenantName: string) {
     try {
       const response = await HTTPRequests.post(
-        `${BASE_URL}/api/user/notify-shop`,
+        `${BASE_URL}/api/tenants/notify-shop`,
         {
           email,
           tenantName,
@@ -139,7 +139,7 @@ export class UserServices {
   }) {
     try {
       const response = await HTTPRequests.post(
-        `${BASE_URL}/api/user/notify-computer-upgrade`,
+        `${BASE_URL}/api/tenants/notify-computer-upgrade`,
         data
       );
       return response.data;
@@ -152,7 +152,7 @@ export class UserServices {
   static async updateDashboard(widgets: Widget[]) {
     try {
       const response = await HTTPRequests.patch(
-        `${BASE_URL}/api/user/update-dashboard`,
+        `${BASE_URL}/api/tenants/update-dashboard`,
         {
           widgets,
         }

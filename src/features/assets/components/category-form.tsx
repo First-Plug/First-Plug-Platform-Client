@@ -5,7 +5,7 @@ import { Category, Location } from "@/features/assets";
 import { CATEGORIES } from "@/features/assets/interfaces/product";
 
 import { FieldValues, useFormContext } from "react-hook-form";
-import { Skeleton } from "@/shared";
+import { Skeleton, CountryFlag } from "@/shared";
 import {
   QuantityCounter,
   RecoverableSwitch,
@@ -16,6 +16,10 @@ import {
   InputProductForm,
 } from "@/features/assets";
 import { useFetchMembers } from "@/features/members";
+import { useOffices, useOfficeStore } from "@/features/settings";
+import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
+import { countriesByCode } from "@/shared/constants/country-codes";
+import { useAsideStore } from "@/shared";
 
 interface CategoryFormProps {
   handleCategoryChange: (category: Category | "") => void;
@@ -59,12 +63,23 @@ export const CategoryForm = ({
   const [selectedAssignedMember, setSelectedAssignedMember] =
     useState<string>("");
   const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
   const [isLocationEnabled, setIsLocationEnabled] = useState(false);
   const [assignedEmailOptions, setAssignedEmailOptions] = useState<string[]>(
     []
   );
+  const [locationOptionGroups, setLocationOptionGroups] = useState<
+    Array<{
+      label: string;
+      options: Array<string | { display: React.ReactNode; value: string }>;
+    }>
+  >([]);
 
   const { data: fetchedMembers = [], isLoading } = useFetchMembers();
+  const { offices, isLoading: isLoadingOffices } = useOffices();
+  const { pushAside } = useAsideStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
+  const ADD_OFFICE_VALUE = "__ADD_OFFICE__";
   const selectedModel = watch("model");
 
   const [showNameInput, setShowNameInput] = useState(false);
@@ -83,9 +98,109 @@ export const CategoryForm = ({
   }, [fetchedMembers]);
 
   useEffect(() => {
-    if (isUpdate && !manualChange) {
+    // Ordenar oficinas para que la por defecto aparezca primero
+    const sortedOffices = offices
+      ? [...offices].sort((a, b) => {
+          if (a.isDefault && !b.isDefault) return -1;
+          if (!a.isDefault && b.isDefault) return 1;
+          return 0;
+        })
+      : [];
+
+    // Obtener countryCode del producto si está disponible
+    const productCountryCode = formState?.countryCode as string | undefined;
+
+    // Crear grupos de opciones para el dropdown con banderas
+    const groups = [
+      {
+        label: "Our offices",
+        options: [
+          ...(sortedOffices && sortedOffices.length > 0
+            ? sortedOffices.map((office) => {
+                const countryName = office.country
+                  ? countriesByCode[office.country] || office.country
+                  : "";
+                const displayLabel = `${countryName} - ${office.name}`;
+
+                return {
+                  display: (
+                    <>
+                      {office.country && (
+                        <CountryFlag
+                          countryName={office.country}
+                          size={16}
+                          className="rounded-sm"
+                        />
+                      )}
+                      <span className="truncate">{displayLabel}</span>
+                    </>
+                  ),
+                  value: displayLabel,
+                };
+              })
+            : []),
+          {
+            display: (
+              <span className="font-medium text-blue">+ Add Office</span>
+            ),
+            value: ADD_OFFICE_VALUE,
+          },
+          // Agregar "FP warehouse" como opción válida solo en modo update
+          ...(isUpdate
+            ? [
+                {
+                  display: productCountryCode ? (
+                    <>
+                      <CountryFlag
+                        countryName={productCountryCode}
+                        size={16}
+                        className="rounded-sm"
+                      />
+                      <span className="truncate">
+                        {countriesByCode[productCountryCode.toUpperCase()] ||
+                          productCountryCode}{" "}
+                        - FP warehouse
+                      </span>
+                    </>
+                  ) : (
+                    <span className="truncate">FP warehouse</span>
+                  ),
+                  value: "FP warehouse",
+                },
+              ]
+            : []),
+        ],
+      },
+    ];
+    setLocationOptionGroups(groups);
+  }, [offices, isUpdate, formState?.countryCode]);
+
+  // Detectar cuando se crea una nueva oficina
+  useEffect(() => {
+    if (newlyCreatedOffice) {
+      // Seleccionar automáticamente la nueva oficina
+      const countryName = newlyCreatedOffice.country
+        ? countriesByCode[newlyCreatedOffice.country] ||
+          newlyCreatedOffice.country
+        : "";
+      const displayLabel = `${countryName} - ${newlyCreatedOffice.name}`;
+
+      setSelectedLocation(displayLabel);
+      setValue("location", "Our office");
+      setSelectedOfficeId(newlyCreatedOffice._id);
+      setValue("officeId", newlyCreatedOffice._id);
+      clearErrors("location");
+
+      // Limpiar la oficina recién creada después de usarla
+      clearNewlyCreatedOffice();
+    }
+  }, [newlyCreatedOffice, setValue, clearErrors, clearNewlyCreatedOffice]);
+
+  useEffect(() => {
+    if (isUpdate && !manualChange && offices && offices.length > 0) {
       const assignedMember = formState.assignedMember as string;
       const assignedEmail = formState.assignedEmail as string;
+      const location = formState.location as string;
 
       const selectedMember = fetchedMembers.find(
         (member) => `${member.firstName} ${member.lastName}` === assignedMember
@@ -96,11 +211,75 @@ export const CategoryForm = ({
       );
       setValue("assignedMember", assignedMember || "");
       setAssignedEmail(selectedMember?.email || assignedEmail || "");
-      setSelectedLocation(formState.location as string);
-      setValue("location", formState.location);
+
+      // Transformar location al formato correcto para el dropdown
+      let locationToDisplay = location;
+
+      // Normalizar "FP Warehouse" a "FP warehouse" si viene con mayúscula
+      if (location === "FP Warehouse") {
+        locationToDisplay = "FP warehouse";
+      }
+
+      // Si es FP warehouse y tiene countryCode, agregar el país al display
+      if (locationToDisplay === "FP warehouse") {
+        const productCountryCode = formState?.countryCode as string | undefined;
+        if (productCountryCode) {
+          const countryName =
+            countriesByCode[productCountryCode.toUpperCase()] ||
+            productCountryCode;
+          locationToDisplay = `${countryName} - FP warehouse`;
+        }
+      } else if (
+        locationToDisplay &&
+        locationToDisplay !== "Employee" &&
+        locationToDisplay !== "FP warehouse"
+      ) {
+        // Primero intentar buscar por officeName si está disponible
+        let office = formState.officeName
+          ? offices?.find((o) => o.name === formState.officeName)
+          : null;
+
+        // Si no se encontró, buscar por location
+        if (!office) {
+          office = offices?.find((office) => office.name === location);
+        }
+
+        if (office) {
+          const countryName = office.country
+            ? countriesByCode[office.country] || office.country
+            : "";
+          locationToDisplay = `${countryName} - ${office.name}`;
+          setSelectedOfficeId(office._id);
+          setValue("officeId", office._id);
+        } else {
+          // Si no se encuentra la oficina, usar location tal cual
+          locationToDisplay = location;
+        }
+      }
+
+      // Para FP warehouse, el value debe ser solo "FP warehouse" para que coincida con las opciones
+      const finalLocationValue =
+        location === "FP Warehouse" || location === "FP warehouse"
+          ? "FP warehouse"
+          : locationToDisplay;
+
+      setSelectedLocation(finalLocationValue);
+      // Guardar el valor normalizado (FP warehouse con w minúscula)
+      const normalizedLocation =
+        location === "FP Warehouse" ? "FP warehouse" : location;
+      setValue("location", normalizedLocation);
       setValue("productCondition", formState.productCondition || "Optimal");
     }
-  }, [isUpdate, fetchedMembers, formState, setValue, setAssignedEmail]);
+  }, [
+    isUpdate,
+    fetchedMembers,
+    formState,
+    setValue,
+    setAssignedEmail,
+    manualChange,
+    offices,
+    locationOptionGroups,
+  ]);
 
   const handleInputChange = (name: keyof FieldValues, value: string) => {
     setValue(name, value);
@@ -117,13 +296,51 @@ export const CategoryForm = ({
       setValue("assignedEmail", "");
       setValue("assignedMember", "");
       setSelectedLocation("");
-      setValue("location", "");
+      setValue("location", undefined);
       clearErrors(["assignedEmail", "assignedMember", "location"]);
 
       // Actualiza la referencia
       prevCategoryRef.current = selectedCategory;
     }
   }, [selectedCategory, isUpdate, setValue, setAssignedEmail, clearErrors]);
+
+  const handleLocationChange = (displayValue: string) => {
+    if (displayValue === ADD_OFFICE_VALUE) {
+      pushAside("CreateOffice");
+      return;
+    }
+    setSelectedLocation(displayValue);
+    clearErrors("location");
+
+    // Si es "FP warehouse" (con o sin país), establecer la location directamente
+    if (
+      displayValue === "FP warehouse" ||
+      displayValue.includes(" - FP warehouse")
+    ) {
+      setValue("location", "FP warehouse");
+      setSelectedOfficeId(null);
+      setValue("officeId", undefined);
+      return;
+    }
+
+    setValue("location", "Our office"); // Siempre enviar "Our office" cuando se selecciona una oficina
+
+    // Buscar la oficina seleccionada por el formato "country - name" y obtener su ID
+    const selectedOffice = offices?.find((office) => {
+      const countryName = office.country
+        ? countriesByCode[office.country] || office.country
+        : "";
+      return `${countryName} - ${office.name}` === displayValue;
+    });
+
+    if (selectedOffice) {
+      setSelectedOfficeId(selectedOffice._id);
+      setValue("officeId", selectedOffice._id);
+    } else {
+      setSelectedOfficeId(null);
+      setValue("officeId", undefined);
+    }
+  };
 
   const handleAssignedMemberChange = (selectedFullName: string) => {
     setSelectedAssignedMember(selectedFullName);
@@ -134,6 +351,8 @@ export const CategoryForm = ({
       setValue("assignedMember", "");
       setSelectedLocation(undefined);
       setValue("location", undefined);
+      setSelectedOfficeId(null);
+      setValue("officeId", undefined);
       setValue("status", "Available");
       if (!isUpdate) {
         setIsLocationEnabled(true);
@@ -149,6 +368,8 @@ export const CategoryForm = ({
       setValue("assignedMember", selectedFullName);
       setSelectedLocation("Employee");
       setValue("location", "Employee");
+      setSelectedOfficeId(null);
+      setValue("officeId", undefined);
       setValue("status", "Delivered");
       if (!isUpdate) {
         setIsLocationEnabled(false);
@@ -163,8 +384,10 @@ export const CategoryForm = ({
       setValue("assignedMember", "");
       setValue("assignedEmail", "");
       setSelectedAssignedMember("");
-      setValue("location", "");
+      setValue("location", undefined);
       setSelectedLocation("");
+      setSelectedOfficeId(null);
+      setValue("officeId", undefined);
       setValue("productCondition", "Optimal");
       setValue("additionalInfo", "");
       clearErrors([
@@ -202,7 +425,7 @@ export const CategoryForm = ({
     return false;
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingOffices) {
     return (
       <div className="flex flex-col gap-2 w-full h-full">
         <Skeleton className="w-full h-12" />
@@ -262,28 +485,22 @@ export const CategoryForm = ({
             {selectedAssignedMember === "None" ||
             selectedAssignedMember === "" ? (
               <>
-                <DropdownInputProductForm
-                  options={["Our office", "FP warehouse"]}
+                <SelectDropdownOptions
+                  label="Location*"
                   placeholder="Location"
-                  title="Location*"
-                  name="location"
-                  selectedOption={selectedLocation}
-                  onChange={(value: Location) => {
-                    setSelectedLocation(value);
-                    setValue("location", value);
-                    clearErrors("location");
-                  }}
-                  required="required"
+                  value={selectedLocation || ""}
+                  onChange={handleLocationChange}
+                  optionGroups={locationOptionGroups}
                   className="w-full"
                   disabled={true}
+                  required
+                  productFormStyle={true}
+                  searchable
                 />
                 <div className="min-h-[24px]">
                   {errors.location && (
                     <p className="text-red-500">
-                      {(errors.location as any).message ===
-                      "Invalid enum value. Expected 'Our office' | 'FP warehouse' | 'Employee', received ''"
-                        ? "Location is required"
-                        : (errors.location as any).message}
+                      {(errors.location as any).message}
                     </p>
                   )}
                 </div>
@@ -492,28 +709,22 @@ export const CategoryForm = ({
               {selectedAssignedMember === "None" ||
               selectedAssignedMember === "" ? (
                 <>
-                  <DropdownInputProductForm
-                    options={["Our office", "FP warehouse"]}
+                  <SelectDropdownOptions
+                    label="Location*"
                     placeholder="Location"
-                    title="Location*"
-                    name="location"
-                    selectedOption={selectedLocation}
-                    onChange={(value: Location) => {
-                      setSelectedLocation(value);
-                      setValue("location", value);
-                      clearErrors("location");
-                    }}
-                    required="required"
+                    value={selectedLocation || ""}
+                    onChange={handleLocationChange}
+                    optionGroups={locationOptionGroups}
                     className="w-full"
                     disabled={!isLocationEnabled || quantity > 1}
+                    required
+                    productFormStyle={true}
+                    searchable
                   />
                   <div className="min-h-[24px]">
                     {errors.location && (
                       <p className="text-red-500">
-                        {(errors.location as any).message ===
-                        "Invalid enum value. Expected 'Our office' | 'FP warehouse' | 'Employee', received ''"
-                          ? "Location is required"
-                          : (errors.location as any).message}
+                        {(errors.location as any).message}
                       </p>
                     )}
                   </div>

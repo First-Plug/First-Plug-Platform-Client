@@ -495,6 +495,89 @@ export const AlertProvider = () => {
         setAlert(undefined);
       },
     },
+    officeCreatedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: "Office has been successfully created.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    officeUpdatedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: "Office has been successfully updated.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    officeDeletedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: "Office has been successfully deleted.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    defaultOfficeUpdatedSuccessfully: {
+      title: "Success",
+      type: "succes",
+      description: "Default office has been successfully updated.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorCreateOffice: {
+      title: "Error",
+      type: "error",
+      description: "Failed to create office. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorDeleteOffice: {
+      title: "Error",
+      type: "error",
+      description: "Failed to delete office. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorSetDefaultOffice: {
+      title: "Error",
+      type: "error",
+      description: "Failed to set default office. Please try again.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorOfficeDuplicateName: {
+      title: "Error",
+      type: "error",
+      description:
+        "An office with this name already exists. Please use a different name.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorOfficeHasProducts: {
+      title: "Error",
+      type: "error",
+      description:
+        "Cannot delete this office because it has assigned products. Please reassign the products first.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
+    errorOfficeIsDefault: {
+      title: "Error",
+      type: "error",
+      description:
+        "Cannot delete the default office. Please set another office as default first.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;

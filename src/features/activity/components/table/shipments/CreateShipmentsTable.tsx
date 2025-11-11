@@ -8,6 +8,7 @@ import {
 } from "@/shared";
 import type { Shipment } from "@/features/shipments";
 import { formatDate } from "@/shared";
+import { ShipmentLocationWithCountry } from "./ShipmentLocationWithCountry";
 
 interface ShipmentsTableProps {
   data: Shipment | Shipment[];
@@ -72,18 +73,32 @@ const CreateShipmentsTable: React.FC<ShipmentsTableProps> = ({ data }) => {
                   {snapshot.serialNumber || "N/A"}
                 </TableCell>
                 <TableCell className="px-4 py-2 border-r text-xs">
-                  {shipment.origin || ""}
-                  {" / "}
-                  {shipment.originDetails.desirableDate === "ASAP"
-                    ? "ASAP"
-                    : formatDate(shipment.originDetails.desirableDate)}
+                  <div className="flex flex-col gap-1">
+                    <ShipmentLocationWithCountry
+                      location={shipment.origin}
+                      details={shipment.originDetails}
+                    />
+                    <span className="text-gray-500">
+                      {shipment.originDetails?.desirableDate === "ASAP"
+                        ? "ASAP"
+                        : formatDate(shipment.originDetails?.desirableDate)}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell className="px-4 py-2 text-xs">
-                  {shipment.destination || ""}
-                  {" / "}
-                  {shipment.destinationDetails.desirableDate === "ASAP"
-                    ? "ASAP"
-                    : formatDate(shipment.destinationDetails.desirableDate)}
+                  <div className="flex flex-col gap-1">
+                    <ShipmentLocationWithCountry
+                      location={shipment.destination}
+                      details={shipment.destinationDetails}
+                    />
+                    <span className="text-gray-500">
+                      {shipment.destinationDetails?.desirableDate === "ASAP"
+                        ? "ASAP"
+                        : formatDate(
+                            shipment.destinationDetails?.desirableDate
+                          )}
+                    </span>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

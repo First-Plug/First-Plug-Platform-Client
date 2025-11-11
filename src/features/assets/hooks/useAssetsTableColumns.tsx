@@ -93,7 +93,10 @@ export function useAssetsTableColumns({ assets }: { assets: ProductTable[] }) {
           })(),
         },
         cell: ({ row }) => (
-          <PrdouctModelDetail product={row.original.products?.[0]} />
+          <PrdouctModelDetail
+            product={row.original.products?.[0]}
+            hideSerialNumber={true}
+          />
         ),
       },
       {

@@ -5,7 +5,11 @@ import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { UserServices } from "@/features/settings";
 import { useSession } from "next-auth/react";
 import { useAsideStore } from "@/shared";
-import { useProductStore, ProductServices } from "@/features/assets";
+import {
+  useProductStore,
+  ProductServices,
+  CountryFilter,
+} from "@/features/assets";
 
 export const TableStockActions = () => {
   const router = useRouter();
@@ -27,7 +31,7 @@ export const TableStockActions = () => {
 
   return (
     <div className="flex justify-between items-center w-full h-full">
-      <div className="flex gap-1">
+      <div className="flex items-center gap-1">
         <input
           id="onlyAvailable"
           type="checkbox"
@@ -37,6 +41,10 @@ export const TableStockActions = () => {
         <label htmlFor="onlyAvailable" className="text-gray-500 text-md">
           Show only available products
         </label>
+      </div>
+
+      <div className="flex flex-1 justify-center">
+        <CountryFilter />
       </div>
 
       <div className="flex gap-2">

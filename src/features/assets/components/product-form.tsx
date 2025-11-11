@@ -27,6 +27,7 @@ import { useCreateAsset, useUpdateEntityAsset } from "@/features/assets";
 import { useQueryClient } from "@tanstack/react-query";
 import { validateOnCreate } from "@/shared";
 import { useAsideStore, useAlertStore } from "@/shared";
+import { useOffices } from "@/features/settings";
 
 import { useSession } from "next-auth/react";
 
@@ -89,6 +90,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const createAsset = useCreateAsset();
   const updateEntityAsset = useUpdateEntityAsset();
   const queryClient = useQueryClient();
+  const { offices } = useOffices();
 
   const methods = useForm({
     resolver: zodResolver(zodCreateProductModel),
@@ -268,16 +270,25 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       return;
     }
 
+    // Validar location si no hay member seleccionado
+    const location = watch("location");
+    if (
+      (!finalAssignedEmail || finalAssignedEmail === "None") &&
+      (!location || location === "")
+    ) {
+      methods.setError("location", {
+        type: "manual",
+        message: "Location is required",
+      });
+      return;
+    }
+
     const currentRecoverable = watch("recoverable") ?? formValues.recoverable;
     const allMembers = queryClient.getQueryData<Member[]>(["members"]);
     const selectedMember =
       allMembers?.find((member) => member.email === finalAssignedEmail) || null;
 
-    const adjustedNoneOption = selectedMember
-      ? null
-      : data.location === "FP warehouse"
-      ? "FP warehouse"
-      : "Our office";
+    const adjustedNoneOption = selectedMember ? null : data.location;
 
     let missingMessages: string[] = [];
 
@@ -292,7 +303,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           address: (sessionUser as any)?.address,
           phone: (sessionUser as any)?.phone,
         },
-        adjustedNoneOption
+        adjustedNoneOption,
+        data.officeId
       );
     }
 
@@ -305,7 +317,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       // Si se ha asignado un miembro y la ubicación es "Employee", el status es "Delivered"
       if (finalAssignedEmail && data.location === "Employee") {
         status = "Delivered";
-      } else if (["FP warehouse", "Our office"].includes(data.location)) {
+      } else if (data.location !== "Employee") {
+        // Si no es "Employee", es una oficina, por lo tanto está "Available"
         status = "Available";
       }
     }
@@ -323,6 +336,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       productCondition:
         data.productCondition ?? initialData?.productCondition ?? "Optimal",
       additionalInfo: data.additionalInfo || "",
+      officeId: data.location === "Our office" ? data.officeId : undefined,
       attributes: attributes.map((attr) => {
         const initialAttr = initialData?.attributes.find(
           (ia) => ia.key === attr.key
@@ -417,16 +431,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     let source = null;
 
     if (!isUpdate) {
-      if (adjustedNoneOption === "Our office") {
-        source = {
-          type: "office",
-          data: { ...sessionUser, location: "Our office" },
-        };
-      } else if (adjustedNoneOption === "FP warehouse") {
-        source = {
-          type: "office",
-          data: { location: "FP warehouse" },
-        };
+      if (adjustedNoneOption && adjustedNoneOption !== "Employee") {
+        // Buscar la oficina correspondiente por nombre
+        const selectedOffice = offices?.find(
+          (office) => office.name === adjustedNoneOption
+        );
+        if (selectedOffice) {
+          source = {
+            type: "office",
+            data: { ...selectedOffice, location: selectedOffice.name },
+          };
+        }
       }
     } else if (isUpdate && initialData) {
       if (initialData.location === "Employee" && initialData.assignedEmail) {
@@ -440,13 +455,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           };
         }
       } else {
-        source = {
-          type: "office",
-          data:
-            initialData.location === "Our office"
-              ? { ...sessionUser, location: "Our office" }
-              : { location: "FP warehouse" },
-        };
+        // Buscar la oficina correspondiente por nombre
+        const selectedOffice = offices?.find(
+          (office) => office.name === initialData.location
+        );
+        if (selectedOffice) {
+          source = {
+            type: "office",
+            data: { ...selectedOffice, location: selectedOffice.name },
+          };
+        }
       }
     }
 
@@ -463,12 +481,29 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           "productCondition",
         ];
         requiredFields.forEach((field) => {
-          changes[field] = formatData[field];
+          // Normalizar "location" a "FP warehouse" si es "FP Warehouse"
+          if (
+            field === "location" &&
+            formatData[field]?.toLowerCase() === "fp warehouse"
+          ) {
+            changes[field] = "FP warehouse";
+          } else {
+            changes[field] = formatData[field];
+          }
         });
 
         Object.keys(formatData).forEach((key) => {
-          if (formatData[key] !== initialData[key]) {
-            changes[key] = formatData[key];
+          // Excluir solo "officeId" del update
+          if (key !== "officeId" && formatData[key] !== initialData[key]) {
+            // Normalizar "location" a "FP warehouse" si es "FP Warehouse"
+            if (
+              key === "location" &&
+              formatData[key]?.toLowerCase() === "fp warehouse"
+            ) {
+              changes[key] = "FP warehouse";
+            } else {
+              changes[key] = formatData[key];
+            }
           }
         });
 
@@ -497,6 +532,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           }
         );
       } else {
+        // Validar que "FP warehouse" no se use en create
+        if (formatData.location === "FP warehouse") {
+          setErrorMessage(
+            "FP warehouse location is not allowed for product creation. Please use 'Our office' instead."
+          );
+          setShowErrorDialog(true);
+          setIsProcessing(false);
+          return;
+        }
+
         if (quantity > 1) {
           setBulkInitialData(formatData);
           setShowBulkCreate(true);

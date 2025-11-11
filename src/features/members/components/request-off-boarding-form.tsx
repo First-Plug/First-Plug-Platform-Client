@@ -1,18 +1,45 @@
 "use client";
-import { Button, PageLayout, SectionTitle } from "@/shared";
+import { Button, SectionTitle } from "@/shared";
 import { ProductDetail } from "@/features/assets";
 import { Product } from "@/features/assets";
 import { User } from "@/features/auth";
 import { DropdownInputProductForm } from "@/features/assets";
+import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Controller, useFormContext } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { useAsideStore } from "@/shared";
+import {
+  useAsideStore,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import { useMemberStore } from "../store/member.store";
+import {
+  useOffices,
+  useOfficeStore,
+  useOfficeCreationContext,
+  Office,
+} from "@/features/settings";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
-const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"];
+const DROPDOWN_OPTIONS = ["FP warehouse"];
+
+// Campos requeridos para que una oficina esté completa
+const REQUIRED_OFFICE_FIELDS = [
+  "name",
+  "phone",
+  "country",
+  "state",
+  "city",
+  "zipCode",
+  "address",
+] as const;
 
 interface ExtendedUser extends Partial<User> {
   personalEmail?: string;
@@ -69,6 +96,15 @@ export const validateMemberBillingInfo = (user: ExtendedUser): boolean => {
   return isValid;
 };
 
+const validateOfficeComplete = (office: Office | undefined): boolean => {
+  if (!office) return false;
+
+  return REQUIRED_OFFICE_FIELDS.every((field) => {
+    const value = office[field as keyof Office];
+    return value !== undefined && value !== null && String(value).trim() !== "";
+  });
+};
+
 export const RequestOffBoardingForm = ({
   product,
   products,
@@ -81,24 +117,47 @@ export const RequestOffBoardingForm = ({
 }: Props) => {
   const { setSelectedMember } = useMemberStore();
 
+  const { offices, isLoading: loadingOffices } = useOffices();
+
+  // Ordenar oficinas para que la por defecto aparezca primero
+  const sortedOffices = [...offices].sort((a, b) => {
+    if (a.isDefault && !b.isDefault) return -1;
+    if (!a.isDefault && b.isDefault) return 1;
+    return 0;
+  });
+
+  const officeLabels = sortedOffices.map((o) => {
+    const countryName = o.country
+      ? countriesByCode[o.country] || o.country
+      : "";
+    return `${countryName} - ${o.name}`;
+  });
+
   const { data: session } = useSession();
   const router = useRouter();
   const { setValue, watch, control } = useFormContext();
-  const { setAside, isClosed } = useAsideStore();
+  const { pushAside, isClosed } = useAsideStore();
+  const { newlyCreatedOffice, creationContext, clearNewlyCreatedOffice } =
+    useOfficeStore();
+  const { setProductIndex: setOfficeCreationContext } =
+    useOfficeCreationContext();
+  const queryClient = useQueryClient();
 
   const [formStatus, setFormStatus] = useState<string>("none");
   const [applyToAll, setApplyToAll] = useState(false);
   const [isPropagating, setIsPropagating] = useState(false);
   const [dropdownOptions, setDropdownOptions] = useState(DROPDOWN_OPTIONS);
   const [isDisabledDropdown, setIsDisabledDropdown] = useState(true);
+  const [selectedOfficeForUpdate, setSelectedOfficeForUpdate] =
+    useState<Office | null>(null);
 
   const selectedMember = watch(`products.${index}.newMember`);
   const relocation = watch(`products.${index}.relocation`);
 
   const handleDropdown = (relocation: string) => {
-    if (relocation === "My office") {
+    if (isOfficeLabel(relocation)) {
       if (!validateBillingInfo(session.user)) {
-        setValue(`products.${index}.relocation`, "My office");
+        setValue(`products.${index}.relocation`, relocation);
         setValue(`products.${index}.available`, false);
         setValue(`products.${index}.newMember`, "None", {
           shouldValidate: true,
@@ -107,7 +166,7 @@ export const RequestOffBoardingForm = ({
           shouldValidate: true,
         });
       } else {
-        setValue(`products.${index}.relocation`, "My office");
+        setValue(`products.${index}.relocation`, relocation);
         setValue(`products.${index}.available`, true);
         setValue(`products.${index}.newMember`, "None", {
           shouldValidate: true,
@@ -126,6 +185,10 @@ export const RequestOffBoardingForm = ({
       });
       setValue(`products.${index}.product`, products[index], {
         shouldValidate: true,
+      });
+      // Limpiar officeId cuando se elige FP warehouse
+      setValue(`products.${index}.officeId`, undefined, {
+        shouldValidate: false,
       });
     }
 
@@ -201,6 +264,67 @@ export const RequestOffBoardingForm = ({
     return () => subscription.unsubscribe();
   }, [applyToAll, watch, totalProducts, isPropagating]);
 
+  // Detectar cuando se crea una nueva oficina
+  useEffect(() => {
+    if (newlyCreatedOffice && creationContext === index) {
+      // Seleccionar automáticamente la nueva oficina
+      const countryName = newlyCreatedOffice.country
+        ? countriesByCode[newlyCreatedOffice.country] ||
+          newlyCreatedOffice.country
+        : "";
+      const displayLabel = `${countryName} - ${newlyCreatedOffice.name}`;
+
+      // Verificar que el newMember sea "None" antes de aplicar
+      const currentNewMember = watch(`products.${index}.newMember`);
+      if (currentNewMember === "None" || !currentNewMember) {
+        // Aplicar al producto actual
+        setValue(`products.${index}.relocation`, displayLabel, {
+          shouldValidate: true,
+        });
+        setValue(`products.${index}.officeId`, newlyCreatedOffice._id, {
+          shouldValidate: false,
+        });
+        setValue(`products.${index}.available`, true, {
+          shouldValidate: true,
+        });
+        setValue(`products.${index}.product`, products[index], {
+          shouldValidate: true,
+        });
+
+        // Si applyToAll está activado, aplicar a todos
+        if (applyToAll && index === 0) {
+          for (let i = 1; i < totalProducts; i++) {
+            setValue(`products.${i}.relocation`, displayLabel, {
+              shouldValidate: true,
+            });
+            setValue(`products.${i}.officeId`, newlyCreatedOffice._id, {
+              shouldValidate: false,
+            });
+            setValue(`products.${i}.available`, true, {
+              shouldValidate: true,
+            });
+            setValue(`products.${i}.product`, products[i], {
+              shouldValidate: true,
+            });
+          }
+        }
+      }
+
+      // Limpiar la oficina recién creada después de usarla
+      clearNewlyCreatedOffice();
+    }
+  }, [
+    newlyCreatedOffice,
+    creationContext,
+    index,
+    watch,
+    setValue,
+    applyToAll,
+    totalProducts,
+    products,
+    clearNewlyCreatedOffice,
+  ]);
+
   const getStatus = () => {
     if (relocation === "New employee") {
       const foundMember = members.find(
@@ -219,6 +343,23 @@ export const RequestOffBoardingForm = ({
       }
     }
 
+    // Validar si es una oficina seleccionada (no "FP warehouse" ni "New employee")
+    if (isOfficeLabel(relocation)) {
+      const selectedOffice = sortedOffices.find((o) => {
+        const countryName = o.country
+          ? countriesByCode[o.country] || o.country
+          : "";
+        return `${countryName} - ${o.name}` === relocation;
+      });
+
+      if (selectedOffice) {
+        setSelectedOfficeForUpdate(selectedOffice);
+        if (!validateOfficeComplete(selectedOffice)) {
+          return "not-office-complete";
+        }
+      }
+    }
+
     setDropdownOptions(["My office", "FP warehouse"]);
     if (!applyToAll) {
       setIsDisabledDropdown(false);
@@ -231,7 +372,8 @@ export const RequestOffBoardingForm = ({
 
     if (
       newStatus === "not-member-available" ||
-      newStatus === "not-billing-information"
+      newStatus === "not-billing-information" ||
+      newStatus === "not-office-complete"
     ) {
       const currentAvailableValue = watch(`products.${index}.available`);
 
@@ -262,7 +404,8 @@ export const RequestOffBoardingForm = ({
 
       if (
         newStatus === "not-member-available" ||
-        newStatus === "not-billing-information"
+        newStatus === "not-billing-information" ||
+        newStatus === "not-office-complete"
       ) {
         const currentAvailableValue = watch(`products.${index}.available`);
 
@@ -339,7 +482,11 @@ export const RequestOffBoardingForm = ({
       );
 
       setSelectedMember(foundMember);
-      setAside("EditMember");
+      pushAside("EditMember");
+    } else if (status === "not-office-complete" && selectedOfficeForUpdate) {
+      // Setear la oficina seleccionada en queryClient para que UpdateOffice la pueda usar
+      queryClient.setQueryData(["selectedOffice"], selectedOfficeForUpdate);
+      pushAside("UpdateOffice");
     }
   };
 
@@ -361,144 +508,247 @@ export const RequestOffBoardingForm = ({
     setValue,
   ]);
 
+  // Actualizar las opciones del dropdown cuando cambien las oficinas
+  useEffect(() => {
+    setDropdownOptions(DROPDOWN_OPTIONS);
+  }, [officeLabels]);
+
+  // Helpers de oficinas
+  const ADD_OFFICE_VALUE = "__ADD_OFFICE__";
+  const officeGroups = [
+    {
+      label: "Our offices",
+      options: [
+        ...(sortedOffices && sortedOffices.length > 0
+          ? sortedOffices.map((office) => {
+              const countryName = office.country
+                ? countriesByCode[office.country] || office.country
+                : "";
+              const displayLabel = `${countryName} - ${office.name}`;
+
+              return {
+                display: (
+                  <>
+                    {office.country && (
+                      <TooltipProvider>
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <div>
+                              <CountryFlag
+                                countryName={office.country}
+                                size={16}
+                                className="rounded-sm"
+                              />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-blue/80 text-white text-xs">
+                            {countryName || office.country}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                    <span className="truncate">{displayLabel}</span>
+                  </>
+                ),
+                value: displayLabel,
+              };
+            })
+          : []),
+        {
+          display: <span className="font-medium text-blue">+ Add Office</span>,
+          value: ADD_OFFICE_VALUE,
+        },
+      ],
+    },
+  ];
+
+  const isOfficeLabel = (val: string) => officeLabels.includes(val);
+
+  const handleSelectLocation = (selectedValue: string) => {
+    if (selectedValue === ADD_OFFICE_VALUE) {
+      setOfficeCreationContext(index);
+      pushAside("CreateOffice");
+      return;
+    }
+    if (isOfficeLabel(selectedValue)) {
+      // set relocation con el nombre real de la oficina
+      setValue(`products.${index}.relocation`, selectedValue, {
+        shouldValidate: true,
+      });
+      const office = sortedOffices.find((o) => {
+        const countryName = o.country
+          ? countriesByCode[o.country] || o.country
+          : "";
+        return `${countryName} - ${o.name}` === selectedValue;
+      });
+      setValue(`products.${index}.officeId`, office?._id, {
+        shouldValidate: false,
+      });
+      handleDropdown(selectedValue);
+    } else {
+      handleDropdown(selectedValue);
+    }
+  };
+
   return (
-    <PageLayout>
-      <section className={`space-y-4 ${className}`}>
-        {index === 0 && totalProducts > 1 && (
-          <div className="flex items-center mt-2">
-            {/* <input
-                type="checkbox"
-                className="mr-2"
-                checked={applyToAll}
-                onChange={handleAssignAllChange}
-              />
-              <p className="font-semibold text-md">
-                Apply &quot;Product 1&quot; settings to all Products
-              </p> */}
-          </div>
-        )}
-
-        <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
-        <div className="flex space-x-2">
-          <div className="p-4 lg:min-w-[35vw]">
-            <ProductDetail product={product} />
-          </div>
-          <div className="flex-3 p-4">
-            <Controller
-              name={`products.${index}.newMember`}
-              control={control}
-              render={({ field: { onChange, value, name } }) => {
-                const selectedFullName =
-                  value && typeof value === "object"
-                    ? `${value.firstName} ${value.lastName}`
-                    : value === ""
-                    ? "None"
-                    : value;
-
-                return (
-                  <DropdownInputProductForm
-                    name={name}
-                    options={[
-                      "None",
-                      ...members.map(
-                        (member) => `${member.firstName} ${member.lastName}`
-                      ),
-                    ]}
-                    placeholder="Reassigned Member"
-                    title="Reassigned Member*"
-                    onChange={(selectedValue: string) => {
-                      const selectedMember = members.find(
-                        (member) =>
-                          `${member.firstName} ${member.lastName}` ===
-                          selectedValue
-                      );
-
-                      if (selectedValue === "None") {
-                        setValue(`products.${index}.newMember`, "None", {
-                          shouldValidate: true,
-                        });
-                        setValue(`products.${index}.relocation`, "", {
-                          shouldValidate: true,
-                        });
-                        setValue(`products.${index}.available`, true, {
-                          shouldValidate: true,
-                        });
-                        setValue(`products.${index}.product`, products[index], {
-                          shouldValidate: true,
-                        });
-                        setDropdownOptions(["My office", "FP warehouse"]);
-                        setIsDisabledDropdown(false);
-                      } else if (selectedMember) {
-                        setValue(
-                          `products.${index}.newMember`,
-                          selectedMember,
-                          {
-                            shouldValidate: true,
-                          }
-                        );
-                        setValue(
-                          `products.${index}.relocation`,
-                          "New employee",
-                          {
-                            shouldValidate: true,
-                          }
-                        );
-                        setValue(`products.${index}.available`, true, {
-                          shouldValidate: true,
-                        });
-                        setValue(`products.${index}.product`, products[index], {
-                          shouldValidate: true,
-                        });
-                        setDropdownOptions(DROPDOWN_OPTIONS);
-                        setIsDisabledDropdown(true);
-                      }
-                      onChange(selectedValue);
-                    }}
-                    searchable={true}
-                    selectedOption={selectedFullName}
-                  />
-                );
-              }}
+    <section className={`space-y-4 mb-6 ${className}`}>
+      {index === 0 && totalProducts > 1 && (
+        <div className="flex items-center mt-2">
+          {/* <input
+              type="checkbox"
+              className="mr-2"
+              checked={applyToAll}
+              onChange={handleAssignAllChange}
             />
-          </div>
-          <div className="flex- bg-green-200 p-4">
-            <Controller
-              name={`products.${index}.relocation`}
-              control={control}
-              render={({ field: { onChange, value, name } }) => (
+            <p className="font-semibold text-md">
+              Apply &quot;Product 1&quot; settings to all Products
+            </p> */}
+        </div>
+      )}
+
+      <SectionTitle>{`Product ${index + 1}`}</SectionTitle>
+      <div className="flex space-x-2">
+        <div className="p-4 lg:min-w-[35vw]">
+          <ProductDetail product={product} />
+        </div>
+        <div className="flex-3 p-4">
+          <Controller
+            name={`products.${index}.newMember`}
+            control={control}
+            render={({ field: { onChange, value, name } }) => {
+              const selectedFullName =
+                value && typeof value === "object"
+                  ? `${value.firstName} ${value.lastName}`
+                  : value === ""
+                  ? "None"
+                  : value;
+
+              return (
                 <DropdownInputProductForm
                   name={name}
-                  options={dropdownOptions}
-                  placeholder="New Location"
-                  title="New Location*"
+                  selectedOption={selectedFullName}
+                  options={[
+                    "None",
+                    ...members.map((member) => ({
+                      display: (
+                        <>
+                          {member.country && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <div>
+                                    <CountryFlag
+                                      countryName={member.country}
+                                      size={16}
+                                      className="rounded-sm"
+                                    />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {countriesByCode[member.country] ||
+                                    member.country}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <span>{`${member.firstName} ${member.lastName}`}</span>
+                        </>
+                      ),
+                      value: `${member.firstName} ${member.lastName}`,
+                    })),
+                  ]}
+                  placeholder="Reassigned Member"
+                  title="Reassigned Member*"
                   onChange={(selectedValue: string) => {
-                    if (value !== selectedValue) {
-                      onChange(selectedValue);
-                      handleDropdown(selectedValue);
-                    }
-                  }}
-                  disabled={isDisabledDropdown}
-                  searchable={true}
-                  selectedOption={value || ""}
-                />
-              )}
-            />
-          </div>
-          <div className="flex flex-1 items-center p-2">
-            {formStatus === "not-billing-information" && (
-              <Button size="default" onClick={() => handleClick(formStatus)}>
-                Complete Company Details
-              </Button>
-            )}
+                    const selectedMember = members.find(
+                      (member) =>
+                        `${member.firstName} ${member.lastName}` ===
+                        selectedValue
+                    );
 
-            {formStatus === "not-member-available" && (
-              <Button size="default" onClick={() => handleClick(formStatus)}>
-                Complete Shipment Details
-              </Button>
-            )}
-          </div>
+                    if (selectedValue === "None") {
+                      setValue(`products.${index}.newMember`, "None", {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.relocation`, "", {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.available`, true, {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.product`, products[index], {
+                        shouldValidate: true,
+                      });
+                      setDropdownOptions(["My office", "FP warehouse"]);
+                      setIsDisabledDropdown(false);
+                    } else if (selectedMember) {
+                      setValue(`products.${index}.newMember`, selectedMember, {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.relocation`, "New employee", {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.available`, true, {
+                        shouldValidate: true,
+                      });
+                      setValue(`products.${index}.product`, products[index], {
+                        shouldValidate: true,
+                      });
+                      setDropdownOptions(DROPDOWN_OPTIONS);
+                      setIsDisabledDropdown(true);
+                    }
+                    onChange(selectedValue);
+                  }}
+                  searchable={true}
+                />
+              );
+            }}
+          />
         </div>
-      </section>
-    </PageLayout>
+        <div className="flex- p-4">
+          <Controller
+            name={`products.${index}.relocation`}
+            control={control}
+            render={({ field: { value } }) => (
+              <SelectDropdownOptions
+                label="New Location*"
+                placeholder={
+                  loadingOffices ? "Loading offices..." : "New Location"
+                }
+                value={isOfficeLabel(value) ? value : value || ""}
+                onChange={(selectedValue: string) =>
+                  handleSelectLocation(selectedValue)
+                }
+                options={dropdownOptions}
+                optionGroups={officeGroups}
+                disabled={isDisabledDropdown}
+                required
+                compact
+                searchable
+              />
+            )}
+          />
+        </div>
+        <div className="flex flex-1 items-center p-2">
+          {formStatus === "not-billing-information" && (
+            <Button size="default" onClick={() => handleClick(formStatus)}>
+              Complete Company Details
+            </Button>
+          )}
+
+          {formStatus === "not-member-available" && (
+            <Button size="default" onClick={() => handleClick(formStatus)}>
+              Complete Shipment Details
+            </Button>
+          )}
+
+          {formStatus === "not-office-complete" && (
+            <Button size="default" onClick={() => handleClick(formStatus)}>
+              Complete Office Details
+            </Button>
+          )}
+        </div>
+      </div>
+    </section>
   );
 };

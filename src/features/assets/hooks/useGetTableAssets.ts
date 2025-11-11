@@ -6,9 +6,9 @@ export const useGetTableAssets = () => {
   return useQuery<ProductTable[]>({
     queryKey: ["assets"],
     queryFn: getTableAssets,
-    staleTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60 * 2, // Reducido a 2 minutos para mejor reactividad
     // cacheTime: 1000 * 60 * 60,
-    // refetchOnWindowFocus: true,
+    refetchOnWindowFocus: true, // Activado para refetch al volver al tab
     // refetchOnReconnect: true,
     refetchOnMount: true,
     placeholderData: keepPreviousData,

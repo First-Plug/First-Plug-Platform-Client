@@ -86,6 +86,12 @@ export const useUpdateTenantOffice = () => {
         refetchType: "active",
       });
 
+      // 4) Invalidate shipments since office data affects shipments
+      queryClient.invalidateQueries({
+        queryKey: ["shipments"],
+        refetchType: "active", // Force refetch even if stale
+      });
+
       // Show success alert
       setAlert("dataUpdatedSuccessfully");
     },

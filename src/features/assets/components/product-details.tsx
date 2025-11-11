@@ -22,6 +22,16 @@ import { useSession } from "next-auth/react";
 import { useAsideStore } from "@/shared";
 import { useFetchMembers } from "@/features/members";
 import { CategoryIcons } from "@/features/assets";
+import {
+  useInternationalShipmentDetection,
+  InternationalShipmentWarning,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 export type RelocateStatus = "success" | "error" | undefined;
 const MembersList = function MembersList({
@@ -62,7 +72,13 @@ const MembersList = function MembersList({
     description: "",
     isOpen: false,
   });
+  const [showInternationalWarning, setShowInternationalWarning] =
+    useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const router = useRouter();
+
+  const { isInternationalShipment, buildInternationalValidationEntities } =
+    useInternationalShipmentDetection();
 
   const { isShipmentValueValid, onSubmitDropdown, shipmentValue } =
     useShipmentValues();
@@ -139,6 +155,10 @@ const MembersList = function MembersList({
                 "Assigned member (<strong>$1</strong>)"
               )
               .replace(
+                /Current location \((.*?)\)/,
+                "Current location (<strong>$1</strong>)"
+              )
+              .replace(
                 /Assigned location \((.*?)\)/,
                 "Assigned location (<strong>$1</strong>)"
               )}</span></div>`
@@ -151,9 +171,21 @@ const MembersList = function MembersList({
         description: formattedMessages,
         isOpen: true,
       });
-      console.warn("Validation warnings detected, proceeding with relocation.");
     }
 
+    const isInternational = isInternationalShipment(source, destination);
+    const requiresFpShipment = shipmentValue.shipment === "yes";
+
+    if (isInternational && requiresFpShipment) {
+      setPendingAction(() => () => executeRelocation());
+      setShowInternationalWarning(true);
+      return;
+    }
+
+    await executeRelocation();
+  };
+
+  const executeRelocation = async () => {
     setRelocating(true);
     try {
       const productToSend = {
@@ -185,6 +217,19 @@ const MembersList = function MembersList({
     } finally {
       setRelocating(false);
     }
+  };
+
+  const handleConfirmInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
+
+  const handleCancelInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    setPendingAction(null);
   };
 
   return (
@@ -229,6 +274,19 @@ const MembersList = function MembersList({
               }
               onClick={() => setSelectedMember(null)}
             >
+              {selectedMember.country && (
+                <div className="group relative">
+                  <CountryFlag
+                    countryName={selectedMember.country}
+                    size={16}
+                    className="rounded-sm"
+                  />
+                  <span className="hidden group-hover:block bottom-full left-1/2 z-50 absolute bg-blue/80 mb-2 px-2 py-1 rounded text-white text-xs whitespace-nowrap -translate-x-1/2 transform">
+                    {countriesByCode[selectedMember.country] ||
+                      selectedMember.country}
+                  </span>
+                </div>
+              )}
               <p className="font-semibold text-black">
                 {selectedMember.fullName}
               </p>
@@ -288,7 +346,25 @@ const MembersList = function MembersList({
                       onChange={() => handleSelectMember(member)}
                     />
                   )}
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
+                    {member.country && (
+                      <TooltipProvider>
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <div>
+                              <CountryFlag
+                                countryName={member.country}
+                                size={18}
+                                className="rounded-sm"
+                              />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-blue/80 text-white text-xs">
+                            {countriesByCode[member.country] || member.country}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                     <p className="font-bold text-black">
                       {member.firstName} {member.lastName}
                     </p>
@@ -297,13 +373,21 @@ const MembersList = function MembersList({
                         ? member.team
                         : member.team?.name}
                     </span>
-                    <CategoryIcons products={member.products} />
+                  </div>
+                  <div className="flex items-center gap-3 ml-auto">
+                    <CategoryIcons products={member.products || []} />
                   </div>
                 </div>
               ))}
           </div>
         </div>
       )}
+
+      <InternationalShipmentWarning
+        isOpen={showInternationalWarning}
+        onConfirm={handleConfirmInternationalShipment}
+        onCancel={handleCancelInternationalShipment}
+      />
     </section>
   );
 };
@@ -362,6 +446,7 @@ export const ProductDetail = ({
             <PrdouctModelDetail
               product={product}
               isOffboardingStyles={isOffboardingStyles}
+              isChecked={isChecked}
             />
           </section>
           {isRelocating && (

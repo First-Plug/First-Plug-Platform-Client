@@ -32,10 +32,11 @@ export const TenantsTableActions: React.FC<TenantsTableActionsProps> = ({
     setAside("UpdateTenant");
   };
 
-  const handleUpdateOffice = () => {
-    queryClient.setQueryData(["selectedTenant"], tenant);
-    setAside("UpdateOffice");
-  };
+  // Función deshabilitada temporalmente
+  // const handleUpdateOffice = () => {
+  //   queryClient.setQueryData(["selectedTenant"], tenant);
+  //   setAside("UpdateOfficeWithCards");
+  // };
 
   const handleToggleStatus = () => {
     toggleStatusMutation.mutate({
@@ -55,14 +56,15 @@ export const TenantsTableActions: React.FC<TenantsTableActionsProps> = ({
         onClick={handleUpdateTenant}
       />
 
-      <Button
+      {/* Botón "Update office" deshabilitado temporalmente */}
+      {/* <Button
         icon={<BuildingIcon size={16} />}
         body="Update office"
         variant="outline"
         size="small"
         className="px-2 py-1 text-xs"
         onClick={handleUpdateOffice}
-      />
+      /> */}
 
       <Button
         icon={

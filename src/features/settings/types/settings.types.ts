@@ -41,7 +41,32 @@ export interface Office {
   state?: string;
   country?: string;
   zipCode?: string;
+  additionalInfo?: string;
   isDefault: boolean;
+  isActive: boolean;
+  isDeleted: boolean;
+  deletedAt: string | null;
+  tenantId: string;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+  hasAssignedProducts?: boolean; // true si tiene productos asignados (no se puede eliminar)
+  hasActiveShipments?: boolean; // true si tiene envíos activos (no se puede eliminar)
+  hasOnTheWayShipments?: boolean; // true si tiene un shipment "On the way" (no se puede editar)
+  hasActiveProducts?: boolean; // Propiedad legacy, ahora se usa hasAssignedProducts y hasActiveShipments
+}
+
+export interface CreateOffice {
+  name: string;
+  country: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  apartment?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  additionalInfo?: string;
 }
 
 export interface UpdateOffice {
@@ -54,6 +79,7 @@ export interface UpdateOffice {
   state?: string;
   country?: string;
   zipCode?: string;
+  additionalInfo?: string;
 }
 
 // Tenant Config interfaces

@@ -3,6 +3,8 @@
 import React from "react";
 import { LogisticOrder } from "../interfaces/logistics";
 import { useMemberModalStore } from "../store/memberModal.store";
+import { CountryFlag } from "@/shared";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface ExpandedRowContentProps {
   order: LogisticOrder;
@@ -60,8 +62,22 @@ export const ExpandedRowContent = React.memo<ExpandedRowContentProps>(
                         order.originDetails.desirableDate
                       ).toLocaleDateString()}
                 </div>
-                <div className="text-gray-600 text-sm">
+                <div className="flex items-center gap-2 text-gray-600 text-sm">
                   From:{" "}
+                  {(order.originDetails as any)?.country && (
+                    <div className="group relative">
+                      <CountryFlag
+                        countryName={(order.originDetails as any).country}
+                        size={16}
+                        className="rounded-sm"
+                      />
+                      <span className="hidden group-hover:block bottom-full left-1/2 z-50 absolute bg-blue/80 mb-2 px-2 py-1 rounded text-white text-xs whitespace-nowrap -translate-x-1/2 transform">
+                        {countriesByCode[
+                          (order.originDetails as any).country
+                        ] || (order.originDetails as any).country}
+                      </span>
+                    </div>
+                  )}
                   <span
                     className={`${
                       order.origin !== "FP warehouse"
@@ -89,8 +105,22 @@ export const ExpandedRowContent = React.memo<ExpandedRowContentProps>(
                         order.destinationDetails.desirableDate
                       ).toLocaleDateString()}
                 </div>
-                <div className="text-gray-600 text-sm">
+                <div className="flex items-center gap-2 text-gray-600 text-sm">
                   To:{" "}
+                  {(order.destinationDetails as any)?.country && (
+                    <div className="group relative">
+                      <CountryFlag
+                        countryName={(order.destinationDetails as any).country}
+                        size={16}
+                        className="rounded-sm"
+                      />
+                      <span className="hidden group-hover:block bottom-full left-1/2 z-50 absolute bg-blue/80 mb-2 px-2 py-1 rounded text-white text-xs whitespace-nowrap -translate-x-1/2 transform">
+                        {countriesByCode[
+                          (order.destinationDetails as any).country
+                        ] || (order.destinationDetails as any).country}
+                      </span>
+                    </div>
+                  )}
                   <span
                     className={`${
                       order.destination !== "FP warehouse"

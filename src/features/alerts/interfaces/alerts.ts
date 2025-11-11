@@ -53,5 +53,15 @@ export const ALERTS_TYPES = [
   "pendingShipmentsOffboarding",
   "shipmentCancelAssetError",
   "shipmentCancelMemberError",
+  "officeCreatedSuccessfully",
+  "officeUpdatedSuccessfully",
+  "officeDeletedSuccessfully",
+  "defaultOfficeUpdatedSuccessfully",
+  "errorCreateOffice",
+  "errorDeleteOffice",
+  "errorSetDefaultOffice",
+  "errorOfficeDuplicateName",
+  "errorOfficeHasProducts",
+  "errorOfficeIsDefault",
 ] as const;
 export type AlertType = (typeof ALERTS_TYPES)[number];

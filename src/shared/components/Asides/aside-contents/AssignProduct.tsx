@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Product } from "@/features/assets";
 
 import { Skeleton } from "@/shared";
-import { useFetchAssetById } from "@/features/assets";
 import { useFetchMembers } from "@/features/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/shared";
@@ -12,21 +11,13 @@ import { Member, AddMemberForm } from "@/features/members";
 import { useAsideStore } from "@/shared";
 
 export const AssignProduct = function () {
-  const { type } = useAsideStore();
+  const { getCurrentAside } = useAsideStore();
+  const currentAside = getCurrentAside();
+  const type = currentAside?.type;
 
   const queryClient = useQueryClient();
 
-  const currentProductId = queryClient.getQueryData<Product>([
-    "selectedProduct",
-  ])?._id;
-
-  const {
-    data: product,
-    isLoading: loadingProduct,
-    error: productError,
-    refetch: refetchProduct,
-    isError: isProductError,
-  } = useFetchAssetById(currentProductId);
+  const cachedProduct = queryClient.getQueryData<Product>(["selectedProduct"]);
 
   const {
     data: members,
@@ -37,24 +28,18 @@ export const AssignProduct = function () {
   } = useFetchMembers();
 
   const [member, setMember] = useState<Member | null>(null);
-  const [selectedProdcut, setSelectedPrduct] = useState<Product>();
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
 
   useEffect(() => {
-    if (product && members) {
+    if (cachedProduct && members) {
       const filtered = members.filter(
-        (member) => member.email !== product.assignedEmail
+        (member) => member.email !== cachedProduct.assignedEmail
       );
       setFilteredMembers(filtered);
     }
-  }, [product, members]);
+  }, [cachedProduct, members]);
 
   useEffect(() => {
-    if (!loadingProduct && !productError && !product) {
-      queryClient.invalidateQueries({ queryKey: ["asset", currentProductId] });
-      refetchProduct();
-    }
-
     if (
       !loadingMembers &&
       !membersError &&
@@ -63,29 +48,17 @@ export const AssignProduct = function () {
       queryClient.invalidateQueries({ queryKey: ["members"] });
       refetchMembers();
     }
-  }, [
-    loadingProduct,
-    productError,
-    product,
-    loadingMembers,
-    membersError,
-    members,
-    queryClient,
-    currentProductId,
-    refetchProduct,
-    refetchMembers,
-  ]);
+  }, [loadingMembers, membersError, members, queryClient, refetchMembers]);
 
   const handleSelectedMembers = (selectedMember: Member | null) => {
     setMember(selectedMember);
   };
 
   const handleRetry = () => {
-    if (isProductError) refetchProduct();
     if (isMembersError) refetchMembers();
   };
 
-  if (loadingProduct || loadingMembers) {
+  if (loadingMembers || !cachedProduct) {
     return (
       <div className="flex flex-col gap-2 w-full h-full">
         <Skeleton className="w-full h-12" />
@@ -94,7 +67,7 @@ export const AssignProduct = function () {
     );
   }
 
-  if (productError || membersError) {
+  if (membersError) {
     return (
       <div className="flex flex-col justify-center items-center h-full">
         <div className="mb-4 text-red-500">Opps! Something went wrong</div>
@@ -116,8 +89,13 @@ export const AssignProduct = function () {
         selectedMember={member}
         handleSelectedMembers={handleSelectedMembers}
         members={filteredMembers}
-        currentProduct={product}
-        showNoneOption={type === "ReassignProduct"}
+        currentProduct={cachedProduct}
+        showNoneOption={
+          type === "ReassignProduct" ||
+          (type === "AssignProduct" &&
+            (cachedProduct?.location === "FP warehouse" ||
+              cachedProduct?.location === "Our office"))
+        }
         actionType={type as "AssignProduct" | "ReassignProduct"}
       />
     </div>

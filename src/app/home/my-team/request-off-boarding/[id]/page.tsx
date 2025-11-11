@@ -17,7 +17,14 @@ import { ShipmentWithFp } from "@/features/shipments";
 import { Member } from "@/features/members";
 import { Memberservices } from "@/features/members";
 
-import { useAsideStore, useAlertStore } from "@/shared";
+import {
+  useAsideStore,
+  useAlertStore,
+  useInternationalShipmentDetection,
+  InternationalShipmentWarning,
+} from "@/shared";
+import { useSession } from "next-auth/react";
+import { useOffices } from "@/features/settings/hooks/use-offices";
 
 const DROPDOWN_OPTIONS = ["My office", "FP warehouse", "New employee"] as const;
 
@@ -28,6 +35,7 @@ export interface ProductOffBoarding {
   relocation: DropdownOption;
   available: boolean;
   newMember?: any;
+  officeId?: string;
 }
 
 export default function RequestOffBoardingPage({
@@ -38,6 +46,11 @@ export default function RequestOffBoardingPage({
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [showInternationalWarning, setShowInternationalWarning] =
+    useState(false);
+  const [pendingOffboardingData, setPendingOffboardingData] = useState<
+    any | null
+  >(null);
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -45,10 +58,15 @@ export default function RequestOffBoardingPage({
     useShipmentValues();
 
   const { data: members = [] } = useFetchMembers();
+  const { offices } = useOffices();
+  const { data: session } = useSession();
 
   const { setAlert } = useAlertStore();
   const { isClosed } = useAsideStore();
   const { setMemberOffBoarding } = useMemberStore();
+
+  const { isInternationalShipment, buildInternationalValidationEntities } =
+    useInternationalShipmentDetection();
 
   const methods = useForm({
     defaultValues: {
@@ -131,21 +149,74 @@ export default function RequestOffBoardingPage({
 
   const onSubmit = async (data: any) => {
     const sendData = data.products.map((productToSend) => {
+      const payload: any = {
+        product: productToSend.product,
+        relocation: productToSend.relocation,
+        available: productToSend.available,
+        fp_shipment: shipmentValue.shipment === "yes",
+        desirableDate: {
+          origin: shipmentValue.pickupDate,
+          destination: shipmentValue.deliveredDate,
+        },
+      };
+
       if (productToSend.newMember !== "None") {
-        productToSend.newMember = members.find(
+        payload.newMember = members.find(
           (member) => member.fullName === productToSend.newMember
         );
       }
 
-      productToSend.fp_shipment = shipmentValue.shipment === "yes";
-      productToSend.desirableDate = {
-        origin: shipmentValue.pickupDate,
-        destination: shipmentValue.deliveredDate,
-      };
+      if (productToSend.officeId) {
+        payload.officeId = productToSend.officeId;
+      }
 
-      return productToSend;
+      return payload;
     });
 
+    const requiresFpShipment = shipmentValue.shipment === "yes";
+    let hasInternationalShipment = false;
+
+    if (requiresFpShipment && selectedMember) {
+      const sessionUserData = {
+        country: (session?.user as any)?.country,
+        city: (session?.user as any)?.city,
+        state: (session?.user as any)?.state,
+        zipCode: (session?.user as any)?.zipCode,
+        address: (session?.user as any)?.address,
+        phone: (session?.user as any)?.phone,
+      };
+
+      for (const productData of sendData) {
+        const product = productData.product;
+        const destinationMember = productData.newMember;
+        const officeId = productData.officeId;
+
+        const { source, destination } = buildInternationalValidationEntities(
+          product,
+          members,
+          destinationMember || null,
+          sessionUserData,
+          destinationMember ? null : productData.relocation,
+          officeId || null
+        );
+
+        if (isInternationalShipment(source, destination)) {
+          hasInternationalShipment = true;
+          break;
+        }
+      }
+    }
+
+    if (hasInternationalShipment) {
+      setPendingOffboardingData(sendData);
+      setShowInternationalWarning(true);
+      return;
+    }
+
+    await executeOffboarding(sendData);
+  };
+
+  const executeOffboarding = async (sendData: any) => {
     setIsLoading(true);
 
     try {
@@ -156,82 +227,105 @@ export default function RequestOffBoardingPage({
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      queryClient.invalidateQueries({ queryKey: ["offices"] });
 
       router.push("/home/my-team");
     } catch (error) {
-      console.error("Error al realizar offboarding:", error);
       setAlert("errorOffboarding");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleConfirmInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    if (pendingOffboardingData) {
+      executeOffboarding(pendingOffboardingData);
+      setPendingOffboardingData(null);
+    }
+  };
+
+  const handleCancelInternationalShipment = () => {
+    setShowInternationalWarning(false);
+    setPendingOffboardingData(null);
+  };
+
   return (
     <PageLayout>
-      <div className="flex flex-col gap-2">
-        <div>
-          <h2>
-            All recoverable assets will be requested and the member will be
-            removed from your team.
-          </h2>
-
-          <span>Please confirm the relocation of each product.</span>
-        </div>
-      </div>
-      <div className="mt-4 mb-4 w-80">
-        <ShipmentWithFp
-          onSubmit={onSubmitDropdown}
-          destinationMember={selectedMember}
-        />
-      </div>
-
-      <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="w-full h-screen overflow-y-auto scrollbar-custom">
-            <div className="pr-4">
-              <div className="flex-1">
-                {selectedMember?.products
-                  ?.filter((product) => product.recoverable === true)
-                  .map((product, index, array) => {
-                    const isLastItem = index === array.length - 1;
-
-                    return (
-                      <RequestOffBoardingForm
-                        key={product._id}
-                        product={product}
-                        products={selectedMember?.products?.filter(
-                          (product) => product.recoverable === true
-                        )}
-                        index={index}
-                        totalProducts={
-                          selectedMember.products.filter(
-                            (product) => product.recoverable === true
-                          ).length
-                        }
-                        members={members.filter(
-                          (member) => member.email !== selectedMember.email
-                        )}
-                        className={isLastItem ? "mb-[300px]" : ""}
-                        setIsButtonDisabled={setIsButtonDisabled}
-                        onFormStatusChange={handleFormStatusChange}
-                      />
-                    );
-                  })}
-              </div>
+      <div className="flex flex-col h-full">
+        {/* Header Section */}
+        <div className="flex-shrink-0 mb-4">
+          <div className="flex flex-col gap-2 mb-4">
+            <div>
+              <h2>
+                All recoverable assets will be requested and the member will be
+                removed from your team.
+              </h2>
+              <span>Please confirm the relocation of each product.</span>
             </div>
-            <aside className="bottom-0 absolute flex justify-end items-center bg-white p-2 border-t w-[80%] h-[10%]">
+          </div>
+          <div className="w-80">
+            <ShipmentWithFp
+              onSubmit={onSubmitDropdown}
+              destinationMember={selectedMember}
+            />
+          </div>
+        </div>
+
+        {/* Main Content - Scrollable */}
+        <FormProvider {...methods}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col flex-1 min-h-0"
+          >
+            <div className="flex-1 pr-4 overflow-y-auto scrollbar-custom">
+              {selectedMember?.products
+                ?.filter((product) => product.recoverable === true)
+                .map((product, index, array) => {
+                  return (
+                    <RequestOffBoardingForm
+                      key={product._id}
+                      product={product}
+                      products={selectedMember?.products?.filter(
+                        (product) => product.recoverable === true
+                      )}
+                      index={index}
+                      totalProducts={
+                        selectedMember.products.filter(
+                          (product) => product.recoverable === true
+                        ).length
+                      }
+                      members={members.filter(
+                        (member) => member.email !== selectedMember.email
+                      )}
+                      className=""
+                      setIsButtonDisabled={setIsButtonDisabled}
+                      onFormStatusChange={handleFormStatusChange}
+                    />
+                  );
+                })}
+            </div>
+
+            {/* Footer - Fixed at Bottom */}
+            <div className="flex flex-shrink-0 justify-end items-center bg-white mt-4 py-4 border-t">
               <Button
                 variant="primary"
-                className="mr-[39px] rounded-lg w-[200px] h-[40px]"
+                className="mr-8 rounded-lg w-[200px] h-[40px]"
                 type="submit"
                 disabled={isButtonDisabled || !isShipmentValueValid()}
               >
                 {isLoading ? <LoaderSpinner /> : "Confirm offboard"}
               </Button>
-            </aside>
-          </div>
-        </form>
-      </FormProvider>
+            </div>
+          </form>
+        </FormProvider>
+
+        <InternationalShipmentWarning
+          isOpen={showInternationalWarning}
+          onConfirm={handleConfirmInternationalShipment}
+          onCancel={handleCancelInternationalShipment}
+        />
+      </div>
     </PageLayout>
   );
 }

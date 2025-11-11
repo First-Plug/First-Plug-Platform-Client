@@ -8,6 +8,7 @@ const envZodModel = z.object({
   AZURE_AD_CLIENT_ID: z.string(),
   AZURE_AD_CLIENT_SECRET: z.string(),
   AZURE_AD_TENANT_ID: z.string(),
+  NEXT_PUBLIC_MAINTENANCE_MODE: z.string().optional(),
 });
 
 /*
