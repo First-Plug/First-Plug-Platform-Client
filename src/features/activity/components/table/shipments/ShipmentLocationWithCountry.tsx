@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 
 interface LocationDetails {
   country?: string;
@@ -22,9 +23,10 @@ export function ShipmentLocationWithCountry({
   location,
   details,
 }: ShipmentLocationWithCountryProps) {
-  const country = details?.country;
+  const rawCountry = details?.country;
+  const country = normalizeCountryCode(rawCountry);
 
-  // Si no hay país, mostrar solo la ubicación (registros legacy)
+  // Si no hay país válido, mostrar solo la ubicación (registros legacy)
   if (!country) {
     return <span>{location || "N/A"}</span>;
   }
@@ -39,7 +41,7 @@ export function ShipmentLocationWithCountry({
             </span>
           </TooltipTrigger>
           <TooltipContent className="bg-blue/80 text-white text-xs">
-            {countriesByCode[country] || country}
+            {countriesByCode[country] || rawCountry}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

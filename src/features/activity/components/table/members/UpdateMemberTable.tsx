@@ -14,6 +14,7 @@ import {
 import { type Member } from "@/features/members";
 import { type Team } from "@/features/teams";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 
 interface MembersTableProps {
   data: {
@@ -145,23 +146,27 @@ const formatValue = (value: any, field?: string) => {
 
 const renderValue = (value: any, field?: string) => {
   if (field === "country" && value && value !== "-") {
-    return (
-      <div className="flex items-center gap-2">
-        <TooltipProvider>
-          <Tooltip delayDuration={300}>
-            <TooltipTrigger asChild>
-              <span>
-                <CountryFlag countryName={value} size={15} />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent className="bg-blue/80 text-white text-xs">
-              {countriesByCode[value] || value}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <span>{countriesByCode[value] || value}</span>
-      </div>
-    );
+    const countryCode = normalizeCountryCode(value);
+    if (countryCode) {
+      return (
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <span>
+                  <CountryFlag countryName={countryCode} size={15} />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-blue/80 text-white text-xs">
+                {countriesByCode[countryCode] || value}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <span>{countriesByCode[countryCode] || value}</span>
+        </div>
+      );
+    }
+    return <span>{value}</span>;
   }
   return formatValue(value, field);
 };

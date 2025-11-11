@@ -10,6 +10,7 @@ import {
 
 import { Office } from "@/features/settings";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 
 interface OfficesTableProps {
   data: {
@@ -135,17 +136,24 @@ const UpdateOfficesTable: React.FC<OfficesTableProps> = ({ data }) => {
               {data.oldData.name}
             </TableCell>
             <TableCell className="px-4 py-2 border-r text-xs">
-              {data.oldData.country ? (
-                <div className="flex items-center gap-2">
-                  <CountryFlag countryName={data.oldData.country} size={15} />
-                  <span>
-                    {countriesByCode[data.oldData.country] ||
-                      data.oldData.country}
-                  </span>
-                </div>
-              ) : (
-                "-"
-              )}
+              {data.oldData.country
+                ? (() => {
+                    const countryCode = normalizeCountryCode(
+                      data.oldData.country
+                    );
+                    return countryCode ? (
+                      <div className="flex items-center gap-2">
+                        <CountryFlag countryName={countryCode} size={15} />
+                        <span>
+                          {countriesByCode[countryCode] ||
+                            data.oldData.country}
+                        </span>
+                      </div>
+                    ) : (
+                      <span>{data.oldData.country}</span>
+                    );
+                  })()
+                : "-"}
             </TableCell>
             <TableCell className="px-4 py-2 border-r text-xs">
               {translateField(change.field)}

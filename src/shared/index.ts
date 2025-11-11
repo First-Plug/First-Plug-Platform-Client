@@ -89,5 +89,6 @@ export {
 export * from "./services/csv.services";
 
 export * from "./constants/country-codes";
+export * from "./utils/countryCodeNormalizer";
 
 export * from "./hooks/useInternationalShipmentDetection";

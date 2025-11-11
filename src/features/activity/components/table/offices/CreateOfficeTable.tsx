@@ -10,6 +10,7 @@ import {
 
 import { Office } from "@/features/settings";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 
 interface OfficesTableProps {
   data: Office | Office[];
@@ -44,16 +45,21 @@ const CreateOfficesTable: React.FC<OfficesTableProps> = ({ data }) => {
                 {office.name}
               </TableCell>
               <TableCell className="px-4 py-2 text-xs">
-                {office.country ? (
-                  <div className="flex items-center gap-2">
-                    <CountryFlag countryName={office.country} size={15} />
-                    <span>
-                      {countriesByCode[office.country] || office.country}
-                    </span>
-                  </div>
-                ) : (
-                  "-"
-                )}
+                {office.country
+                  ? (() => {
+                      const countryCode = normalizeCountryCode(office.country);
+                      return countryCode ? (
+                        <div className="flex items-center gap-2">
+                          <CountryFlag countryName={countryCode} size={15} />
+                          <span>
+                            {countriesByCode[countryCode] || office.country}
+                          </span>
+                        </div>
+                      ) : (
+                        <span>{office.country}</span>
+                      );
+                    })()
+                  : "-"}
               </TableCell>
             </TableRow>
           ))

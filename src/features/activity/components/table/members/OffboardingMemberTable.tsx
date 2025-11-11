@@ -13,6 +13,7 @@ import {
 } from "@/shared";
 import { Member } from "@/features/members";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 
 interface MembersTableProps {
   data: {
@@ -80,9 +81,10 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                 if (isNewEmployee) {
                   const assignedMember = (newProduct as any)?.assignedMember;
                   const assignedEmail = (newProduct as any)?.assignedEmail;
-                  const country =
+                  const rawCountry =
                     (newProduct as any)?.country ||
                     (newProduct as any)?.countryCode;
+                  const country = normalizeCountryCode(rawCountry);
 
                   // Si tiene assignedMember con valor
                   if (assignedMember && assignedMember !== "") {
@@ -100,7 +102,7 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                                 </span>
                               </TooltipTrigger>
                               <TooltipContent className="bg-blue/80 text-white text-xs">
-                                {countriesByCode[country] || country}
+                                {countriesByCode[country] || rawCountry}
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -117,7 +119,9 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                     );
 
                     if (assignedMemberData) {
-                      const memberCountry = assignedMemberData.country;
+                      const rawMemberCountry = assignedMemberData.country;
+                      const memberCountry =
+                        normalizeCountryCode(rawMemberCountry);
                       return (
                         <div className="flex items-center gap-2">
                           {memberCountry && (
@@ -133,7 +137,7 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                                 </TooltipTrigger>
                                 <TooltipContent className="bg-blue/80 text-white text-xs">
                                   {countriesByCode[memberCountry] ||
-                                    memberCountry}
+                                    rawMemberCountry}
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -167,9 +171,10 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
 
                 // Handle FP warehouse
                 if (newLocation === "FP warehouse") {
-                  const country =
+                  const rawCountry =
                     (newProduct as any)?.country ||
                     (newProduct as any)?.countryCode;
+                  const country = normalizeCountryCode(rawCountry);
                   return (
                     <div className="flex items-center gap-2">
                       {country && (
@@ -181,7 +186,7 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent className="bg-blue/80 text-white text-xs">
-                              {countriesByCode[country] || country}
+                              {countriesByCode[country] || rawCountry}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -198,10 +203,11 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                     office?.officeName ||
                     (newProduct as any)?.officeName ||
                     "Our office";
-                  const country =
+                  const rawCountry =
                     office?.officeCountryCode ||
                     (newProduct as any)?.country ||
                     (newProduct as any)?.countryCode;
+                  const country = normalizeCountryCode(rawCountry);
 
                   return (
                     <div className="flex items-center gap-2">
@@ -214,7 +220,7 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent className="bg-blue/80 text-white text-xs">
-                              {countriesByCode[country] || country}
+                              {countriesByCode[country] || rawCountry}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
