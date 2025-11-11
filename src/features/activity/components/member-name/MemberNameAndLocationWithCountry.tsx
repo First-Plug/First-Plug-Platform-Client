@@ -85,6 +85,7 @@ export default function MemberNameAndLocationWithCountry({
     }
 
     // Formato legacy: officeName y country/countryCode directamente en product
+
     const officeName = product.officeName || "Our office";
     const country = product.country || product.countryCode;
 

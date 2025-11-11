@@ -5,9 +5,15 @@ import {
   TableRow,
   TableHead,
   TableCell,
+  CountryFlag,
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
 } from "@/shared";
 import { type Member } from "@/features/members";
 import { type Team } from "@/features/teams";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface MembersTableProps {
   data: {
@@ -90,6 +96,7 @@ const fieldTranslations: { [key: string]: string } = {
   birthDate: "Birthdate",
   team: "Team",
   dni: "DNI",
+  country: "Country",
 };
 
 const translateField = (field: string) => {
@@ -136,6 +143,29 @@ const formatValue = (value: any, field?: string) => {
   return value || "-";
 };
 
+const renderValue = (value: any, field?: string) => {
+  if (field === "country" && value && value !== "-") {
+    return (
+      <div className="flex items-center gap-2">
+        <TooltipProvider>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <span>
+                <CountryFlag countryName={value} size={15} />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="bg-blue/80 text-white text-xs">
+              {countriesByCode[value] || value}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <span>{countriesByCode[value] || value}</span>
+      </div>
+    );
+  }
+  return formatValue(value, field);
+};
+
 const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
   const updatedFields = getUpdatedFields(data.oldData, data.newData);
 
@@ -173,10 +203,10 @@ const UpdateMembersTable: React.FC<MembersTableProps> = ({ data }) => {
               {translateField(change.field)}
             </TableCell>
             <TableCell className="px-4 py-2 border-r text-xs">
-              {formatValue(change.oldValue, change.field)}
+              {renderValue(change.oldValue, change.field)}
             </TableCell>
             <TableCell className="px-4 py-2 text-xs">
-              {formatValue(change.newValue, change.field)}
+              {renderValue(change.newValue, change.field)}
             </TableCell>
           </TableRow>
         ))}

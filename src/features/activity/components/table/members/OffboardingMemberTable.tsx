@@ -5,14 +5,14 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/shared";
-import { Member } from "@/features/members";
-import {
+  CountryFlag,
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared";
+import { Member } from "@/features/members";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface MembersTableProps {
   data: {
@@ -80,9 +80,33 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                 if (isNewEmployee) {
                   const assignedMember = (newProduct as any)?.assignedMember;
                   const assignedEmail = (newProduct as any)?.assignedEmail;
+                  const country =
+                    (newProduct as any)?.country ||
+                    (newProduct as any)?.countryCode;
 
                   if (assignedMember && typeof assignedMember === "string") {
-                    return assignedMember;
+                    return (
+                      <div className="flex items-center gap-2">
+                        {country && (
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  <CountryFlag
+                                    countryName={country}
+                                    size={15}
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {countriesByCode[country] || country}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        <span>{assignedMember}</span>
+                      </div>
+                    );
                   }
 
                   if (assignedEmail) {
@@ -91,7 +115,30 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                     );
 
                     if (assignedMemberData) {
-                      return `${assignedMemberData.firstName} ${assignedMemberData.lastName}`;
+                      const memberCountry = assignedMemberData.country;
+                      return (
+                        <div className="flex items-center gap-2">
+                          {memberCountry && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span>
+                                    <CountryFlag
+                                      countryName={memberCountry}
+                                      size={15}
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {countriesByCode[memberCountry] ||
+                                    memberCountry}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <span>{`${assignedMemberData.firstName} ${assignedMemberData.lastName}`}</span>
+                        </div>
+                      );
                     }
 
                     return (
@@ -114,6 +161,65 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                   }
 
                   return "New employee";
+                }
+
+                // Handle FP warehouse
+                if (newLocation === "FP warehouse") {
+                  const country =
+                    (newProduct as any)?.country ||
+                    (newProduct as any)?.countryCode;
+                  return (
+                    <div className="flex items-center gap-2">
+                      {country && (
+                        <TooltipProvider>
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <span>
+                                <CountryFlag countryName={country} size={15} />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-blue/80 text-white text-xs">
+                              {countriesByCode[country] || country}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      <span>FP warehouse</span>
+                    </div>
+                  );
+                }
+
+                // Handle Our office
+                if (newLocation === "Our office") {
+                  const office = (newProduct as any)?.office;
+                  const officeName =
+                    office?.officeName ||
+                    (newProduct as any)?.officeName ||
+                    "Our office";
+                  const country =
+                    office?.officeCountryCode ||
+                    (newProduct as any)?.country ||
+                    (newProduct as any)?.countryCode;
+
+                  return (
+                    <div className="flex items-center gap-2">
+                      {country && (
+                        <TooltipProvider>
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <span>
+                                <CountryFlag countryName={country} size={15} />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-blue/80 text-white text-xs">
+                              {countriesByCode[country] || country}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      <span>{officeName}</span>
+                    </div>
+                  );
                 }
 
                 return newLocation;
@@ -144,7 +250,7 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                   <TableCell className="px-4 py-2 border-r text-xs">
                     {product.serialNumber || "-"}
                   </TableCell>
-                  <TableCell className="px-4 py-2 border-r text-xs">
+                  <TableCell className="px-4 py-2 text-xs">
                     {locationToShow}
                   </TableCell>
                 </TableRow>

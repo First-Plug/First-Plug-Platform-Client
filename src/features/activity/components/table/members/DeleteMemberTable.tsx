@@ -5,8 +5,14 @@ import {
   TableRow,
   TableHead,
   TableCell,
+  CountryFlag,
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
 } from "@/shared";
 import { Member } from "@/features/members";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface MembersTableProps {
   data: Member | Member[];
@@ -58,7 +64,30 @@ const DeleteMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                   : "-"}
               </TableCell>
               <TableCell className="px-4 py-2 border-r text-xs">
-                {member.country || "-"}
+                {member.country ? (
+                  <div className="flex items-center gap-2">
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <span>
+                            <CountryFlag
+                              countryName={member.country}
+                              size={15}
+                            />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-blue/80 text-white text-xs">
+                          {countriesByCode[member.country] || member.country}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <span>
+                      {countriesByCode[member.country] || member.country}
+                    </span>
+                  </div>
+                ) : (
+                  "-"
+                )}
               </TableCell>
               <TableCell className="flex flex-col px-4 py-2 text-xs">
                 {member.products.length > 0
