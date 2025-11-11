@@ -70,7 +70,7 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
               const newLocation = (newProduct as any)?.newLocation || "-";
 
               const locationToShow = (() => {
-                // Check for different variations of "New employee"
+                // Check for different variations of "Employee"
                 const isNewEmployee =
                   newLocation === "New employee" ||
                   newLocation === "new employee" ||
@@ -84,7 +84,8 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                     (newProduct as any)?.country ||
                     (newProduct as any)?.countryCode;
 
-                  if (assignedMember && typeof assignedMember === "string") {
+                  // Si tiene assignedMember con valor
+                  if (assignedMember && assignedMember !== "") {
                     return (
                       <div className="flex items-center gap-2">
                         {country && (
@@ -109,7 +110,8 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                     );
                   }
 
-                  if (assignedEmail) {
+                  // Si tiene assignedEmail con valor
+                  if (assignedEmail && assignedEmail !== "") {
                     const assignedMemberData = newData.find(
                       (member) => member.email === assignedEmail
                     );
@@ -160,7 +162,7 @@ const OffboardingMembersTable: React.FC<MembersTableProps> = ({ data }) => {
                     );
                   }
 
-                  return "New employee";
+                  return "Employee";
                 }
 
                 // Handle FP warehouse
