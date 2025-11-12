@@ -132,7 +132,7 @@ export default function CreatePage() {
         name: formData.name || "",
         category: categoryMap[formData.category?.name] || "Other",
         attributes: formData.attributes || [],
-        productCondition: formData.productCondition || "Optimal",
+        productCondition: formData.productCondition,
         recoverable: formData.recoverable || false,
         acquisitionDate: formData.acquisitionDate || "",
         quantity: formData.quantity || 1,
