@@ -88,12 +88,19 @@ const MembersList = function MembersList({
   };
 
   const handleSearch = (query: string) => {
+    const searchTerm = query.toLowerCase().trim();
     setSearchedMembers(
-      members.filter(
-        (member) =>
-          member.firstName.toLowerCase().includes(query.toLowerCase()) ||
-          member.lastName.toLowerCase().includes(query.toLowerCase())
-      )
+      members.filter((member) => {
+        const firstName = member.firstName.toLowerCase();
+        const lastName = member.lastName.toLowerCase();
+        const fullName = `${firstName} ${lastName}`;
+        
+        return (
+          firstName.includes(searchTerm) ||
+          lastName.includes(searchTerm) ||
+          fullName.includes(searchTerm)
+        );
+      })
     );
   };
 
