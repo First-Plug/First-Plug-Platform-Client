@@ -49,7 +49,7 @@ export function ReturnProduct({
   className = "",
 }: IRemoveItems & { className?: string }) {
   const { closeAside, pushAside } = useAsideStore();
-  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice, setShouldAutoSelect } = useOfficeStore();
 
   const { shipmentValue, onSubmitDropdown, isShipmentValueValid } =
     useShipmentValues();
@@ -158,6 +158,7 @@ export function ReturnProduct({
 
   const handleLocationChange = (displayValue: string) => {
     if (displayValue === ADD_OFFICE_VALUE) {
+      setShouldAutoSelect(true);
       pushAside("CreateOffice");
       return;
     }

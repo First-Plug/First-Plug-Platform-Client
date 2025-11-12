@@ -57,7 +57,7 @@ export const BulkCreateForm: React.FC<{
 
   const { pushAside } = useAsideStore();
   const { setSelectedMember } = useMemberStore();
-  const { newlyCreatedOffice, creationContext, clearNewlyCreatedOffice } =
+  const { newlyCreatedOffice, creationContext, clearNewlyCreatedOffice, setShouldAutoSelect } =
     useOfficeStore();
   const { setProductIndex: setOfficeCreationContext } =
     useOfficeCreationContext();
@@ -359,6 +359,7 @@ export const BulkCreateForm: React.FC<{
   const handleLocationChange = (displayValue: string, index: number) => {
     if (displayValue === ADD_OFFICE_VALUE) {
       setOfficeCreationContext(index);
+      setShouldAutoSelect(true);
       pushAside("CreateOffice");
       return;
     }

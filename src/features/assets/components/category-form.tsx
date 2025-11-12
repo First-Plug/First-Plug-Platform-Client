@@ -78,7 +78,8 @@ export const CategoryForm = ({
   const { data: fetchedMembers = [], isLoading } = useFetchMembers();
   const { offices, isLoading: isLoadingOffices } = useOffices();
   const { pushAside } = useAsideStore();
-  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice, setShouldAutoSelect } =
+    useOfficeStore();
   const ADD_OFFICE_VALUE = "__ADD_OFFICE__";
   const selectedModel = watch("model");
 
@@ -306,6 +307,7 @@ export const CategoryForm = ({
 
   const handleLocationChange = (displayValue: string) => {
     if (displayValue === ADD_OFFICE_VALUE) {
+      setShouldAutoSelect(true);
       pushAside("CreateOffice");
       return;
     }

@@ -90,7 +90,8 @@ export const AddMemberForm = ({
   const { setAside, closeAside, pushAside } = useAsideStore();
   const { isInternationalShipment, buildInternationalValidationEntities } =
     useInternationalShipmentDetection();
-  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice, setShouldAutoSelect } =
+    useOfficeStore();
 
   const { mutate: updateAssetMutation } = useUpdateAsset();
 
@@ -313,6 +314,7 @@ export const AddMemberForm = ({
 
   const handleSelectNoneOption = (displayValue: string) => {
     if (displayValue === ADD_OFFICE_VALUE) {
+      setShouldAutoSelect(true);
       pushAside("CreateOffice");
       return;
     }
