@@ -137,7 +137,7 @@ export const RequestOffBoardingForm = ({
   const router = useRouter();
   const { setValue, watch, control } = useFormContext();
   const { pushAside, isClosed } = useAsideStore();
-  const { newlyCreatedOffice, creationContext, clearNewlyCreatedOffice } =
+  const { newlyCreatedOffice, creationContext, clearNewlyCreatedOffice, setShouldAutoSelect } =
     useOfficeStore();
   const { setProductIndex: setOfficeCreationContext } =
     useOfficeCreationContext();
@@ -567,6 +567,7 @@ export const RequestOffBoardingForm = ({
   const handleSelectLocation = (selectedValue: string) => {
     if (selectedValue === ADD_OFFICE_VALUE) {
       setOfficeCreationContext(index);
+      setShouldAutoSelect(true);
       pushAside("CreateOffice");
       return;
     }
