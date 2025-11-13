@@ -49,6 +49,8 @@ export const csvProductModel = z
     assignedEmail: z.string().optional(),
     productCondition: z.string().optional(),
     additionalInfo: z.string().optional(),
+    "country*": z.string().min(1, "The field 'country' is required."),
+    "officeName*": z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data["category*"] === "Merchandising") {
@@ -74,6 +76,15 @@ export const csvProductModel = z
           message: `The field 'brand' is required for ${data["category*"]} category.`,
         });
       }
+    }
+
+    // Validar que si location es "Our office", officeName sea obligatorio
+    if (data["location*"] === "Our office" && !data["officeName*"]) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["officeName*"],
+        message: `The field 'officeName' is required when location is "Our office".`,
+      });
     }
   });
 export type CsvProduct = z.infer<typeof csvProductModel>;
