@@ -65,6 +65,7 @@ const MembersList = function MembersList({
   const [selectedMember, setSelectedMember] = useState<Member>();
   const { handleReassignProduct } = useActions();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
   const [genericAlertData, setGenericAlertData] = useState({
@@ -75,7 +76,6 @@ const MembersList = function MembersList({
   const [showInternationalWarning, setShowInternationalWarning] =
     useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
-  const router = useRouter();
 
   const { isInternationalShipment, buildInternationalValidationEntities } =
     useInternationalShipmentDetection();
@@ -205,7 +205,7 @@ const MembersList = function MembersList({
         status: product.status,
       };
 
-      await handleReassignProduct({
+      const response = await handleReassignProduct({
         currentMember,
         selectedMember,
         product: productToSend,
@@ -218,6 +218,11 @@ const MembersList = function MembersList({
       setRelocateResult("success");
       setRelocateStauts("success");
       handleSuccess();
+      
+      // Si se creó un shipment, redirigir a la página de shipments con el ID
+      if (response && "shipment" in response && response.shipment && response.shipment._id) {
+        router.push(`/home/shipments?id=${response.shipment._id}`);
+      }
     } catch (error) {
       setRelocateResult("error");
       setRelocateStauts("error");

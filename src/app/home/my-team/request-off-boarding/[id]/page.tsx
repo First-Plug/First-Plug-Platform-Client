@@ -220,16 +220,31 @@ export default function RequestOffBoardingPage({
     setIsLoading(true);
 
     try {
-      await Memberservices.offboardingMember(params.id, sendData);
+      const response = await Memberservices.offboardingMember(params.id, sendData);
 
       setAlert("successOffboarding");
 
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      queryClient.invalidateQueries({ queryKey: ["shipments"] });
       queryClient.invalidateQueries({ queryKey: ["offices"] });
 
-      router.push("/home/my-team");
+      // Si se creó al menos un shipment, esperar refetch y redirigir
+      // El backend puede devolver un array de shipments o un solo shipment
+      if (response && response.shipments && response.shipments.length > 0) {
+        // Esperar a que se refetchee la query de shipments
+        await queryClient.invalidateQueries({ queryKey: ["shipments"] });
+        await queryClient.refetchQueries({ queryKey: ["shipments"] });
+        // Redirigir al primer shipment creado
+        router.push(`/home/shipments?id=${response.shipments[0]._id}`);
+      } else if (response && response.shipment && response.shipment._id) {
+        // Si devuelve un solo shipment
+        await queryClient.invalidateQueries({ queryKey: ["shipments"] });
+        await queryClient.refetchQueries({ queryKey: ["shipments"] });
+        router.push(`/home/shipments?id=${response.shipment._id}`);
+      } else {
+        // Si no hay shipments, redirigir a la página de my-team
+        router.push("/home/my-team");
+      }
     } catch (error) {
       setAlert("errorOffboarding");
     } finally {
