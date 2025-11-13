@@ -23,7 +23,7 @@ export const useOffices = (): {
 } => {
   const queryClient = useQueryClient();
   const { setAlert } = useAlertStore();
-  const { setNewlyCreatedOffice } = useOfficeStore();
+  const { setNewlyCreatedOffice, shouldAutoSelect } = useOfficeStore();
   const { productIndex } = useOfficeCreationContext();
 
   const {
@@ -40,8 +40,10 @@ export const useOffices = (): {
     onSuccess: (newOffice) => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       setAlert("officeCreatedSuccessfully");
-      // Notificar que se creó una nueva oficina con el contexto del producto
-      setNewlyCreatedOffice(newOffice, productIndex ?? undefined);
+      // Solo notificar si se creó desde una acción (shouldAutoSelect = true)
+      if (shouldAutoSelect) {
+        setNewlyCreatedOffice(newOffice, productIndex ?? undefined);
+      }
     },
     onError: (error: AxiosError<{ message: string | string[] }>) => {
       console.error("Error creating office:", error);

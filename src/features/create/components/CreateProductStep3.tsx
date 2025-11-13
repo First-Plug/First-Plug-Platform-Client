@@ -78,14 +78,20 @@ export const CreateProductStep3 = ({
 
   useEffect(() => {
     setHasAttemptedSubmit(false);
-  }, []);
+
+    // Establecer "Optimal" como valor por defecto si no hay ningún valor
+    if (!formData.productCondition) {
+      onFormDataChange("productCondition", "Optimal");
+      setValue("productCondition" as any, "Optimal");
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const methods = useForm({
     resolver: zodResolver(zodCreateProductModel),
     defaultValues: {
       name: formData.name || "",
       serialNumber: formData.serialNumber || "",
-      productCondition: formData.productCondition || undefined,
+      productCondition: formData.productCondition || "Optimal",
       recoverable: formData.recoverable || false,
       acquisitionDate: formData.acquisitionDate || "",
       price: formData.price || { amount: "", currencyCode: "USD" },
@@ -250,22 +256,46 @@ export const CreateProductStep3 = ({
       (w) => `${w.name} (${w.country})` === warehouseLabel
     );
     onFormDataChange("warehouse", selectedWarehouse || null);
+
+    // Limpiar el error de warehouse si existe
+    if (hasAttemptedSubmit && selectedWarehouse) {
+      setCustomErrors((prev) => ({ ...prev, warehouse: undefined }));
+    }
   };
 
   const handleNext = async () => {
     setHasAttemptedSubmit(true);
 
-    const isProductNameValid = await validateProductName();
-    if (!isProductNameValid) return;
+    let hasErrors = false;
 
+    // Validar Product Name
+    const isProductNameValid = await validateProductName();
+    if (!isProductNameValid) hasErrors = true;
+
+    // Validar Attributes (brand y model)
     const isAttributesValid = validateAttributes(attributes, selectedCategory);
-    if (!isAttributesValid) return;
+    if (!isAttributesValid) hasErrors = true;
+
+    // Validar Product Condition
+    if (!formData.productCondition) {
+      methods.setError("productCondition", {
+        type: "manual",
+        message: "Product Condition is required",
+      });
+      hasErrors = true;
+    }
 
     // Validar warehouse solo si quantity < 2
     if (!isMoreThanTwoProducts && !formData.warehouse) {
-      alert("Please select a warehouse");
-      return;
+      setCustomErrors((prev) => ({
+        ...prev,
+        warehouse: "Please select a warehouse",
+      }));
+      hasErrors = true;
     }
+
+    // Si hay algún error, no continuar
+    if (hasErrors) return;
 
     // Si hay más de 2 productos, ir al paso 4, sino crear directamente
     if (shouldGoToStep4) {
@@ -372,6 +402,11 @@ export const CreateProductStep3 = ({
               disabled={isMoreThanTwoProducts || isLoadingWarehouses}
               required={!isMoreThanTwoProducts ? "required" : undefined}
             />
+            <div className="min-h-[24px]">
+              {customErrors.warehouse && (
+                <p className="text-red-500 text-xs">{customErrors.warehouse}</p>
+              )}
+            </div>
           </div>
 
           {/* Basic Product Information */}
@@ -424,16 +459,22 @@ export const CreateProductStep3 = ({
                 onChange={(value) => {
                   onFormDataChange("productCondition", value);
                   setValue("productCondition" as any, value);
+                  // Limpiar el error si existe
+                  if (errors.productCondition) {
+                    clearErrors("productCondition");
+                  }
                 }}
                 name="productCondition"
                 searchable={false}
                 required="required"
               />
-              {errors.productCondition && (
-                <p className="mt-1 text-red-500 text-xs">
-                  {String(errors.productCondition.message)}
-                </p>
-              )}
+              <div className="min-h-[24px]">
+                {errors.productCondition && (
+                  <p className="text-red-500 text-xs">
+                    {String(errors.productCondition.message)}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div>
