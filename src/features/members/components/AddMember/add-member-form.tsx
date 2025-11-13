@@ -90,7 +90,8 @@ export const AddMemberForm = ({
   const { setAside, closeAside, pushAside } = useAsideStore();
   const { isInternationalShipment, buildInternationalValidationEntities } =
     useInternationalShipmentDetection();
-  const { newlyCreatedOffice, clearNewlyCreatedOffice } = useOfficeStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice, setShouldAutoSelect } =
+    useOfficeStore();
 
   const { mutate: updateAssetMutation } = useUpdateAsset();
 
@@ -121,12 +122,19 @@ export const AddMemberForm = ({
   }, [newlyCreatedOffice, clearNewlyCreatedOffice]);
 
   const handleSearch = (query: string) => {
+    const searchTerm = query.toLowerCase().trim();
     setSearchedMembers(
-      members.filter(
-        (member) =>
-          member.firstName.toLowerCase().includes(query.toLowerCase()) ||
-          member.lastName.toLowerCase().includes(query.toLowerCase())
-      )
+      members.filter((member) => {
+        const firstName = member.firstName.toLowerCase();
+        const lastName = member.lastName.toLowerCase();
+        const fullName = `${firstName} ${lastName}`;
+
+        return (
+          firstName.includes(searchTerm) ||
+          lastName.includes(searchTerm) ||
+          fullName.includes(searchTerm)
+        );
+      })
     );
   };
 
@@ -306,6 +314,7 @@ export const AddMemberForm = ({
 
   const handleSelectNoneOption = (displayValue: string) => {
     if (displayValue === ADD_OFFICE_VALUE) {
+      setShouldAutoSelect(true);
       pushAside("CreateOffice");
       return;
     }
