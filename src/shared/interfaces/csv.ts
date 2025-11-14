@@ -49,7 +49,7 @@ export const csvProductModel = z
     assignedEmail: z.string().optional(),
     productCondition: z.string().optional(),
     additionalInfo: z.string().optional(),
-    "country*": z.string().min(1, "The field 'country' is required."),
+    "country*": z.string().optional(),
     "officeName*": z.string().optional(),
   })
   .superRefine((data, ctx) => {
