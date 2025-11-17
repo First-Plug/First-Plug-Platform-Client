@@ -34,6 +34,7 @@ export function parseMembers(member: CsvMember): CreateMemberZodModel {
     country: member.Country ? getCountryCode(member.Country) : member.Country,
     zipCode: member["Zip Code"],
     position: member["Job Position"],
+    dni: member["DNI/CI/Passport"],
   };
 
   const filteredObj = Object.fromEntries(

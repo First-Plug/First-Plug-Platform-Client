@@ -107,6 +107,10 @@ export const zodMemberCsvSchema = z.object({
   Address: z.string().optional(),
   Apartment: z.string().optional(),
   "Additional Info": z.string().optional(),
+  "DNI/CI/Passport": z
+    .string()
+    .regex(/^[a-zA-Z0-9]+$/, "DNI must contain only letters and numbers")
+    .optional(),
 });
 export type CsvMember = z.infer<typeof zodMemberCsvSchema>;
 export const csvMemberSchema = z.array(zodMemberCsvSchema);
