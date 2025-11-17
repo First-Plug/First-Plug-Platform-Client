@@ -49,7 +49,8 @@ export function ReturnProduct({
   className = "",
 }: IRemoveItems & { className?: string }) {
   const { closeAside, pushAside } = useAsideStore();
-  const { newlyCreatedOffice, clearNewlyCreatedOffice, setShouldAutoSelect } = useOfficeStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice, setShouldAutoSelect } =
+    useOfficeStore();
 
   const { shipmentValue, onSubmitDropdown, isShipmentValueValid } =
     useShipmentValues();
@@ -317,9 +318,14 @@ export function ReturnProduct({
       setReturnStatus("success");
 
       onRemoveSuccess();
-      
+
       // Si se creó un shipment, esperar refetch y redirigir a la página de shipments
-      if (response && "shipment" in response && response.shipment && response.shipment._id) {
+      if (
+        response &&
+        "shipment" in response &&
+        response.shipment &&
+        response.shipment._id
+      ) {
         closeAside();
         await queryClient.invalidateQueries({ queryKey: ["shipments"] });
         await queryClient.refetchQueries({ queryKey: ["shipments"] });

@@ -220,7 +220,10 @@ export default function RequestOffBoardingPage({
     setIsLoading(true);
 
     try {
-      const response = await Memberservices.offboardingMember(params.id, sendData);
+      const response = await Memberservices.offboardingMember(
+        params.id,
+        sendData
+      );
 
       setAlert("successOffboarding");
 
@@ -228,19 +231,39 @@ export default function RequestOffBoardingPage({
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["offices"] });
 
-      // Si se creó al menos un shipment, esperar refetch y redirigir
-      // El backend puede devolver un array de shipments o un solo shipment
-      if (response && response.shipments && response.shipments.length > 0) {
+      // Si se creó un shipment, esperar refetch y redirigir
+      if (response && response.lastShipmentCreated) {
         // Esperar a que se refetchee la query de shipments
         await queryClient.invalidateQueries({ queryKey: ["shipments"] });
-        await queryClient.refetchQueries({ queryKey: ["shipments"] });
-        // Redirigir al primer shipment creado
-        router.push(`/home/shipments?id=${response.shipments[0]._id}`);
-      } else if (response && response.shipment && response.shipment._id) {
-        // Si devuelve un solo shipment
-        await queryClient.invalidateQueries({ queryKey: ["shipments"] });
-        await queryClient.refetchQueries({ queryKey: ["shipments"] });
-        router.push(`/home/shipments?id=${response.shipment._id}`);
+        const refetchResult = await queryClient.refetchQueries({
+          queryKey: ["shipments"],
+          exact: true,
+        });
+
+        // Verificar que el shipment esté en los datos antes de redirigir
+        const shipmentsData = refetchResult?.[0]?.data as any[];
+        const shipmentExists = shipmentsData?.some(
+          (shipment) => shipment._id === response.lastShipmentCreated
+        );
+
+        // Usar requestAnimationFrame para asegurar que el DOM esté listo antes de redirigir
+        const redirect = () => {
+          router.push(`/home/shipments?id=${response.lastShipmentCreated}`);
+        };
+
+        if (shipmentExists) {
+          // Si el shipment ya está en los datos, redirigir inmediatamente
+          requestAnimationFrame(() => {
+            requestAnimationFrame(redirect);
+          });
+        } else {
+          // Si no está aún, esperar un frame adicional y redirigir de todas formas
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(redirect);
+            });
+          });
+        }
       } else {
         // Si no hay shipments, redirigir a la página de my-team
         router.push("/home/my-team");

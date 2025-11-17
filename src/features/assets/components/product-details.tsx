@@ -63,6 +63,7 @@ const MembersList = function MembersList({
   const [relocateResult, setRelocateResult] =
     useState<RelocateStatus>(undefined);
   const [selectedMember, setSelectedMember] = useState<Member>();
+  const [hasFpShipment, setHasFpShipment] = useState(false);
   const { handleReassignProduct } = useActions();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -94,7 +95,7 @@ const MembersList = function MembersList({
         const firstName = member.firstName.toLowerCase();
         const lastName = member.lastName.toLowerCase();
         const fullName = `${firstName} ${lastName}`;
-        
+
         return (
           firstName.includes(searchTerm) ||
           lastName.includes(searchTerm) ||
@@ -215,14 +216,13 @@ const MembersList = function MembersList({
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
 
+      // Guardar si tiene shipment con FP
+      const hasShipment = shipmentValue.shipment === "yes";
+      setHasFpShipment(hasShipment);
+
       setRelocateResult("success");
       setRelocateStauts("success");
       handleSuccess();
-      
-      // Si se creó un shipment, redirigir a la página de shipments con el ID
-      if (response && "shipment" in response && response.shipment && response.shipment._id) {
-        router.push(`/home/shipments?id=${response.shipment._id}`);
-      }
     } catch (error) {
       setRelocateResult("error");
       setRelocateStauts("error");
@@ -314,9 +314,21 @@ const MembersList = function MembersList({
           </div>
 
           {relocateResult === "success" ? (
-            <Badge className={badgeVariants({ variant: relocateResult })}>
-              Successfully relocated ✅
-            </Badge>
+            hasFpShipment ? (
+              <Button
+                variant="text"
+                onClick={() => {
+                  setAside(undefined);
+                  router.push("/home/shipments");
+                }}
+              >
+                View Shipments
+              </Button>
+            ) : (
+              <Badge className={badgeVariants({ variant: relocateResult })}>
+                Successfully relocated ✅
+              </Badge>
+            )
           ) : (
             <Button
               variant="text"
