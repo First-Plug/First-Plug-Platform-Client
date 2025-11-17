@@ -65,6 +65,9 @@ export const LoadAside = function () {
             await CsvServices.bulkCreateProducts(data.products);
             await queryClient.invalidateQueries({ queryKey: ["assets"] });
             await queryClient.invalidateQueries({ queryKey: ["members"] });
+            await queryClient.invalidateQueries({ queryKey: ["offices"] });
+            // Forzar refetch inmediato para actualizar los datos en la UI
+            await queryClient.refetchQueries({ queryKey: ["members"] });
             setAside(undefined);
             setAlert("csvSuccess");
             clearCsvData();

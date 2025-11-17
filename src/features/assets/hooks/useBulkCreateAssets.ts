@@ -20,10 +20,12 @@ export const useBulkCreateAssets = () => {
 
       return { previousProducts };
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["assets"] });
-      queryClient.invalidateQueries({ queryKey: ["members"] });
-      queryClient.invalidateQueries({ queryKey: ["offices"] });
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: ["assets"] });
+      await queryClient.invalidateQueries({ queryKey: ["members"] });
+      await queryClient.invalidateQueries({ queryKey: ["offices"] });
+      // Forzar refetch inmediato para actualizar los datos en la UI
+      await queryClient.refetchQueries({ queryKey: ["members"] });
     },
     onError: (error: any) => {
       const message =

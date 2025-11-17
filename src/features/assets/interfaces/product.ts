@@ -342,6 +342,8 @@ export const zodProductModel = z.object({
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
   deletedAt: z.string().optional(),
+  country: z.string().optional(),
+  officeName: z.string().optional(),
   price: z
     .object({
       amount: z.number().nonnegative().optional(),
