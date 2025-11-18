@@ -534,10 +534,7 @@ export const CategoryForm = ({
               name="acquisitionDate"
               allowFutureDates={false}
               onChange={(e) =>
-                handleInputChange(
-                  "acquisitionDate",
-                  new Date(e.target.value).toISOString()
-                )
+                handleInputChange("acquisitionDate", e.target.value)
               }
             />
           </div>
@@ -759,10 +756,7 @@ export const CategoryForm = ({
                 name="acquisitionDate"
                 allowFutureDates={false}
                 onChange={(e) =>
-                  handleInputChange(
-                    "acquisitionDate",
-                    new Date(e.target.value).toISOString()
-                  )
+                  handleInputChange("acquisitionDate", e.target.value)
                 }
               />
             </div>

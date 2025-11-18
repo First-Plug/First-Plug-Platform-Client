@@ -3,12 +3,16 @@ import { CreateMemberZodModel } from "@/features/members";
 import { getCountryCode } from "@/features/members/utils/countryUtils";
 function convertToISODate(inputDate: string): string {
   const [month, day, year] = inputDate.split("/");
-  const formattedDate = `${year}-${month}-${day}`;
+  const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
+    2,
+    "0"
+  )}`;
   const date = new Date(formattedDate);
   if (isNaN(date.getTime())) {
     throw new Error("Invalid date format");
   }
-  return date.toISOString();
+  // Retornar solo la fecha sin hora (YYYY-MM-DD)
+  return formattedDate;
 }
 
 export function parseMembers(member: CsvMember): CreateMemberZodModel {

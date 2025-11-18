@@ -154,10 +154,23 @@ export const ShipmentAside = () => {
     (state) => state.setExpandedShipmentId
   );
 
+  const formatDateForSubmission = (
+    value: AsapOrDateValue
+  ): string | "ASAP" | "" => {
+    if (value === "ASAP" || value === "") return value;
+    if (value instanceof Date) {
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+    return "";
+  };
+
   const handleSave = async () => {
     const updatedShipment = {
-      desirableDateOrigin: pickupDate,
-      desirableDateDestination: deliveredDate,
+      desirableDateOrigin: formatDateForSubmission(pickupDate),
+      desirableDateDestination: formatDateForSubmission(deliveredDate),
     };
 
     const response = await updateShipmentMutation.mutateAsync({
