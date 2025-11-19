@@ -96,17 +96,18 @@ export const zodMemberCsvSchema = z.object({
   "Last Name *": z.string().min(1),
   "Email *": z.string().email(),
   "Start Date": z.string().optional(),
-  birthDate: z.string().optional(),
+  "Birth Date": z.string().optional(),
   Team: z.string().optional(),
   "Job Position": z.string().optional(),
   "Personal Email": z.string().optional(),
-  Country: z.string().optional(),
+  "Country*": z.string().min(1, "Country is required"),
   Phone: z.string().optional(),
   City: z.string().optional(),
   "Zip Code": z.string().optional(),
   Address: z.string().optional(),
   Apartment: z.string().optional(),
   "Additional Info": z.string().optional(),
+  "DNI/CI/Passport": z.string().optional(),
 });
 export type CsvMember = z.infer<typeof zodMemberCsvSchema>;
 export const csvMemberSchema = z.array(zodMemberCsvSchema);

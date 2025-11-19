@@ -21,7 +21,7 @@ export function parseMembers(member: CsvMember): CreateMemberZodModel {
         ? convertToISODate(member["Start Date"])
         : member["Start Date"],
     birthDate:
-      member["Birth Date"] !== ""
+      member["Birth Date"] && member["Birth Date"] !== ""
         ? convertToISODate(member["Birth Date"])
         : member["Birth Date"],
     team: member.Team,
@@ -31,13 +31,20 @@ export function parseMembers(member: CsvMember): CreateMemberZodModel {
     address: member.Address,
     apartment: member.Apartment,
     city: member.City,
-    country: member.Country ? getCountryCode(member.Country) : member.Country,
+    country: member["Country*"]
+      ? getCountryCode(member["Country*"])
+      : member["Country*"],
     zipCode: member["Zip Code"],
     position: member["Job Position"],
+    dni: member["DNI/CI/Passport"],
   };
 
   const filteredObj = Object.fromEntries(
-    Object.entries(obj).filter(([key, value]) => value)
+    Object.entries(obj).filter(([key, value]) => {
+      // Keep country even if it's empty string, but filter out other empty values
+      if (key === "country") return true;
+      return value;
+    })
   );
 
   return filteredObj;
