@@ -49,7 +49,8 @@ export function ReturnProduct({
   className = "",
 }: IRemoveItems & { className?: string }) {
   const { closeAside, pushAside } = useAsideStore();
-  const { newlyCreatedOffice, clearNewlyCreatedOffice, setShouldAutoSelect } = useOfficeStore();
+  const { newlyCreatedOffice, clearNewlyCreatedOffice, setShouldAutoSelect } =
+    useOfficeStore();
 
   const { shipmentValue, onSubmitDropdown, isShipmentValueValid } =
     useShipmentValues();
@@ -307,7 +308,7 @@ export function ReturnProduct({
         },
       };
 
-      await unassignProduct({
+      const response = await unassignProduct({
         location:
           newLocation === "FP warehouse" ? "FP warehouse" : "Our office",
         product: productToSend,
@@ -317,6 +318,19 @@ export function ReturnProduct({
       setReturnStatus("success");
 
       onRemoveSuccess();
+
+      // Si se creó un shipment, esperar refetch y redirigir a la página de shipments
+      if (
+        response &&
+        "shipment" in response &&
+        response.shipment &&
+        response.shipment._id
+      ) {
+        closeAside();
+        await queryClient.invalidateQueries({ queryKey: ["shipments"] });
+        await queryClient.refetchQueries({ queryKey: ["shipments"] });
+        router.push(`/home/shipments?id=${response.shipment._id}`);
+      }
     } catch (error) {
       setReturnStatus("error");
     } finally {

@@ -220,16 +220,54 @@ export default function RequestOffBoardingPage({
     setIsLoading(true);
 
     try {
-      await Memberservices.offboardingMember(params.id, sendData);
+      const response = await Memberservices.offboardingMember(
+        params.id,
+        sendData
+      );
 
       setAlert("successOffboarding");
 
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["members"] });
-      queryClient.invalidateQueries({ queryKey: ["shipments"] });
       queryClient.invalidateQueries({ queryKey: ["offices"] });
 
-      router.push("/home/my-team");
+      // Si se creó un shipment, esperar refetch y redirigir
+      if (response && response.lastShipmentCreated) {
+        // Esperar a que se refetchee la query de shipments
+        await queryClient.invalidateQueries({ queryKey: ["shipments"] });
+        const refetchResult = await queryClient.refetchQueries({
+          queryKey: ["shipments"],
+          exact: true,
+        });
+
+        // Verificar que el shipment esté en los datos antes de redirigir
+        const shipmentsData = refetchResult?.[0]?.data as any[];
+        const shipmentExists = shipmentsData?.some(
+          (shipment) => shipment._id === response.lastShipmentCreated
+        );
+
+        // Usar requestAnimationFrame para asegurar que el DOM esté listo antes de redirigir
+        const redirect = () => {
+          router.push(`/home/shipments?id=${response.lastShipmentCreated}`);
+        };
+
+        if (shipmentExists) {
+          // Si el shipment ya está en los datos, redirigir inmediatamente
+          requestAnimationFrame(() => {
+            requestAnimationFrame(redirect);
+          });
+        } else {
+          // Si no está aún, esperar un frame adicional y redirigir de todas formas
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(redirect);
+            });
+          });
+        }
+      } else {
+        // Si no hay shipments, redirigir a la página de my-team
+        router.push("/home/my-team");
+      }
     } catch (error) {
       setAlert("errorOffboarding");
     } finally {
