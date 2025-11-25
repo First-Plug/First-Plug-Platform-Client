@@ -3,14 +3,14 @@ import { useState } from "react";
 import { useAsideStore } from "@/shared";
 import { Member, useCreateMember, useUpdateMember } from "@/features/members";
 import { useGetOrCreateTeam } from "@/features/teams";
-import { QueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { type Team } from "@/features/teams";
 
 import { formatAcquisitionDate } from "@/features/members";
 
 export const useMemberSubmit = (initialData?: Member, isUpdate?: boolean) => {
   const { closeAside } = useAsideStore();
-  const queryClient = new QueryClient();
+  const queryClient = useQueryClient();
   const [isButtonDisabled, setButtonDisabled] = useState(false);
 
   const updateMemberMutation = useUpdateMember();
