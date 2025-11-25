@@ -64,6 +64,10 @@ export function ReturnProduct({
   );
   const [selectedOfficeId, setSelectedOfficeId] = useState<string | null>(null);
   const [returnStatus, setReturnStatus] = useState<RelocateStatus>(undefined);
+  const [hasFpShipment, setHasFpShipment] = useState(false);
+  const [createdShipmentId, setCreatedShipmentId] = useState<string | null>(
+    null
+  );
   const [showInternationalWarning, setShowInternationalWarning] =
     useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
@@ -280,6 +284,8 @@ export function ReturnProduct({
 
   const executeReturn = async () => {
     setIsRemoving(true);
+    setHasFpShipment(false);
+    setCreatedShipmentId(null);
     try {
       const status = (() => {
         if (product.productCondition === "Unusable") return "Unavailable";
@@ -316,20 +322,22 @@ export function ReturnProduct({
       });
 
       setReturnStatus("success");
+      setHasFpShipment(shipmentValue.shipment === "yes");
 
       onRemoveSuccess();
 
-      // Si se creó un shipment, esperar refetch y redirigir a la página de shipments
+      // Si se creó un shipment, esperar refetch para reflejar los datos más recientes
       if (
         response &&
         "shipment" in response &&
         response.shipment &&
         response.shipment._id
       ) {
-        closeAside();
+        setCreatedShipmentId(response.shipment._id);
         await queryClient.invalidateQueries({ queryKey: ["shipments"] });
         await queryClient.refetchQueries({ queryKey: ["shipments"] });
-        router.push(`/home/shipments?id=${response.shipment._id}`);
+      } else {
+        setCreatedShipmentId(null);
       }
     } catch (error) {
       setReturnStatus("error");
@@ -349,6 +357,14 @@ export function ReturnProduct({
   const handleCancelInternationalShipment = () => {
     setShowInternationalWarning(false);
     setPendingAction(null);
+  };
+
+  const handleNavigateToShipments = () => {
+    closeAside();
+    const destination = createdShipmentId
+      ? `/home/shipments?id=${createdShipmentId}`
+      : "/home/shipments";
+    router.push(destination);
   };
 
   return (
@@ -412,9 +428,15 @@ export function ReturnProduct({
 
         <div className="flex-none py-4">
           {returnStatus === "success" ? (
-            <Badge className={badgeVariants({ variant: returnStatus })}>
-              Returned Succesfully ✅
-            </Badge>
+            hasFpShipment ? (
+              <Button variant="text" onClick={handleNavigateToShipments}>
+                View Shipments
+              </Button>
+            ) : (
+              <Badge className={badgeVariants({ variant: returnStatus })}>
+                Returned Succesfully ✅
+              </Badge>
+            )
           ) : (
             <Button
               onClick={() => handleRemoveItems(newLocation)}
