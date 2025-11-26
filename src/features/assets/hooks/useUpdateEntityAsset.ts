@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Product } from "@/features/assets";
 import { updateEntityAsset } from "../api/updateEntityAsset";
 import { useAlertStore } from "@/shared";
+import type { Shipment } from "@/features/shipments";
 
 interface UpdateAssetProps {
   id: string;
@@ -12,7 +13,7 @@ interface UpdateAssetProps {
 interface MutationContext {
   previousAsset?: Product;
 }
-type BackendResponse = Product | { message: string };
+type BackendResponse = Product | { message: string; shipment?: Shipment };
 
 function isProduct(response: BackendResponse): response is Product {
   return (response as Product)._id !== undefined;

@@ -39,9 +39,10 @@ import {
   TooltipTrigger,
 } from "@/shared";
 
-interface BackendResponse extends Product {
-  shipment?: Shipment;
-}
+type BackendResponse =
+  | Product
+  | { message: string; shipment: Shipment }
+  | { message: string };
 
 interface AddMemberFormProps {
   members: Member[];
@@ -94,6 +95,7 @@ export const AddMemberForm = ({
     useOfficeStore();
 
   const { mutate: updateAssetMutation } = useUpdateAsset();
+  const queryClient = useQueryClient();
 
   const router = useRouter();
   const { data: session } = useSession();
@@ -263,6 +265,13 @@ export const AddMemberForm = ({
               destination
             );
 
+            // Verificar si se creó un shipment
+            const hasShipment =
+              "shipment" in response &&
+              response.shipment &&
+              response.shipment._id;
+            const shipmentId = hasShipment ? response.shipment._id : null;
+
             if (missingMessages.length > 0) {
               const formattedMessages = missingMessages
                 .map(
@@ -293,9 +302,28 @@ export const AddMemberForm = ({
                 description: formattedMessages,
               });
               setShowErrorDialog(true);
+
+              // Si se creó un shipment y hay missing data, esperar refetch y redirigir
+              if (shipmentId) {
+                handleCloseAside();
+                await queryClient.invalidateQueries({
+                  queryKey: ["shipments"],
+                });
+                await queryClient.refetchQueries({ queryKey: ["shipments"] });
+                router.push(`/home/shipments?id=${shipmentId}`);
+              }
             } else {
               setAlert("assignedProductSuccess");
               handleCloseAside();
+
+              // Si se creó un shipment, esperar refetch y redirigir
+              if (shipmentId) {
+                await queryClient.invalidateQueries({
+                  queryKey: ["shipments"],
+                });
+                await queryClient.refetchQueries({ queryKey: ["shipments"] });
+                router.push(`/home/shipments?id=${shipmentId}`);
+              }
             }
           },
           onError: (error) => {
