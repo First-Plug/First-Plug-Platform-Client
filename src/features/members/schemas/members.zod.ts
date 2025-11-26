@@ -2,7 +2,9 @@ import { zodCreateProductModel } from "@/features/assets/interfaces/product";
 import { z } from "zod";
 
 const phoneRegex = /^\+?[0-9\s]*$/;
-const onlyLettersRegex = /^[A-Za-z\s\u00C0-\u00FF]+$/;
+// Regex que permite letras (incluyendo acentuadas, ñ, Ñ) y espacios
+// Soporta: á, é, í, ó, ú, à, è, ì, ò, ù, ä, ë, ï, ö, ü, ã, õ, ñ, etc.
+const onlyLettersRegex = /^[a-zA-Z\s\u00C0-\u017F\u0180-\u024F]+$/;
 
 export const zodCreateMemberModel = z.object({
   firstName: z
