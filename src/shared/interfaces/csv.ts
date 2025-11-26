@@ -52,7 +52,14 @@ export const csvProductModel = z
       }
     }),
     assignedEmail: z.string().optional(),
-    "Product Condition": z.enum(PRODUCT_CONDITIONS).optional(),
+    "Product Condition": z
+      .string()
+      .transform((val) => {
+        // Si está vacío, retorna undefined para que se asigne "Optimal" por defecto
+        if (!val || val === "") return undefined;
+        return val;
+      })
+      .pipe(z.enum(PRODUCT_CONDITIONS).optional()),
     "Additional info": z.string().optional(),
     "country*": z.string().optional(),
     "officeName*": z.string().optional(),
@@ -75,12 +82,13 @@ export const csvProductModel = z
     Recoverable: z
       .string()
       .transform((val) => {
-        // Transforma YES/NO a true/false
-        if (val === "YES" || val === "yes") return true;
-        if (val === "NO" || val === "no") return false;
         // Si está vacío, retorna undefined
         if (!val || val === "") return undefined;
-        return val;
+        // Transforma YES/NO a true/false (case-insensitive)
+        if (val.toUpperCase() === "YES") return true;
+        if (val.toUpperCase() === "NO") return false;
+        // Si no es YES ni NO, retorna undefined para que sea opcional
+        return undefined;
       })
       .optional(),
   })
@@ -106,6 +114,14 @@ export const csvProductModel = z
           code: "custom",
           path: ["brand*"],
           message: `The field 'brand' is required for ${data["category*"]} category.`,
+        });
+      }
+      // Validar que si el modelo es "Other", el name sea obligatorio
+      if (data["model*"] === "Other" && !data.name) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["name"],
+          message: `The field 'name' is required when model is "Other"`,
         });
       }
     }
@@ -162,7 +178,7 @@ export const CSVUrls = {
 
 export const CSVTeamplates = {
   LoadStock:
-    "name,description,category,color,screen,keyboard,processor,ram,storage,gpu,serialNumber,status,stock",
+    "name,description,category,color,screen,keyboard,processor,ram,storage,gpu,serialNumber,status,stock,Recoverable",
   LoadMembers:
     "firstName,lastName,dateOfBirth,dni,phone,email,teams,jobPosition,country,city,zipCode,address,appartment,joiningDate,timeSlotForDelivery,additionalInfo",
 } as const;
