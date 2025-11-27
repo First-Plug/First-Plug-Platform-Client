@@ -44,15 +44,41 @@ export const LoadAside = function () {
     setIsLoading(true);
     try {
       if (type === "LoadStock") {
-        const filteredData = parsedData.filter((prod) => prod["category*"]);
-        const products = filteredData.map((product) => ({
+        // Filtrar filas vacías primero
+        const filteredData = parsedData.filter(
+          (prod: any) => prod["category*"]
+        );
+
+        // Validar cada fila con Zod para transformar los valores (especialmente Recoverable)
+        const validatedData: any[] = [];
+        for (const row of filteredData) {
+          const validationResult = csvPrdocutSchema.safeParse([row]);
+          if (!validationResult.success) {
+            console.error(
+              "❌ CSV VALIDATION ERROR for row:",
+              row,
+              validationResult.error
+            );
+            toast({
+              title:
+                "The uploaded file is not correct. Please verify it and try again.",
+              variant: "destructive",
+              duration: 15000,
+            });
+            setIsLoading(false);
+            return;
+          }
+          validatedData.push(validationResult.data[0]);
+        }
+
+        const products = validatedData.map((product: any) => ({
           ...product,
           acquisitionDate: product.acquisitionDate
             ? new Date(product.acquisitionDate).toISOString()
             : product.acquisitionDate,
         }));
 
-        const parsedProducts: PrdouctModelZod = products.map((product) =>
+        const parsedProducts: PrdouctModelZod[] = products.map((product: any) =>
           parseProduct(product)
         );
 
@@ -72,6 +98,7 @@ export const LoadAside = function () {
             setAlert("csvSuccess");
             clearCsvData();
           } catch (error) {
+            console.error("❌ ERROR uploading products to backend:", error);
             toast({
               title:
                 "The uploaded file is not correct. Please verify it and try again.  ",
@@ -80,6 +107,7 @@ export const LoadAside = function () {
             });
           }
         } else {
+          console.error("❌ CSV VALIDATION ERROR (Products - Upload):", error);
           toast({
             title:
               "The uploaded file is not correct. Please verify it and try again.  ",
@@ -160,8 +188,9 @@ export const LoadAside = function () {
           const fileData: CsvProduct[] = results.data.filter((p) =>
             isCsvCompleted(p)
           );
+
           const { name, size } = csvFile;
-          const { success } = csvPrdocutSchema.safeParse(fileData);
+          const { success, error } = csvPrdocutSchema.safeParse(fileData);
 
           if (success) {
             setCsvFile(csvFile);
@@ -171,6 +200,7 @@ export const LoadAside = function () {
               currentDate: new Date().toLocaleString(),
             });
           } else {
+            console.error("❌ CSV VALIDATION ERROR (Products):", error);
             setCsvFile(null);
             toast({
               title:
