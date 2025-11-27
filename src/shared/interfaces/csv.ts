@@ -1,7 +1,12 @@
 "use client";
 import { z } from "zod";
 import { zodProductModel } from "@/features/assets/interfaces/product";
-import { CATEGORIES, LOCATION } from "@/features/assets/interfaces/product";
+import {
+  CATEGORIES,
+  LOCATION,
+  CURRENCY_CODES,
+  PRODUCT_CONDITIONS,
+} from "@/features/assets/interfaces/product";
 import { zodCreateMemberModel } from "@/features/members/schemas/members.zod";
 
 export const EMPTY_FILE_INFO: CsvInfo = {
@@ -47,10 +52,37 @@ export const csvProductModel = z
       }
     }),
     assignedEmail: z.string().optional(),
-    productCondition: z.string().optional(),
-    additionalInfo: z.string().optional(),
+    "Product Condition": z.enum(PRODUCT_CONDITIONS).optional(),
+    "Additional info": z.string().optional(),
     "country*": z.string().optional(),
     "officeName*": z.string().optional(),
+    "Price per unit": z
+      .string()
+      .transform((val) => {
+        if (!val || val === "") return undefined;
+        const num = parseFloat(val);
+        return isNaN(num) ? undefined : num;
+      })
+      .optional(),
+    Currency: z
+      .string()
+      .transform((val) => {
+        // Si está vacío, retorna undefined para que sea opcional
+        if (!val || val === "") return undefined;
+        return val;
+      })
+      .pipe(z.enum(CURRENCY_CODES).optional()),
+    Recoverable: z
+      .string()
+      .transform((val) => {
+        // Transforma YES/NO a true/false
+        if (val === "YES" || val === "yes") return true;
+        if (val === "NO" || val === "no") return false;
+        // Si está vacío, retorna undefined
+        if (!val || val === "") return undefined;
+        return val;
+      })
+      .optional(),
   })
   .superRefine((data, ctx) => {
     if (data["category*"] === "Merchandising") {

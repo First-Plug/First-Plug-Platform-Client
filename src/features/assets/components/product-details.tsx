@@ -63,8 +63,10 @@ const MembersList = function MembersList({
   const [relocateResult, setRelocateResult] =
     useState<RelocateStatus>(undefined);
   const [selectedMember, setSelectedMember] = useState<Member>();
+  const [hasFpShipment, setHasFpShipment] = useState(false);
   const { handleReassignProduct } = useActions();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
   const [genericAlertData, setGenericAlertData] = useState({
@@ -75,7 +77,6 @@ const MembersList = function MembersList({
   const [showInternationalWarning, setShowInternationalWarning] =
     useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
-  const router = useRouter();
 
   const { isInternationalShipment, buildInternationalValidationEntities } =
     useInternationalShipmentDetection();
@@ -94,7 +95,7 @@ const MembersList = function MembersList({
         const firstName = member.firstName.toLowerCase();
         const lastName = member.lastName.toLowerCase();
         const fullName = `${firstName} ${lastName}`;
-        
+
         return (
           firstName.includes(searchTerm) ||
           lastName.includes(searchTerm) ||
@@ -205,7 +206,7 @@ const MembersList = function MembersList({
         status: product.status,
       };
 
-      await handleReassignProduct({
+      const response = await handleReassignProduct({
         currentMember,
         selectedMember,
         product: productToSend,
@@ -214,6 +215,10 @@ const MembersList = function MembersList({
       queryClient.invalidateQueries({ queryKey: ["members"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
+
+      // Guardar si tiene shipment con FP
+      const hasShipment = shipmentValue.shipment === "yes";
+      setHasFpShipment(hasShipment);
 
       setRelocateResult("success");
       setRelocateStauts("success");
@@ -309,9 +314,21 @@ const MembersList = function MembersList({
           </div>
 
           {relocateResult === "success" ? (
-            <Badge className={badgeVariants({ variant: relocateResult })}>
-              Successfully relocated ✅
-            </Badge>
+            hasFpShipment ? (
+              <Button
+                variant="text"
+                onClick={() => {
+                  setAside(undefined);
+                  router.push("/home/shipments");
+                }}
+              >
+                View Shipments
+              </Button>
+            ) : (
+              <Badge className={badgeVariants({ variant: relocateResult })}>
+                Successfully relocated ✅
+              </Badge>
+            )
           ) : (
             <Button
               variant="text"

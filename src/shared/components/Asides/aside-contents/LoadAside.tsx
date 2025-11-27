@@ -72,6 +72,7 @@ export const LoadAside = function () {
             setAlert("csvSuccess");
             clearCsvData();
           } catch (error) {
+            console.error("❌ ERROR uploading products to backend:", error);
             toast({
               title:
                 "The uploaded file is not correct. Please verify it and try again.  ",
@@ -80,6 +81,7 @@ export const LoadAside = function () {
             });
           }
         } else {
+          console.error("❌ CSV VALIDATION ERROR (Products - Upload):", error);
           toast({
             title:
               "The uploaded file is not correct. Please verify it and try again.  ",
@@ -160,8 +162,9 @@ export const LoadAside = function () {
           const fileData: CsvProduct[] = results.data.filter((p) =>
             isCsvCompleted(p)
           );
+
           const { name, size } = csvFile;
-          const { success } = csvPrdocutSchema.safeParse(fileData);
+          const { success, error } = csvPrdocutSchema.safeParse(fileData);
 
           if (success) {
             setCsvFile(csvFile);
@@ -171,6 +174,7 @@ export const LoadAside = function () {
               currentDate: new Date().toLocaleString(),
             });
           } else {
+            console.error("❌ CSV VALIDATION ERROR (Products):", error);
             setCsvFile(null);
             toast({
               title:
