@@ -181,15 +181,11 @@ export const ShipmentDetailsTable = ({ data }: Props) => {
 };
 
 function formatDate(date: string) {
-  const parsedDate = new Date(date);
+  const clean = date.split("T")[0];
 
-  if (isNaN(parsedDate.getTime())) {
-    return date;
-  }
+  const [year, month, day] = clean.split("-");
 
-  return new Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-  }).format(parsedDate);
+  if (!year || !month || !day) return date;
+
+  return `${day}/${month}/${year}`;
 }
