@@ -45,7 +45,7 @@ export const useMemberSubmit = (initialData?: Member, isUpdate?: boolean) => {
             changes.dni = newDni;
           }
         } else if (data[key] !== initialData?.[key]) {
-          if (key === "acquisitionDate" || key === "birthDate") {
+          if (key === "acquisitionDate" || key === "birthDate" || key === "startDate") {
             changes[key] = data[key] ? formatAcquisitionDate(data[key]) : null;
           } else {
             changes[key] = data[key];
@@ -77,6 +77,13 @@ export const useMemberSubmit = (initialData?: Member, isUpdate?: boolean) => {
           processedData.dni = String(processedData.dni);
         } else {
           processedData.dni = "";
+        }
+        // Formatear fechas para creación
+        if (processedData.startDate) {
+          processedData.startDate = formatAcquisitionDate(processedData.startDate);
+        }
+        if (processedData.birthDate) {
+          processedData.birthDate = formatAcquisitionDate(processedData.birthDate);
         }
         await createMemberMutation.mutateAsync(processedData);
       }

@@ -87,6 +87,6 @@ export interface Attribute {
 }
 
 export interface UpdateShipment {
-  desirableDateOrigin: AsapOrDateValue;
-  desirableDateDestination: AsapOrDateValue;
+  desirableDateOrigin: AsapOrDateValue | string;
+  desirableDateDestination: AsapOrDateValue | string;
 }
