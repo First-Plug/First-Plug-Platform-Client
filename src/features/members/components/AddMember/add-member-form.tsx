@@ -25,6 +25,7 @@ import { useFetchMembers } from "@/features/members";
 import { ShipmentWithFp } from "@/features/shipments";
 import { useShipmentValues } from "@/features/shipments";
 import { Shipment } from "@/features/shipments";
+import { AsapOrDateValue } from "@/features/shipments/components/ShipmentWithFp/asap-or-date";
 import { useAsideStore, useAlertStore } from "@/shared";
 import { CategoryIcons } from "@/features/assets";
 import { useOffices, useOfficeStore } from "@/features/settings";
@@ -195,6 +196,24 @@ export const AddMemberForm = ({
     setPendingAction(null);
   };
 
+  const formatDateForSubmission = (
+    value: AsapOrDateValue | string | undefined
+  ): string | undefined => {
+    if (!value || value === "ASAP" || value === "")
+      return value === "ASAP" ? "ASAP" : undefined;
+    if (value instanceof Date) {
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, "0");
+      const day = String(value.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+    // Si ya es un string, verificar si tiene formato de fecha completa y extraer solo la fecha
+    if (typeof value === "string" && value.includes("T")) {
+      return value.split("T")[0];
+    }
+    return value;
+  };
+
   const executeAssignment = async (
     source: { type: "member" | "office" | "warehouse"; data: any } | null,
     destination: { type: "member" | "office" | "warehouse"; data: any } | null
@@ -229,8 +248,8 @@ export const AddMemberForm = ({
         actionType: actionType === "ReassignProduct" ? "reassign" : "assign",
         fp_shipment: shipmentValue.shipment === "yes",
         desirableDate: {
-          origin: shipmentValue.pickupDate,
-          destination: shipmentValue.deliveredDate,
+          origin: formatDateForSubmission(shipmentValue.pickupDate),
+          destination: formatDateForSubmission(shipmentValue.deliveredDate),
         },
         price: currentProduct.price,
       };
