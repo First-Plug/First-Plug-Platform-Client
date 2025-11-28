@@ -5,6 +5,7 @@ import {
   type Member,
   useMemberForm,
   useMemberSubmit,
+  zodCreateMemberModel,
 } from "@/features/members";
 import { Button, PageLayout, SectionTitle } from "@/shared";
 import {
@@ -36,15 +37,12 @@ export const MemberForm = ({
     isUpdate
   );
 
-  useEffect(() => {
-    const subscription = methods.watch((values, { name, type }) => {
-      console.log("Changed field:", name);
-      console.log("Current values:", values);
-      console.log("Current errors:", methods.formState.errors);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [methods]);
+  try {
+    zodCreateMemberModel.parse(initialData);
+    console.log("Data is valid!");
+  } catch (e) {
+    console.error("Zod Validation Error:", e.errors);
+  }
 
   return (
     <PageLayout>
