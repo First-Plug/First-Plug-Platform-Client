@@ -36,6 +36,9 @@ export const MemberForm = ({
   );
 
   console.log(errors);
+  console.log("initialData", initialData);
+  console.log("defaultValues", methods.getValues());
+  console.log("formState", methods.formState);
 
   return (
     <PageLayout>
