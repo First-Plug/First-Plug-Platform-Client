@@ -27,13 +27,15 @@ export const MemberForm = ({
   const {
     methods,
     handleSubmit,
-    formState: { isSubmitting, isValid },
+    formState: { isSubmitting, isValid, errors },
   } = useMemberForm(initialData);
 
   const { handleSaveMember, isButtonDisabled } = useMemberSubmit(
     initialData,
     isUpdate
   );
+
+  console.log(errors);
 
   return (
     <PageLayout>
