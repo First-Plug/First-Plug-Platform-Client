@@ -37,10 +37,14 @@ export const MemberForm = ({
   );
 
   useEffect(() => {
-    console.log("Form Values:", methods.getValues());
-    console.log("Form Errors:", methods.formState.errors);
-    console.log("isValid:", methods.formState.isValid);
-  }, [methods.formState]);
+    const subscription = methods.watch((values, { name, type }) => {
+      console.log("Changed field:", name);
+      console.log("Current values:", values);
+      console.log("Current errors:", methods.formState.errors);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [methods]);
 
   return (
     <PageLayout>
