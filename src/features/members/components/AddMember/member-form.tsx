@@ -14,6 +14,7 @@ import {
   AdditionalData,
 } from "@/features/members";
 import memberImage from "/public/member.png";
+import { useEffect } from "react";
 
 interface MemberFormProps {
   initialData?: Member;
@@ -35,10 +36,11 @@ export const MemberForm = ({
     isUpdate
   );
 
-  console.log(errors);
-  console.log("initialData", initialData);
-  console.log("defaultValues", methods.getValues());
-  console.log("formState", methods.formState);
+  useEffect(() => {
+    console.log("Form Values:", methods.getValues());
+    console.log("Form Errors:", methods.formState.errors);
+    console.log("isValid:", methods.formState.isValid);
+  }, [methods.formState]);
 
   return (
     <PageLayout>
