@@ -55,7 +55,7 @@ export const BulkCreateForm: React.FC<{
 
   const queryClient = useQueryClient();
 
-  const { pushAside } = useAsideStore();
+  const { pushAside, isClosed } = useAsideStore();
   const { setSelectedMember } = useMemberStore();
   const {
     newlyCreatedOffice,
@@ -201,6 +201,25 @@ export const BulkCreateForm: React.FC<{
       setLoading(false);
     }
   }, [fetchedMembers]);
+
+  // Sincronizar members con el cache cuando se cierra la aside (después de actualizar)
+  useEffect(() => {
+    if (isClosed) {
+      // Invalidar y refetch para obtener datos actualizados
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.refetchQueries({ queryKey: ["members"] }).then(() => {
+        const cachedMembers = queryClient.getQueryData<Member[]>(["members"]);
+        if (cachedMembers && cachedMembers.length > 0) {
+          setMembers(cachedMembers);
+          const memberFullNames = [
+            "None",
+            ...cachedMembers.map(getMemberFullName),
+          ];
+          setAssignedEmailOptions(memberFullNames);
+        }
+      });
+    }
+  }, [isClosed, queryClient]);
 
   useEffect(() => {
     // Ordenar oficinas para que la por defecto aparezca primero
@@ -733,6 +752,9 @@ export const BulkCreateForm: React.FC<{
                   </div>
                   <div className="w-full">
                     <BulkCreateValidator
+                      key={`validator-${index}-${
+                        selectedOfficeIds[index] || "no-office"
+                      }`}
                       productIndex={index}
                       selectedMember={watch(`products.${index}.assignedMember`)}
                       relocation={watch(`products.${index}.location`)}
@@ -745,6 +767,11 @@ export const BulkCreateForm: React.FC<{
                         });
                       }}
                       setAside={pushAside}
+                      officeId={
+                        selectedOfficeIds[index] ||
+                        (watch as any)(`products.${index}.officeId`) ||
+                        null
+                      }
                     />
                   </div>
                 </div>
