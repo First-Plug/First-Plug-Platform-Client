@@ -24,7 +24,7 @@
     },
     {
       "name": "screen",
-      "title": "Screen",
+      "title": "Screen (inches)",
       "options": [
         "13",
         "14",
