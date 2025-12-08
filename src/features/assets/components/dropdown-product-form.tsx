@@ -71,8 +71,11 @@ export const DropdownInputProductForm = ({
   const handleOptionClick = (option: string | OptionItem) => {
     if (!disabled) {
       const value = getOptionValue(option);
-      onChange && onChange(value);
-      setSearchTerm(getOptionDisplayText(option));
+      const displayText = getOptionDisplayText(option);
+      if (onChange) {
+        onChange(value);
+      }
+      setSearchTerm(displayText);
       setHasCustomValue(false);
       // Cerrar inmediatamente al seleccionar una opción
       setIsOpen(false);

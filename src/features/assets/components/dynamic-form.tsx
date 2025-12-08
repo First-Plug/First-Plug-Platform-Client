@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useFormContext, Controller } from "react-hook-form";
 import { DropdownInputProductForm } from "@/features/assets";
 
@@ -13,63 +13,147 @@ export const DynamicForm = ({
 }) => {
   const {
     setValue,
-    watch,
     control,
     formState: { errors },
     clearErrors,
   } = useFormContext();
-  const [attributes, setAttributes] = useState(initialValues?.attributes || []);
-  const selectedCategory = watch("category");
 
-  useEffect(() => {
-    const watchedAttributes = watch("attributes") || [];
+  // Helper para quitar "GB" del valor de RAM para mostrar
+  const removeGBFromRam = (value: string): string => {
+    if (typeof value === "string" && value.toLowerCase().endsWith("gb")) {
+      return value.slice(0, -2).trim();
+    }
+    return value;
+  };
 
-    const newAttributes = fields.map((field) => {
-      const matchingAttribute = watchedAttributes.find(
+  // Procesar valores iniciales para quitar "GB" de RAM
+  const processedInitialAttributes = useMemo(
+    () =>
+      (initialValues?.attributes || []).map((attr) => {
+        if (attr.key === "ram" && attr.value) {
+          return { ...attr, value: removeGBFromRam(attr.value) };
+        }
+        return attr;
+      }),
+    [initialValues?.attributes]
+  );
+
+  // Función para inicializar atributos desde fields y initialValues
+  const initializeAttributes = useMemo(() => {
+    return fields.map((field) => {
+      const matchingAttribute = processedInitialAttributes.find(
         (attr) => attr?.key === field.name
       );
-
       return {
         _id: matchingAttribute?._id || "",
         key: field.name,
         value: matchingAttribute?.value || "",
       };
     });
+  }, [fields, processedInitialAttributes]);
 
-    setAttributes(newAttributes);
-    handleAttributesChange(newAttributes);
+  // Estado local como fuente de verdad única
+  const [attributes, setAttributes] = useState(initializeAttributes);
 
-    newAttributes.forEach((attr, index) => {
-      if (attr && attr.key) {
-        setValue(`attributes.${index}.key`, attr.key);
-        setValue(`attributes.${index}.value`, attr.value);
-      }
-    });
-  }, [fields, watch("attributes"), handleAttributesChange, setValue]);
+  // Referencia para rastrear si ya se inicializó
+  const isInitializedRef = useRef(false);
+  const lastInitialValuesRef = useRef(
+    JSON.stringify(processedInitialAttributes)
+  );
 
-  const handleChange = (fieldKey, value) => {
+  // Sincronizar solo cuando cambian los valores iniciales externamente (no por cambios del usuario)
+  useEffect(() => {
+    const currentInitialValues = JSON.stringify(processedInitialAttributes);
+
+    // Solo sincronizar si:
+    // 1. Es la primera vez que se monta el componente, O
+    // 2. Los valores iniciales cambiaron externamente (no por cambios del usuario)
+    if (
+      !isInitializedRef.current ||
+      lastInitialValuesRef.current !== currentInitialValues
+    ) {
+      // Actualizar el estado local
+      setAttributes(initializeAttributes);
+
+      // Sincronizar con el formulario
+      initializeAttributes.forEach((attr, index) => {
+        if (attr && attr.key) {
+          setValue(`attributes.${index}.key`, attr.key, {
+            shouldValidate: false,
+          });
+          setValue(`attributes.${index}.value`, attr.value, {
+            shouldValidate: false,
+          });
+        }
+      });
+
+      // Sincronizar con product-form (estado padre)
+      handleAttributesChange(initializeAttributes);
+
+      // Marcar como inicializado y guardar referencia
+      isInitializedRef.current = true;
+      lastInitialValuesRef.current = currentInitialValues;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initializeAttributes, fields.length]);
+
+  const handleChange = (
+    fieldKey: string,
+    value: string,
+    fieldIndex: number
+  ) => {
     if (!fieldKey) return;
 
-    const updatedAttributes = attributes
-      .map((attr) => (attr?.key === fieldKey ? { ...attr, value } : attr))
-      .filter(Boolean);
+    // Si es RAM, quitar "GB" del valor para almacenar sin "GB"
+    let processedValue = value;
+    if (fieldKey === "ram") {
+      processedValue = removeGBFromRam(value);
+    }
 
-    setAttributes(updatedAttributes);
-    handleAttributesChange(updatedAttributes);
-
-    const attributeIndex = updatedAttributes.findIndex(
-      (attr) => attr?.key === fieldKey
+    // Actualizar el estado local (fuente de verdad)
+    // Buscar si el atributo ya existe
+    const existingAttrIndex = attributes.findIndex(
+      (attr) => attr.key === fieldKey
     );
 
-    if (attributeIndex !== -1) {
-      setValue(`attributes.${attributeIndex}.value`, value);
+    let updatedAttributes;
+    if (existingAttrIndex !== -1) {
+      // Actualizar el atributo existente
+      updatedAttributes = attributes.map((attr) =>
+        attr.key === fieldKey ? { ...attr, value: processedValue } : attr
+      );
+    } else {
+      // Agregar el nuevo atributo si no existe
+      updatedAttributes = [
+        ...attributes,
+        {
+          _id: "",
+          key: fieldKey,
+          value: processedValue,
+        },
+      ];
     }
+
+    // Actualizar el estado local primero
+    setAttributes(updatedAttributes);
+
+    // IMPORTANTE: Actualizar el estado en product-form INMEDIATAMENTE
+    // Esto debe ser síncrono para que esté disponible al guardar
+    handleAttributesChange(updatedAttributes);
+
+    // Sincronizar con el formulario de react-hook-form
+    setValue(`attributes.${fieldIndex}.key`, fieldKey, {
+      shouldValidate: false,
+    });
+    setValue(`attributes.${fieldIndex}.value`, processedValue, {
+      shouldValidate: false,
+    });
 
     clearErrors(fieldKey);
     setCustomErrors((prev) => ({ ...prev, [fieldKey]: undefined }));
   };
 
-  const getAttributeError = (key) => {
+  const getAttributeError = (key: string) => {
     return errors[key]?.message || customErrors[key] || null;
   };
 
@@ -86,7 +170,6 @@ export const DynamicForm = ({
       inputType: "text",
     };
 
-    // Campos que permiten input personalizado
     const customInputFields = [
       "brand",
       "model",
@@ -101,20 +184,17 @@ export const DynamicForm = ({
     if (customInputFields.includes(fieldName)) {
       config.allowCustomInput = true;
 
-      // Títulos especiales
       if (fieldName === "ram") {
         config.title = "RAM (GB)";
-        config.placeholder = "Select or write the RAM (GB)";
+        config.placeholder = "Select or write the RAM";
       } else if (fieldName === "screen") {
         config.title = "Screen (inches)";
         config.placeholder = "Select or write the Screen (inches)";
       } else {
-        // Usar el título del campo sin el asterisco si existe
         const cleanTitle = fieldTitle.replace(/\*/g, "").trim();
         config.placeholder = `Select or write the ${cleanTitle}`;
       }
 
-      // Validaciones por tipo de input
       if (fieldName === "ram" || fieldName === "screen") {
         config.inputType = "numbers";
       } else if (fieldName === "color" || fieldName === "keyboardLanguage") {
@@ -125,6 +205,8 @@ export const DynamicForm = ({
     return config;
   };
 
+  const selectedCategory = useFormContext().watch("category");
+
   return (
     <div
       className={`grid gap-4 ${
@@ -134,31 +216,51 @@ export const DynamicForm = ({
       {fields.map((field, index) => {
         const fieldConfig = getFieldConfig(field.name, field.title);
         const displayTitle = fieldConfig.title || field.title;
-        // Usar placeholder personalizado si está configurado, sino usar el título del campo
         const displayPlaceholder = fieldConfig.placeholder || field.title;
+
+        // Procesar opciones de RAM para quitar "GB" visualmente
+        const processedOptions =
+          field.name === "ram"
+            ? field.options?.map((opt) => {
+                if (
+                  typeof opt === "string" &&
+                  opt.toLowerCase().endsWith("gb")
+                ) {
+                  return opt.slice(0, -2).trim();
+                }
+                return opt;
+              })
+            : field.options;
+
+        // Obtener el valor del estado local
+        const attr = attributes.find((a) => a.key === field.name);
+        const attrValue = attr?.value || "";
+        const displayValue =
+          field.name === "ram" ? removeGBFromRam(attrValue) : attrValue;
 
         return (
           <div key={field.name}>
             <Controller
               name={`attributes.${index}.value`}
               control={control}
-              defaultValue={
-                attributes.find((attr) => attr.key === field.name)?.value || ""
-              }
-              render={({ field: { onChange, value } }) => {
+              defaultValue={displayValue}
+              render={({ field: { onChange } }) => {
                 return (
                   <DropdownInputProductForm
                     name={field.name}
-                    options={field.options}
+                    options={processedOptions}
                     placeholder={displayPlaceholder}
                     title={displayTitle}
-                    selectedOption={value}
+                    selectedOption={displayValue}
                     searchable={true}
                     allowCustomInput={fieldConfig.allowCustomInput}
                     inputType={fieldConfig.inputType}
                     onChange={(option) => {
+                      // IMPORTANTE: Actualizar el estado local PRIMERO (fuente de verdad)
+                      // Esto debe ejecutarse de forma síncrona antes de cualquier otra cosa
+                      handleChange(field.name, option, index);
+                      // Luego sincronizar con el Controller del formulario
                       onChange(option);
-                      handleChange(field.name, option);
                     }}
                     required={
                       selectedCategory !== "Merchandising" &&

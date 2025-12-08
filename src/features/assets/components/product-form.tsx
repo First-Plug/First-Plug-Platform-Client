@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Button, PageLayout, SectionTitle } from "@/shared";
 import {
   type Category,
@@ -112,6 +112,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     trigger,
     formState: { isSubmitting },
     watch,
+    getValues,
   } = methods;
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -124,7 +125,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [assignedEmail, setAssignedEmail] = useState(
     initialData?.assignedEmail
   );
-  const [attributes, setAttributes] = useState(initialData?.attributes || []);
+  // Estado de atributos - se inicializa con los datos iniciales y se actualiza desde DynamicForm
+  const [attributes, setAttributes] = useState<any[]>(
+    initialData?.attributes || []
+  );
+
+  // Función para actualizar atributos desde DynamicForm
+  // Usar useCallback para mantener la referencia estable
+  const handleAttributesChange = useCallback((newAttributes: any[]) => {
+    // Actualizar el estado de forma síncrona
+    setAttributes(newAttributes);
+  }, []);
   const [customErrors, setCustomErrors] = useState({});
   const [showBulkCreate, setShowBulkCreate] = useState(false);
   const [bulkInitialData, setBulkInitialData] = useState<Product | undefined>(
@@ -252,6 +263,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const amount = watch("price.amount");
   const condition = watch("productCondition");
 
+  // Helper para agregar "GB" al valor de RAM si no lo tiene
+  const addGBToRam = (value: string): string => {
+    if (!value || typeof value !== "string") return value;
+    const trimmedValue = value.trim();
+    if (trimmedValue && !trimmedValue.toLowerCase().endsWith("gb")) {
+      return `${trimmedValue}GB`;
+    }
+    return trimmedValue;
+  };
+
   const handleSaveProduct = async (data: Product) => {
     setShowSuccessDialog(false);
     setShowErrorDialog(false);
@@ -323,6 +344,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       }
     }
 
+    // Obtener los valores actuales del formulario
+    const currentFormAttributes = watch("attributes") || data.attributes || [];
+
+    // Usar los campos de la categoría para asegurar que todos los atributos estén incluidos
+    const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
+
+    // Usar el estado local de attributes como fuente de verdad única
+    // Este estado se actualiza inmediatamente cuando el usuario cambia valores
+
     const formatData: Product = {
       ...getEmptyProduct(),
       ...data,
@@ -337,19 +367,24 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         data.productCondition ?? initialData?.productCondition ?? "Optimal",
       additionalInfo: data.additionalInfo || "",
       officeId: data.location === "Our office" ? data.officeId : undefined,
-      attributes: attributes.map((attr) => {
+      attributes: FormConfig.fields.map((field: any) => {
         const initialAttr = initialData?.attributes.find(
-          (ia) => ia.key === attr.key
+          (ia) => ia.key === field.name
         );
+
+        // Usar el estado local como fuente de verdad única
+        const stateAttr = attributes.find((a) => a.key === field.name);
+        let finalValue = stateAttr?.value || initialAttr?.value || "";
+
+        // Si es RAM, agregar "GB" si no lo tiene
+        if (field.name === "ram" && finalValue) {
+          finalValue = addGBToRam(finalValue);
+        }
+
         return {
           _id: initialAttr?._id || "",
-          key: attr.key,
-          value:
-            attr.value !== ""
-              ? attr.value
-              : initialAttr
-              ? initialAttr.value
-              : attr.value,
+          key: field.name,
+          value: finalValue,
         };
       }),
       ...(data.serialNumber?.trim()
@@ -604,6 +639,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     const data = methods.getValues();
     const finalAssignedEmail = watch("assignedEmail");
 
+    // Usar los campos de la categoría para asegurar que todos los atributos estén incluidos
+    const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
+
     const formattedData: Product = {
       ...getEmptyProduct(),
       ...data,
@@ -612,19 +650,24 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
       assignedEmail: finalAssignedEmail,
-      attributes: attributes.map((attr) => {
+      attributes: FormConfig.fields.map((field: any) => {
         const initialAttr = initialData?.attributes.find(
-          (ia) => ia.key === attr.key
+          (ia) => ia.key === field.name
         );
+
+        // Usar el estado local como fuente de verdad única
+        const stateAttr = attributes.find((a) => a.key === field.name);
+        let finalValue = stateAttr?.value || initialAttr?.value || "";
+
+        // Si es RAM, agregar "GB" si no lo tiene
+        if (field.name === "ram" && finalValue) {
+          finalValue = addGBToRam(finalValue);
+        }
+
         return {
           _id: initialAttr?._id || "",
-          key: attr.key,
-          value:
-            attr.value !== ""
-              ? attr.value
-              : initialAttr
-              ? initialAttr.value
-              : attr.value,
+          key: field.name,
+          value: finalValue,
         };
       }),
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
@@ -745,7 +788,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                       <section>
                         <DynamicForm
                           fields={FormConfig.fields}
-                          handleAttributesChange={setAttributes}
+                          handleAttributesChange={handleAttributesChange}
                           isUpdate={isUpdate}
                           initialValues={initialData}
                           customErrors={customErrors}
