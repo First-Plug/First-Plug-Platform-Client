@@ -47,6 +47,7 @@ export const DropdownInputProductForm = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const isUserTypingRef = useRef(false);
 
   // Helper function to extract value from option
   const getOptionValue = (option: string | OptionItem): string => {
@@ -72,12 +73,12 @@ export const DropdownInputProductForm = ({
     if (!disabled) {
       const value = getOptionValue(option);
       const displayText = getOptionDisplayText(option);
+      isUserTypingRef.current = false;
       if (onChange) {
         onChange(value);
       }
       setSearchTerm(displayText);
       setHasCustomValue(false);
-      // Cerrar inmediatamente al seleccionar una opción
       setIsOpen(false);
       inputRef.current?.blur();
     }
@@ -90,7 +91,6 @@ export const DropdownInputProductForm = ({
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
-        // Si permite input personalizado, mantener el valor escrito
         if (!allowCustomInput) {
           setSearchTerm(selectedOption || "");
         }
@@ -116,26 +116,28 @@ export const DropdownInputProductForm = ({
     if (searchable || allowCustomInput) {
       const inputValue = event.target.value;
 
-      // Validar según el tipo de input
       if (!validateInput(inputValue)) {
         return;
       }
 
+      // Marcar que el usuario está tipeando
+      isUserTypingRef.current = true;
+
       setSearchTerm(inputValue);
 
-      // Si permite input personalizado, siempre llamar onChange en tiempo real
+      // Si permite input personalizado, llamar onChange en tiempo real
       if (allowCustomInput) {
         onChange && onChange(inputValue);
       }
 
+      // Filtrar opciones
       const matchingOptions = options.filter((option) =>
         normalizeString(getOptionDisplayText(option))
           .toLowerCase()
           .includes(normalizeString(inputValue).toLowerCase())
       );
 
-      // Si permite input personalizado y hay texto que no coincide exactamente con ninguna opción,
-      // agregar el valor escrito como opción adicional
+      // Si permite input personalizado y hay texto
       if (allowCustomInput && inputValue.trim().length > 0) {
         const normalizedInput = normalizeString(inputValue).toLowerCase();
         const exactMatch = options.some(
@@ -145,7 +147,6 @@ export const DropdownInputProductForm = ({
         );
 
         if (!exactMatch) {
-          // Agregar el valor personalizado como primera opción
           setFilteredOptions([inputValue, ...matchingOptions]);
           setHasCustomValue(true);
         } else {
@@ -157,19 +158,14 @@ export const DropdownInputProductForm = ({
         setHasCustomValue(false);
       }
 
-      // Mostrar dropdown si hay texto
-      if (inputValue.length > 0) {
-        setIsOpen(true);
-      } else {
-        setIsOpen(false);
-        setHasCustomValue(false);
-      }
+      // Mantener el dropdown abierto cuando hay texto
+      setIsOpen(inputValue.length > 0);
     }
   };
 
   const handleInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    // Si permite input personalizado, guardar el valor cuando pierde el foco
-    // Pero no si el siguiente elemento es una opción del dropdown
+    isUserTypingRef.current = false;
+
     const relatedTarget = event.relatedTarget as HTMLElement;
     if (
       allowCustomInput &&
@@ -178,7 +174,7 @@ export const DropdownInputProductForm = ({
     ) {
       onChange && onChange(searchTerm);
     }
-    // Pequeño delay para permitir que el click en la opción se procese primero
+
     setTimeout(() => {
       setIsOpen(false);
     }, 200);
@@ -203,10 +199,10 @@ export const DropdownInputProductForm = ({
     }
   }, [filteredOptions, isOpen]);
 
+  // Solo actualizar searchTerm desde selectedOption si el usuario NO está tipeando
   useEffect(() => {
-    if (selectedOption !== searchTerm) {
+    if (!isUserTypingRef.current && selectedOption !== searchTerm) {
       setSearchTerm(selectedOption || "");
-      // Resetear el estado de valor personalizado cuando cambia la opción seleccionada externamente
       if (selectedOption) {
         const normalizedSelected =
           normalizeString(selectedOption).toLowerCase();
@@ -223,19 +219,15 @@ export const DropdownInputProductForm = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedOption]);
 
-  // Helper to get display for selected value
   const getSelectedDisplay = () => {
     if (!selectedOption) return null;
-
     const selectedItem = options.find((option) => {
       const value = getOptionValue(option);
       return value === selectedOption;
     });
-
     if (selectedItem && typeof selectedItem !== "string") {
       return selectedItem.display;
     }
-
     return null;
   };
 
@@ -267,7 +259,7 @@ export const DropdownInputProductForm = ({
           <>
             <input
               ref={inputRef}
-              type={inputType === "numbers" ? "text" : "text"}
+              type="text"
               value={
                 searchable || allowCustomInput
                   ? searchTerm
@@ -279,7 +271,7 @@ export const DropdownInputProductForm = ({
               onChange={handleSearch}
               onBlur={handleInputBlur}
               onFocus={() => {
-                if (allowCustomInput) {
+                if (allowCustomInput || searchable) {
                   setIsOpen(true);
                 }
               }}
@@ -305,7 +297,6 @@ export const DropdownInputProductForm = ({
             isOpen ? "block" : "hidden"
           }`}
           onMouseDown={(e) => {
-            // Prevenir que el blur se dispare cuando se hace clic en una opción
             e.preventDefault();
           }}
         >

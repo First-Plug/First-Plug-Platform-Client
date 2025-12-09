@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useMemo, useEffect, useRef } from "react";
 import { useFormContext, Controller } from "react-hook-form";
 import { DropdownInputProductForm } from "@/features/assets";
 
@@ -10,6 +10,7 @@ export const DynamicForm = ({
   initialValues,
   customErrors,
   setCustomErrors,
+  attributes, // Recibir attributes como prop desde ProductForm
 }) => {
   const {
     setValue,
@@ -38,64 +39,24 @@ export const DynamicForm = ({
     [initialValues?.attributes]
   );
 
-  // Función para inicializar atributos desde fields y initialValues
-  const initializeAttributes = useMemo(() => {
-    return fields.map((field) => {
-      const matchingAttribute = processedInitialAttributes.find(
-        (attr) => attr?.key === field.name
-      );
-      return {
-        _id: matchingAttribute?._id || "",
-        key: field.name,
-        value: matchingAttribute?.value || "",
-      };
-    });
-  }, [fields, processedInitialAttributes]);
-
-  // Estado local como fuente de verdad única
-  const [attributes, setAttributes] = useState(initializeAttributes);
-
-  // Referencia para rastrear si ya se inicializó
-  const isInitializedRef = useRef(false);
-  const lastInitialValuesRef = useRef(
-    JSON.stringify(processedInitialAttributes)
-  );
-
-  // Sincronizar solo cuando cambian los valores iniciales externamente (no por cambios del usuario)
+  // Inicializar solo una vez al montar
   useEffect(() => {
-    const currentInitialValues = JSON.stringify(processedInitialAttributes);
-
-    // Solo sincronizar si:
-    // 1. Es la primera vez que se monta el componente, O
-    // 2. Los valores iniciales cambiaron externamente (no por cambios del usuario)
-    if (
-      !isInitializedRef.current ||
-      lastInitialValuesRef.current !== currentInitialValues
-    ) {
-      // Actualizar el estado local
-      setAttributes(initializeAttributes);
-
-      // Sincronizar con el formulario
-      initializeAttributes.forEach((attr, index) => {
-        if (attr && attr.key) {
-          setValue(`attributes.${index}.key`, attr.key, {
-            shouldValidate: false,
-          });
-          setValue(`attributes.${index}.value`, attr.value, {
-            shouldValidate: false,
-          });
-        }
-      });
-
-      // Sincronizar con product-form (estado padre)
-      handleAttributesChange(initializeAttributes);
-
-      // Marcar como inicializado y guardar referencia
-      isInitializedRef.current = true;
-      lastInitialValuesRef.current = currentInitialValues;
-    }
+    // Sincronizar con react-hook-form al montar
+    attributes.forEach((attr, index) => {
+      if (attr && attr.key) {
+        setValue(`attributes.${index}.key`, attr.key, {
+          shouldValidate: false,
+        });
+        setValue(`attributes.${index}.value`, attr.value, {
+          shouldValidate: false,
+        });
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initializeAttributes, fields.length]);
+  }, []);
+
+  // Ref para prevenir actualizaciones circulares
+  const isUpdatingFromUserRef = useRef(false);
 
   const handleChange = (
     fieldKey: string,
@@ -104,49 +65,56 @@ export const DynamicForm = ({
   ) => {
     if (!fieldKey) return;
 
+    // Prevenir actualizaciones circulares
+    if (isUpdatingFromUserRef.current) {
+      return;
+    }
+
     // Si es RAM, quitar "GB" del valor para almacenar sin "GB"
     let processedValue = value;
     if (fieldKey === "ram") {
       processedValue = removeGBFromRam(value);
     }
 
-    // Actualizar el estado local (fuente de verdad)
-    // Buscar si el atributo ya existe
-    const existingAttrIndex = attributes.findIndex(
-      (attr) => attr.key === fieldKey
-    );
+    // Marcar que estamos actualizando desde el usuario
+    isUpdatingFromUserRef.current = true;
 
-    let updatedAttributes;
-    if (existingAttrIndex !== -1) {
-      // Actualizar el atributo existente
-      updatedAttributes = attributes.map((attr) =>
-        attr.key === fieldKey ? { ...attr, value: processedValue } : attr
+    // Usar función de actualización para asegurar que siempre use el estado más reciente
+    // Esto evita problemas de closure cuando hay múltiples actualizaciones rápidas
+    handleAttributesChange((prevAttributes) => {
+      const existingAttrIndex = prevAttributes.findIndex(
+        (attr) => attr.key === fieldKey
       );
-    } else {
-      // Agregar el nuevo atributo si no existe
-      updatedAttributes = [
-        ...attributes,
-        {
-          _id: "",
-          key: fieldKey,
-          value: processedValue,
-        },
-      ];
-    }
 
-    // Actualizar el estado local primero
-    setAttributes(updatedAttributes);
+      if (existingAttrIndex !== -1) {
+        return prevAttributes.map((attr) =>
+          attr.key === fieldKey ? { ...attr, value: processedValue } : attr
+        );
+      } else {
+        return [
+          ...prevAttributes,
+          {
+            _id: "",
+            key: fieldKey,
+            value: processedValue,
+          },
+        ];
+      }
+    });
 
-    // IMPORTANTE: Actualizar el estado en product-form INMEDIATAMENTE
-    // Esto debe ser síncrono para que esté disponible al guardar
-    handleAttributesChange(updatedAttributes);
+    // Resetear el flag después de un breve delay
+    setTimeout(() => {
+      isUpdatingFromUserRef.current = false;
+    }, 100);
 
-    // Sincronizar con el formulario de react-hook-form
+    // Sincronizar con react-hook-form
     setValue(`attributes.${fieldIndex}.key`, fieldKey, {
       shouldValidate: false,
+      shouldDirty: true,
     });
     setValue(`attributes.${fieldIndex}.value`, processedValue, {
       shouldValidate: false,
+      shouldDirty: true,
     });
 
     clearErrors(fieldKey);
@@ -232,7 +200,7 @@ export const DynamicForm = ({
               })
             : field.options;
 
-        // Obtener el valor del estado local
+        // Obtener el valor de los attributes recibidos como prop
         const attr = attributes.find((a) => a.key === field.name);
         const attrValue = attr?.value || "";
         const displayValue =
@@ -256,11 +224,18 @@ export const DynamicForm = ({
                     allowCustomInput={fieldConfig.allowCustomInput}
                     inputType={fieldConfig.inputType}
                     onChange={(option) => {
-                      // IMPORTANTE: Actualizar el estado local PRIMERO (fuente de verdad)
-                      // Esto debe ejecutarse de forma síncrona antes de cualquier otra cosa
+                      // Si ya estamos actualizando desde el usuario, ignorar esta llamada
+                      if (isUpdatingFromUserRef.current) {
+                        return;
+                      }
+
+                      // IMPORTANTE: Actualizar el estado único en ProductForm PRIMERO
+                      // Esto asegura que el estado se actualice antes de sincronizar con react-hook-form
                       handleChange(field.name, option, index);
-                      // Luego sincronizar con el Controller del formulario
-                      onChange(option);
+
+                      // NO sincronizar con react-hook-form aquí
+                      // El Controller puede causar re-renders que sobrescriben nuestros cambios
+                      // En su lugar, solo actualizamos nuestro estado único
                     }}
                     required={
                       selectedCategory !== "Merchandising" &&

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { Button, PageLayout, SectionTitle } from "@/shared";
 import {
   type Category,
@@ -125,17 +125,47 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [assignedEmail, setAssignedEmail] = useState(
     initialData?.assignedEmail
   );
-  // Estado de atributos - se inicializa con los datos iniciales y se actualiza desde DynamicForm
+  // Helper para quitar "GB" del valor de RAM para mostrar
+  const removeGBFromRam = (value: string): string => {
+    if (typeof value === "string" && value.toLowerCase().endsWith("gb")) {
+      return value.slice(0, -2).trim();
+    }
+    return value;
+  };
+
+  // Procesar atributos iniciales para quitar "GB" de RAM (solo para display interno)
+  const processedInitialAttributes = useMemo(() => {
+    return (initialData?.attributes || []).map((attr) => {
+      if (attr.key === "ram" && attr.value) {
+        return { ...attr, value: removeGBFromRam(attr.value) };
+      }
+      return attr;
+    });
+  }, [initialData?.attributes]);
+
+  // Estado único de atributos - fuente de verdad única
   const [attributes, setAttributes] = useState<any[]>(
-    initialData?.attributes || []
+    processedInitialAttributes
   );
 
+  // Inicializar attributes cuando cambie initialData (solo en modo update, solo al montar)
+  useEffect(() => {
+    if (isUpdate && initialData?.attributes && attributes.length === 0) {
+      setAttributes(processedInitialAttributes);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUpdate, initialData?._id]);
+
   // Función para actualizar atributos desde DynamicForm
-  // Usar useCallback para mantener la referencia estable
-  const handleAttributesChange = useCallback((newAttributes: any[]) => {
-    // Actualizar el estado de forma síncrona
-    setAttributes(newAttributes);
-  }, []);
+  // Usa función de actualización para asegurar que siempre use el estado más reciente
+  const handleAttributesChange = useCallback(
+    (updater: any[] | ((prev: any[]) => any[])) => {
+      setAttributes((prev) => {
+        return typeof updater === "function" ? updater(prev) : updater;
+      });
+    },
+    []
+  );
   const [customErrors, setCustomErrors] = useState({});
   const [showBulkCreate, setShowBulkCreate] = useState(false);
   const [bulkInitialData, setBulkInitialData] = useState<Product | undefined>(
@@ -344,15 +374,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       }
     }
 
-    // Obtener los valores actuales del formulario
-    const currentFormAttributes = watch("attributes") || data.attributes || [];
-
     // Usar los campos de la categoría para asegurar que todos los atributos estén incluidos
     const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
 
-    // Usar el estado local de attributes como fuente de verdad única
+    // Usar el estado único de attributes como fuente de verdad
     // Este estado se actualiza inmediatamente cuando el usuario cambia valores
-
     const formatData: Product = {
       ...getEmptyProduct(),
       ...data,
@@ -372,7 +398,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           (ia) => ia.key === field.name
         );
 
-        // Usar el estado local como fuente de verdad única
+        // Usar el estado único de attributes
         const stateAttr = attributes.find((a) => a.key === field.name);
         let finalValue = stateAttr?.value || initialAttr?.value || "";
 
@@ -656,8 +682,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         );
 
         // Usar el estado local como fuente de verdad única
+        // El estado local se actualiza inmediatamente cuando el usuario cambia valores
         const stateAttr = attributes.find((a) => a.key === field.name);
-        let finalValue = stateAttr?.value || initialAttr?.value || "";
+
+        // También verificar los valores de react-hook-form como fallback
+        const formAttributes = watch("attributes") || [];
+        const formAttr = formAttributes.find((a: any) => a?.key === field.name);
+
+        // Prioridad: estado local > valores del formulario > valor inicial
+        let finalValue =
+          stateAttr?.value || formAttr?.value || initialAttr?.value || "";
 
         // Si es RAM, agregar "GB" si no lo tiene
         if (field.name === "ram" && finalValue) {
@@ -793,6 +827,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                           initialValues={initialData}
                           customErrors={customErrors}
                           setCustomErrors={setCustomErrors}
+                          attributes={attributes}
                         />
                       </section>
                     </div>
