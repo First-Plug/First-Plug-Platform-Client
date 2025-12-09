@@ -120,13 +120,6 @@ export const CreateProductStep3 = ({
         ? selectedTenant.recoverableConfig[mappedCategoryKey]
         : false;
 
-      console.log("Category mapping debug:", {
-        selectedCategory,
-        mappedCategoryKey,
-        recoverableConfig: selectedTenant.recoverableConfig,
-        isRecoverableForCategory,
-      });
-
       // Configurar el valor por defecto basado en la configuración del tenant
       const defaultValue = isRecoverableForCategory || false;
       onFormDataChange("recoverable", defaultValue);
@@ -320,23 +313,115 @@ export const CreateProductStep3 = ({
     return customErrors[fieldName] || null;
   };
 
+  // Helpers para RAM
+  const removeGBFromRam = (value: string): string => {
+    if (typeof value === "string" && value.toLowerCase().endsWith("gb")) {
+      return value.slice(0, -2).trim();
+    }
+    return value;
+  };
+
+  const addGBToRam = (value: string): string => {
+    if (!value || typeof value !== "string") return value;
+    const trimmedValue = value.trim();
+    if (trimmedValue && !trimmedValue.toLowerCase().endsWith("gb")) {
+      return `${trimmedValue}GB`;
+    }
+    return trimmedValue;
+  };
+
+  // Config de campos para permitir tipeo y tipos de input
+  const getFieldConfig = (fieldName: string, fieldTitle: string) => {
+    const config: {
+      title: string;
+      placeholder: string;
+      allowCustomInput: boolean;
+      inputType: "text" | "numbers" | "letters";
+    } = {
+      title: "",
+      placeholder: "",
+      allowCustomInput: false,
+      inputType: "text",
+    };
+
+    const customInputFields = [
+      "brand",
+      "model",
+      "processor",
+      "ram",
+      "screen",
+      "color",
+      "keyboardLanguage",
+      "gpu",
+    ];
+
+    if (customInputFields.includes(fieldName)) {
+      config.allowCustomInput = true;
+
+      if (fieldName === "ram") {
+        config.title = "RAM (GB)";
+        config.placeholder = "Select or write the RAM";
+      } else if (fieldName === "screen") {
+        config.title = "Screen (inches)";
+        config.placeholder = "Select or write the Screen (inches)";
+      } else {
+        const cleanTitle = fieldTitle.replace(/\*/g, "").trim();
+        config.placeholder = `Select or write the ${cleanTitle}`;
+      }
+
+      if (fieldName === "ram" || fieldName === "screen") {
+        config.inputType = "numbers";
+      } else if (fieldName === "color" || fieldName === "keyboardLanguage") {
+        config.inputType = "letters";
+      }
+    }
+
+    return config;
+  };
+
   const renderCategoryField = (field: any) => {
-    const value = getAttributeValue(field.name);
+    const fieldConfig = getFieldConfig(field.name, field.title);
+    const displayTitle = fieldConfig.title || field.title;
+    const displayPlaceholder = fieldConfig.placeholder || field.title;
+
+    // Procesar opciones de RAM para quitar "GB" visualmente
+    const processedOptions =
+      field.name === "ram"
+        ? field.options?.map((opt: string) => {
+            if (typeof opt === "string" && opt.toLowerCase().endsWith("gb")) {
+              return opt.slice(0, -2).trim();
+            }
+            return opt;
+          })
+        : field.options;
+
+    const rawValue = getAttributeValue(field.name);
+    const displayValue =
+      field.name === "ram" ? removeGBFromRam(rawValue) : rawValue;
+
     const error = getAttributeError(field.name);
     const isRequired =
       selectedCategory !== "Merchandising" &&
       ["brand", "model"].includes(field.name);
 
+    const handleFieldChange = (newValue: string) => {
+      const processedValue =
+        field.name === "ram" ? removeGBFromRam(newValue) : newValue;
+      handleAttributeChange(field.name, processedValue);
+    };
+
     return (
       <div key={field.name}>
         <DropdownInputProductForm
-          title={field.title}
-          placeholder={field.title}
-          options={field.options}
-          selectedOption={value}
-          onChange={(newValue) => handleAttributeChange(field.name, newValue)}
+          title={displayTitle}
+          placeholder={displayPlaceholder}
+          options={processedOptions}
+          selectedOption={displayValue}
+          onChange={handleFieldChange}
           name={field.name}
           searchable={true}
+          allowCustomInput={fieldConfig.allowCustomInput}
+          inputType={fieldConfig.inputType}
           required={isRequired ? "required" : undefined}
         />
         <div className="min-h-[24px]">
