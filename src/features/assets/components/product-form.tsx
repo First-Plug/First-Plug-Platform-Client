@@ -23,7 +23,11 @@ import {
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useCreateAsset, useUpdateEntityAsset } from "@/features/assets";
+import {
+  useCreateAsset,
+  useUpdateEntityAsset,
+  useEnrichedFormFields,
+} from "@/features/assets";
 import { useQueryClient } from "@tanstack/react-query";
 import { validateOnCreate } from "@/shared";
 import { useAsideStore, useAlertStore } from "@/shared";
@@ -125,6 +129,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [assignedEmail, setAssignedEmail] = useState(
     initialData?.assignedEmail
   );
+
+  // Hook para enriquecer campos con valores de productos existentes
+  const enrichedFields = useEnrichedFormFields(selectedCategory);
   // Helper para quitar "GB" del valor de RAM para mostrar
   const removeGBFromRam = (value: string): string => {
     if (typeof value === "string" && value.toLowerCase().endsWith("gb")) {
@@ -374,8 +381,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       }
     }
 
-    // Usar los campos de la categoría para asegurar que todos los atributos estén incluidos
-    const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
+    // Usar los campos enriquecidos de la categoría para asegurar que todos los atributos estén incluidos
+    const FormConfig = enrichedFields
+      ? { fields: enrichedFields }
+      : categoryComponents[selectedCategory] || { fields: [] };
 
     // Usar el estado único de attributes como fuente de verdad
     // Este estado se actualiza inmediatamente cuando el usuario cambia valores
@@ -656,7 +665,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     setShowErrorDialog(true);
   };
 
-  const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
+  const FormConfig = enrichedFields
+    ? { fields: enrichedFields }
+    : categoryComponents[selectedCategory] || { fields: [] };
 
   const handleNext = async () => {
     const isProductNameValid = await validateProductName();
@@ -665,8 +676,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     const data = methods.getValues();
     const finalAssignedEmail = watch("assignedEmail");
 
-    // Usar los campos de la categoría para asegurar que todos los atributos estén incluidos
-    const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
+    // Usar los campos enriquecidos de la categoría para asegurar que todos los atributos estén incluidos
+    const FormConfig = enrichedFields
+      ? { fields: enrichedFields }
+      : categoryComponents[selectedCategory] || { fields: [] };
 
     const formattedData: Product = {
       ...getEmptyProduct(),
@@ -787,8 +800,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         <div className="w-full h-full">
           {!showBulkCreate ? (
             <>
-              <div className="absolute pr-4 w-[80%] h-[90%] overflow-y-auto scrollbar-custom">
-                <div className="px-4 py-2 border rounded-3xl">
+              <div className="absolute pr-4 pb-24 w-[80%] h-[90%] overflow-y-auto scrollbar-custom">
+                <div className="mb-4 px-4 py-2 border rounded-3xl">
                   <SectionTitle className="text-[20px]">
                     {isUpdate ? "" : "Add Product"}
                   </SectionTitle>
@@ -817,8 +830,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   </section>
                 </div>
                 {selectedCategory && (
-                  <div className="flex flex-col gap-4 mt-4 w-full h-[90%] max-h-[100%] lg:flex:row">
-                    <div className="px-4 py-6 pb-40 border rounded-3xl max-h-[500px] overflow-y-auto scrollbar-custom">
+                  <div className="flex flex-col gap-4 mt-4 w-full lg:flex:row">
+                    <div className="px-4 py-6 pb-20 border rounded-3xl">
                       <section>
                         <DynamicForm
                           fields={FormConfig.fields}
