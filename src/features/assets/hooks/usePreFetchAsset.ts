@@ -22,10 +22,7 @@ export const usePrefetchAsset = () => {
         const data = queryClient.getQueryData<Product>(["assets", id]);
         if (data) return data;
       } catch (error) {
-        console.error(
-          `Error en prefetch intento ${attempt + 1} para asset ${id}:`,
-          error
-        );
+        // Error silenciado en prefetch
       }
     }
     return undefined;

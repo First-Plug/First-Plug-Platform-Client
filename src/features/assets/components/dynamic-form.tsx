@@ -11,6 +11,7 @@ export const DynamicForm = ({
   customErrors,
   setCustomErrors,
   attributes, // Recibir attributes como prop desde ProductForm
+  isLoadingFields = false, // Estado de loading para los campos enriquecidos
 }) => {
   const {
     setValue,
@@ -223,6 +224,7 @@ export const DynamicForm = ({
                     searchable={true}
                     allowCustomInput={fieldConfig.allowCustomInput}
                     inputType={fieldConfig.inputType}
+                    isLoading={isLoadingFields}
                     onChange={(option) => {
                       // Si ya estamos actualizando desde el usuario, ignorar esta llamada
                       if (isUpdatingFromUserRef.current) {

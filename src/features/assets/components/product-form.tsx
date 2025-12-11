@@ -98,6 +98,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const methods = useForm({
     resolver: zodResolver(zodCreateProductModel),
+    mode: "onSubmit", // Solo validar al hacer submit, no en onChange o onBlur
+    reValidateMode: "onSubmit", // Solo re-validar al hacer submit
     defaultValues: {
       ...getEmptyProduct(),
       ...initialData,
@@ -131,7 +133,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   );
 
   // Hook para enriquecer campos con valores de productos existentes
-  const enrichedFields = useEnrichedFormFields(selectedCategory);
+  const { fields: enrichedFields, isLoading: isLoadingEnrichedFields } =
+    useEnrichedFormFields(selectedCategory);
   // Helper para quitar "GB" del valor de RAM para mostrar
   const removeGBFromRam = (value: string): string => {
     if (typeof value === "string" && value.toLowerCase().endsWith("gb")) {
@@ -162,6 +165,42 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUpdate, initialData?._id]);
+
+  // Inicializar todos los atributos en react-hook-form con sus keys cuando cambia la categoría
+  useEffect(() => {
+    if (selectedCategory) {
+      // Obtener los campos de la configuración
+      const fieldsToUse = enrichedFields
+        ? enrichedFields
+        : categoryComponents[selectedCategory]?.fields || [];
+
+      if (fieldsToUse && fieldsToUse.length > 0) {
+        // Inicializar todos los atributos con sus keys, incluso si el value está vacío
+        fieldsToUse.forEach((field: any, index: number) => {
+          const existingAttr = attributes.find((a) => a?.key === field.name);
+          const currentFormAttrs = methods.getValues("attributes") || [];
+          const existingFormAttr = currentFormAttrs[index];
+
+          // Inicializar siempre la key, incluso si ya existe (para asegurar que esté presente)
+          setValue(`attributes.${index}.key`, field.name, {
+            shouldValidate: false,
+            shouldDirty: false,
+          });
+
+          // Inicializar el value siempre, usando el valor existente o string vacío
+          setValue(
+            `attributes.${index}.value`,
+            existingAttr?.value || existingFormAttr?.value || "",
+            {
+              shouldValidate: false,
+              shouldDirty: false,
+            }
+          );
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, enrichedFields?.length, setValue]);
 
   // Función para actualizar atributos desde DynamicForm
   // Usa función de actualización para asegurar que siempre use el estado más reciente
@@ -388,8 +427,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
     // Usar los campos enriquecidos de la categoría para asegurar que todos los atributos estén incluidos
     const FormConfig = enrichedFields
-      ? { fields: enrichedFields }
-      : categoryComponents[selectedCategory] || { fields: [] };
+      ? { fields: enrichedFields, isLoading: isLoadingEnrichedFields }
+      : {
+          fields: categoryComponents[selectedCategory]?.fields || [],
+          isLoading: false,
+        };
 
     // Usar el estado único de attributes como fuente de verdad
     // Este estado se actualiza inmediatamente cuando el usuario cambia valores
@@ -671,8 +713,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const FormConfig = enrichedFields
-    ? { fields: enrichedFields }
-    : categoryComponents[selectedCategory] || { fields: [] };
+    ? { fields: enrichedFields, isLoading: isLoadingEnrichedFields }
+    : {
+        fields: categoryComponents[selectedCategory]?.fields || [],
+        isLoading: false,
+      };
 
   const handleNext = async () => {
     const isProductNameValid = await validateProductName();
@@ -683,8 +728,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
     // Usar los campos enriquecidos de la categoría para asegurar que todos los atributos estén incluidos
     const FormConfig = enrichedFields
-      ? { fields: enrichedFields }
-      : categoryComponents[selectedCategory] || { fields: [] };
+      ? { fields: enrichedFields, isLoading: isLoadingEnrichedFields }
+      : {
+          fields: categoryComponents[selectedCategory]?.fields || [],
+          isLoading: false,
+        };
 
     const formattedData: Product = {
       ...getEmptyProduct(),
@@ -846,6 +894,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                           customErrors={customErrors}
                           setCustomErrors={setCustomErrors}
                           attributes={attributes}
+                          isLoadingFields={FormConfig.isLoading ?? false}
                         />
                       </section>
                     </div>
@@ -868,7 +917,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     variant="primary"
                     className="rounded lg"
                     size="big"
-                    onClick={handleSubmit(handleSaveProduct)}
+                    onClick={(e) => {
+                      handleSubmit(handleSaveProduct)(e);
+                    }}
                     disabled={isSubmitting || isProcessing}
                   />
                 )}

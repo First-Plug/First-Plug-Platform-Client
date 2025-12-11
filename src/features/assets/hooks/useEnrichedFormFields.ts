@@ -26,7 +26,7 @@ const categoryComponents = {
  * de los productos existentes en la base de datos.
  */
 export const useEnrichedFormFields = (category: Category | undefined) => {
-  const { data: assets } = useGetTableAssets();
+  const { data: assets, isLoading, isFetching } = useGetTableAssets();
 
   const enrichedFields = useMemo(() => {
     if (!category) {
@@ -165,7 +165,17 @@ export const useEnrichedFormFields = (category: Category | undefined) => {
         (val) => !staticSet.has(val)
       );
 
-      // Combinar todas las opciones (dinámicas únicas + estáticas) y ordenar juntas
+      // Para Storage, mantener el orden original sin ordenar
+      if (field.name === "storage") {
+        // Mantener el orden original: primero las estáticas, luego las dinámicas
+        const combinedOptions = [...staticOptions, ...uniqueDynamicValues];
+        return {
+          ...field,
+          options: combinedOptions,
+        };
+      }
+
+      // Para otros campos, ordenar con smartSort
       const allOptions = [...uniqueDynamicValues, ...staticOptions];
       const combinedOptions = allOptions.sort(smartSort);
 
@@ -178,5 +188,11 @@ export const useEnrichedFormFields = (category: Category | undefined) => {
     return enrichedFields;
   }, [category, assets]);
 
-  return enrichedFields;
+  // Retornar también el estado de loading
+  const isLoadingFields = isLoading || isFetching;
+
+  return {
+    fields: enrichedFields,
+    isLoading: isLoadingFields,
+  };
 };

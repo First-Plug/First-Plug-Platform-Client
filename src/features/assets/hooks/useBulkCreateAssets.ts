@@ -37,7 +37,6 @@ export const useBulkCreateAssets = () => {
           ? "bulkCreateSerialNumberError"
           : "bulkCreateProductError"
       );
-      console.error("Error al crear productos:", message, error);
     },
     retry: (failureCount, error) => {
       const isRecoverableError = error?.response?.status === 429;

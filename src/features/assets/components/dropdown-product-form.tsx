@@ -22,6 +22,7 @@ interface DropdownInputProductFormProps {
   optionClassName?: string;
   allowCustomInput?: boolean;
   inputType?: "text" | "numbers" | "letters";
+  isLoading?: boolean;
 }
 
 export const DropdownInputProductForm = ({
@@ -37,6 +38,7 @@ export const DropdownInputProductForm = ({
   optionClassName = "",
   allowCustomInput = false,
   inputType = "text",
+  isLoading = false,
 }: DropdownInputProductFormProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>(selectedOption || "");
@@ -48,6 +50,7 @@ export const DropdownInputProductForm = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
   const isUserTypingRef = useRef(false);
+  const isClickingInsideRef = useRef(false);
 
   // Helper function to extract value from option
   const getOptionValue = (option: string | OptionItem): string => {
@@ -56,16 +59,32 @@ export const DropdownInputProductForm = ({
 
   // Helper function to get display text from option
   const getOptionDisplayText = (option: string | OptionItem): string => {
-    return typeof option === "string" ? option : option.value;
+    if (typeof option === "string") {
+      return option;
+    }
+    // Para OptionItem, usar el value como display text
+    return option.value;
   };
 
-  const toggleDropdown = () => {
-    if (!disabled) {
-      setIsOpen(!isOpen);
-      if (!isOpen) {
-        setSearchTerm(selectedOption || "");
-        setFilteredOptions([...options]);
+  const toggleDropdown = (e?: React.MouseEvent) => {
+    if (!disabled && !isLoading) {
+      // Prevenir que el evento se propague para evitar que handleClickOutside se ejecute
+      if (e) {
+        e.stopPropagation();
       }
+      setIsOpen((prev) => {
+        const newState = !prev;
+        if (newState) {
+          // Inicializar las opciones filtradas con todas las opciones disponibles
+          setFilteredOptions([...options]);
+          setSearchTerm(selectedOption || "");
+          // Asegurar que el input tenga focus para que el onFocus funcione correctamente
+          setTimeout(() => {
+            inputRef.current?.focus();
+          }, 0);
+        }
+        return newState;
+      });
     }
   };
 
@@ -90,10 +109,13 @@ export const DropdownInputProductForm = ({
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
-        if (!allowCustomInput) {
-          setSearchTerm(selectedOption || "");
-        }
+        // Usar setTimeout para asegurar que el estado se actualice después del evento de clic
+        setTimeout(() => {
+          setIsOpen(false);
+          if (!allowCustomInput) {
+            setSearchTerm(selectedOption || "");
+          }
+        }, 0);
       }
     },
     [allowCustomInput, selectedOption]
@@ -175,15 +197,30 @@ export const DropdownInputProductForm = ({
       onChange && onChange(searchTerm);
     }
 
+    // Solo cerrar si el foco no se movió a un elemento dentro del dropdown
+    // Usar un delay más largo para dar tiempo a que el click en una opción se procese
     setTimeout(() => {
-      setIsOpen(false);
-    }, 200);
+      const activeElement = document.activeElement;
+      if (
+        !dropdownRef.current?.contains(activeElement) &&
+        activeElement !== inputRef.current
+      ) {
+        setIsOpen(false);
+      }
+    }, 150);
   };
 
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      inputRef.current?.focus();
+      // Usar un pequeño delay para asegurar que el dropdown esté completamente renderizado
+      const timeoutId = setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+        inputRef.current?.focus();
+      }, 10);
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
@@ -241,9 +278,10 @@ export const DropdownInputProductForm = ({
         {isCustomDisplay && !searchable ? (
           <div
             ref={inputRef}
-            onClick={toggleDropdown}
+            onClick={(e) => toggleDropdown(e)}
+            onMouseDown={(e) => e.stopPropagation()}
             className={`w-full h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border border-gray-300 bg-white text-black p-4 font-sans flex items-center ${
-              disabled ? "opacity-50 cursor-not-allowed" : ""
+              disabled || isLoading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
             <div className="flex flex-1 items-center gap-2">
@@ -267,22 +305,78 @@ export const DropdownInputProductForm = ({
               }
               placeholder={placeholder}
               readOnly={!searchable && !allowCustomInput}
-              onClick={allowCustomInput ? undefined : toggleDropdown}
+              onClick={(e) => {
+                // Si el input es readonly, abrir el dropdown al hacer clic
+                const isReadOnly = !searchable && !allowCustomInput;
+                if (isReadOnly && !disabled && !isLoading) {
+                  e.stopPropagation();
+                  if (!isOpen) {
+                    // Inicializar las opciones filtradas con todas las opciones disponibles
+                    setFilteredOptions([...options]);
+                    setIsOpen(true);
+                    setSearchTerm(selectedOption || "");
+                    // Forzar focus para que el onFocus también se dispare
+                    setTimeout(() => {
+                      inputRef.current?.focus();
+                    }, 0);
+                  }
+                }
+              }}
+              onMouseDown={(e) => {
+                // Prevenir propagación para inputs readonly o no searchable
+                const isReadOnly = !searchable && !allowCustomInput;
+                if (isReadOnly) {
+                  e.stopPropagation();
+                } else if (!allowCustomInput) {
+                  e.stopPropagation();
+                }
+              }}
               onChange={handleSearch}
               onBlur={handleInputBlur}
               onFocus={() => {
-                if (allowCustomInput || searchable) {
+                // Abrir el dropdown cuando el input recibe focus
+                if (!disabled && !isLoading && !isOpen) {
                   setIsOpen(true);
+                  // Inicializar las opciones filtradas con todas las opciones disponibles
+                  if (!isUserTypingRef.current) {
+                    setSearchTerm(selectedOption || "");
+                    setFilteredOptions([...options]);
+                  }
                 }
               }}
               className={`w-full h-14 py-2 pl-4 pr-12 rounded-xl border text-black p-4 font-sans focus:outline-none ${
                 allowCustomInput ? "cursor-text" : "cursor-pointer"
-              }`}
+              } ${isLoading ? "opacity-60 cursor-wait" : ""}`}
               name={name}
-              disabled={disabled}
+              disabled={disabled || isLoading}
               autoComplete="off"
             />
-            <div onClick={allowCustomInput ? undefined : toggleDropdown}>
+            <div
+              onClick={(e) => {
+                // El icono de chevron debe abrir el dropdown
+                if (!allowCustomInput && !disabled && !isLoading) {
+                  e.stopPropagation();
+                  if (!isOpen) {
+                    // Inicializar las opciones filtradas con todas las opciones disponibles
+                    setFilteredOptions([...options]);
+                    setIsOpen(true);
+                    setSearchTerm(selectedOption || "");
+                    // Forzar focus en el input
+                    setTimeout(() => {
+                      inputRef.current?.focus();
+                    }, 0);
+                  } else {
+                    // Si ya está abierto, cerrarlo
+                    setIsOpen(false);
+                  }
+                }
+              }}
+              onMouseDown={(e) => {
+                if (!allowCustomInput) {
+                  e.stopPropagation();
+                }
+              }}
+            >
               <ChevronDown
                 className="top-1/2 right-3 absolute -translate-y-1/2 cursor-pointer transform"
                 stroke={2}
@@ -297,10 +391,22 @@ export const DropdownInputProductForm = ({
             isOpen ? "block" : "hidden"
           }`}
           onMouseDown={(e) => {
+            // Prevenir que el input pierda el focus cuando se hace clic en las opciones
             e.preventDefault();
+            e.stopPropagation();
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
           }}
         >
-          {filteredOptions.length > 0 ? (
+          {isLoading ? (
+            <li className="px-4 py-6 text-gray-500 text-sm text-center cursor-default">
+              <div className="flex justify-center items-center gap-2">
+                <div className="border-2 border-gray-300 border-t-blue-600 rounded-full w-4 h-4 animate-spin"></div>
+                <span>Loading options...</span>
+              </div>
+            </li>
+          ) : filteredOptions.length > 0 ? (
             filteredOptions.map((option, index) => {
               const optionValue = getOptionValue(option);
               const isCustomValue =

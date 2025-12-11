@@ -88,13 +88,15 @@ export default function SelectDropdownOptions({
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (disabled) return false;
+    if (disabled) {
+      setIsDropdownOpen(false);
+      return;
+    }
     setIsDropdownOpen(open);
     if (!open) {
       setSearchTerm("");
       setOpenGroups({});
     }
-    return open;
   };
 
   // Enfocar el input de búsqueda cuando se abre el dropdown
@@ -158,10 +160,16 @@ export default function SelectDropdownOptions({
         </label>
       )}
 
-      <DropdownMenu.Root onOpenChange={handleOpenChange}>
+      <DropdownMenu.Root onOpenChange={handleOpenChange} modal={false}>
         <DropdownMenu.Trigger asChild>
           <button
             disabled={disabled}
+            onMouseDown={(e) => {
+              // Prevenir que el evento se propague para evitar que se cierre inmediatamente
+              if (!disabled) {
+                e.stopPropagation();
+              }
+            }}
             className={`relative w-full font-sans text-left border border-gray-300 ${
               disabled
                 ? productFormStyle

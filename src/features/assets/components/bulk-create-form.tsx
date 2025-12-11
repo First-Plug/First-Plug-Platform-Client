@@ -471,7 +471,6 @@ export const BulkCreateForm: React.FC<{
     await queryClient.invalidateQueries({ queryKey: ["members"] });
     const updatedMembers = queryClient.getQueryData<Member[]>(["members"]);
     if (!updatedMembers) {
-      console.error("❌ No se pudieron obtener los miembros actualizados");
       return;
     }
 
