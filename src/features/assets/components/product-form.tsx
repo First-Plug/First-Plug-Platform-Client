@@ -143,7 +143,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   // Procesar atributos iniciales para quitar "GB" de RAM (solo para display interno)
   const processedInitialAttributes = useMemo(() => {
     return (initialData?.attributes || []).map((attr) => {
-      if (attr.key === "ram" && attr.value) {
+      if (attr?.key === "ram" && attr?.value) {
         return { ...attr, value: removeGBFromRam(attr.value) };
       }
       return attr;
@@ -250,8 +250,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     let hasError = false;
     const newErrors: Record<string, string> = {};
     if (category !== "Merchandising") {
-      const brand = attributes.find((attr) => attr.key === "brand")?.value;
-      const model = attributes.find((attr) => attr.key === "model")?.value;
+      const attributesArray = attributes || [];
+      const brand = attributesArray.find(
+        (attr) => attr?.key === "brand"
+      )?.value;
+      const model = attributesArray.find(
+        (attr) => attr?.key === "model"
+      )?.value;
 
       if (!brand) {
         newErrors["brand"] = "Brand is required.";
@@ -269,8 +274,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const validateProductName = async () => {
-    const attributes = watch("attributes");
-    const model = attributes.find((attr) => attr.key === "model")?.value;
+    const attributes = watch("attributes") || [];
+    const model = attributes.find((attr) => attr?.key === "model")?.value;
     const productName = watch("name");
 
     if (
@@ -403,12 +408,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       additionalInfo: data.additionalInfo || "",
       officeId: data.location === "Our office" ? data.officeId : undefined,
       attributes: FormConfig.fields.map((field: any) => {
-        const initialAttr = initialData?.attributes.find(
-          (ia) => ia.key === field.name
+        const initialAttr = initialData?.attributes?.find(
+          (ia) => ia?.key === field.name
         );
 
         // Usar el estado único de attributes
-        const stateAttr = attributes.find((a) => a.key === field.name);
+        const stateAttr = attributes.find((a) => a?.key === field.name);
         let finalValue = stateAttr?.value || initialAttr?.value || "";
 
         // Si es RAM, agregar "GB" si no lo tiene
@@ -428,7 +433,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     };
 
     const model = formatData.attributes.find(
-      (attr) => attr.key === "model"
+      (attr) => attr?.key === "model"
     )?.value;
 
     if (isUpdate && initialData) {
@@ -460,7 +465,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
     if (formatData.category !== "Merchandising") {
       const brand = formatData.attributes.find(
-        (attr) => attr.key === "brand"
+        (attr) => attr?.key === "brand"
       )?.value;
       if (!brand) {
         attributeErrors["brand"] = "Brand is required.";
@@ -690,13 +695,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       category: selectedCategory || "Other",
       assignedEmail: finalAssignedEmail,
       attributes: FormConfig.fields.map((field: any) => {
-        const initialAttr = initialData?.attributes.find(
-          (ia) => ia.key === field.name
+        const initialAttr = initialData?.attributes?.find(
+          (ia) => ia?.key === field.name
         );
 
         // Usar el estado local como fuente de verdad única
         // El estado local se actualiza inmediatamente cuando el usuario cambia valores
-        const stateAttr = attributes.find((a) => a.key === field.name);
+        const stateAttr = attributes.find((a) => a?.key === field.name);
 
         // También verificar los valores de react-hook-form como fallback
         const formAttributes = watch("attributes") || [];
@@ -721,13 +726,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     };
 
     const model = formattedData.attributes.find(
-      (attr) => attr.key === "model"
+      (attr) => attr?.key === "model"
     )?.value;
 
     Object.keys(formattedData).forEach((key) => {
       if (
         key !== "attributes" &&
-        formattedData.attributes.find((attr) => attr.key === key)
+        formattedData.attributes.find((attr) => attr?.key === key)
       ) {
         delete formattedData[key];
       }
@@ -738,10 +743,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
     if (formattedData.category !== "Merchandising") {
       const brand = formattedData.attributes.find(
-        (attr) => attr.key === "brand"
+        (attr) => attr?.key === "brand"
       )?.value;
       const model = formattedData.attributes.find(
-        (attr) => attr.key === "model"
+        (attr) => attr?.key === "model"
       )?.value;
 
       if (!brand) {
@@ -790,8 +795,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     }
   }, [quantity, clearErrors]);
 
-  const modelValue = watch("attributes").find(
-    (attr) => attr.key === "model"
+  const modelValue = (watch("attributes") || []).find(
+    (attr) => attr?.key === "model"
   )?.value;
 
   return (
