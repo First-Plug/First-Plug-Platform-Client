@@ -58,7 +58,9 @@ export const CreateProductStep3 = ({
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [selectedCategory] = useState(formData.category?.name);
   const [quantity, setQuantity] = useState(formData.quantity || 1);
-  const [attributes, setAttributes] = useState<any[]>([]);
+  const [attributes, setAttributes] = useState<any[]>(
+    formData.attributes || []
+  );
 
   const selectedTenant = formData.tenant;
 
@@ -79,12 +81,31 @@ export const CreateProductStep3 = ({
   useEffect(() => {
     setHasAttemptedSubmit(false);
 
+    // Inicializar attributes desde formData si existen
+    if (
+      formData.attributes &&
+      formData.attributes.length > 0 &&
+      attributes.length === 0
+    ) {
+      setAttributes(formData.attributes);
+    }
+
     // Establecer "Optimal" como valor por defecto si no hay ningún valor
     if (!formData.productCondition) {
       onFormDataChange("productCondition", "Optimal");
       setValue("productCondition" as any, "Optimal");
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sincronizar attributes cuando formData.attributes cambia desde fuera
+  useEffect(() => {
+    if (
+      formData.attributes &&
+      JSON.stringify(formData.attributes) !== JSON.stringify(attributes)
+    ) {
+      setAttributes(formData.attributes);
+    }
+  }, [formData.attributes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const methods = useForm({
     resolver: zodResolver(zodCreateProductModel),
@@ -213,17 +234,21 @@ export const CreateProductStep3 = ({
     const model = attributes?.find((attr) => attr.key === "model")?.value;
     const productName = watch("name") as string;
 
+    // Comparación case-insensitive para "Other"
+    const isOtherModel =
+      model && model.toString().trim().toLowerCase() === "other";
+
     // Product Name es requerido si:
     // 1. Categoría es Merchandising
     // 2. Modelo es Other (en cualquier categoría, incluyendo Other)
     const isProductNameRequired =
-      selectedCategory === "Merchandising" || model === "Other";
+      selectedCategory === "Merchandising" || isOtherModel;
 
     if (isProductNameRequired && (!productName || productName.trim() === "")) {
       let errorMessage = "Product Name is required.";
       if (selectedCategory === "Merchandising") {
         errorMessage = "Product Name is required for Merchandising.";
-      } else if (model === "Other") {
+      } else if (isOtherModel) {
         errorMessage = "Product Name is required when model is Other.";
       }
 
@@ -304,8 +329,14 @@ export const CreateProductStep3 = ({
 
   // Determinar si el campo Product Name debe estar habilitado
   const isProductNameEnabled = () => {
-    const model = attributes?.find((attr) => attr.key === "model")?.value;
-    return selectedCategory === "Merchandising" || model === "Other";
+    // Buscar el modelo en attributes (estado local) o en formData.attributes
+    const model =
+      attributes?.find((attr) => attr.key === "model")?.value ||
+      formData.attributes?.find((attr: any) => attr.key === "model")?.value;
+    // Comparación case-insensitive para "Other"
+    const isOtherModel =
+      model && model.toString().trim().toLowerCase() === "other";
+    return selectedCategory === "Merchandising" || isOtherModel;
   };
 
   const getAttributeError = (fieldName: string) => {
