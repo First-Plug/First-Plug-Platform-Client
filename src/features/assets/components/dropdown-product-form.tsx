@@ -189,12 +189,31 @@ export const DropdownInputProductForm = ({
     isUserTypingRef.current = false;
 
     const relatedTarget = event.relatedTarget as HTMLElement;
+    // Solo actualizar con searchTerm si el usuario estaba escribiendo y no seleccionó una opción
+    // Si se seleccionó una opción, selectedOption ya tiene el valor correcto
     if (
       allowCustomInput &&
       searchTerm &&
-      (!relatedTarget || !dropdownRef.current?.contains(relatedTarget))
+      (!relatedTarget || !dropdownRef.current?.contains(relatedTarget)) &&
+      searchTerm !== selectedOption
     ) {
-      onChange && onChange(searchTerm);
+      // Verificar si el searchTerm coincide con alguna opción existente
+      const normalizedSearch = normalizeString(searchTerm).toLowerCase();
+      const exactMatch = options.find(
+        (option) =>
+          normalizeString(getOptionDisplayText(option)).toLowerCase() ===
+          normalizedSearch
+      );
+
+      // Si hay una coincidencia exacta, usar el valor de la opción, no el texto escrito
+      if (exactMatch) {
+        const matchedValue = getOptionValue(exactMatch);
+        onChange && onChange(matchedValue);
+        setSearchTerm(getOptionDisplayText(exactMatch));
+      } else {
+        // Si no hay coincidencia, usar el texto escrito como valor personalizado
+        onChange && onChange(searchTerm);
+      }
     }
 
     // Solo cerrar si el foco no se movió a un elemento dentro del dropdown
@@ -239,15 +258,30 @@ export const DropdownInputProductForm = ({
   // Solo actualizar searchTerm desde selectedOption si el usuario NO está tipeando
   useEffect(() => {
     if (!isUserTypingRef.current && selectedOption !== searchTerm) {
-      setSearchTerm(selectedOption || "");
+      // Buscar la opción que coincide con selectedOption para obtener el displayText correcto
+      const matchingOption = options.find((opt) => {
+        const value = getOptionValue(opt);
+        return value === selectedOption;
+      });
+
+      // Si encontramos una opción que coincide, usar su displayText, sino usar selectedOption directamente
+      const displayText = matchingOption
+        ? getOptionDisplayText(matchingOption)
+        : selectedOption;
+
+      setSearchTerm(displayText || "");
+
       if (selectedOption) {
         const normalizedSelected =
           normalizeString(selectedOption).toLowerCase();
-        const isExistingOption = options.some(
-          (opt) =>
+        const isExistingOption = options.some((opt) => {
+          const optValue = getOptionValue(opt);
+          return (
+            normalizeString(optValue).toLowerCase() === normalizedSelected ||
             normalizeString(getOptionDisplayText(opt)).toLowerCase() ===
-            normalizedSelected
-        );
+              normalizedSelected
+          );
+        });
         setHasCustomValue(!isExistingOption);
       } else {
         setHasCustomValue(false);
@@ -338,10 +372,11 @@ export const DropdownInputProductForm = ({
                 if (!disabled && !isLoading && !isOpen) {
                   setIsOpen(true);
                   // Inicializar las opciones filtradas con todas las opciones disponibles
-                  if (!isUserTypingRef.current) {
-                    setSearchTerm(selectedOption || "");
-                    setFilteredOptions([...options]);
-                  }
+                  // Siempre sincronizar searchTerm con selectedOption cuando se recibe focus
+                  // para asegurar que muestre la opción seleccionada, no lo que el usuario escribió antes
+                  setSearchTerm(selectedOption || "");
+                  setFilteredOptions([...options]);
+                  isUserTypingRef.current = false;
                 }
               }}
               className={`w-full h-14 py-2 pl-4 pr-12 rounded-xl border text-black p-4 font-sans focus:outline-none ${
