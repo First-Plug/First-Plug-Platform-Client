@@ -29,13 +29,26 @@ const Titles = {
   warehouses: "Warehouses",
   create: "Create Product",
   offices: "Offices",
+  "new-request": "New Quote Request",
 } as const;
 
 export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   const pathName = usePathname();
   const { status, data } = useSession();
+  const pathArray = pathName.split("/");
 
   const { memberOffBoarding } = useMemberStore();
+
+  const getTitle = () => {
+    if (pathArray[3] === "request-off-boarding") {
+      return memberOffBoarding ? memberOffBoarding : "";
+    }
+    // Verificar si la ruta incluye "new-request"
+    if (pathArray.includes("new-request")) {
+      return Titles["new-request"] ?? "";
+    }
+    return Titles[pathArray[2] as keyof typeof Titles] ?? "";
+  };
 
   return (
     <nav className="flex justify-between items-center px-4 h-[10vh] min-h-[10vh] max-h-[10vh]">
@@ -43,13 +56,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         {title === "logo" ? (
           <Image src={Logo} alt="Logo" width={140} height={300} priority />
         ) : (
-          <h2 className="font-bold text-black text-2xl">
-            {pathName.split("/")[3] === "request-off-boarding"
-              ? memberOffBoarding
-                ? memberOffBoarding
-                : ""
-              : Titles[pathName.split("/")[2]] ?? ""}
-          </h2>
+          <h2 className="font-bold text-black text-2xl">{getTitle()}</h2>
         )}
 
         {searchInput && <SearchInput placeholder={placeholder} />}
