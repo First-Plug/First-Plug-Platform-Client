@@ -15,7 +15,6 @@ export class ProductServices {
       // Validación defensiva: asegurar que siempre retornemos un array
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
-      console.error("Error fetching table format:", error);
       return [];
     }
   }
@@ -112,7 +111,6 @@ export class ProductServices {
       );
       return response.data;
     } catch (error) {
-      console.error("Error al crear productos:", error);
       throw error;
     }
   }

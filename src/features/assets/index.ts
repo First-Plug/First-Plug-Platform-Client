@@ -62,6 +62,7 @@ export * from "./hooks/useAssetsTableColumns";
 export * from "./hooks/useProductsInnerTableColumns";
 export * from "./hooks/useSubtableLogic";
 export * from "./hooks/useProductsFiltering";
+export * from "./hooks/useEnrichedFormFields";
 
 export * from "./api/createAssets";
 export * from "./api/updateAssets";

@@ -45,7 +45,6 @@ export const useUpdateEntityAsset = () => {
       if (context?.previousAsset) {
         queryClient.setQueryData(["assets", id], context.previousAsset);
       }
-      console.error("Error al actualizar el asset:", error);
     },
 
     onSuccess: (response, { id, showSuccessAlert = true }) => {

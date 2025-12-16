@@ -37,7 +37,7 @@ export const usePrefetchAssignData = (productId: string) => {
         queryClient.setQueryData(["members"], cachedMembers);
       }
     } catch (error) {
-      console.error("Error prefetching assign data:", error);
+      // Error silenciado en prefetch
     }
   };
 

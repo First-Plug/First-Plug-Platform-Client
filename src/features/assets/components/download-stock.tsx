@@ -27,7 +27,7 @@ export const DownloadStock = () => {
       const blob = await response.blob();
       saveAs(blob, fileToDownload);
     } catch (error) {
-      console.error("Error al descargar el archivo:", error);
+      // Error silenciado
     }
   };
   return (

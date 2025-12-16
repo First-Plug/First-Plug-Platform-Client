@@ -126,12 +126,35 @@ export default function CreatePage() {
         ];
       }
 
+      // Helper para agregar "GB" al valor de RAM si no lo tiene
+      const addGBToRam = (value: string): string => {
+        if (!value || typeof value !== "string") return value;
+        const trimmedValue = value.trim();
+        if (trimmedValue && !trimmedValue.toLowerCase().endsWith("gb")) {
+          return `${trimmedValue}GB`;
+        }
+        return trimmedValue;
+      };
+
+      // Procesar atributos para agregar "GB" a RAM antes de enviar
+      const processedAttributes = (formData.attributes || []).map(
+        (attr: any) => {
+          if (attr.key === "ram" && attr.value) {
+            return {
+              ...attr,
+              value: addGBToRam(attr.value),
+            };
+          }
+          return attr;
+        }
+      );
+
       // Construir el payload para la API
       const payload: any = {
         tenantName: formData.tenant?.tenantName || "",
         name: formData.name || "",
         category: categoryMap[formData.category?.name] || "Other",
-        attributes: formData.attributes || [],
+        attributes: processedAttributes,
         productCondition: formData.productCondition,
         recoverable: formData.recoverable || false,
         acquisitionDate: formData.acquisitionDate || "",

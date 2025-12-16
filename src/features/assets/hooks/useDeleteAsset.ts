@@ -26,7 +26,6 @@ export const useDeleteAsset = () => {
       if (context?.previousAssets) {
         queryClient.setQueryData(["assets"], context.previousAssets);
       }
-      console.error("Error deleting product:", error);
       setAlert("errorDeleteStock");
     },
     onSuccess: () => {

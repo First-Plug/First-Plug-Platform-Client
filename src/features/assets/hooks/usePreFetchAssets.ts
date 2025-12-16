@@ -24,7 +24,7 @@ export const usePrefetchAssets = () => {
         });
       }
     } catch (error) {
-      console.error("Error prefetching assets:", error);
+      // Error silenciado en prefetch
     } finally {
       isPrefetchingRef.current = false;
     }

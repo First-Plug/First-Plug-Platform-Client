@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { Button, PageLayout, SectionTitle } from "@/shared";
 import {
   type Category,
@@ -23,7 +23,11 @@ import {
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useCreateAsset, useUpdateEntityAsset } from "@/features/assets";
+import {
+  useCreateAsset,
+  useUpdateEntityAsset,
+  useEnrichedFormFields,
+} from "@/features/assets";
 import { useQueryClient } from "@tanstack/react-query";
 import { validateOnCreate } from "@/shared";
 import { useAsideStore, useAlertStore } from "@/shared";
@@ -94,6 +98,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const methods = useForm({
     resolver: zodResolver(zodCreateProductModel),
+    mode: "onSubmit", // Solo validar al hacer submit, no en onChange o onBlur
+    reValidateMode: "onSubmit", // Solo re-validar al hacer submit
     defaultValues: {
       ...getEmptyProduct(),
       ...initialData,
@@ -112,6 +118,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     trigger,
     formState: { isSubmitting },
     watch,
+    getValues,
   } = methods;
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -124,7 +131,87 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [assignedEmail, setAssignedEmail] = useState(
     initialData?.assignedEmail
   );
-  const [attributes, setAttributes] = useState(initialData?.attributes || []);
+
+  // Hook para enriquecer campos con valores de productos existentes
+  const { fields: enrichedFields, isLoading: isLoadingEnrichedFields } =
+    useEnrichedFormFields(selectedCategory);
+  // Helper para quitar "GB" del valor de RAM para mostrar
+  const removeGBFromRam = (value: string): string => {
+    if (typeof value === "string" && value.toLowerCase().endsWith("gb")) {
+      return value.slice(0, -2).trim();
+    }
+    return value;
+  };
+
+  // Procesar atributos iniciales para quitar "GB" de RAM (solo para display interno)
+  const processedInitialAttributes = useMemo(() => {
+    return (initialData?.attributes || []).map((attr) => {
+      if (attr?.key === "ram" && attr?.value) {
+        return { ...attr, value: removeGBFromRam(attr.value) };
+      }
+      return attr;
+    });
+  }, [initialData?.attributes]);
+
+  // Estado único de atributos - fuente de verdad única
+  const [attributes, setAttributes] = useState<any[]>(
+    processedInitialAttributes
+  );
+
+  // Inicializar attributes cuando cambie initialData (solo en modo update, solo al montar)
+  useEffect(() => {
+    if (isUpdate && initialData?.attributes && attributes.length === 0) {
+      setAttributes(processedInitialAttributes);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUpdate, initialData?._id]);
+
+  // Inicializar todos los atributos en react-hook-form con sus keys cuando cambia la categoría
+  useEffect(() => {
+    if (selectedCategory) {
+      // Obtener los campos de la configuración
+      const fieldsToUse = enrichedFields
+        ? enrichedFields
+        : categoryComponents[selectedCategory]?.fields || [];
+
+      if (fieldsToUse && fieldsToUse.length > 0) {
+        // Inicializar todos los atributos con sus keys, incluso si el value está vacío
+        fieldsToUse.forEach((field: any, index: number) => {
+          const existingAttr = attributes.find((a) => a?.key === field.name);
+          const currentFormAttrs = methods.getValues("attributes") || [];
+          const existingFormAttr = currentFormAttrs[index];
+
+          // Inicializar siempre la key, incluso si ya existe (para asegurar que esté presente)
+          setValue(`attributes.${index}.key`, field.name, {
+            shouldValidate: false,
+            shouldDirty: false,
+          });
+
+          // Inicializar el value siempre, usando el valor existente o string vacío
+          setValue(
+            `attributes.${index}.value`,
+            existingAttr?.value || existingFormAttr?.value || "",
+            {
+              shouldValidate: false,
+              shouldDirty: false,
+            }
+          );
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, enrichedFields?.length, setValue]);
+
+  // Función para actualizar atributos desde DynamicForm
+  // Usa función de actualización para asegurar que siempre use el estado más reciente
+  const handleAttributesChange = useCallback(
+    (updater: any[] | ((prev: any[]) => any[])) => {
+      setAttributes((prev) => {
+        return typeof updater === "function" ? updater(prev) : updater;
+      });
+    },
+    []
+  );
   const [customErrors, setCustomErrors] = useState({});
   const [showBulkCreate, setShowBulkCreate] = useState(false);
   const [bulkInitialData, setBulkInitialData] = useState<Product | undefined>(
@@ -202,8 +289,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     let hasError = false;
     const newErrors: Record<string, string> = {};
     if (category !== "Merchandising") {
-      const brand = attributes.find((attr) => attr.key === "brand")?.value;
-      const model = attributes.find((attr) => attr.key === "model")?.value;
+      const attributesArray = attributes || [];
+      const brand = attributesArray.find(
+        (attr) => attr?.key === "brand"
+      )?.value;
+      const model = attributesArray.find(
+        (attr) => attr?.key === "model"
+      )?.value;
 
       if (!brand) {
         newErrors["brand"] = "Brand is required.";
@@ -221,8 +313,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   const validateProductName = async () => {
-    const attributes = watch("attributes");
-    const model = attributes.find((attr) => attr.key === "model")?.value;
+    const attributes = watch("attributes") || [];
+    const model = attributes.find((attr) => attr?.key === "model")?.value;
     const productName = watch("name");
 
     if (
@@ -251,6 +343,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const amount = watch("price.amount");
   const condition = watch("productCondition");
+
+  // Helper para agregar "GB" al valor de RAM si no lo tiene
+  const addGBToRam = (value: string): string => {
+    if (!value || typeof value !== "string") return value;
+    const trimmedValue = value.trim();
+    if (trimmedValue && !trimmedValue.toLowerCase().endsWith("gb")) {
+      return `${trimmedValue}GB`;
+    }
+    return trimmedValue;
+  };
 
   const handleSaveProduct = async (data: Product) => {
     setShowSuccessDialog(false);
@@ -323,6 +425,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       }
     }
 
+    // Usar los campos enriquecidos de la categoría para asegurar que todos los atributos estén incluidos
+    const FormConfig = enrichedFields
+      ? { fields: enrichedFields, isLoading: isLoadingEnrichedFields }
+      : {
+          fields: categoryComponents[selectedCategory]?.fields || [],
+          isLoading: false,
+        };
+
+    // Usar el estado único de attributes como fuente de verdad
+    // Este estado se actualiza inmediatamente cuando el usuario cambia valores
     const formatData: Product = {
       ...getEmptyProduct(),
       ...data,
@@ -337,19 +449,24 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         data.productCondition ?? initialData?.productCondition ?? "Optimal",
       additionalInfo: data.additionalInfo || "",
       officeId: data.location === "Our office" ? data.officeId : undefined,
-      attributes: attributes.map((attr) => {
-        const initialAttr = initialData?.attributes.find(
-          (ia) => ia.key === attr.key
+      attributes: FormConfig.fields.map((field: any) => {
+        const initialAttr = initialData?.attributes?.find(
+          (ia) => ia?.key === field.name
         );
+
+        // Usar el estado único de attributes
+        const stateAttr = attributes.find((a) => a?.key === field.name);
+        let finalValue = stateAttr?.value || initialAttr?.value || "";
+
+        // Si es RAM, agregar "GB" si no lo tiene
+        if (field.name === "ram" && finalValue) {
+          finalValue = addGBToRam(finalValue);
+        }
+
         return {
           _id: initialAttr?._id || "",
-          key: attr.key,
-          value:
-            attr.value !== ""
-              ? attr.value
-              : initialAttr
-              ? initialAttr.value
-              : attr.value,
+          key: field.name,
+          value: finalValue,
         };
       }),
       ...(data.serialNumber?.trim()
@@ -358,7 +475,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     };
 
     const model = formatData.attributes.find(
-      (attr) => attr.key === "model"
+      (attr) => attr?.key === "model"
     )?.value;
 
     if (isUpdate && initialData) {
@@ -390,7 +507,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
     if (formatData.category !== "Merchandising") {
       const brand = formatData.attributes.find(
-        (attr) => attr.key === "brand"
+        (attr) => attr?.key === "brand"
       )?.value;
       if (!brand) {
         attributeErrors["brand"] = "Brand is required.";
@@ -595,7 +712,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     setShowErrorDialog(true);
   };
 
-  const FormConfig = categoryComponents[selectedCategory] || { fields: [] };
+  const FormConfig = enrichedFields
+    ? { fields: enrichedFields, isLoading: isLoadingEnrichedFields }
+    : {
+        fields: categoryComponents[selectedCategory]?.fields || [],
+        isLoading: false,
+      };
 
   const handleNext = async () => {
     const isProductNameValid = await validateProductName();
@@ -603,6 +725,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
     const data = methods.getValues();
     const finalAssignedEmail = watch("assignedEmail");
+
+    // Usar los campos enriquecidos de la categoría para asegurar que todos los atributos estén incluidos
+    const FormConfig = enrichedFields
+      ? { fields: enrichedFields, isLoading: isLoadingEnrichedFields }
+      : {
+          fields: categoryComponents[selectedCategory]?.fields || [],
+          isLoading: false,
+        };
 
     const formattedData: Product = {
       ...getEmptyProduct(),
@@ -612,32 +742,45 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         finalAssignedEmail || data.assignedMember ? "Delivered" : "Available",
       category: selectedCategory || "Other",
       assignedEmail: finalAssignedEmail,
-      attributes: attributes.map((attr) => {
-        const initialAttr = initialData?.attributes.find(
-          (ia) => ia.key === attr.key
+      attributes: FormConfig.fields.map((field: any) => {
+        const initialAttr = initialData?.attributes?.find(
+          (ia) => ia?.key === field.name
         );
+
+        // Usar el estado local como fuente de verdad única
+        // El estado local se actualiza inmediatamente cuando el usuario cambia valores
+        const stateAttr = attributes.find((a) => a?.key === field.name);
+
+        // También verificar los valores de react-hook-form como fallback
+        const formAttributes = watch("attributes") || [];
+        const formAttr = formAttributes.find((a: any) => a?.key === field.name);
+
+        // Prioridad: estado local > valores del formulario > valor inicial
+        let finalValue =
+          stateAttr?.value || formAttr?.value || initialAttr?.value || "";
+
+        // Si es RAM, agregar "GB" si no lo tiene
+        if (field.name === "ram" && finalValue) {
+          finalValue = addGBToRam(finalValue);
+        }
+
         return {
           _id: initialAttr?._id || "",
-          key: attr.key,
-          value:
-            attr.value !== ""
-              ? attr.value
-              : initialAttr
-              ? initialAttr.value
-              : attr.value,
+          key: field.name,
+          value: finalValue,
         };
       }),
       serialNumber: data.serialNumber?.trim() === "" ? "" : data.serialNumber,
     };
 
     const model = formattedData.attributes.find(
-      (attr) => attr.key === "model"
+      (attr) => attr?.key === "model"
     )?.value;
 
     Object.keys(formattedData).forEach((key) => {
       if (
         key !== "attributes" &&
-        formattedData.attributes.find((attr) => attr.key === key)
+        formattedData.attributes.find((attr) => attr?.key === key)
       ) {
         delete formattedData[key];
       }
@@ -648,10 +791,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
     if (formattedData.category !== "Merchandising") {
       const brand = formattedData.attributes.find(
-        (attr) => attr.key === "brand"
+        (attr) => attr?.key === "brand"
       )?.value;
       const model = formattedData.attributes.find(
-        (attr) => attr.key === "model"
+        (attr) => attr?.key === "model"
       )?.value;
 
       if (!brand) {
@@ -700,8 +843,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     }
   }, [quantity, clearErrors]);
 
-  const modelValue = watch("attributes").find(
-    (attr) => attr.key === "model"
+  const modelValue = (watch("attributes") || []).find(
+    (attr) => attr?.key === "model"
   )?.value;
 
   return (
@@ -710,8 +853,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         <div className="w-full h-full">
           {!showBulkCreate ? (
             <>
-              <div className="absolute pr-4 w-[80%] h-[90%] overflow-y-auto scrollbar-custom">
-                <div className="px-4 py-2 border rounded-3xl">
+              <div className="absolute pr-4 pb-24 w-[80%] h-[90%] overflow-y-auto scrollbar-custom">
+                <div className="mb-4 px-4 py-2 border rounded-3xl">
                   <SectionTitle className="text-[20px]">
                     {isUpdate ? "" : "Add Product"}
                   </SectionTitle>
@@ -740,16 +883,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   </section>
                 </div>
                 {selectedCategory && (
-                  <div className="flex flex-col gap-4 mt-4 w-full h-[90%] max-h-[100%] lg:flex:row">
-                    <div className="px-4 py-6 pb-40 border rounded-3xl max-h-[500px] overflow-y-auto scrollbar-custom">
+                  <div className="flex flex-col gap-4 mt-4 w-full lg:flex:row">
+                    <div className="px-4 py-6 pb-20 border rounded-3xl">
                       <section>
                         <DynamicForm
                           fields={FormConfig.fields}
-                          handleAttributesChange={setAttributes}
+                          handleAttributesChange={handleAttributesChange}
                           isUpdate={isUpdate}
                           initialValues={initialData}
                           customErrors={customErrors}
                           setCustomErrors={setCustomErrors}
+                          attributes={attributes}
+                          isLoadingFields={FormConfig.isLoading ?? false}
                         />
                       </section>
                     </div>
@@ -772,7 +917,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     variant="primary"
                     className="rounded lg"
                     size="big"
-                    onClick={handleSubmit(handleSaveProduct)}
+                    onClick={(e) => {
+                      handleSubmit(handleSaveProduct)(e);
+                    }}
                     disabled={isSubmitting || isProcessing}
                   />
                 )}

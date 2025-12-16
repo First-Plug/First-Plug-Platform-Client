@@ -21,7 +21,7 @@ export const TableStockActions = () => {
     try {
       await ProductServices.exportProductsCsv();
     } catch (error) {
-      console.error("Failed to export products CSV:", error);
+      // Error silenciado
     }
   };
 

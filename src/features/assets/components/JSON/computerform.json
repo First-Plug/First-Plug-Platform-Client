@@ -128,7 +128,7 @@
     },
     {
       "name": "ram",
-      "title": "RAM",
+      "title": "RAM (GB)",
       "options": [
         "4GB",
         "6GB",
@@ -166,7 +166,7 @@
     },
     {
       "name": "screen",
-      "title": "Screen",
+      "title": "Screen (inches)",
       "options": [
         "13",
         "14",

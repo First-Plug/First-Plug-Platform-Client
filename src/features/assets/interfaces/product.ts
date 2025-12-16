@@ -381,17 +381,7 @@ export const zodCreateProductModel = z
     serialNumber: z.string().optional(),
     recoverable: z.boolean().default(true).optional(),
     assignedMember: z.string().optional(),
-    assignedEmail: z
-      .string()
-      .optional()
-      .refine(
-        (value) => {
-          return value !== undefined || value !== null || value !== "None";
-        },
-        {
-          message: "Assigned Member is required",
-        }
-      ),
+    assignedEmail: z.string().optional(),
     acquisitionDate: z.string().optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
@@ -420,18 +410,20 @@ export const zodCreateProductModel = z
       .optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.category === "Computer") {
-      const requiredKeys = ["brand", "model", "processor", "ram", "storage"];
-      const missingKeys = requiredKeys.filter(
-        (key) => !data.attributes.some((attr) => attr.key === key)
-      );
+    // Solo validar brand y model como requeridos para todas las categorías excepto Merchandising
+    // La validación de valores se hace manualmente en handleSaveProduct
+    if (data.category && data.category !== "Merchandising") {
+      const requiredKeys = ["brand", "model"];
+      const missingKeys = requiredKeys.filter((key) => {
+        const attr = data.attributes.find((attr) => attr.key === key);
+        // Verificar que el atributo exista Y tenga un valor
+        return !attr || !attr.value || attr.value.trim() === "";
+      });
 
       if (missingKeys.length > 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Missing required attributes for Computer: ${missingKeys.join(
-            ", "
-          )}`,
+          message: `Missing required attributes: ${missingKeys.join(", ")}`,
           path: ["attributes"],
         });
       }

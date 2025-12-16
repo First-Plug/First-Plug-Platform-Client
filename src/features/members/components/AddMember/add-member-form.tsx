@@ -87,6 +87,9 @@ export const AddMemberForm = ({
   const [showInternationalWarning, setShowInternationalWarning] =
     useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const [pendingShipmentId, setPendingShipmentId] = useState<string | null>(
+    null
+  );
 
   const { setAlert } = useAlertStore();
   const { setAside, closeAside, pushAside } = useAsideStore();
@@ -322,14 +325,14 @@ export const AddMemberForm = ({
               });
               setShowErrorDialog(true);
 
-              // Si se creó un shipment y hay missing data, esperar refetch y redirigir
+              // Si se creó un shipment y hay missing data, guardar el shipmentId para redirigir después de cerrar el dialog
               if (shipmentId) {
-                handleCloseAside();
+                setPendingShipmentId(shipmentId);
+                // Pre-fetch de shipments para que estén listos cuando se redirija
                 await queryClient.invalidateQueries({
                   queryKey: ["shipments"],
                 });
                 await queryClient.refetchQueries({ queryKey: ["shipments"] });
-                router.push(`/home/shipments?id=${shipmentId}`);
               }
             } else {
               setAlert("assignedProductSuccess");
@@ -480,17 +483,41 @@ export const AddMemberForm = ({
     <section className="flex flex-col gap-6 px-2 h-full">
       <GenericAlertDialog
         open={showErrorDialog}
-        onClose={() => {
+        onClose={async () => {
           setShowErrorDialog(false);
           if (genericAlertData.description) {
             setAlert("assignedProductSuccess");
             handleCloseAside();
           }
+
+          // Si hay un shipment pendiente, redirigir después de cerrar el dialog
+          if (pendingShipmentId) {
+            // Usar requestAnimationFrame para asegurar que el DOM esté listo
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                router.push(`/home/shipments?id=${pendingShipmentId}`);
+              });
+            });
+            setPendingShipmentId(null);
+          }
         }}
         title={genericAlertData.title}
         description={genericAlertData.description}
         buttonText="Ok"
-        onButtonClick={() => setShowErrorDialog(false)}
+        onButtonClick={async () => {
+          setShowErrorDialog(false);
+
+          // Si hay un shipment pendiente, redirigir después de cerrar el dialog
+          if (pendingShipmentId) {
+            // Usar requestAnimationFrame para asegurar que el DOM esté listo
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                router.push(`/home/shipments?id=${pendingShipmentId}`);
+              });
+            });
+            setPendingShipmentId(null);
+          }
+        }}
         isHtml={true}
         additionalMessage="Please update their details to proceed with the shipment."
       />
