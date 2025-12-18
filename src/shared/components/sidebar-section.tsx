@@ -57,26 +57,28 @@ export const SidebarSection = ({
         )}
 
         <div
-          className={`flex gap-2 items-center transition-all duration-300 ease-in-out ${
-            hasActiveSubSection ? "pl-[26px]" : "p-[30px]"
+          className={`flex justify-between gap-2 items-center transition-all duration-300 ease-in-out w-full ${
+            hasActiveSubSection ? "pl-[26px] pr-[30px]" : "p-[30px]"
           }`}
         >
-          {icon}
-          <span
-            className={`transition-all duration-300 ease-in-out whitespace-nowrap ${
-              hasActiveSubSection
-                ? "text-lg font-bold text-blue"
-                : "font-medium text-dark-grey"
-            } ${
-              isSmall
-                ? "opacity-0 w-0 max-w-0"
-                : "opacity-100 w-auto max-w-[200px]"
-            }`}
-          >
-            {title}
-          </span>
+          <div className="flex items-center gap-2">
+            {icon}
+            <span
+              className={`transition-all duration-300 ease-in-out whitespace-nowrap ${
+                hasActiveSubSection
+                  ? "text-lg font-bold text-blue"
+                  : "font-medium text-dark-grey"
+              } ${
+                isSmall
+                  ? "opacity-0 w-0 max-w-0"
+                  : "opacity-100 w-auto max-w-[200px]"
+              }`}
+            >
+              {title}
+            </span>
+          </div>
           {!isSmall && (
-            <div className="ml-auto">
+            <div>
               {isExpanded ? (
                 <ChevronDown
                   size={16}

@@ -11,10 +11,8 @@ import {
   Settings,
 } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
-import { Button } from "@/shared";
 import { useQuoteStore } from "../../store/quote.store";
 import type { QuoteProduct } from "../../types/quote.types";
-import { cn } from "@/shared";
 
 interface QuoteProductCardProps {
   product: QuoteProduct;
@@ -49,7 +47,7 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
   };
 
   return (
-    <div className="relative bg-gray-50 p-4 border border-grey rounded-lg">
+    <div className="relative p-4 border border-grey rounded-lg">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <Badge variant="outline" className="flex items-center gap-1">
@@ -72,7 +70,10 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
           {product.category}
         </span>
         {product.operatingSystem && (
-          <Badge variant="secondary" className="bg-gray-200 text-gray-800">
+          <Badge
+            variant="secondary"
+            className="bg-blue/10 border border-blue/20 text-blue"
+          >
             {formatOS(product.operatingSystem)}
           </Badge>
         )}
@@ -86,6 +87,12 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
             <span className="text-gray-700">{product.brands.join(", ")}</span>
           </div>
         )}
+        {product.models && product.models.length > 0 && (
+          <div>
+            <span className="font-medium">Models: </span>
+            <span className="text-gray-700">{product.models.join(", ")}</span>
+          </div>
+        )}
         {product.processors && product.processors.length > 0 && (
           <div>
             <span className="font-medium">Processors: </span>
@@ -94,16 +101,16 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
             </span>
           </div>
         )}
-        {product.ram && (
+        {product.ram && product.ram.length > 0 && (
           <div>
             <span className="font-medium">RAM: </span>
-            <span className="text-gray-700">{product.ram}</span>
+            <span className="text-gray-700">{product.ram.join(", ")}</span>
           </div>
         )}
-        {product.storage && (
+        {product.storage && product.storage.length > 0 && (
           <div>
             <span className="font-medium">Storage: </span>
-            <span className="text-gray-700">{product.storage}</span>
+            <span className="text-gray-700">{product.storage.join(", ")}</span>
           </div>
         )}
         <div>
@@ -118,7 +125,7 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
           {product.extendedWarranty?.enabled && (
             <Badge
               variant="secondary"
-              className="flex items-center gap-1 bg-gray-200 text-gray-800"
+              className="flex items-center gap-1 bg-blue/10 border border-blue/20 text-blue"
             >
               <Shield className="w-3 h-3" />
               Extended Warranty
@@ -127,7 +134,7 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
           {product.deviceEnrollment && (
             <Badge
               variant="secondary"
-              className="flex items-center gap-1 bg-gray-200 text-gray-800"
+              className="flex items-center gap-1 bg-blue/10 border border-blue/20 text-blue"
             >
               <Settings className="w-3 h-3" />
               Enrollment

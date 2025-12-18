@@ -87,7 +87,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
               <ArrowLeft className="w-5 h-5" />
             </button>
           )}
-          <div>
+          <div className={currentStep === 1 ? "pl-4" : ""}>
             <h2 className="font-semibold text-black text-2xl">
               {getStepTitle(currentStep)}
             </h2>

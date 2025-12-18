@@ -94,15 +94,15 @@ export const StepCategorySelection: React.FC<StepCategorySelectionProps> = ({
             className={cn(
               "flex flex-col justify-center items-center gap-3 p-6 border-2 rounded-lg transition-all",
               selectedCategory === category.id
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 hover:border-gray-300",
+                ? "border-blue "
+                : "border-gray-200 hover:border-blue",
               !category.enabled && "opacity-50 cursor-not-allowed"
             )}
           >
             <div
               className={cn(
                 "flex justify-center items-center rounded-full w-16 h-16",
-                selectedCategory === category.id ? "bg-blue-100" : "bg-gray-100"
+                selectedCategory === category.id ? "bg-blue/10" : "bg-gray-100"
               )}
             >
               {category.icon}

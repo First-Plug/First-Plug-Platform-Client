@@ -8,13 +8,7 @@ import { loadFormFields, getFieldOptions } from "../../utils/loadFormFields";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+
 import type { QuoteProduct } from "../../types/quote.types";
 
 interface StepTechnicalSpecsProps {
@@ -42,6 +36,27 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
     onDataChange({ processors });
   };
 
+  const handleRAMChange = (ram: string[]) => {
+    // Agregar "GB" a cada valor antes de guardar
+    const ramWithGB = ram.map((value) => {
+      // Si ya tiene GB, no agregarlo de nuevo
+      if (value.endsWith("GB")) {
+        return value;
+      }
+      // Si es solo un número, agregar GB
+      return `${value}GB`;
+    });
+    onDataChange({ ram: ramWithGB });
+  };
+
+  const handleStorageChange = (storage: string[]) => {
+    onDataChange({ storage });
+  };
+
+  const handleScreenSizeChange = (screenSize: string[]) => {
+    onDataChange({ screenSize });
+  };
+
   const handleAddModel = () => {
     // Este botón permitirá agregar un modelo personalizado
     // Por ahora, se maneja a través del MultiSelectInput
@@ -51,7 +66,9 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
     return getFieldOptions(category, fieldName);
   };
 
-  const ramOptions = getFieldOptionsForName("ram");
+  const ramOptionsRaw = getFieldOptionsForName("ram");
+  // Filtrar opciones de RAM para mostrar solo números (sin GB)
+  const ramOptions = ramOptionsRaw.map((option) => option.replace("GB", ""));
   const storageOptions = getFieldOptionsForName("storage");
   const screenOptions = getFieldOptionsForName("screen");
 
@@ -65,9 +82,9 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
       <div className="gap-4 grid grid-cols-2 w-full">
         {/* Quantity */}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="quantity">
+          <label htmlFor="quantity" className="font-medium text-sm">
             Quantity<span className="ml-1 text-red-500">*</span>
-          </Label>
+          </label>
           <Input
             id="quantity"
             type="number"
@@ -87,7 +104,7 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
           <div className="flex flex-col gap-2">
             <MultiSelectInput
               title="Brand"
-              placeholder="Select brand"
+              placeholder="Enter brand"
               options={getFieldOptionsForName("brand")}
               selectedValues={productData.brands || []}
               onValuesChange={handleBrandsChange}
@@ -108,14 +125,6 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
                   onValuesChange={handleModelsChange}
                 />
               </div>
-              <button
-                type="button"
-                onClick={handleAddModel}
-                className="flex justify-center items-center hover:bg-gray-50 border rounded-md w-10 h-10"
-                title="Add custom model"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
             </div>
           </div>
         )}
@@ -125,7 +134,7 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
           <div className="flex flex-col gap-2">
             <MultiSelectInput
               title="Processor"
-              placeholder="Select processor"
+              placeholder="Enter processor"
               options={getFieldOptionsForName("processor")}
               selectedValues={productData.processors || []}
               onValuesChange={handleProcessorsChange}
@@ -133,69 +142,47 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
           </div>
         )}
 
-        {/* RAM - Single select */}
+        {/* RAM - Multi-select */}
         {ramOptions.length > 0 && (
           <div className="flex flex-col gap-2">
-            <Label htmlFor="ram">RAM</Label>
-            <Select
-              value={productData.ram || ""}
-              onValueChange={(value) => onDataChange({ ram: value })}
-            >
-              <SelectTrigger id="ram">
-                <SelectValue placeholder="Select ram" />
-              </SelectTrigger>
-              <SelectContent>
-                {ramOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MultiSelectInput
+              title="RAM (GB)"
+              placeholder="Enter RAM"
+              options={ramOptions}
+              selectedValues={
+                productData.ram
+                  ? productData.ram.map((value) => value.replace("GB", ""))
+                  : []
+              }
+              onValuesChange={handleRAMChange}
+              inputMode="numeric"
+            />
           </div>
         )}
 
-        {/* Storage - Single select */}
+        {/* Storage - Multi-select */}
         {storageOptions.length > 0 && (
           <div className="flex flex-col gap-2">
-            <Label htmlFor="storage">Storage</Label>
-            <Select
-              value={productData.storage || ""}
-              onValueChange={(value) => onDataChange({ storage: value })}
-            >
-              <SelectTrigger id="storage">
-                <SelectValue placeholder="Select storage" />
-              </SelectTrigger>
-              <SelectContent>
-                {storageOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MultiSelectInput
+              title="Storage"
+              placeholder="Enter storage"
+              options={storageOptions}
+              selectedValues={productData.storage || []}
+              onValuesChange={handleStorageChange}
+            />
           </div>
         )}
 
-        {/* Screen Size - Single select */}
+        {/* Screen Size - Multi-select */}
         {screenOptions.length > 0 && (
           <div className="flex flex-col gap-2">
-            <Label htmlFor="screenSize">Screen Size</Label>
-            <Select
-              value={productData.screenSize || ""}
-              onValueChange={(value) => onDataChange({ screenSize: value })}
-            >
-              <SelectTrigger id="screenSize">
-                <SelectValue placeholder="Select screen size" />
-              </SelectTrigger>
-              <SelectContent>
-                {screenOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MultiSelectInput
+              title="Screen Size"
+              placeholder="Enter screen size"
+              options={screenOptions}
+              selectedValues={productData.screenSize || []}
+              onValuesChange={handleScreenSizeChange}
+            />
           </div>
         )}
       </div>

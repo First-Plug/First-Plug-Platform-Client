@@ -93,18 +93,16 @@ export const StepOSSelection: React.FC<StepOSSelectionProps> = ({
             type="button"
             onClick={() => onOSSelect(os.id)}
             className={cn(
-              "relative flex flex-col justify-center items-center gap-3 shadow-sm p-6 border-2 rounded-lg min-w-[120px] transition-all",
+              "relative flex flex-col justify-center items-center gap-3 shadow-sm p-6 border-2 rounded-lg min-w-[160px] transition-all",
               selectedOS === os.id
-                ? "border-blue-500 bg-blue-50 shadow-md scale-105"
-                : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                ? "border-blue bg-blue-50 shadow-md scale-105"
+                : "border-gray-200 hover:border-blue hover:shadow-md"
             )}
           >
             <div
               className={cn(
                 "flex justify-center items-center rounded-full w-16 h-16 transition-all",
-                selectedOS === os.id
-                  ? "bg-blue-500 text-white scale-110"
-                  : "bg-gray-100"
+                selectedOS === os.id ? "bg-blue/10  scale-110" : "bg-gray-100"
               )}
             >
               {os.icon}

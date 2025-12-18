@@ -56,7 +56,7 @@ export const ExtendedWarrantyInput: React.FC<ExtendedWarrantyInputProps> = ({
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="max-w-xs">
+              <p className="bg-white max-w-xs">
                 Extended warranty provides additional coverage beyond the
                 standard warranty period. Specify the number of extra years you
                 need.

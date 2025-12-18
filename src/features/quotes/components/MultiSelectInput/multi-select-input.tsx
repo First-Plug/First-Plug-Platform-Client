@@ -29,6 +29,7 @@ interface MultiSelectInputProps {
   disabled?: boolean;
   required?: boolean;
   showAddButton?: boolean;
+  inputMode?: "text" | "numeric";
 }
 
 export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
@@ -41,10 +42,12 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
   disabled = false,
   required = false,
   showAddButton = true,
+  inputMode = "text",
 }) => {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const containerRef = React.useRef<HTMLButtonElement>(null);
 
   // Filtrar opciones que no están seleccionadas y que coinciden con el input
   const filteredOptions = React.useMemo(() => {
@@ -90,16 +93,13 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
     }
   };
 
-  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    // Abrir el popover cuando se hace focus
-    if (!open) {
-      setOpen(true);
-    }
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+    let value = e.target.value;
+    // Si es modo numérico, solo permitir números
+    if (inputMode === "numeric") {
+      value = value.replace(/[^0-9]/g, "");
+    }
+    setInputValue(value);
     // Abrir cuando el usuario empieza a escribir
     if (!open) {
       setOpen(true);
@@ -107,6 +107,7 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
   };
 
   const handleOpenChange = (newOpen: boolean) => {
+    // Solo actualizar si el cambio viene del Popover, no de nuestros handlers
     setOpen(newOpen);
   };
 
@@ -148,47 +149,57 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
 
       {/* Input con botón + */}
       <Popover open={open} onOpenChange={handleOpenChange}>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <PopoverTrigger asChild>
-              <Input
-                ref={inputRef}
-                type="text"
-                placeholder={placeholder}
-                value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onFocus={handleInputFocus}
-                disabled={disabled}
-                className="pr-10"
-              />
-            </PopoverTrigger>
-            {inputValue.trim() &&
-              !selectedValues.includes(inputValue.trim()) && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  className="top-1/2 right-1 z-10 absolute p-0 w-7 h-7 -translate-y-1/2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddCustom();
-                  }}
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            ref={containerRef as any}
+            className="bg-transparent p-0 border-none w-full text-left"
+            style={{ all: "unset", cursor: "text" }}
+          >
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  ref={inputRef}
+                  type={inputMode === "numeric" ? "number" : "text"}
+                  inputMode={inputMode === "numeric" ? "numeric" : "text"}
+                  placeholder={placeholder}
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
                   disabled={disabled}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              )}
-          </div>
-        </div>
+                  className="pr-10"
+                />
+                {inputValue.trim() &&
+                  !selectedValues.includes(inputValue.trim()) && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="top-1/2 right-1 z-10 absolute p-0 w-7 h-7 -translate-y-1/2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddCustom();
+                      }}
+                      disabled={disabled}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  )}
+              </div>
+            </div>
+          </button>
+        </PopoverTrigger>
         <PopoverContent
           className="bg-white p-0 w-[var(--radix-popover-trigger-width)]"
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
           onInteractOutside={(e) => {
-            // Prevenir que se cierre si el click fue en el input o el botón +
+            // Prevenir que se cierre si el click fue en el input, el botón +, o el contenedor
             const target = e.target as HTMLElement;
-            if (inputRef.current?.contains(target)) {
+            if (
+              inputRef.current?.contains(target) ||
+              containerRef.current?.contains(target)
+            ) {
               e.preventDefault();
             }
           }}

@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/shared";
 import { useQuoteStore } from "../../store/quote.store";
 import { StepCategorySelection } from "../AddProductModal/step-category-selection";
@@ -8,7 +8,6 @@ import { StepOSSelection } from "../AddProductModal/step-os-selection";
 import { StepTechnicalSpecs } from "../AddProductModal/step-technical-specs";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import type { QuoteProduct } from "../../types/quote.types";
-import { useToast } from "@/shared/components/ui/use-toast";
 
 interface AddProductFormProps {
   onCancel: () => void;
@@ -27,20 +26,16 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
     setOnBack,
     setOnCancel,
   } = useQuoteStore();
-  const { toast } = useToast();
 
-  // Usar ref para mantener referencia estable a onCancel
-  const onCancelRef = React.useRef(onCancel);
-  React.useEffect(() => {
+  const onCancelRef = useRef(onCancel);
+  useEffect(() => {
     onCancelRef.current = onCancel;
   }, [onCancel]);
 
-  // Inicializar estado cuando se monta el componente y crear funciones estables
-  React.useEffect(() => {
+  useEffect(() => {
     setIsAddingProduct(true);
     setCurrentStep(1);
 
-    // Crear funciones que leen el estado actual del store
     const handleBack = () => {
       const currentStepValue = useQuoteStore.getState().currentStep;
       if (currentStepValue > 1) {
@@ -63,20 +58,14 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
       setOnCancel(undefined);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Solo ejecutar una vez al montar
+  }, []);
 
-  // Funciones locales para usar en el componente (botones del footer)
-  const handleBack = React.useCallback(() => {
+  const handleBack = useCallback(() => {
     const currentStepValue = useQuoteStore.getState().currentStep;
     if (currentStepValue > 1) {
       setCurrentStep(currentStepValue - 1);
     }
   }, [setCurrentStep]);
-
-  const handleCancel = React.useCallback(() => {
-    setIsAddingProduct(false);
-    onCancelRef.current();
-  }, [setIsAddingProduct]);
 
   const generateId = () => {
     return `quote-product-${Date.now()}-${Math.random()
@@ -84,7 +73,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
       .substr(2, 9)}`;
   };
 
-  const [productData, setProductData] = React.useState<Partial<QuoteProduct>>({
+  const [productData, setProductData] = useState<Partial<QuoteProduct>>({
     id: generateId(),
     quantity: 1,
     brands: [],
@@ -104,14 +93,14 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
 
   const handleOSSelect = (os: string) => {
     handleDataChange({ operatingSystem: os });
-    // Avanzar automáticamente al siguiente paso
+
     const nextStep = 3;
     setCurrentStep(nextStep);
   };
 
   const handleOSSkip = () => {
     handleDataChange({ operatingSystem: undefined });
-    // Avanzar automáticamente al siguiente paso
+
     const nextStep = 3;
     setCurrentStep(nextStep);
   };
@@ -147,26 +136,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
         additionalComments: productData.additionalComments,
       };
       addProduct(completeProduct);
-      toast({
-        title: "Product Added",
-        description: "Product added to your quote request.",
-      });
       onComplete();
-    }
-  };
-
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 1:
-        return "Select Product Category";
-      case 2:
-        return "Select Operating System";
-      case 3:
-        return "Technical Specifications";
-      case 4:
-        return "Quote Details";
-      default:
-        return "";
     }
   };
 
@@ -230,6 +200,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
               onClick={handleNext}
               disabled={!canProceed()}
               variant="primary"
+              size="small"
               body={currentStep === 4 ? "Save Product" : "Continue"}
             />
           </div>

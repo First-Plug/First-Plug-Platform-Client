@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { format } from "date-fns";
+import { format, startOfToday, isBefore } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { COUNTRIES } from "@/shared/constants/countries";
 import { Input } from "@/shared/components/ui/input";
@@ -32,17 +32,28 @@ export const StepQuoteDetails: React.FC<StepQuoteDetailsProps> = ({
   productData,
   onDataChange,
 }) => {
+  // Obtener la fecha de hoy en la zona horaria local (sin tiempo)
+  const today = startOfToday();
+
   const [date, setDate] = React.useState<Date | undefined>(
     productData.requiredDeliveryDate
       ? new Date(productData.requiredDeliveryDate)
       : undefined
   );
+  const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    if (date) {
-      onDataChange({ requiredDeliveryDate: date.toISOString() });
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    setDate(selectedDate);
+    if (selectedDate) {
+      // Guardar solo la fecha en formato YYYY-MM-DD (sin tiempo)
+      const dateOnly = format(selectedDate, "yyyy-MM-dd");
+      onDataChange({ requiredDeliveryDate: dateOnly });
+      // Cerrar el calendario después de seleccionar
+      setIsCalendarOpen(false);
+    } else {
+      onDataChange({ requiredDeliveryDate: undefined });
     }
-  }, [date, onDataChange]);
+  };
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -92,7 +103,7 @@ export const StepQuoteDetails: React.FC<StepQuoteDetailsProps> = ({
           <Label htmlFor="delivery-date">
             Required Delivery Date (optional)
           </Label>
-          <Popover>
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
                 id="delivery-date"
@@ -110,7 +121,8 @@ export const StepQuoteDetails: React.FC<StepQuoteDetailsProps> = ({
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={setDate}
+                onSelect={handleDateSelect}
+                disabled={(date) => isBefore(date, today)}
                 initialFocus
               />
             </PopoverContent>

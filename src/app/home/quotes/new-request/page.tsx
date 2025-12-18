@@ -1,16 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { PageLayout, Button } from "@/shared";
+import { PageLayout, Button, useToast } from "@/shared";
 import { Package, Wrench, Send } from "lucide-react";
 import {
   AddProductForm,
   QuoteProductCard,
   useQuoteStore,
+  QuoteServices,
 } from "@/features/quotes";
 
 export default function NewQuoteRequestPage() {
-  const { products, isAddingProduct, setIsAddingProduct } = useQuoteStore();
+  const { products, isAddingProduct, setIsAddingProduct, clearProducts } =
+    useQuoteStore();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddProduct = () => {
     setIsAddingProduct(true);
@@ -24,9 +28,38 @@ export default function NewQuoteRequestPage() {
     setIsAddingProduct(false);
   };
 
-  const handleSubmitRequest = () => {
-    // TODO: Implementar lógica para enviar el quote al backend
-    console.log("Submit request with products:", products);
+  const handleSubmitRequest = async () => {
+    if (products.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No products",
+        description: "Please add at least one product before submitting.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await QuoteServices.submitQuoteRequest(products);
+
+      clearProducts();
+    } catch (error: any) {
+      console.error("Error submitting quote request:", error);
+
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "An error occurred while submitting your quote request. Please try again.";
+
+      toast({
+        variant: "destructive",
+        title: "Submission Failed",
+        description: errorMessage,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -85,8 +118,8 @@ export default function NewQuoteRequestPage() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            <div className="bg-white p-6 rounded-lg">
+          <div className="flex flex-col items-end gap-4">
+            <div className="bg-white rounded-lg w-full">
               <div className="flex flex-col gap-4">
                 {products.map((product) => (
                   <QuoteProductCard key={product.id} product={product} />
@@ -100,10 +133,15 @@ export default function NewQuoteRequestPage() {
                 variant="primary"
                 icon={<Send size={18} color="white" strokeWidth={2} />}
                 onClick={handleSubmitRequest}
-                size="big"
-                body={`Submit Request (${products.length} ${
-                  products.length === 1 ? "item" : "items"
-                })`}
+                size="small"
+                disabled={isSubmitting}
+                body={
+                  isSubmitting
+                    ? "Submitting..."
+                    : `Submit Request (${products.length} ${
+                        products.length === 1 ? "item" : "items"
+                      })`
+                }
               />
             </div>
           </div>

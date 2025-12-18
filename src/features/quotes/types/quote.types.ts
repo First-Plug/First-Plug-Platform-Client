@@ -6,9 +6,9 @@ export interface QuoteProduct {
   brands: string[]; // Múltiples valores seleccionados
   models: string[]; // Múltiples valores seleccionados
   processors?: string[]; // Múltiples procesadores seleccionados
-  ram?: string;
-  storage?: string;
-  screenSize?: string;
+  ram?: string[];
+  storage?: string[];
+  screenSize?: string[];
   extendedWarranty?: {
     enabled: boolean;
     extraYears?: number;
@@ -19,6 +19,28 @@ export interface QuoteProduct {
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
   additionalComments?: string;
+}
+
+export interface QuoteRequestPayload {
+  products: Array<{
+    category: string;
+    quantity: number;
+    country: string;
+    os?: string;
+    brand?: string[];
+    model?: string[];
+    processor?: string[];
+    ram?: string[];
+    storage?: string[];
+    screenSize?: string[];
+    otherSpecifications?: string;
+    extendedWarranty?: boolean;
+    extendedWarrantyYears?: number;
+    deviceEnrollment?: boolean;
+    city?: string;
+    deliveryDate?: string;
+    comments?: string;
+  }>;
 }
 
 export interface QuoteStore {
