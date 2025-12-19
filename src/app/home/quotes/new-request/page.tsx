@@ -66,7 +66,10 @@ export default function NewQuoteRequestPage() {
     <PageLayout>
       <div className="flex flex-col mx-auto p-6 w-5/6 h-full">
         {/* Header */}
-        <div className="flex justify-end items-start mb-6">
+        <div className="flex justify-between items-center mb-6">
+          {!isAddingProduct && (
+            <h1 className="font-bold">Add Products or Services</h1>
+          )}
           <div className="flex gap-3">
             {!isAddingProduct && (
               <>
