@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import * as Icons from "@/shared/icons/icons";
-import { Smartphone, Tablet, Sofa } from "lucide-react";
+import { Smartphone, Tablet, Sofa, Package } from "lucide-react";
 import { cn } from "@/shared";
 
 interface Category {
@@ -64,7 +64,7 @@ const categories: Category[] = [
   {
     id: "other",
     name: "Other",
-    icon: <Icons.Other />,
+    icon: <Package className="w-6 h-6" />,
     enabled: false,
   },
 ];

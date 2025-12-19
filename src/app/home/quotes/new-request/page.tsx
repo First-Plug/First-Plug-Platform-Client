@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PageLayout, Button, useToast } from "@/shared";
-import { Package, Wrench, Send } from "lucide-react";
+import { Package, Wrench, Send, Plus } from "lucide-react";
 import {
   AddProductForm,
   QuoteProductCard,
@@ -101,7 +101,7 @@ export default function NewQuoteRequestPage() {
             <div className="flex flex-col justify-center items-center p-8 text-center">
               <div className="flex justify-center items-center mb-4">
                 <div className="bg-blue/10 p-4 rounded-full">
-                  <Package
+                  <Plus
                     size={48}
                     className="text-blue"
                     color="black"

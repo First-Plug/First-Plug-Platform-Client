@@ -149,13 +149,13 @@ const SidebarSubLink = ({
       onClick={() => router.refresh()}
     >
       <div
-        className={`flex gap-2 transition-all duration-300 ease-in-out ${
-          isActive ? "pl-[30px]" : "pl-[30px]"
+        className={`flex items-center gap-2 transition-all duration-300 ease-in-out ${
+          isActive ? "pl-[26px]" : "pl-[30px]"
         }`}
       >
         {icon}
         <span
-          className={`transition-all duration-300 ease-in-out whitespace-nowrap text-sm ${
+          className={`transition-all duration-300 ease-in-out whitespace-nowrap  ${
             isActive
               ? "text-base font-bold text-blue"
               : "font-medium text-dark-grey"
