@@ -46,7 +46,8 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   const pathArray = pathName.split("/");
 
   const { memberOffBoarding } = useMemberStore();
-  const { isAddingProduct, currentStep, onBack, onCancel } = useQuoteStore();
+  const { isAddingProduct, currentStep, onBack, onCancel, editingProductId } =
+    useQuoteStore();
 
   const getStepTitle = (step: number) => {
     const stepTitles: Record<number, string> = {
@@ -78,15 +79,18 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     return (
       <nav className="flex justify-between items-center px-4 border-b h-[10vh] min-h-[10vh] max-h-[10vh]">
         <div className="flex items-center gap-4">
-          {currentStep > 1 && onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="hover:bg-gray-100 p-2 rounded-full transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          )}
+          {/* Si estamos editando, solo mostrar back si estamos en step 3 o 4 (no en step 2) */}
+          {onBack &&
+            ((editingProductId && currentStep > 2) ||
+              (!editingProductId && currentStep > 1)) && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
           <div className={currentStep === 1 ? "pl-4" : ""}>
             <h2 className="font-semibold text-black text-2xl">
               {getStepTitle(currentStep)}

@@ -10,7 +10,16 @@ import {
   Shield,
   Settings,
 } from "lucide-react";
-import { Badge } from "@/shared/components/ui/badge";
+import {
+  Badge,
+  PenIcon,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Button,
+} from "@/shared";
 import { useQuoteStore } from "../../store/quote.store";
 import type { QuoteProduct } from "../../types/quote.types";
 
@@ -21,10 +30,24 @@ interface QuoteProductCardProps {
 export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
   product,
 }) => {
-  const { removeProduct } = useQuoteStore();
+  const {
+    removeProduct,
+    setIsAddingProduct,
+    setCurrentStep,
+    setEditingProductId,
+  } = useQuoteStore();
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
 
   const handleDelete = () => {
     removeProduct(product.id);
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleEdit = () => {
+    setIsAddingProduct(true);
+    setEditingProductId(product.id);
+    // El step se establecerá en el useEffect del AddProductForm
   };
 
   const formatOS = (os?: string) => {
@@ -54,15 +77,55 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
           <Package className="w-3 h-3" />
           Product
         </Badge>
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="hover:bg-gray-200 p-2 rounded-full transition-colors"
-          aria-label="Delete product"
-        >
-          <Trash2 className="w-4 h-4 text-gray-600" />
-        </button>
+        <div className="flex">
+          <button
+            type="button"
+            onClick={handleEdit}
+            className="hover:bg-gray-200 p-2 rounded-full transition-colors"
+            aria-label="Edit product"
+          >
+            <PenIcon className="w-4 h-4 text-blue" strokeWidth={2} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="hover:bg-gray-200 p-2 rounded-full transition-colors"
+            aria-label="Delete product"
+          >
+            <Trash2 className="w-4 h-4 text-red-600" />
+          </button>
+        </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-xl">
+              Are you sure you want to delete this product? 🗑️
+            </DialogTitle>
+            <DialogDescription className="font-normal text-md">
+              This product will be permanently removed from your quote request.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2 mt-4">
+            <Button
+              variant="secondary"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="delete"
+              onClick={handleDelete}
+              className="bg-error w-full"
+            >
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Category and OS */}
       <div className="flex items-center gap-2 mb-4">

@@ -8,6 +8,7 @@ export const useQuoteStore = create<QuoteStore>()(
       products: [],
       isAddingProduct: false,
       currentStep: 1,
+      editingProductId: undefined,
       onBack: undefined,
       onCancel: undefined,
 
@@ -53,6 +54,10 @@ export const useQuoteStore = create<QuoteStore>()(
 
       setOnCancel: (callback: (() => void) | undefined) => {
         set({ onCancel: callback });
+      },
+
+      setEditingProductId: (id: string | undefined) => {
+        set({ editingProductId: id });
       },
     }),
     {

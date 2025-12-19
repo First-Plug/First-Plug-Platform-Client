@@ -47,6 +47,7 @@ export interface QuoteStore {
   products: QuoteProduct[];
   isAddingProduct: boolean;
   currentStep: number;
+  editingProductId?: string;
   onBack?: (() => void) | undefined;
   onCancel?: (() => void) | undefined;
   // Guardar producto completo (al finalizar todos los steps)
@@ -64,4 +65,5 @@ export interface QuoteStore {
   setCurrentStep: (step: number) => void;
   setOnBack: (callback: (() => void) | undefined) => void;
   setOnCancel: (callback: (() => void) | undefined) => void;
+  setEditingProductId: (id: string | undefined) => void;
 }
