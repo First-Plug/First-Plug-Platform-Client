@@ -144,8 +144,8 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
       )}
 
       {/* Delivery Details */}
-      <div className="flex justify-between items-center pt-3 border-t text-gray-600 text-sm">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 pt-3 border-t text-gray-600 text-sm">
+        <div className="flex justify-center items-center gap-2">
           <MapPin className="w-4 h-4" />
           <span>
             {product.country}
@@ -153,7 +153,7 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
           </span>
         </div>
         {product.requiredDeliveryDate && (
-          <div className="flex items-center gap-2">
+          <div className="flex justify-center items-center gap-2">
             <Calendar className="w-4 h-4" />
             <span>{formatDate(product.requiredDeliveryDate)}</span>
           </div>

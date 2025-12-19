@@ -578,6 +578,14 @@ export const AlertProvider = () => {
         setAlert(undefined);
       },
     },
+    quoteSubmittedSuccess: {
+      title: "Success",
+      type: "succes",
+      description: "Your quote has been successfully submitted.",
+      closeAction: () => {
+        setAlert(undefined);
+      },
+    },
   };
 
   if (!alertType) return null;

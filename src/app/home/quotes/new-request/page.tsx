@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageLayout, Button, useToast } from "@/shared";
+import { PageLayout, Button, useToast, useAlertStore } from "@/shared";
 import { Package, Wrench, Send, Plus } from "lucide-react";
 import {
   AddProductForm,
@@ -14,6 +14,7 @@ export default function NewQuoteRequestPage() {
   const { products, isAddingProduct, setIsAddingProduct, clearProducts } =
     useQuoteStore();
   const { toast } = useToast();
+  const { setAlert } = useAlertStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddProduct = () => {
@@ -44,6 +45,7 @@ export default function NewQuoteRequestPage() {
       await QuoteServices.submitQuoteRequest(products);
 
       clearProducts();
+      setAlert("quoteSubmittedSuccess");
     } catch (error: any) {
       console.error("Error submitting quote request:", error);
 
