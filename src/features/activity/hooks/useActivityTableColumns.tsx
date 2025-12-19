@@ -26,16 +26,21 @@ export function useActivityTableColumns() {
         header: "Quantity",
         size: 80,
         cell: ({ row }) => {
-          const { actionType, itemType } = row.original;
+          const { actionType, itemType, changes } = row.original;
+
           if (actionType === "offboarding" && itemType === "members") {
-            return row.original.changes.oldData.products.length;
+            return changes.oldData.products.length;
           }
 
-          return (
-            row.original.changes?.newData?.length ||
-            row.original.changes?.oldData?.length ||
-            1
-          );
+          if (itemType === "quotes") {
+            return (
+              changes.newData?.productCount ||
+              changes.newData?.products?.length ||
+              1
+            );
+          }
+
+          return changes?.newData?.length || changes?.oldData?.length || 1;
         },
       },
       {
