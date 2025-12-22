@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { format } from "date-fns";
 import {
   Package,
   Trash2,
@@ -62,11 +61,16 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return null;
-    try {
-      return format(new Date(dateString), "yyyy-MM-dd");
-    } catch {
-      return dateString;
+    // Extraer solo la fecha si viene en formato ISO con tiempo
+    const dateOnly = dateString.includes("T")
+      ? dateString.split("T")[0]
+      : dateString;
+    // Convertir de YYYY-MM-DD a dd/MM/yyyy
+    const parts = dateOnly.split("-");
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
+    return dateOnly;
   };
 
   return (

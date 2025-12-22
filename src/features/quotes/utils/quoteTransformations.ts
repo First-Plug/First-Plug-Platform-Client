@@ -63,11 +63,15 @@ export function transformProductToBackendFormat(
   let deliveryDate: string | undefined;
   if (product.requiredDeliveryDate) {
     const dateStr = product.requiredDeliveryDate;
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) {
-      throw new Error(`Invalid date format: ${dateStr}`);
+    // Extraer solo la fecha en formato YYYY-MM-DD (sin tiempo)
+    // Si viene en formato ISO con tiempo, extraer solo la parte de la fecha
+    const dateOnly = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
+    // Validar que sea un formato de fecha válido (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(dateOnly)) {
+      throw new Error(`Invalid date format: ${dateStr}. Expected YYYY-MM-DD`);
     }
-    deliveryDate = `${dateStr}T00:00:00.000Z`;
+    deliveryDate = dateOnly;
   }
 
   const quantity =
