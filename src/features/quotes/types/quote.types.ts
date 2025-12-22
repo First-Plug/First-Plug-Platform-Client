@@ -67,3 +67,26 @@ export interface QuoteStore {
   setOnCancel: (callback: (() => void) | undefined) => void;
   setEditingProductId: (id: string | undefined) => void;
 }
+
+export interface QuoteTableWithDetailsDto {
+  _id: string;
+  requestId: string;
+  requestType: string;
+  productCount: number; // cantidad de items agregados
+  totalQuantity: number; // cantidad total de productos
+  createdAt: string; // fecha de creación
+  userName: string; // quién lo solicitó
+  status: "Requested" | "Cancelled";
+  isActive: boolean;
+  tenantId: string;
+  tenantName: string;
+  userEmail: string;
+  products: any[];
+  updatedAt: string;
+}
+
+export interface QuoteHistoryResponse {
+  data: QuoteTableWithDetailsDto[];
+  totalCount: number;
+  totalPages: number;
+}

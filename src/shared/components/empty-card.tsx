@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Button,
   AddIcon,
@@ -25,7 +26,8 @@ type EmptyCardType =
   | "noStockMember"
   | "actionHistory"
   | "offices"
-  | "noResultsWithFilters";
+  | "noResultsWithFilters"
+  | "quotesHistory";
 
 type TConfig = {
   image: string;
@@ -138,6 +140,13 @@ const Config: Record<EmptyCardType, TConfig> = {
     paragraph2:
       "Try adjusting your filters or selecting a different time period.",
   },
+  quotesHistory: {
+    image: "/office.svg",
+    paragraph: "You don't have any quotes yet.",
+    additionalButtonText: "New Request",
+    additionalButtonIcon: () => <AddIcon />,
+    additionalOnClick: undefined, // Se manejará en el componente con router
+  },
 };
 
 interface EmptyCardProps {
@@ -145,6 +154,7 @@ interface EmptyCardProps {
 }
 
 export const EmptyCard = ({ type }: EmptyCardProps) => {
+  const router = useRouter();
   const {
     ButtonIcon,
     LinkIcon,
@@ -199,7 +209,7 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
         <p className="text-dark-grey">{paragraph}</p>
       </div>
       <div className="flex gap-2">
-        {additionalButtonIcon && (
+        {additionalButtonIcon && type !== "quotesHistory" && (
           <Button
             variant="secondary"
             body={additionalButtonText}

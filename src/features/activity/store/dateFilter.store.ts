@@ -10,13 +10,13 @@ interface DateFilterState {
   resetToDefault: () => void;
 }
 
-const defaultDates = {
+const getDefaultDates = () => ({
   startDate: startOfDay(subDays(new Date(), 6)),
   endDate: endOfDay(new Date()),
-};
+});
 
 export const useDateFilterStore = create<DateFilterState>((set) => ({
-  selectedDates: defaultDates,
+  selectedDates: getDefaultDates(),
   setSelectedDates: (dates) => set({ selectedDates: dates }),
-  resetToDefault: () => set({ selectedDates: defaultDates }),
+  resetToDefault: () => set({ selectedDates: getDefaultDates() }),
 }));

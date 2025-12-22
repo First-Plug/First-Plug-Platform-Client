@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { PageLayout, Button, useToast, useAlertStore } from "@/shared";
 import { Package, Wrench, Send, Plus } from "lucide-react";
 import {
@@ -9,6 +11,8 @@ import {
   useQuoteStore,
   QuoteServices,
 } from "@/features/quotes";
+import { useDateFilterStore } from "@/features/activity/store/dateFilter.store";
+import { startOfDay, endOfDay, subDays } from "date-fns";
 
 export default function NewQuoteRequestPage() {
   const { products, isAddingProduct, setIsAddingProduct, clearProducts } =
@@ -16,6 +20,9 @@ export default function NewQuoteRequestPage() {
   const { toast } = useToast();
   const { setAlert } = useAlertStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { resetToDefault } = useDateFilterStore();
 
   const handleAddProduct = () => {
     setIsAddingProduct(true);
@@ -44,7 +51,18 @@ export default function NewQuoteRequestPage() {
     try {
       await QuoteServices.submitQuoteRequest(products);
 
+      // Invalidar la query de quotes history
+      await queryClient.invalidateQueries({
+        queryKey: ["quotes-history"],
+      });
+
+      // Resetear el calendario a últimos 7 días
+      resetToDefault();
+
+      // Limpiar productos
       clearProducts();
+
+      // Mostrar alerta de éxito (la redirección se hará al cerrar la alerta)
       setAlert("quoteSubmittedSuccess");
     } catch (error: any) {
       console.error("Error submitting quote request:", error);

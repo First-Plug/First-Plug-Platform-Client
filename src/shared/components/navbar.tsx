@@ -38,6 +38,7 @@ const Titles = {
   create: "Create Product",
   offices: "Offices",
   "new-request": "New Quote Request",
+  history: "Quote History",
 } as const;
 
 export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
@@ -70,6 +71,10 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     // Verificar si la ruta incluye "new-request"
     if (pathArray.includes("new-request")) {
       return Titles["new-request"] ?? "";
+    }
+    // Verificar si la ruta incluye "history" dentro de quotes
+    if (pathArray.includes("history") && pathArray.includes("quotes")) {
+      return Titles["history"] ?? "";
     }
     return Titles[pathArray[2] as keyof typeof Titles] ?? "";
   };

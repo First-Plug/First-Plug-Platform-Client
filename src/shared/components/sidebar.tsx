@@ -30,6 +30,7 @@ import {
   Warehouse,
   PlusIcon,
   FileText,
+  History,
 } from "lucide-react";
 
 export const Sidebar = () => {
@@ -257,6 +258,15 @@ export const Sidebar = () => {
                   isActive:
                     pathArray.includes("quotes") &&
                     pathArray.includes("new-request"),
+                  onMouseEnter: () => {},
+                },
+                {
+                  title: "History",
+                  href: "/home/quotes/history",
+                  icon: <History size={18} />,
+                  isActive:
+                    pathArray.includes("quotes") &&
+                    pathArray.includes("history"),
                   onMouseEnter: () => {},
                 },
               ]}

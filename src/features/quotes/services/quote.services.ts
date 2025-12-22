@@ -1,5 +1,9 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
-import type { QuoteProduct, QuoteRequestPayload } from "../types/quote.types";
+import type {
+  QuoteProduct,
+  QuoteRequestPayload,
+  QuoteHistoryResponse,
+} from "../types/quote.types";
 import { transformProductToBackendFormat } from "../utils/quoteTransformations";
 
 export class QuoteServices {
@@ -48,6 +52,38 @@ export class QuoteServices {
         `${BASE_URL}/api/quotes`,
         payload
       );
+
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  static async findAll(
+    page: number = 1,
+    size: number = 10,
+    startDate?: string,
+    endDate?: string
+  ): Promise<QuoteHistoryResponse> {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+      });
+
+      if (startDate) {
+        params.append("startDate", startDate);
+      }
+
+      if (endDate) {
+        params.append("endDate", endDate);
+      }
+
+      const response = await HTTPRequests.get(
+        `${BASE_URL}/api/quotes?${params.toString()}`
+      );
+
+      console.log(response.data);
 
       return response.data;
     } catch (error: any) {

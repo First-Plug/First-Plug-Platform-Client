@@ -150,7 +150,7 @@ const SidebarSubLink = ({
     >
       <div
         className={`flex items-center gap-2 transition-all duration-300 ease-in-out ${
-          isActive ? "pl-[26px]" : "pl-[30px]"
+          isActive ? "pl-[20px]" : "pl-[20px]"
         }`}
       >
         {icon}
