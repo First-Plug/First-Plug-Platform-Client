@@ -21,6 +21,7 @@ import CreateShipmentsTable from "../components/table/shipments/CreateShipmentsT
 import UpdateOfficesTable from "../components/table/offices/UpdateOfficeTable";
 import CreateOfficesTable from "../components/table/offices/CreateOfficeTable";
 import DeleteOfficesTable from "../components/table/offices/DeleteOfficeTable";
+import CreateQuotesTable from "../components/table/quotes/CreateQuotesTable";
 
 export function useActivitySubtableLogic() {
   const getRowCanExpand = (row: Row<any>) => {
@@ -107,6 +108,10 @@ export function useActivitySubtableLogic() {
         );
       } else if (actionType === "delete" || actionType === "bulk-delete") {
         return <DeleteOfficesTable data={changes.oldData || []} />;
+      }
+    } else if (itemType === "quotes") {
+      if (actionType === "create" || actionType === "bulk-create") {
+        return <CreateQuotesTable data={changes.newData || []} />;
       }
     }
 

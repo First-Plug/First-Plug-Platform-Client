@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 
-import { SidebarLink } from "@/shared";
+import { SidebarLink, SidebarSection } from "@/shared";
 
 import {
   Button,
@@ -24,7 +24,14 @@ import { usePrefetchLatestActivity } from "@/features/activity";
 import Link from "next/link";
 import { usePrefetchShipments } from "@/features/shipments";
 import { useLogisticUser } from "@/shared/hooks/useLogisticUser";
-import { UserPlusIcon, UsersIcon, Warehouse, PlusIcon } from "lucide-react";
+import {
+  UserPlusIcon,
+  UsersIcon,
+  Warehouse,
+  PlusIcon,
+  FileText,
+  History,
+} from "lucide-react";
 
 export const Sidebar = () => {
   const path = usePathname();
@@ -236,6 +243,33 @@ export const Sidebar = () => {
               onMouseEnter={() => {
                 prefetchShipments();
               }}
+            />
+
+            <SidebarSection
+              isSmall={isSidebarSmall}
+              icon={<FileText size={20} />}
+              title="Quotes"
+              defaultExpanded={pathArray.includes("quotes")}
+              subSections={[
+                {
+                  title: "New Request",
+                  href: "/home/quotes/new-request",
+                  icon: <PlusIcon size={18} />,
+                  isActive:
+                    pathArray.includes("quotes") &&
+                    pathArray.includes("new-request"),
+                  onMouseEnter: () => {},
+                },
+                {
+                  title: "History",
+                  href: "/home/quotes/history",
+                  icon: <History size={18} />,
+                  isActive:
+                    pathArray.includes("quotes") &&
+                    pathArray.includes("history"),
+                  onMouseEnter: () => {},
+                },
+              ]}
             />
 
             <SidebarLink

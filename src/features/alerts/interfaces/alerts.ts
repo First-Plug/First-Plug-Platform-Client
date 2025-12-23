@@ -63,5 +63,6 @@ export const ALERTS_TYPES = [
   "errorOfficeDuplicateName",
   "errorOfficeHasProducts",
   "errorOfficeIsDefault",
+  "quoteSubmittedSuccess",
 ] as const;
 export type AlertType = (typeof ALERTS_TYPES)[number];

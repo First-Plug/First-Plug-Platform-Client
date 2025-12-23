@@ -20,6 +20,7 @@ export * from "./components/layout";
 export * from "./components/auth-form";
 export * from "./components/page-layout";
 export * from "./components/sidebar-link";
+export * from "./components/sidebar-section";
 
 export * from "./components/input-custom";
 
