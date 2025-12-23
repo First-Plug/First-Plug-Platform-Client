@@ -6,8 +6,17 @@ import {
   TableHead,
   TableCell,
 } from "@/shared";
-import { formatDate } from "@/shared";
 import { QuoteLocationWithCountry } from "./QuoteLocationWithCountry";
+
+const formatDateString = (date?: string) => {
+  if (!date) return "N/A";
+
+  const dateMatch = date.match(/^(\d{4})[-\/](\d{2})[-\/](\d{2})/);
+  if (!dateMatch) return "Invalid date";
+
+  const [, year, month, day] = dateMatch;
+  return `${day}/${month}/${year}`;
+};
 
 interface QuoteProduct {
   category: string;
@@ -76,19 +85,19 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
     <Table>
       <TableHeader>
         <TableRow className="bg-light-grey border-gray-200 rounded-md">
-          <TableHead className="w-40 px-4 py-3 border-r font-semibold text-black text-start">
+          <TableHead className="px-4 py-3 border-r w-40 font-semibold text-black text-start">
             Quote ID
           </TableHead>
-          <TableHead className="w-20 px-4 py-3 border-r font-semibold text-black text-start">
+          <TableHead className="px-4 py-3 border-r w-20 font-semibold text-black text-start">
             Type
           </TableHead>
-          <TableHead className="w-28 px-4 py-3 border-r font-semibold text-black text-start">
+          <TableHead className="px-4 py-3 border-r w-28 font-semibold text-black text-start">
             Category
           </TableHead>
-          <TableHead className="w-64 px-4 py-3 border-r font-semibold text-black text-start">
+          <TableHead className="px-4 py-3 border-r w-64 font-semibold text-black text-start">
             Details
           </TableHead>
-          <TableHead className="w-28 px-4 py-3 font-semibold text-black text-start">
+          <TableHead className="px-4 py-3 w-28 font-semibold text-black text-start">
             Date
           </TableHead>
         </TableRow>
@@ -103,34 +112,34 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
         ) : (
           flattenedRows.map((row, index) => (
             <TableRow key={index}>
-              <TableCell className="w-40 px-4 py-2 border-r text-xs">
+              <TableCell className="px-4 py-2 border-r w-40 text-xs">
                 {row.quoteId}
               </TableCell>
-              <TableCell className="w-20 px-4 py-2 border-r text-xs capitalize">
+              <TableCell className="px-4 py-2 border-r w-20 text-xs capitalize">
                 {row.type}
               </TableCell>
 
               {row.type === "product" ? (
                 <>
-                  <TableCell className="w-28 px-4 py-2 border-r text-xs">
+                  <TableCell className="px-4 py-2 border-r w-28 text-xs">
                     {row.category}
                   </TableCell>
-                  <TableCell className="w-64 px-4 py-2 border-r text-xs">
+                  <TableCell className="px-4 py-2 border-r w-64 text-xs">
                     <div className="flex flex-col gap-1">
                       <span>Qty: {row.quantity}</span>
                       <QuoteLocationWithCountry country={row.country} />
                     </div>
                   </TableCell>
-                  <TableCell className="w-28 px-4 py-2 text-xs">
-                    {row.deliveryDate ? formatDate(row.deliveryDate) : "N/A"}
+                  <TableCell className="px-4 py-2 w-28 text-xs">
+                    {formatDateString(row.deliveryDate)}
                   </TableCell>
                 </>
               ) : (
                 <>
-                  <TableCell className="w-28 px-4 py-2 border-r text-xs">
+                  <TableCell className="px-4 py-2 border-r w-28 text-xs">
                     {row.serviceCategory}
                   </TableCell>
-                  <TableCell className="w-64 px-4 py-2 border-r text-xs">
+                  <TableCell className="px-4 py-2 border-r w-64 text-xs">
                     <div className="flex flex-col gap-1">
                       {row.productSnapshot && (
                         <>
@@ -155,10 +164,8 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="w-28 px-4 py-2 text-xs">
-                    {row.issueStartDate
-                      ? formatDate(row.issueStartDate)
-                      : "N/A"}
+                  <TableCell className="px-4 py-2 w-28 text-xs">
+                    {formatDateString(row.issueStartDate)}
                   </TableCell>
                 </>
               )}

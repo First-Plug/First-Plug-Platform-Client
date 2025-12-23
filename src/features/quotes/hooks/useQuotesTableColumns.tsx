@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/shared";
-import { Eye, Package } from "lucide-react";
+import { DetailsButton } from "@/shared/components/Tables";
+import { Package } from "lucide-react";
 import type { QuoteTableWithDetailsDto } from "../types/quote.types";
 
 interface UseQuotesTableColumnsProps {
@@ -90,7 +90,7 @@ export const useQuotesTableColumns = ({
         size: 120,
         cell: ({ row }) => {
           const quote = row.original;
-          return <span>Items: {quote?.productCount ?? 0}</span>;
+          return <span>{quote?.productCount ?? 0}</span>;
         },
       },
       {
@@ -146,22 +146,7 @@ export const useQuotesTableColumns = ({
         header: "Actions",
         size: 120,
         cell: ({ row }) => {
-          const handleView = () => {
-            row.toggleExpanded();
-          };
-
-          return (
-            <div className="flex justify-center items-center">
-              <Button
-                variant="outline"
-                onClick={handleView}
-                className="flex items-center gap-1 hover:bg-transparent px-2 py-1"
-              >
-                <Eye className="w-4 h-4 text-blue hover:text-blue/70" />
-                <span className="text-blue text-sm">View</span>
-              </Button>
-            </div>
-          );
+          return row.getCanExpand() ? <DetailsButton row={row} /> : null;
         },
       },
     ];

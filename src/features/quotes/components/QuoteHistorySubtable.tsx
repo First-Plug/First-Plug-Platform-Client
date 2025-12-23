@@ -5,12 +5,15 @@ import {
   TableRow,
   TableHead,
   TableCell,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/shared";
 import type { QuoteHistoryProduct } from "../types/quote.types";
-import {
-  getCountryNameFromCode,
-  getCountryNameForFilter,
-} from "@/features/members/utils/countryUtils";
+import { countriesByCode } from "@/shared/constants/country-codes";
+import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 
 interface QuoteHistorySubtableProps {
   products: QuoteHistoryProduct[];
@@ -18,12 +21,11 @@ interface QuoteHistorySubtableProps {
 
 const formatDate = (date?: string) => {
   if (!date) return "N/A";
-  const parsed = new Date(date);
-  if (isNaN(parsed.getTime())) return "Invalid date";
 
-  const day = String(parsed.getDate()).padStart(2, "0");
-  const month = String(parsed.getMonth() + 1).padStart(2, "0");
-  const year = parsed.getFullYear();
+  const dateMatch = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!dateMatch) return "Invalid date";
+
+  const [, year, month, day] = dateMatch;
   return `${day}/${month}/${year}`;
 };
 
@@ -32,12 +34,35 @@ export const QuoteHistorySubtable = ({
 }: QuoteHistorySubtableProps) => {
   const rows = Array.isArray(products) ? products : [];
 
-  const resolveCountry = (country?: string) => {
-    if (!country) return null;
-    const fromCode = getCountryNameFromCode(country);
-    if (fromCode) return fromCode;
-    const normalized = getCountryNameForFilter(country);
-    return normalized || country;
+  const renderCountryAndCity = (country?: string, city?: string) => {
+    if (!country) {
+      return <span>N/A</span>;
+    }
+
+    const normalizedCountry = normalizeCountryCode(country);
+    const countryName = normalizedCountry
+      ? countriesByCode[normalizedCountry] || country
+      : country;
+
+    return (
+      <div className="flex items-center gap-2">
+        {normalizedCountry && (
+          <TooltipProvider>
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <span>
+                  <CountryFlag countryName={normalizedCountry} size={15} />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-blue/80 text-white text-xs">
+                {countryName}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+        <span>{[countryName, city].filter(Boolean).join(" - ") || "N/A"}</span>
+      </div>
+    );
   };
 
   return (
@@ -81,12 +106,7 @@ export const QuoteHistorySubtable = ({
                 {item.quantity ?? 0}
               </TableCell>
               <TableCell className="px-4 py-2 border-r w-40 text-xs">
-                {(() => {
-                  const countryName = resolveCountry(item.country);
-                  const city = item.city;
-                  const parts = [countryName, city].filter(Boolean);
-                  return parts.length > 0 ? parts.join(" - ") : "N/A";
-                })()}
+                {renderCountryAndCity(item.country, item.city)}
               </TableCell>
               <TableCell className="px-4 py-2 w-32 text-xs">
                 {formatDate(item.deliveryDate)}
