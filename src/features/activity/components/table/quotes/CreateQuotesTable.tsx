@@ -32,6 +32,10 @@ interface QuoteService {
   impactLevel?: string;
   issueStartDate?: string;
   productSnapshot?: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
     serialNumber: string;
     location: string;
     assignedTo: string;
@@ -144,9 +148,27 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                       {row.productSnapshot && (
                         <>
                           <span className="font-semibold">
+                            {row.productSnapshot.category}
+                          </span>
+                          {(row.productSnapshot.brand ||
+                            row.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.productSnapshot.brand}
+                              {row.productSnapshot.brand &&
+                                row.productSnapshot.model &&
+                                " - "}
+                              {row.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
                             SN: {row.productSnapshot.serialNumber}
                           </span>
-                          <span>
+                          <span className="text-gray-600">
                             {row.productSnapshot.assignedTo} (
                             {row.productSnapshot.location})
                           </span>
