@@ -147,8 +147,7 @@ export const useQuotesTableColumns = ({
         size: 120,
         cell: ({ row }) => {
           const handleView = () => {
-            // TODO: Implementar vista
-            console.log("View quote:", row.original._id);
+            row.toggleExpanded();
           };
 
           return (

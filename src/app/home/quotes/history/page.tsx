@@ -12,6 +12,7 @@ import { DataTable } from "@/features/fp-tables";
 import {
   useQuotesTable,
   useQuotesTableColumns,
+  useQuotesSubtableLogic,
   QuotesTableActions,
 } from "@/features/quotes";
 
@@ -29,6 +30,9 @@ export default function QuoteHistoryPage() {
     tableContainerRef,
     useQuotesTableFilterStore,
   } = useQuotesTable();
+
+  const { getRowCanExpand, renderSubComponent, getRowId } =
+    useQuotesSubtableLogic();
 
   const columns = useQuotesTableColumns({ quotes: tableData });
 
@@ -66,6 +70,9 @@ export default function QuoteHistoryPage() {
                     useFilterStore={useQuotesTableFilterStore}
                     rowHeight={60}
                     scrollContainerRef={tableContainerRef}
+                    getRowCanExpand={getRowCanExpand}
+                    renderSubComponent={renderSubComponent}
+                    getRowId={getRowId}
                     adaptiveHeight={false}
                     enableSnapScroll={false}
                   />

@@ -9,3 +9,5 @@ export * from "./services/quote.services";
 export * from "./hooks/useFetchQuotesHistory";
 export * from "./hooks/useQuotesTable";
 export * from "./hooks/useQuotesTableColumns";
+export * from "./hooks/useQuotesSubtableLogic";
+export * from "./components/QuoteHistorySubtable";

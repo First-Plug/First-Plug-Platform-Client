@@ -68,6 +68,26 @@ export interface QuoteStore {
   setEditingProductId: (id: string | undefined) => void;
 }
 
+export interface QuoteHistoryProduct {
+  quantity: number;
+  country: string;
+  city?: string;
+  deliveryDate?: string;
+  comments?: string;
+  otherSpecifications?: string;
+  category: string;
+  os?: string;
+  brand?: string[];
+  model?: string[];
+  processor?: string[];
+  ram?: string[];
+  storage?: string[];
+  screenSize?: string[];
+  extendedWarranty?: boolean;
+  extendedWarrantyYears?: number;
+  deviceEnrollment?: boolean;
+}
+
 export interface QuoteTableWithDetailsDto {
   _id: string;
   requestId: string;
@@ -81,7 +101,7 @@ export interface QuoteTableWithDetailsDto {
   tenantId: string;
   tenantName: string;
   userEmail: string;
-  products: any[];
+  products: QuoteHistoryProduct[];
   updatedAt: string;
 }
 

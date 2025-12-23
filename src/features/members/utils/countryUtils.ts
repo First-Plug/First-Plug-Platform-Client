@@ -320,3 +320,17 @@ export function getCountryDisplay(
     name: normalizedName,
   };
 }
+
+// Obtener nombre de país a partir del código (ej: "AR" -> "Argentina")
+export function getCountryNameFromCode(code: string): string | null {
+  if (!code) return null;
+  const upper = code.trim().toUpperCase();
+
+  for (const [country, countryCode] of Object.entries(countryCodes)) {
+    if (countryCode.toUpperCase() === upper) {
+      return country;
+    }
+  }
+
+  return null;
+}

@@ -83,8 +83,6 @@ export class QuoteServices {
         `${BASE_URL}/api/quotes?${params.toString()}`
       );
 
-      console.log(response.data);
-
       return response.data;
     } catch (error: any) {
       throw error;

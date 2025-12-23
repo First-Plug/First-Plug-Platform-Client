@@ -84,7 +84,7 @@ export default function NewQuoteRequestPage() {
 
   return (
     <PageLayout>
-      <div className="flex flex-col mx-auto p-6 w-5/6 h-full">
+      <div className="flex flex-col mx-auto p-6 w-10/12 h-full">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           {!isAddingProduct && (
