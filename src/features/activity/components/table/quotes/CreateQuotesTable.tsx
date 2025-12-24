@@ -172,16 +172,16 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             {row.productSnapshot.assignedTo} (
                             {row.productSnapshot.location})
                           </span>
+                          {row.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={row.productSnapshot.countryCode}
+                            />
+                          )}
                         </>
                       )}
                       {row.issues && row.issues.length > 0 && (
                         <span className="text-gray-600">
                           Issues: {row.issues.join(", ")}
-                        </span>
-                      )}
-                      {row.impactLevel && (
-                        <span className="text-xs">
-                          Impact: {row.impactLevel}
                         </span>
                       )}
                     </div>
