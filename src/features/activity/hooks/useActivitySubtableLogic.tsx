@@ -22,6 +22,7 @@ import UpdateOfficesTable from "../components/table/offices/UpdateOfficeTable";
 import CreateOfficesTable from "../components/table/offices/CreateOfficeTable";
 import DeleteOfficesTable from "../components/table/offices/DeleteOfficeTable";
 import CreateQuotesTable from "../components/table/quotes/CreateQuotesTable";
+import CancelQuotesTable from "../components/table/quotes/CancelQuotesTable";
 
 export function useActivitySubtableLogic() {
   const getRowCanExpand = (row: Row<any>) => {
@@ -112,6 +113,10 @@ export function useActivitySubtableLogic() {
     } else if (itemType === "quotes") {
       if (actionType === "create" || actionType === "bulk-create") {
         return <CreateQuotesTable data={changes.newData || []} />;
+      } else if (actionType === "cancel") {
+        return (
+          <CancelQuotesTable data={changes || { oldData: {}, newData: {} }} />
+        );
       }
     }
 
