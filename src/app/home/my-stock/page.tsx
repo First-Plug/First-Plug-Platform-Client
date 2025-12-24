@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { PageLayout, BarLoader, Button, PaginationAdvanced } from "@/shared";
 
 import { DataTable } from "@/features/fp-tables";
@@ -17,7 +18,8 @@ import {
 
 export default function MyAssets() {
   const { data: assets, isLoading } = useGetTableAssets();
-  const { setSelectedCountry } = useProductStore();
+  const { setSelectedCountry, selectedSerialNumber, setSelectedSerialNumber } = useProductStore();
+  const prevSelectedSerialNumberRef = useRef<string | null>(null);
 
   const {
     pageIndex,
@@ -45,7 +47,37 @@ export default function MyAssets() {
     handleClearAllFilters();
     handleClearSubtableFilters();
     setSelectedCountry(null);
+    setSelectedSerialNumber(null);
   };
+
+  // Expandir automáticamente cuando hay un único resultado después de filtrar por serial number
+  useEffect(() => {
+    // Solo expandir si hay un serial number seleccionado
+    if (selectedSerialNumber && selectedSerialNumber.trim() !== "") {
+      // Verificar si hay exactamente un asset filtrado
+      if (filteredAssets.length === 1) {
+        const singleAsset = filteredAssets[0];
+        const rowId = getRowId(singleAsset);
+        
+        if (rowId) {
+          // Expandir la fila única
+          useAssetsTableFilterStore.getState().setExpandedRows({ [rowId]: true });
+        }
+      } else {
+        // Si hay más de un resultado o ninguno, colapsar todas las filas
+        useAssetsTableFilterStore.getState().collapseAllRows();
+      }
+    } else {
+      // Si no hay serial number seleccionado, colapsar todas las filas
+      // Solo si el cambio es desde un serial number a ninguno
+      if (prevSelectedSerialNumberRef.current && prevSelectedSerialNumberRef.current.trim() !== "") {
+        useAssetsTableFilterStore.getState().collapseAllRows();
+      }
+    }
+    
+    prevSelectedSerialNumberRef.current = selectedSerialNumber;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSerialNumber, filteredAssets]);
 
   return (
     <PageLayout>
