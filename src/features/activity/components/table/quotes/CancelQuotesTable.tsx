@@ -16,9 +16,20 @@ interface QuoteProduct {
   deliveryDate?: string;
 }
 
+interface EnrolledDevice {
+  category?: string;
+  name?: string;
+  brand?: string;
+  model?: string;
+  serialNumber: string;
+  location: string;
+  assignedTo: string;
+  countryCode: string;
+}
+
 interface QuoteService {
   serviceCategory: string;
-  issues: string[];
+  issues?: string[];
   impactLevel?: string;
   issueStartDate?: string;
   productSnapshot?: {
@@ -30,6 +41,8 @@ interface QuoteService {
     assignedTo: string;
     countryCode: string;
   };
+  enrolledDevices?: EnrolledDevice[];
+  additionalDetails?: string;
 }
 
 interface Quote {
@@ -66,11 +79,29 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
   // Add service rows
   if (oldData.services && oldData.services.length > 0) {
     oldData.services.forEach((service) => {
-      flattenedRows.push({
-        quoteId: oldData.requestId,
-        type: "service",
-        ...service,
-      });
+      // For Enrollment, create a row for each enrolled device
+      if (
+        service.serviceCategory === "Enrollment" &&
+        service.enrolledDevices &&
+        service.enrolledDevices.length > 0
+      ) {
+        service.enrolledDevices.forEach((device) => {
+          flattenedRows.push({
+            quoteId: oldData.requestId,
+            type: "service",
+            serviceCategory: service.serviceCategory,
+            enrolledDevice: device,
+            additionalDetails: service.additionalDetails,
+          });
+        });
+      } else {
+        // For other services (IT Support, etc.)
+        flattenedRows.push({
+          quoteId: oldData.requestId,
+          type: "service",
+          ...service,
+        });
+      }
     });
   }
 
@@ -134,7 +165,45 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                   </TableCell>
                   <TableCell className="w-64 px-4 py-2 border-r text-xs">
                     <div className="flex flex-col gap-1">
-                      {row.productSnapshot && (
+                      {row.enrolledDevice ? (
+                        <>
+                          <span className="font-semibold">
+                            {row.enrolledDevice.category}
+                          </span>
+                          {(row.enrolledDevice.brand ||
+                            row.enrolledDevice.model) && (
+                            <span className="text-gray-700">
+                              {row.enrolledDevice.brand}
+                              {row.enrolledDevice.brand &&
+                                row.enrolledDevice.model &&
+                                " - "}
+                              {row.enrolledDevice.model}
+                            </span>
+                          )}
+                          {row.enrolledDevice.name && (
+                            <span className="text-gray-600 italic">
+                              {row.enrolledDevice.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN: {row.enrolledDevice.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            {row.enrolledDevice.assignedTo} (
+                            {row.enrolledDevice.location})
+                          </span>
+                          {row.enrolledDevice.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={row.enrolledDevice.countryCode}
+                            />
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
+                      ) : row.productSnapshot ? (
                         <>
                           <span className="font-semibold">
                             {row.productSnapshot.category}
@@ -162,7 +231,7 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                             />
                           )}
                         </>
-                      )}
+                      ) : null}
                       {row.issues && row.issues.length > 0 && (
                         <span className="text-gray-600">
                           Issues: {row.issues.join(", ")}
