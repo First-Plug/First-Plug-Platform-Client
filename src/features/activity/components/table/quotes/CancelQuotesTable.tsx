@@ -27,6 +27,28 @@ interface EnrolledDevice {
   countryCode: string;
 }
 
+interface DataWipeAsset {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    countryCode: string;
+  };
+  desirableDate?: string;
+  destination?: {
+    destinationType?: string;
+    warehouse?: {
+      warehouseName: string;
+      countryCode: string;
+    };
+  };
+}
+
 interface QuoteService {
   serviceCategory: string;
   issues?: string[];
@@ -42,6 +64,7 @@ interface QuoteService {
     countryCode: string;
   };
   enrolledDevices?: EnrolledDevice[];
+  assets?: DataWipeAsset[];
   additionalDetails?: string;
 }
 
@@ -91,6 +114,21 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
             type: "service",
             serviceCategory: service.serviceCategory,
             enrolledDevice: device,
+            additionalDetails: service.additionalDetails,
+          });
+        });
+      } else if (
+        service.serviceCategory === "Data Wipe" &&
+        service.assets &&
+        service.assets.length > 0
+      ) {
+        // For Data Wipe, create a row for each asset
+        service.assets.forEach((asset) => {
+          flattenedRows.push({
+            quoteId: oldData.requestId,
+            type: "service",
+            serviceCategory: service.serviceCategory,
+            dataWipeAsset: asset,
             additionalDetails: service.additionalDetails,
           });
         });
@@ -165,7 +203,69 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                   </TableCell>
                   <TableCell className="w-64 px-4 py-2 border-r text-xs">
                     <div className="flex flex-col gap-1">
-                      {row.enrolledDevice ? (
+                      {row.dataWipeAsset ? (
+                        <>
+                          <span className="font-semibold">
+                            {row.dataWipeAsset.productSnapshot.category}
+                          </span>
+                          {(row.dataWipeAsset.productSnapshot.brand ||
+                            row.dataWipeAsset.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.dataWipeAsset.productSnapshot.brand}
+                              {row.dataWipeAsset.productSnapshot.brand &&
+                                row.dataWipeAsset.productSnapshot.model &&
+                                " - "}
+                              {row.dataWipeAsset.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.dataWipeAsset.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.dataWipeAsset.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN: {row.dataWipeAsset.productSnapshot.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            Current:{" "}
+                            {row.dataWipeAsset.productSnapshot.location}
+                          </span>
+                          {row.dataWipeAsset.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.dataWipeAsset.productSnapshot.countryCode
+                              }
+                            />
+                          )}
+                          {row.dataWipeAsset.destination?.warehouse && (
+                            <>
+                              <span className="text-gray-600 font-semibold mt-1">
+                                New Location:
+                              </span>
+                              <span className="text-gray-600">
+                                {
+                                  row.dataWipeAsset.destination.warehouse
+                                    .warehouseName
+                                }
+                              </span>
+                              {row.dataWipeAsset.destination.warehouse
+                                .countryCode && (
+                                <QuoteLocationWithCountry
+                                  country={
+                                    row.dataWipeAsset.destination.warehouse
+                                      .countryCode
+                                  }
+                                />
+                              )}
+                            </>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
+                      ) : row.enrolledDevice ? (
                         <>
                           <span className="font-semibold">
                             {row.enrolledDevice.category}
@@ -240,7 +340,11 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                     </div>
                   </TableCell>
                   <TableCell className="w-28 px-4 py-2 text-xs">
-                    {row.issueStartDate
+                    {row.dataWipeAsset
+                      ? row.dataWipeAsset.desirableDate
+                        ? formatDate(row.dataWipeAsset.desirableDate)
+                        : "N/A"
+                      : row.issueStartDate
                       ? formatDate(row.issueStartDate)
                       : "N/A"}
                   </TableCell>
