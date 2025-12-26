@@ -33,11 +33,15 @@ export function useActivityTableColumns() {
           }
 
           if (itemType === "quotes") {
-            return (
+            const productCount =
               changes.newData?.productCount ||
               changes.newData?.products?.length ||
-              1
-            );
+              0;
+            const serviceCount =
+              changes.newData?.serviceCount ||
+              changes.newData?.services?.length ||
+              0;
+            return productCount + serviceCount || 1;
           }
 
           return changes?.newData?.length || changes?.oldData?.length || 1;

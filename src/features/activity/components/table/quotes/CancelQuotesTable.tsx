@@ -6,17 +6,8 @@ import {
   TableHead,
   TableCell,
 } from "@/shared";
+import { formatDate } from "@/shared";
 import { QuoteLocationWithCountry } from "./QuoteLocationWithCountry";
-
-const formatDateString = (date?: string) => {
-  if (!date) return "N/A";
-
-  const dateMatch = date.match(/^(\d{4})[-\/](\d{2})[-\/](\d{2})/);
-  if (!dateMatch) return "Invalid date";
-
-  const [, year, month, day] = dateMatch;
-  return `${day}/${month}/${year}`;
-};
 
 interface QuoteProduct {
   category: string;
@@ -28,12 +19,10 @@ interface QuoteProduct {
 interface QuoteService {
   serviceCategory: string;
   issues: string[];
-  description?: string;
   impactLevel?: string;
   issueStartDate?: string;
   productSnapshot?: {
     category?: string;
-    name?: string;
     brand?: string;
     model?: string;
     serialNumber: string;
@@ -45,63 +34,63 @@ interface QuoteService {
 
 interface Quote {
   requestId: string;
+  status?: string;
   products?: QuoteProduct[];
   services?: QuoteService[];
 }
 
-interface CreateQuotesTableProps {
-  data: Quote | Quote[];
+interface CancelQuotesTableProps {
+  data: {
+    oldData: Quote;
+    newData: Quote;
+  };
 }
 
-const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
-  const normalizedData: Quote[] = Array.isArray(data) ? data : [data];
+const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
+  const { oldData, newData } = data;
 
-  // Flatten products and services with their quote ID
-  const flattenedRows = normalizedData.flatMap((quote) => {
-    const rows: any[] = [];
+  // Flatten products and services from oldData
+  const flattenedRows = [];
 
-    // Add product rows
-    if (quote.products && quote.products.length > 0) {
-      quote.products.forEach((product) => {
-        rows.push({
-          quoteId: quote.requestId,
-          type: "product",
-          ...product,
-        });
+  // Add product rows
+  if (oldData.products && oldData.products.length > 0) {
+    oldData.products.forEach((product) => {
+      flattenedRows.push({
+        quoteId: oldData.requestId,
+        type: "product",
+        ...product,
       });
-    }
+    });
+  }
 
-    // Add service rows
-    if (quote.services && quote.services.length > 0) {
-      quote.services.forEach((service) => {
-        rows.push({
-          quoteId: quote.requestId,
-          type: "service",
-          ...service,
-        });
+  // Add service rows
+  if (oldData.services && oldData.services.length > 0) {
+    oldData.services.forEach((service) => {
+      flattenedRows.push({
+        quoteId: oldData.requestId,
+        type: "service",
+        ...service,
       });
-    }
-
-    return rows;
-  });
+    });
+  }
 
   return (
     <Table>
       <TableHeader>
         <TableRow className="bg-light-grey border-gray-200 rounded-md">
-          <TableHead className="px-4 py-3 border-r w-40 font-semibold text-black text-start">
+          <TableHead className="w-40 px-4 py-3 border-r font-semibold text-black text-start">
             Quote ID
           </TableHead>
-          <TableHead className="px-4 py-3 border-r w-20 font-semibold text-black text-start">
+          <TableHead className="w-20 px-4 py-3 border-r font-semibold text-black text-start">
             Type
           </TableHead>
-          <TableHead className="px-4 py-3 border-r w-28 font-semibold text-black text-start">
+          <TableHead className="w-28 px-4 py-3 border-r font-semibold text-black text-start">
             Category
           </TableHead>
-          <TableHead className="px-4 py-3 border-r w-64 font-semibold text-black text-start">
+          <TableHead className="w-64 px-4 py-3 border-r font-semibold text-black text-start">
             Details
           </TableHead>
-          <TableHead className="px-4 py-3 w-28 font-semibold text-black text-start">
+          <TableHead className="w-28 px-4 py-3 font-semibold text-black text-start">
             Date
           </TableHead>
         </TableRow>
@@ -116,34 +105,34 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
         ) : (
           flattenedRows.map((row, index) => (
             <TableRow key={index}>
-              <TableCell className="px-4 py-2 border-r w-40 text-xs">
+              <TableCell className="w-40 px-4 py-2 border-r text-xs">
                 {row.quoteId}
               </TableCell>
-              <TableCell className="px-4 py-2 border-r w-20 text-xs capitalize">
+              <TableCell className="w-20 px-4 py-2 border-r text-xs capitalize">
                 {row.type}
               </TableCell>
 
               {row.type === "product" ? (
                 <>
-                  <TableCell className="px-4 py-2 border-r w-28 text-xs">
+                  <TableCell className="w-28 px-4 py-2 border-r text-xs">
                     {row.category}
                   </TableCell>
-                  <TableCell className="px-4 py-2 border-r w-64 text-xs">
+                  <TableCell className="w-64 px-4 py-2 border-r text-xs">
                     <div className="flex flex-col gap-1">
                       <span>Qty: {row.quantity}</span>
                       <QuoteLocationWithCountry country={row.country} />
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-2 w-28 text-xs">
-                    {formatDateString(row.deliveryDate)}
+                  <TableCell className="w-28 px-4 py-2 text-xs">
+                    {row.deliveryDate ? formatDate(row.deliveryDate) : "N/A"}
                   </TableCell>
                 </>
               ) : (
                 <>
-                  <TableCell className="px-4 py-2 border-r w-28 text-xs">
+                  <TableCell className="w-28 px-4 py-2 border-r text-xs">
                     {row.serviceCategory}
                   </TableCell>
-                  <TableCell className="px-4 py-2 border-r w-64 text-xs">
+                  <TableCell className="w-64 px-4 py-2 border-r text-xs">
                     <div className="flex flex-col gap-1">
                       {row.productSnapshot && (
                         <>
@@ -158,11 +147,6 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                                 row.productSnapshot.model &&
                                 " - "}
                               {row.productSnapshot.model}
-                            </span>
-                          )}
-                          {row.productSnapshot.name && (
-                            <span className="text-gray-600 italic">
-                              {row.productSnapshot.name}
                             </span>
                           )}
                           <span className="text-gray-600">
@@ -186,8 +170,10 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-2 w-28 text-xs">
-                    {formatDateString(row.issueStartDate)}
+                  <TableCell className="w-28 px-4 py-2 text-xs">
+                    {row.issueStartDate
+                      ? formatDate(row.issueStartDate)
+                      : "N/A"}
                   </TableCell>
                 </>
               )}
@@ -199,4 +185,4 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
   );
 };
 
-export default CreateQuotesTable;
+export default CancelQuotesTable;
