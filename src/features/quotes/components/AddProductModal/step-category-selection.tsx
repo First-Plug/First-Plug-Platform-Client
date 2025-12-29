@@ -17,13 +17,13 @@ const categories: Category[] = [
     id: "computer",
     name: "Computer",
     icon: <Icons.LapTop />,
-    enabled: true, // Solo Computer habilitado por ahora
+    enabled: true,
   },
   {
     id: "monitor",
     name: "Monitor",
     icon: <Icons.MonitorIcon />,
-    enabled: false,
+    enabled: true,
   },
   {
     id: "audio",

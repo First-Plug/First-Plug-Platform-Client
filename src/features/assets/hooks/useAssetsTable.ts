@@ -9,9 +9,10 @@ import { useProductStore } from "../store/product.store";
 const useAssetsTableFilterStore = createFilterStore();
 
 export function useAssetsTable(assets: ProductTable[]) {
-  const { onlyAvailable, selectedCountry } = useProductStore();
+  const { onlyAvailable, selectedCountry, selectedSerialNumber } = useProductStore();
   const prevOnlyAvailableRef = useRef(onlyAvailable);
   const prevSelectedCountryRef = useRef(selectedCountry);
+  const prevSelectedSerialNumberRef = useRef(selectedSerialNumber);
 
   const filters = useAssetsTableFilterStore((s) => s.filters);
   const setOnFiltersChange = useAssetsTableFilterStore(
@@ -51,6 +52,13 @@ export function useAssetsTable(assets: ProductTable[]) {
       prevSelectedCountryRef.current = selectedCountry;
     }
   }, [selectedCountry, resetToFirstPage]);
+
+  useEffect(() => {
+    if (prevSelectedSerialNumberRef.current !== selectedSerialNumber) {
+      resetToFirstPage();
+      prevSelectedSerialNumberRef.current = selectedSerialNumber;
+    }
+  }, [selectedSerialNumber, resetToFirstPage]);
 
   const filteredAssets = useMemo(() => {
     // Primero aplicar filtros de la tabla sobre todos los assets
@@ -119,9 +127,33 @@ export function useAssetsTable(assets: ProductTable[]) {
         .filter((asset) => asset !== null) as ProductTable[];
     }
 
-    let finalFiltered = countryFiltered;
+    let serialNumberFiltered = countryFiltered;
+    if (selectedSerialNumber) {
+      const searchTerm = selectedSerialNumber.toLowerCase().trim();
+      serialNumberFiltered = countryFiltered
+        .map((asset) => {
+          if (!asset.products || asset.products.length === 0) {
+            return null;
+          }
+
+          const productsWithSerial = asset.products.filter((product) => {
+            const productSerialNumber = (product.serialNumber || "").toLowerCase();
+            return productSerialNumber.includes(searchTerm);
+          });
+
+          if (productsWithSerial.length === 0) return null;
+
+          return {
+            ...asset,
+            products: productsWithSerial,
+          };
+        })
+        .filter((asset) => asset !== null) as ProductTable[];
+    }
+
+    let finalFiltered = serialNumberFiltered;
     if (onlyAvailable) {
-      finalFiltered = countryFiltered
+      finalFiltered = serialNumberFiltered
         .map((asset) => {
           if (!asset.products || asset.products.length === 0) {
             return null;
@@ -142,7 +174,7 @@ export function useAssetsTable(assets: ProductTable[]) {
     }
 
     return finalFiltered;
-  }, [assets, filters, onlyAvailable, selectedCountry]);
+  }, [assets, filters, onlyAvailable, selectedCountry, selectedSerialNumber]);
 
   const paginatedAssets = useMemo(() => {
     if (!filteredAssets) return [];

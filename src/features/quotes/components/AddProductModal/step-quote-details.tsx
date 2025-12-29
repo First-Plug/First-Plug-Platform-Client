@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { format, startOfToday, isBefore } from "date-fns";
+import { format, startOfToday, isBefore, parse } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { COUNTRIES } from "@/shared/constants/countries";
 import { Input } from "@/shared/components/ui/input";
@@ -35,11 +35,19 @@ export const StepQuoteDetails: React.FC<StepQuoteDetailsProps> = ({
   // Obtener la fecha de hoy en la zona horaria local (sin tiempo)
   const today = startOfToday();
 
-  const [date, setDate] = React.useState<Date | undefined>(
-    productData.requiredDeliveryDate
-      ? new Date(productData.requiredDeliveryDate)
-      : undefined
-  );
+  const [date, setDate] = React.useState<Date | undefined>(() => {
+    if (!productData.requiredDeliveryDate) return undefined;
+
+    // Parsear fecha en formato yyyy-mm-dd manualmente para evitar problemas de zona horaria
+    const dateMatch = productData.requiredDeliveryDate.match(
+      /^(\d{4})[-\/](\d{2})[-\/](\d{2})/
+    );
+    if (!dateMatch) return undefined;
+
+    const [, year, month, day] = dateMatch;
+    // Crear fecha en zona horaria local usando parse de date-fns
+    return parse(`${year}-${month}-${day}`, "yyyy-MM-dd", new Date());
+  });
   const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
