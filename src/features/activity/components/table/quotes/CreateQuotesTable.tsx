@@ -78,6 +78,28 @@ interface DestructionProduct {
   };
 }
 
+interface BuybackProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    countryCode: string;
+  };
+  buybackDetails?: {
+    generalFunctionality?: string;
+    batteryCycles?: number;
+    aestheticDetails?: string;
+    hasCharger?: boolean;
+    chargerWorks?: boolean;
+    additionalComments?: string;
+  };
+}
+
 interface QuoteService {
   serviceCategory: string;
   issues?: string[];
@@ -96,9 +118,10 @@ interface QuoteService {
   };
   enrolledDevices?: EnrolledDevice[];
   assets?: DataWipeAsset[];
-  products?: DestructionProduct[];
+  products?: DestructionProduct[] | BuybackProduct[];
   requiresCertificate?: boolean;
   comments?: string;
+  additionalInfo?: string;
   additionalDetails?: string;
 }
 
@@ -177,6 +200,21 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
               destructionProduct: product,
               requiresCertificate: service.requiresCertificate,
               comments: service.comments,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Buyback" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Buyback, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              buybackProduct: product,
+              additionalInfo: service.additionalInfo,
             });
           });
         } else {
@@ -384,6 +422,97 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                           {row.comments && (
                             <span className="text-gray-500 text-xs italic">
                               {row.comments}
+                            </span>
+                          )}
+                        </>
+                      ) : row.buybackProduct ? (
+                        <>
+                          <span className="font-semibold">
+                            {row.buybackProduct.productSnapshot.category}
+                          </span>
+                          {(row.buybackProduct.productSnapshot.brand ||
+                            row.buybackProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.buybackProduct.productSnapshot.brand}
+                              {row.buybackProduct.productSnapshot.brand &&
+                                row.buybackProduct.productSnapshot.model &&
+                                " - "}
+                              {row.buybackProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.buybackProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.buybackProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN:{" "}
+                            {row.buybackProduct.productSnapshot.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            {row.buybackProduct.productSnapshot.assignedTo} (
+                            {row.buybackProduct.productSnapshot.location})
+                          </span>
+                          {row.buybackProduct.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.buybackProduct.productSnapshot.countryCode
+                              }
+                            />
+                          )}
+                          {row.buybackProduct.buybackDetails && (
+                            <>
+                              {row.buybackProduct.buybackDetails
+                                .generalFunctionality && (
+                                <span className="text-gray-600 text-xs">
+                                  Functionality:{" "}
+                                  {
+                                    row.buybackProduct.buybackDetails
+                                      .generalFunctionality
+                                  }
+                                </span>
+                              )}
+                              {row.buybackProduct.buybackDetails
+                                .batteryCycles !== undefined && (
+                                <span className="text-gray-600 text-xs">
+                                  Battery Cycles:{" "}
+                                  {
+                                    row.buybackProduct.buybackDetails
+                                      .batteryCycles
+                                  }
+                                </span>
+                              )}
+                              {row.buybackProduct.buybackDetails
+                                .aestheticDetails && (
+                                <span className="text-gray-600 text-xs">
+                                  Aesthetic:{" "}
+                                  {
+                                    row.buybackProduct.buybackDetails
+                                      .aestheticDetails
+                                  }
+                                </span>
+                              )}
+                              {row.buybackProduct.buybackDetails.hasCharger && (
+                                <span className="text-gray-600 text-xs">
+                                  ✓ Has Charger
+                                  {row.buybackProduct.buybackDetails
+                                    .chargerWorks && " (Works)"}
+                                </span>
+                              )}
+                              {row.buybackProduct.buybackDetails
+                                .additionalComments && (
+                                <span className="text-gray-500 text-xs italic">
+                                  {
+                                    row.buybackProduct.buybackDetails
+                                      .additionalComments
+                                  }
+                                </span>
+                              )}
+                            </>
+                          )}
+                          {row.additionalInfo && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalInfo}
                             </span>
                           )}
                         </>
