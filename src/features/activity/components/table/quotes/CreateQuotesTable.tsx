@@ -64,6 +64,20 @@ interface DataWipeAsset {
   };
 }
 
+interface DestructionProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    countryCode: string;
+  };
+}
+
 interface QuoteService {
   serviceCategory: string;
   issues?: string[];
@@ -82,6 +96,9 @@ interface QuoteService {
   };
   enrolledDevices?: EnrolledDevice[];
   assets?: DataWipeAsset[];
+  products?: DestructionProduct[];
+  requiresCertificate?: boolean;
+  comments?: string;
   additionalDetails?: string;
 }
 
@@ -144,6 +161,22 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
               serviceCategory: service.serviceCategory,
               dataWipeAsset: asset,
               additionalDetails: service.additionalDetails,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Destruction and Recycling" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Destruction and Recycling, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              destructionProduct: product,
+              requiresCertificate: service.requiresCertificate,
+              comments: service.comments,
             });
           });
         } else {
@@ -300,6 +333,57 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                           {row.additionalDetails && (
                             <span className="text-gray-500 text-xs italic">
                               {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
+                      ) : row.destructionProduct ? (
+                        <>
+                          <span className="font-semibold">
+                            {row.destructionProduct.productSnapshot.category}
+                          </span>
+                          {(row.destructionProduct.productSnapshot.brand ||
+                            row.destructionProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.destructionProduct.productSnapshot.brand}
+                              {row.destructionProduct.productSnapshot.brand &&
+                                row.destructionProduct.productSnapshot.model &&
+                                " - "}
+                              {row.destructionProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.destructionProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.destructionProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN:{" "}
+                            {
+                              row.destructionProduct.productSnapshot
+                                .serialNumber
+                            }
+                          </span>
+                          <span className="text-gray-600">
+                            {row.destructionProduct.productSnapshot.assignedTo}{" "}
+                            ({row.destructionProduct.productSnapshot.location})
+                          </span>
+                          {row.destructionProduct.productSnapshot
+                            .countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.destructionProduct.productSnapshot
+                                  .countryCode
+                              }
+                            />
+                          )}
+                          {row.requiresCertificate && (
+                            <span className="text-gray-600 font-semibold">
+                              ✓ Certificate Required
+                            </span>
+                          )}
+                          {row.comments && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.comments}
                             </span>
                           )}
                         </>
