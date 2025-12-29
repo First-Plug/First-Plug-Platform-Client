@@ -57,6 +57,10 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
     onDataChange({ screenSize });
   };
 
+  const handleScreenTechnologyChange = (screenTechnology: string[]) => {
+    onDataChange({ screenTechnology });
+  };
+
   const handleAddModel = () => {
     // Este botón permitirá agregar un modelo personalizado
     // Por ahora, se maneja a través del MultiSelectInput
@@ -185,47 +189,64 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
             />
           </div>
         )}
+
+        {/* Screen Technology - Multi-select (solo para Monitor) */}
+        {category.toLowerCase() === "monitor" && (
+          <div className="flex flex-col gap-2">
+            <MultiSelectInput
+              title="Screen Technology"
+              placeholder="Select screen technology"
+              options={["HD", "Full HD", "QHD", "4K", "8K"]}
+              selectedValues={productData.screenTechnology || []}
+              onValuesChange={handleScreenTechnologyChange}
+            />
+          </div>
+        )}
       </div>
 
       {/* Extended Warranty */}
       <div className="w-full">
-        <ExtendedWarrantyInput
-          enabled={productData.extendedWarranty?.enabled || false}
-          extraYears={productData.extendedWarranty?.extraYears}
-          onEnabledChange={(enabled) =>
-            onDataChange({
-              extendedWarranty: {
-                enabled,
-                extraYears: enabled
-                  ? productData.extendedWarranty?.extraYears || 1
-                  : undefined,
-              },
-            })
-          }
-          onExtraYearsChange={(years) =>
-            onDataChange({
-              extendedWarranty: {
-                enabled: productData.extendedWarranty?.enabled || false,
-                extraYears: years,
-              },
-            })
-          }
-        />
+        {category.toLowerCase() === "computer" && (
+          <ExtendedWarrantyInput
+            enabled={productData.extendedWarranty?.enabled || false}
+            extraYears={productData.extendedWarranty?.extraYears}
+            onEnabledChange={(enabled) =>
+              onDataChange({
+                extendedWarranty: {
+                  enabled,
+                  extraYears: enabled
+                    ? productData.extendedWarranty?.extraYears || 1
+                    : undefined,
+                },
+              })
+            }
+            onExtraYearsChange={(years) =>
+              onDataChange({
+                extendedWarranty: {
+                  enabled: productData.extendedWarranty?.enabled || false,
+                  extraYears: years,
+                },
+              })
+            }
+          />
+        )}
       </div>
 
       {/* Device Enrollment */}
-      <div className="flex items-center gap-2 w-full">
-        <Checkbox
-          id="device-enrollment"
-          checked={productData.deviceEnrollment || false}
-          onCheckedChange={(checked) =>
-            onDataChange({ deviceEnrollment: checked === true })
-          }
-        />
-        <Label htmlFor="device-enrollment">
-          Device Enrollment (ABM/Intune/MDM setup)
-        </Label>
-      </div>
+      {category.toLowerCase() === "computer" && (
+        <div className="flex items-center gap-2 w-full">
+          <Checkbox
+            id="device-enrollment"
+            checked={productData.deviceEnrollment || false}
+            onCheckedChange={(checked) =>
+              onDataChange({ deviceEnrollment: checked === true })
+            }
+          />
+          <Label htmlFor="device-enrollment">
+            Device Enrollment (ABM/Intune/MDM setup)
+          </Label>
+        </div>
+      )}
 
       {/* Other Specifications */}
       <div className="flex flex-col gap-2 w-full">

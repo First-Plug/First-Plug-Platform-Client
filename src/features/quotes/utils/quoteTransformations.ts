@@ -127,6 +127,10 @@ export function transformProductToBackendFormat(
     transformed.screenSize = product.screenSize;
   }
 
+  if (product.screenTechnology && product.screenTechnology.length > 0) {
+    transformed.screenTechnology = product.screenTechnology;
+  }
+
   if (product.otherSpecifications) {
     transformed.otherSpecifications = product.otherSpecifications;
   }

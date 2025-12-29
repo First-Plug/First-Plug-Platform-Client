@@ -8,6 +8,7 @@ export const useQuoteStore = create<QuoteStore>()(
       products: [],
       isAddingProduct: false,
       currentStep: 1,
+      currentCategory: undefined,
       editingProductId: undefined,
       onBack: undefined,
       onCancel: undefined,
@@ -46,6 +47,10 @@ export const useQuoteStore = create<QuoteStore>()(
 
       setCurrentStep: (step: number) => {
         set({ currentStep: step });
+      },
+
+      setCurrentCategory: (category: string | undefined) => {
+        set({ currentCategory: category });
       },
 
       setOnBack: (callback: (() => void) | undefined) => {
