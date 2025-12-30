@@ -9,6 +9,7 @@ export interface QuoteProduct {
   ram?: string[];
   storage?: string[];
   screenSize?: string[];
+  screenTechnology?: string[];
   extendedWarranty?: {
     enabled: boolean;
     extraYears?: number;
@@ -33,6 +34,7 @@ export interface QuoteRequestPayload {
     ram?: string[];
     storage?: string[];
     screenSize?: string[];
+    screenTechnology?: string[];
     otherSpecifications?: string;
     extendedWarranty?: boolean;
     extendedWarrantyYears?: number;
@@ -47,6 +49,7 @@ export interface QuoteStore {
   products: QuoteProduct[];
   isAddingProduct: boolean;
   currentStep: number;
+  currentCategory?: string; // Categoría seleccionada en el flujo actual
   editingProductId?: string;
   onBack?: (() => void) | undefined;
   onCancel?: (() => void) | undefined;
@@ -63,6 +66,7 @@ export interface QuoteStore {
   // Controlar estado del formulario
   setIsAddingProduct: (isAdding: boolean) => void;
   setCurrentStep: (step: number) => void;
+  setCurrentCategory: (category: string | undefined) => void;
   setOnBack: (callback: (() => void) | undefined) => void;
   setOnCancel: (callback: (() => void) | undefined) => void;
   setEditingProductId: (id: string | undefined) => void;
@@ -83,6 +87,7 @@ export interface QuoteHistoryProduct {
   ram?: string[];
   storage?: string[];
   screenSize?: string[];
+  screenTechnology?: string[];
   extendedWarranty?: boolean;
   extendedWarrantyYears?: number;
   deviceEnrollment?: boolean;

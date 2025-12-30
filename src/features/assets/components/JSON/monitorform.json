@@ -3,7 +3,19 @@
     {
       "name": "brand",
       "title": "Brand*",
-      "options": ["Dell", "LG", "Samsung", "Other"]
+      "options": [
+        "Dell",
+        "LG",
+        "Samsung",
+        "ASUS",
+        "BenQ",
+        "HP",
+        "Acer",
+        "ViewSonic",
+        "AOC",
+        "Philips",
+        "Other"
+      ]
     },
     {
       "name": "model",

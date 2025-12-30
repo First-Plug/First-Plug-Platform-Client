@@ -24,6 +24,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
     getProduct,
     setIsAddingProduct,
     setCurrentStep,
+    setCurrentCategory,
     currentStep,
     editingProductId,
     setEditingProductId,
@@ -35,59 +36,6 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
   useEffect(() => {
     onCancelRef.current = onCancel;
   }, [onCancel]);
-
-  useEffect(() => {
-    setIsAddingProduct(true);
-
-    // Si hay un producto en edición, empezar en step 2 y cargar datos
-    if (editingProductId) {
-      const editingProduct = getProduct(editingProductId);
-      if (editingProduct) {
-        setProductData(editingProduct);
-        setCurrentStep(2); // Empezar en step 2 (OS selection)
-      }
-    } else {
-      setCurrentStep(1);
-    }
-
-    const handleBack = () => {
-      const currentStepValue = useQuoteStore.getState().currentStep;
-      const editingId = useQuoteStore.getState().editingProductId;
-      // Si estamos editando, no permitir volver al step 1 (mínimo step 2)
-      const minStep = editingId ? 2 : 1;
-      if (currentStepValue > minStep) {
-        setCurrentStep(currentStepValue - 1);
-      }
-    };
-
-    const handleCancel = () => {
-      setIsAddingProduct(false);
-      setEditingProductId(undefined);
-      onCancelRef.current();
-    };
-
-    setOnBack(handleBack);
-    setOnCancel(handleCancel);
-
-    return () => {
-      setIsAddingProduct(false);
-      setCurrentStep(1);
-      setEditingProductId(undefined);
-      setOnBack(undefined);
-      setOnCancel(undefined);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingProductId]);
-
-  const handleBack = useCallback(() => {
-    const currentStepValue = useQuoteStore.getState().currentStep;
-    const editingId = useQuoteStore.getState().editingProductId;
-    // Si estamos editando, no permitir volver al step 1 (mínimo step 2)
-    const minStep = editingId ? 2 : 1;
-    if (currentStepValue > minStep) {
-      setCurrentStep(currentStepValue - 1);
-    }
-  }, [setCurrentStep]);
 
   const generateId = () => {
     return `quote-product-${Date.now()}-${Math.random()
@@ -107,10 +55,143 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
     setProductData((prev) => ({ ...prev, ...updates }));
   };
 
+  useEffect(() => {
+    setIsAddingProduct(true);
+
+    // Si hay un producto en edición, cargar datos y determinar el step inicial
+    if (editingProductId) {
+      const editingProduct = getProduct(editingProductId);
+      if (editingProduct) {
+        setProductData(editingProduct);
+        // Establecer la categoría en el store
+        if (editingProduct.category) {
+          setCurrentCategory(editingProduct.category);
+        }
+        // Si es Monitor, empezar en step 3 (technical specs)
+        // Si es Computer u otra categoría, empezar en step 2 (OS selection)
+        const initialStep =
+          editingProduct.category?.toLowerCase() === "monitor" ? 3 : 2;
+        setCurrentStep(initialStep);
+      }
+    } else {
+      setCurrentStep(1);
+      setCurrentCategory(undefined); // Limpiar categoría cuando no hay edición
+    }
+
+    const handleBack = () => {
+      const currentStepValue = useQuoteStore.getState().currentStep;
+      const editingId = useQuoteStore.getState().editingProductId;
+      const editingProduct = editingId ? getProduct(editingId) : null;
+      const currentCat = useQuoteStore.getState().currentCategory;
+      const isMonitor =
+        currentCat?.toLowerCase() === "monitor" ||
+        editingProduct?.category?.toLowerCase() === "monitor";
+
+      // Determinar el step mínimo según si es edición y la categoría
+      const minStep = editingId ? (isMonitor ? 3 : 2) : 1;
+
+      // Si estamos editando y estamos en el step mínimo, salir del modo de edición
+      if (editingId && currentStepValue === minStep) {
+        setIsAddingProduct(false);
+        setEditingProductId(undefined);
+        setCurrentCategory(undefined);
+        setCurrentStep(1);
+        onCancelRef.current();
+        return;
+      }
+
+      if (currentStepValue > minStep) {
+        // Resetear datos del step actual antes de retroceder
+        if (currentStepValue === 4) {
+          // Resetear datos del step 4 (quote details)
+          setProductData((prev) => ({
+            ...prev,
+            country: undefined,
+            city: undefined,
+            requiredDeliveryDate: undefined,
+            additionalComments: undefined,
+          }));
+        } else if (currentStepValue === 3) {
+          // Si es Monitor y vamos al step 1, también limpiar la categoría
+          if (isMonitor && !editingId) {
+            // Resetear datos del step 3 y limpiar categoría, manteniendo el ID
+            setProductData((prev) => ({
+              id: prev.id || generateId(),
+              quantity: 1,
+              brands: [],
+              models: [],
+              processors: [],
+              category: undefined,
+            }));
+            setCurrentCategory(undefined);
+          } else {
+            // Resetear solo datos del step 3 (technical specs)
+            setProductData((prev) => ({
+              ...prev,
+              quantity: 1,
+              brands: [],
+              models: [],
+              processors: undefined,
+              ram: undefined,
+              storage: undefined,
+              screenSize: undefined,
+              screenTechnology: undefined,
+              extendedWarranty: undefined,
+              deviceEnrollment: undefined,
+              otherSpecifications: undefined,
+            }));
+          }
+        } else if (currentStepValue === 2) {
+          // Resetear datos del step 2 (OS selection)
+          setProductData((prev) => ({
+            ...prev,
+            operatingSystem: undefined,
+          }));
+        }
+
+        // Navegación especial para Monitor: 4 -> 3 -> 1
+        if (currentStepValue === 4 && isMonitor) {
+          setCurrentStep(3);
+        } else if (currentStepValue === 3 && isMonitor && !editingId) {
+          setCurrentStep(1);
+        } else {
+          setCurrentStep(currentStepValue - 1);
+        }
+      }
+    };
+
+    const handleCancel = () => {
+      setIsAddingProduct(false);
+      setEditingProductId(undefined);
+      setCurrentCategory(undefined); // Limpiar categoría al cancelar
+      onCancelRef.current();
+    };
+
+    setOnBack(handleBack);
+    setOnCancel(handleCancel);
+
+    return () => {
+      setIsAddingProduct(false);
+      setCurrentStep(1);
+      setCurrentCategory(undefined); // Limpiar categoría al desmontar
+      setEditingProductId(undefined);
+      setOnBack(undefined);
+      setOnCancel(undefined);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingProductId, setProductData, setCurrentCategory]);
+
   const handleCategorySelect = (category: string) => {
     handleDataChange({ category });
-    const nextStep = 2;
-    setCurrentStep(nextStep);
+    // Actualizar la categoría en el store
+    setCurrentCategory(category);
+    // Si es Monitor, saltar directamente al step 3 (technical specs)
+    // Si es Computer u otra categoría que requiere OS, ir al step 2
+    if (category.toLowerCase() === "monitor") {
+      setCurrentStep(3);
+    } else {
+      setCurrentStep(2);
+    }
   };
 
   const handleOSSelect = (os: string) => {
@@ -128,12 +209,17 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
   };
 
   const handleNext = () => {
+    const category = productData.category?.toLowerCase();
+    const isMonitor = category === "monitor";
+
     // Validaciones antes de avanzar
-    if (currentStep === 3) {
-      // Solo validar quantity en step 3
+    if (currentStep === 2 && !isMonitor) {
+      // Solo avanzar desde step 2 si NO es Monitor
+      setCurrentStep(3);
+    } else if (currentStep === 3) {
+      // Technical specs step - solo quantity es requerido para todas las categorías
       if (!productData.quantity || productData.quantity < 1) return;
-      const nextStep = 4;
-      setCurrentStep(nextStep);
+      setCurrentStep(4);
     } else if (currentStep === 4) {
       // Validar campos requeridos del step 4
       if (!productData.country) return;
@@ -149,6 +235,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
           ram: productData.ram,
           storage: productData.storage,
           screenSize: productData.screenSize,
+          screenTechnology: productData.screenTechnology,
           extendedWarranty: productData.extendedWarranty,
           deviceEnrollment: productData.deviceEnrollment,
           otherSpecifications: productData.otherSpecifications,
@@ -171,6 +258,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
           ram: productData.ram,
           storage: productData.storage,
           screenSize: productData.screenSize,
+          screenTechnology: productData.screenTechnology,
           extendedWarranty: productData.extendedWarranty,
           deviceEnrollment: productData.deviceEnrollment,
           otherSpecifications: productData.otherSpecifications,
@@ -181,11 +269,17 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
         };
         addProduct(completeProduct);
       }
+      // Limpiar categoría y step al completar
+      setCurrentCategory(undefined);
+      setCurrentStep(1);
       onComplete();
     }
   };
 
   const renderStep = () => {
+    const category = productData.category?.toLowerCase();
+    const isMonitor = category === "monitor";
+
     switch (currentStep) {
       case 1:
         // No mostrar step 1 si estamos editando
@@ -199,6 +293,10 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
           />
         );
       case 2:
+        // Solo mostrar OS selection si NO es Monitor
+        if (isMonitor) {
+          return null;
+        }
         return (
           <StepOSSelection
             selectedOS={productData.operatingSystem || null}
@@ -227,8 +325,14 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
   };
 
   const canProceed = () => {
-    if (currentStep === 3) {
-      // Solo validar quantity en step 3
+    const category = productData.category?.toLowerCase();
+    const isMonitor = category === "monitor";
+
+    if (currentStep === 2 && !isMonitor) {
+      // Step 2 (OS selection) - siempre se puede avanzar (puede saltarse)
+      return true;
+    } else if (currentStep === 3) {
+      // Technical specs step - solo quantity es requerido para todas las categorías
       return !!productData.quantity && productData.quantity >= 1;
     } else if (currentStep === 4) {
       return !!productData.country;
@@ -242,8 +346,10 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
         {/* Content */}
         <div className="py-6">{renderStep()}</div>
 
-        {/* Footer - Mostrar en steps 2, 3 y 4 (step 2 solo cuando se edita) */}
-        {((currentStep === 2 && editingProductId) ||
+        {/* Footer - Mostrar en steps 2, 3 y 4 (step 2 solo cuando se edita y NO es Monitor) */}
+        {((currentStep === 2 &&
+          editingProductId &&
+          productData.category?.toLowerCase() !== "monitor") ||
           currentStep === 3 ||
           currentStep === 4) && (
           <div className="flex justify-end items-center pt-4 border-t">

@@ -52,13 +52,28 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     }
   }, [isOpen]);
 
+  // Protección: Si es Monitor y estamos en step 2, redirigir al step 1
+  React.useEffect(() => {
+    const category = productData.category?.toLowerCase();
+    const isMonitor = category === "monitor";
+    if (isMonitor && currentStep === 2) {
+      setCurrentStep(1);
+    }
+  }, [currentStep, productData.category, setCurrentStep]);
+
   const handleDataChange = (updates: Partial<QuoteProduct>) => {
     setProductData((prev) => ({ ...prev, ...updates }));
   };
 
   const handleCategorySelect = (category: string) => {
     handleDataChange({ category });
-    setCurrentStep(2);
+    // Si es Monitor, saltar directamente al step 3 (technical specs)
+    // Si es Computer u otra categoría que requiere OS, ir al step 2
+    if (category.toLowerCase() === "monitor") {
+      setCurrentStep(3);
+    } else {
+      setCurrentStep(2);
+    }
   };
 
   const handleOSSelect = (os: string) => {
@@ -69,17 +84,45 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     handleDataChange({ operatingSystem: undefined });
   };
 
+  // Función helper para determinar el número total de pasos según la categoría
+  // Por defecto muestra 3, si es Computer muestra 4
+  const getTotalSteps = () => {
+    if (productData.category?.toLowerCase() === "computer") {
+      return 4;
+    }
+    return 3; // Por defecto 3 pasos (Monitor u otras categorías)
+  };
+
+  // Función helper para obtener el paso lógico desde el físico (para mostrar en UI)
+  const getLogicalStep = (physicalStep: number): number => {
+    if (productData.category?.toLowerCase() === "monitor") {
+      // Monitor: 1 -> 3 -> 4 (físicos) mapean a 1 -> 2 -> 3 (lógicos)
+      // El step 2 físico no existe para Monitor, así que nunca debería llegar aquí
+      if (physicalStep === 1) return 1;
+      if (physicalStep === 2) return 1; // Protección: si por alguna razón está en step 2, mostrar como step 1
+      if (physicalStep === 3) return 2; // Technical specs (lógico step 2)
+      if (physicalStep === 4) return 3; // Quote details (lógico step 3)
+    }
+    // Computer: 1 -> 2 -> 3 -> 4 (físicos) mapean a 1 -> 2 -> 3 -> 4 (lógicos)
+    return physicalStep;
+  };
+
   const handleNext = () => {
+    const category = productData.category?.toLowerCase();
+    const isMonitor = category === "monitor";
+
     // Validaciones antes de avanzar
     if (currentStep === 1) {
       if (!productData.category) return;
-      setCurrentStep(2);
-    } else if (currentStep === 2) {
+      // Si es Monitor, saltar directamente al step 3
+      setCurrentStep(isMonitor ? 3 : 2);
+    } else if (currentStep === 2 && !isMonitor) {
+      // Solo avanzar desde step 2 si NO es Monitor
       setCurrentStep(3);
-    } else if (currentStep === 3) {
-      // Validar campos requeridos del step 3
+    } else if ((currentStep === 3 && !isMonitor) || (currentStep === 3 && isMonitor)) {
+      // Technical specs step (físico 3, pero lógico 2 para Monitor o 3 para Computer)
+      // Solo quantity es requerido para todas las categorías
       if (!productData.quantity || productData.quantity < 1) return;
-      if (!productData.brands || productData.brands.length === 0) return;
       setCurrentStep(4);
     } else if (currentStep === 4) {
       // Validar campos requeridos del step 4
@@ -96,6 +139,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         ram: productData.ram,
         storage: productData.storage,
         screenSize: productData.screenSize,
+        screenTechnology: productData.screenTechnology,
         extendedWarranty: productData.extendedWarranty,
         deviceEnrollment: productData.deviceEnrollment,
         otherSpecifications: productData.otherSpecifications,
@@ -114,12 +158,72 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+    const category = productData.category?.toLowerCase();
+    const isMonitor = category === "monitor";
+
+    if (currentStep === 4) {
+      // Desde quote details, volver a technical specs
+      // Resetear datos del step 4
+      handleDataChange({
+        country: undefined,
+        city: undefined,
+        requiredDeliveryDate: undefined,
+        additionalComments: undefined,
+      });
+      setCurrentStep(3);
+    } else if (currentStep === 3 && !isMonitor) {
+      // Desde technical specs (Computer), volver a OS selection
+      // Resetear datos del step 3
+      handleDataChange({
+        quantity: 1,
+        brands: [],
+        models: [],
+        processors: undefined,
+        ram: undefined,
+        storage: undefined,
+        screenSize: undefined,
+        screenTechnology: undefined,
+        extendedWarranty: undefined,
+        deviceEnrollment: undefined,
+        otherSpecifications: undefined,
+      });
+      setCurrentStep(2);
+    } else if (currentStep === 3 && isMonitor) {
+      // Desde technical specs (Monitor), volver a category selection
+      // Resetear datos del step 3
+      handleDataChange({
+        quantity: 1,
+        brands: [],
+        models: [],
+        processors: undefined,
+        ram: undefined,
+        storage: undefined,
+        screenSize: undefined,
+        screenTechnology: undefined,
+        extendedWarranty: undefined,
+        deviceEnrollment: undefined,
+        otherSpecifications: undefined,
+      });
+      setCurrentStep(1);
+    } else if (currentStep === 2 && !isMonitor) {
+      // Desde OS selection, volver a category selection (solo si NO es Monitor)
+      // Resetear datos del step 2
+      handleDataChange({
+        operatingSystem: undefined,
+      });
+      setCurrentStep(1);
     }
   };
 
   const getStepTitle = () => {
+    const category = productData.category?.toLowerCase();
+    const isMonitor = category === "monitor";
+    
+    // Para Monitor, el step 2 físico no debería mostrarse, pero si llegamos aquí mostrar el título correcto
+    if (currentStep === 2 && isMonitor) {
+      return "Select Product Category"; // Fallback, pero no debería ocurrir
+    }
+    
     switch (currentStep) {
       case 1:
         return "Select Product Category";
@@ -135,6 +239,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   };
 
   const renderStep = () => {
+    const category = productData.category?.toLowerCase();
+    const isMonitor = category === "monitor";
+
     switch (currentStep) {
       case 1:
         return (
@@ -144,6 +251,10 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           />
         );
       case 2:
+        // Solo mostrar OS selection si NO es Monitor
+        if (isMonitor) {
+          return null;
+        }
         return (
           <StepOSSelection
             selectedOS={productData.operatingSystem || null}
@@ -175,12 +286,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     if (currentStep === 1) {
       return !!productData.category;
     } else if (currentStep === 3) {
-      return (
-        !!productData.quantity &&
-        productData.quantity >= 1 &&
-        !!productData.brands &&
-        productData.brands.length > 0
-      );
+      // Solo quantity es requerido para todas las categorías
+      return !!productData.quantity && productData.quantity >= 1;
     } else if (currentStep === 4) {
       return !!productData.country;
     }
@@ -193,19 +300,24 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         {/* Header */}
         <div className="flex justify-between items-center pb-4 border-b">
           <div className="flex items-center gap-4">
-            {currentStep > 1 && (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="hover:bg-gray-100 p-2 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-            )}
+            {(() => {
+              const category = productData.category?.toLowerCase();
+              const isMonitor = category === "monitor";
+              const showBackButton = currentStep > 1 && !(currentStep === 2 && isMonitor);
+              return showBackButton ? (
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+              ) : null;
+            })()}
             <div>
               <h2 className="font-semibold text-2xl">{getStepTitle()}</h2>
               <p className="text-muted-foreground text-sm">
-                Step {currentStep} of 4
+                Step {getLogicalStep(currentStep)} of {getTotalSteps()}
               </p>
             </div>
           </div>
