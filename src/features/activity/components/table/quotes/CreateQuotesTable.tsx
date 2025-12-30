@@ -100,6 +100,23 @@ interface BuybackProduct {
   };
 }
 
+interface DonateProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    countryCode: string;
+  };
+  needsDataWipe?: boolean;
+  needsCleaning?: boolean;
+  comments?: string;
+}
+
 interface QuoteService {
   serviceCategory: string;
   issues?: string[];
@@ -118,7 +135,7 @@ interface QuoteService {
   };
   enrolledDevices?: EnrolledDevice[];
   assets?: DataWipeAsset[];
-  products?: DestructionProduct[] | BuybackProduct[];
+  products?: DestructionProduct[] | BuybackProduct[] | DonateProduct[];
   requiresCertificate?: boolean;
   comments?: string;
   additionalInfo?: string;
@@ -215,6 +232,21 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
               serviceCategory: service.serviceCategory,
               buybackProduct: product,
               additionalInfo: service.additionalInfo,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Donate" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Donate, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              donateProduct: product,
+              additionalDetails: service.additionalDetails,
             });
           });
         } else {
@@ -513,6 +545,66 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                           {row.additionalInfo && (
                             <span className="text-gray-500 text-xs italic">
                               {row.additionalInfo}
+                            </span>
+                          )}
+                        </>
+                      ) : row.donateProduct ? (
+                        <>
+                          <span className="font-semibold">
+                            {row.donateProduct.productSnapshot.category}
+                          </span>
+                          {(row.donateProduct.productSnapshot.brand ||
+                            row.donateProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.donateProduct.productSnapshot.brand}
+                              {row.donateProduct.productSnapshot.brand &&
+                                row.donateProduct.productSnapshot.model &&
+                                " - "}
+                              {row.donateProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.donateProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.donateProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN: {row.donateProduct.productSnapshot.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            {row.donateProduct.productSnapshot.assignedTo} (
+                            {row.donateProduct.productSnapshot.location})
+                          </span>
+                          {row.donateProduct.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.donateProduct.productSnapshot.countryCode
+                              }
+                            />
+                          )}
+                          {(row.donateProduct.needsDataWipe ||
+                            row.donateProduct.needsCleaning) && (
+                            <>
+                              {row.donateProduct.needsDataWipe && (
+                                <span className="text-gray-600 text-xs">
+                                  ✓ Needs Data Wipe
+                                </span>
+                              )}
+                              {row.donateProduct.needsCleaning && (
+                                <span className="text-gray-600 text-xs">
+                                  ✓ Needs Cleaning
+                                </span>
+                              )}
+                            </>
+                          )}
+                          {row.donateProduct.comments && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.donateProduct.comments}
+                            </span>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
                             </span>
                           )}
                         </>
