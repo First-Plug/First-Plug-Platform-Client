@@ -135,6 +135,25 @@ interface CleaningProduct {
   additionalComments?: string;
 }
 
+interface StorageProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    assignedEmail?: string;
+    countryCode: string;
+  };
+  approximateSize?: string;
+  approximateWeight?: string;
+  approximateStorageDays?: number;
+  additionalComments?: string;
+}
+
 interface QuoteService {
   serviceCategory: string;
   issues?: string[];
@@ -157,7 +176,8 @@ interface QuoteService {
     | DestructionProduct[]
     | BuybackProduct[]
     | DonateProduct[]
-    | CleaningProduct[];
+    | CleaningProduct[]
+    | StorageProduct[];
   requiresCertificate?: boolean;
   comments?: string;
   additionalInfo?: string;
@@ -283,6 +303,21 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
               type: "service",
               serviceCategory: service.serviceCategory,
               cleaningProduct: product,
+              additionalDetails: service.additionalDetails,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Storage" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Storage, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              storageProduct: product,
               additionalDetails: service.additionalDetails,
             });
           });
@@ -688,6 +723,68 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                           {row.cleaningProduct.additionalComments && (
                             <span className="text-gray-500 text-xs italic">
                               {row.cleaningProduct.additionalComments}
+                            </span>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
+                      ) : row.storageProduct ? (
+                        <>
+                          <span className="font-semibold">
+                            {row.storageProduct.productSnapshot.category}
+                          </span>
+                          {(row.storageProduct.productSnapshot.brand ||
+                            row.storageProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.storageProduct.productSnapshot.brand}
+                              {row.storageProduct.productSnapshot.brand &&
+                                row.storageProduct.productSnapshot.model &&
+                                " - "}
+                              {row.storageProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.storageProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.storageProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN:{" "}
+                            {row.storageProduct.productSnapshot.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            {row.storageProduct.productSnapshot.assignedTo} (
+                            {row.storageProduct.productSnapshot.location})
+                          </span>
+                          {row.storageProduct.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.storageProduct.productSnapshot.countryCode
+                              }
+                            />
+                          )}
+                          {row.storageProduct.approximateSize && (
+                            <span className="text-gray-600 text-xs">
+                              Size: {row.storageProduct.approximateSize}
+                            </span>
+                          )}
+                          {row.storageProduct.approximateWeight && (
+                            <span className="text-gray-600 text-xs">
+                              Weight: {row.storageProduct.approximateWeight}
+                            </span>
+                          )}
+                          {row.storageProduct.approximateStorageDays && (
+                            <span className="text-gray-600 text-xs">
+                              Storage Days:{" "}
+                              {row.storageProduct.approximateStorageDays}
+                            </span>
+                          )}
+                          {row.storageProduct.additionalComments && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.storageProduct.additionalComments}
                             </span>
                           )}
                           {row.additionalDetails && (
