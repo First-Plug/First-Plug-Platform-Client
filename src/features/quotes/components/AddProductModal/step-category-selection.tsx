@@ -29,7 +29,7 @@ const categories: Category[] = [
     id: "audio",
     name: "Audio",
     icon: <Icons.HeadSet />,
-    enabled: false,
+    enabled: true,
   },
   {
     id: "peripherals",
