@@ -117,6 +117,24 @@ interface DonateProduct {
   comments?: string;
 }
 
+interface CleaningProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    assignedEmail?: string;
+    countryCode: string;
+  };
+  desiredDate?: string;
+  cleaningType?: string;
+  additionalComments?: string;
+}
+
 interface QuoteService {
   serviceCategory: string;
   issues?: string[];
@@ -135,7 +153,11 @@ interface QuoteService {
   };
   enrolledDevices?: EnrolledDevice[];
   assets?: DataWipeAsset[];
-  products?: DestructionProduct[] | BuybackProduct[] | DonateProduct[];
+  products?:
+    | DestructionProduct[]
+    | BuybackProduct[]
+    | DonateProduct[]
+    | CleaningProduct[];
   requiresCertificate?: boolean;
   comments?: string;
   additionalInfo?: string;
@@ -246,6 +268,21 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
               type: "service",
               serviceCategory: service.serviceCategory,
               donateProduct: product,
+              additionalDetails: service.additionalDetails,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Cleaning" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Cleaning, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              cleaningProduct: product,
               additionalDetails: service.additionalDetails,
             });
           });
@@ -608,6 +645,57 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             </span>
                           )}
                         </>
+                      ) : row.cleaningProduct ? (
+                        <>
+                          <span className="font-semibold">
+                            {row.cleaningProduct.productSnapshot.category}
+                          </span>
+                          {(row.cleaningProduct.productSnapshot.brand ||
+                            row.cleaningProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.cleaningProduct.productSnapshot.brand}
+                              {row.cleaningProduct.productSnapshot.brand &&
+                                row.cleaningProduct.productSnapshot.model &&
+                                " - "}
+                              {row.cleaningProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.cleaningProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.cleaningProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN:{" "}
+                            {row.cleaningProduct.productSnapshot.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            {row.cleaningProduct.productSnapshot.assignedTo} (
+                            {row.cleaningProduct.productSnapshot.location})
+                          </span>
+                          {row.cleaningProduct.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.cleaningProduct.productSnapshot.countryCode
+                              }
+                            />
+                          )}
+                          {row.cleaningProduct.cleaningType && (
+                            <span className="text-gray-600 font-semibold">
+                              {row.cleaningProduct.cleaningType} Cleaning
+                            </span>
+                          )}
+                          {row.cleaningProduct.additionalComments && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.cleaningProduct.additionalComments}
+                            </span>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
                       ) : row.enrolledDevice ? (
                         <>
                           <span className="font-semibold">
@@ -690,6 +778,8 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                   <TableCell className="px-4 py-2 w-28 text-xs">
                     {row.dataWipeAsset
                       ? formatDateString(row.dataWipeAsset.desirableDate)
+                      : row.cleaningProduct
+                      ? formatDateString(row.cleaningProduct.desiredDate)
                       : formatDateString(row.issueStartDate)}
                   </TableCell>
                 </>
