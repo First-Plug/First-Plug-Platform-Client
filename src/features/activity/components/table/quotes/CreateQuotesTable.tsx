@@ -193,6 +193,32 @@ interface OffboardingService {
   desirablePickupDate?: string;
 }
 
+interface LogisticsProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    assignedEmail?: string;
+    countryCode: string;
+  };
+  destination: {
+    type: "Member" | "Office" | "Warehouse";
+    memberId?: string;
+    assignedMember?: string;
+    assignedEmail?: string;
+    officeId?: string;
+    officeName?: string;
+    warehouseId?: string;
+    warehouseName?: string;
+    countryCode: string;
+  };
+}
+
 interface QuoteService {
   serviceCategory: string;
   issues?: string[];
@@ -217,7 +243,8 @@ interface QuoteService {
     | DonateProduct[]
     | CleaningProduct[]
     | StorageProduct[]
-    | OffboardingProduct[];
+    | OffboardingProduct[]
+    | LogisticsProduct[];
   originMember?: OffboardingService["originMember"];
   isSensitiveSituation?: boolean;
   employeeKnows?: boolean;
@@ -380,6 +407,22 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
               originMember: service.originMember,
               isSensitiveSituation: service.isSensitiveSituation,
               employeeKnows: service.employeeKnows,
+              desirablePickupDate: service.desirablePickupDate,
+              additionalDetails: service.additionalDetails,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Logistics" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Logistics, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              logisticsProduct: product,
               desirablePickupDate: service.desirablePickupDate,
               additionalDetails: service.additionalDetails,
             });
@@ -947,6 +990,80 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             </span>
                           )}
                         </>
+                      ) : row.logisticsProduct ? (
+                        <>
+                          <span className="font-semibold">Logistics</span>
+                          <span className="font-semibold text-gray-700">
+                            {row.logisticsProduct.productSnapshot.category}
+                          </span>
+                          {(row.logisticsProduct.productSnapshot.brand ||
+                            row.logisticsProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.logisticsProduct.productSnapshot.brand}
+                              {row.logisticsProduct.productSnapshot.brand &&
+                                row.logisticsProduct.productSnapshot.model &&
+                                " - "}
+                              {row.logisticsProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.logisticsProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.logisticsProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN:{" "}
+                            {row.logisticsProduct.productSnapshot.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            From:{" "}
+                            {row.logisticsProduct.productSnapshot.assignedTo} (
+                            {row.logisticsProduct.productSnapshot.location})
+                          </span>
+                          {row.logisticsProduct.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.logisticsProduct.productSnapshot.countryCode
+                              }
+                            />
+                          )}
+                          {row.logisticsProduct.destination && (
+                            <>
+                              <span className="font-semibold text-gray-700">
+                                To:{" "}
+                                {row.logisticsProduct.destination.type ===
+                                "Member"
+                                  ? row.logisticsProduct.destination
+                                      .assignedMember
+                                  : row.logisticsProduct.destination.type ===
+                                    "Office"
+                                  ? row.logisticsProduct.destination.officeName
+                                  : row.logisticsProduct.destination
+                                      .warehouseName}
+                              </span>
+                              <span className="text-gray-600 text-xs">
+                                {row.logisticsProduct.destination.type}
+                                {row.logisticsProduct.destination
+                                  .countryCode && (
+                                  <>
+                                    {" "}
+                                    <QuoteLocationWithCountry
+                                      country={
+                                        row.logisticsProduct.destination
+                                          .countryCode
+                                      }
+                                    />
+                                  </>
+                                )}
+                              </span>
+                            </>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
                       ) : row.enrolledDevice ? (
                         <>
                           <span className="font-semibold">
@@ -1032,6 +1149,8 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                       : row.cleaningProduct
                       ? formatDateString(row.cleaningProduct.desiredDate)
                       : row.offboardingProduct
+                      ? formatDateString(row.desirablePickupDate)
+                      : row.logisticsProduct
                       ? formatDateString(row.desirablePickupDate)
                       : formatDateString(row.issueStartDate)}
                   </TableCell>
