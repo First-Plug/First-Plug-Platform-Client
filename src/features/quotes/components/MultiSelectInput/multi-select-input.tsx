@@ -90,6 +90,13 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
       handleAddCustom();
     } else if (e.key === "Escape") {
       setOpen(false);
+    } else if (e.key === " ") {
+      // Prevenir que el espacio cierre el popover
+      e.stopPropagation();
+      // Mantener el popover abierto
+      if (!open) {
+        setOpen(true);
+      }
     }
   };
 
@@ -148,95 +155,115 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
       )}
 
       {/* Input con botón + */}
-      <Popover open={open} onOpenChange={handleOpenChange}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            ref={containerRef as any}
-            className="bg-transparent p-0 border-none w-full text-left"
-            style={{ all: "unset", cursor: "text" }}
-          >
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  ref={inputRef}
-                  type={inputMode === "numeric" ? "number" : "text"}
-                  inputMode={inputMode === "numeric" ? "numeric" : "text"}
-                  placeholder={placeholder}
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  disabled={disabled}
-                  className="pr-10"
-                />
-                {inputValue.trim() &&
-                  !selectedValues.includes(inputValue.trim()) && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="top-1/2 right-1 z-10 absolute p-0 w-7 h-7 -translate-y-1/2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddCustom();
-                      }}
-                      disabled={disabled}
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  )}
+      <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
+        <div ref={containerRef as any} className="w-full">
+          <PopoverTrigger asChild>
+            <div className="w-full" onClick={(e) => e.stopPropagation()}>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    ref={inputRef}
+                    type={inputMode === "numeric" ? "number" : "text"}
+                    inputMode={inputMode === "numeric" ? "numeric" : "text"}
+                    placeholder={placeholder}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => {
+                      e.stopPropagation();
+                      setOpen(true);
+                    }}
+                    onMouseDown={(e) => {
+                      // Prevenir que el PopoverTrigger capture el click
+                      e.stopPropagation();
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpen(true);
+                      // Asegurar que el input reciba el foco
+                      setTimeout(() => {
+                        inputRef.current?.focus();
+                      }, 0);
+                    }}
+                    disabled={disabled}
+                    className="pr-10"
+                  />
+                  {inputValue.trim() &&
+                    !selectedValues.includes(inputValue.trim()) && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="top-1/2 right-1 z-10 absolute p-0 w-7 h-7 -translate-y-1/2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleAddCustom();
+                        }}
+                        disabled={disabled}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    )}
+                </div>
               </div>
             </div>
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="bg-white p-0 w-[var(--radix-popover-trigger-width)]"
-          align="start"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          onInteractOutside={(e) => {
-            // Prevenir que se cierre si el click fue en el input, el botón +, o el contenedor
-            const target = e.target as HTMLElement;
-            if (
-              inputRef.current?.contains(target) ||
-              containerRef.current?.contains(target)
-            ) {
-              e.preventDefault();
-            }
-          }}
-        >
-          <Command shouldFilter={false}>
-            <CommandList>
-              {filteredOptions.length > 0 ? (
-                <CommandGroup>
-                  {filteredOptions.map((option) => (
-                    <CommandItem
-                      key={option}
-                      value={option}
-                      onSelect={() => handleSelect(option)}
-                      className="cursor-pointer"
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 w-4 h-4",
-                          selectedValues.includes(option)
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                      {option}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              ) : (
-                <CommandEmpty>
-                  {inputValue.trim()
-                    ? "Press Enter or click + to add custom value"
-                    : "No options available"}
-                </CommandEmpty>
-              )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
+          </PopoverTrigger>
+          <PopoverContent
+            className="bg-white p-0 w-[var(--radix-popover-trigger-width)]"
+            align="start"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onInteractOutside={(e) => {
+              // Prevenir que se cierre si el click fue en el input, el botón +, o el contenedor
+              const target = e.target as HTMLElement;
+              const isClickInside =
+                containerRef.current?.contains(target) ||
+                inputRef.current?.contains(target) ||
+                inputRef.current === target;
+
+              if (isClickInside) {
+                e.preventDefault();
+              }
+            }}
+            onEscapeKeyDown={(e) => {
+              // Permitir cerrar con Escape
+              setOpen(false);
+            }}
+          >
+            <Command shouldFilter={false}>
+              <CommandList>
+                {filteredOptions.length > 0 ? (
+                  <CommandGroup>
+                    {filteredOptions.map((option) => (
+                      <CommandItem
+                        key={option}
+                        value={option}
+                        onSelect={(selectedValue) => {
+                          handleSelect(selectedValue);
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 w-4 h-4",
+                            selectedValues.includes(option)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {option}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                ) : (
+                  <CommandEmpty>
+                    Enter or click + to add custom value
+                  </CommandEmpty>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </div>
       </Popover>
     </div>
   );

@@ -135,6 +135,14 @@ export function transformProductToBackendFormat(
     transformed.otherSpecifications = product.otherSpecifications;
   }
 
+  if (product.description) {
+    transformed.description = product.description;
+  }
+
+  if (product.additionalRequirements) {
+    transformed.additionalRequirements = product.additionalRequirements;
+  }
+
   if (product.extendedWarranty?.enabled !== undefined) {
     transformed.extendedWarranty = Boolean(product.extendedWarranty.enabled);
 

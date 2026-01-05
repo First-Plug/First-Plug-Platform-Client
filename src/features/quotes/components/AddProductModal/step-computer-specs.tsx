@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { Plus } from "lucide-react";
 import { MultiSelectInput } from "../MultiSelectInput/multi-select-input";
 import { ExtendedWarrantyInput } from "./extended-warranty-input";
 import { loadFormFields, getFieldOptions } from "../../utils/loadFormFields";
@@ -11,18 +10,17 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 
 import type { QuoteProduct } from "../../types/quote.types";
 
-interface StepTechnicalSpecsProps {
-  category: string;
+interface StepComputerSpecsProps {
   productData: Partial<QuoteProduct>;
   onDataChange: (updates: Partial<QuoteProduct>) => void;
 }
 
-export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
-  category,
+export const StepComputerSpecs: React.FC<StepComputerSpecsProps> = ({
   productData,
   onDataChange,
 }) => {
-  const formFields = React.useMemo(() => loadFormFields(category), [category]);
+  const category = "computer";
+  const formFields = React.useMemo(() => loadFormFields(category), []);
 
   const handleBrandsChange = (brands: string[]) => {
     onDataChange({ brands });
@@ -53,19 +51,6 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
     onDataChange({ storage });
   };
 
-  const handleScreenSizeChange = (screenSize: string[]) => {
-    onDataChange({ screenSize });
-  };
-
-  const handleScreenTechnologyChange = (screenTechnology: string[]) => {
-    onDataChange({ screenTechnology });
-  };
-
-  const handleAddModel = () => {
-    // Este botón permitirá agregar un modelo personalizado
-    // Por ahora, se maneja a través del MultiSelectInput
-  };
-
   const getFieldOptionsForName = (fieldName: string): string[] => {
     return getFieldOptions(category, fieldName);
   };
@@ -74,11 +59,10 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
   // Filtrar opciones de RAM para mostrar solo números (sin GB)
   const ramOptions = ramOptionsRaw.map((option) => option.replace("GB", ""));
   const storageOptions = getFieldOptionsForName("storage");
-  const screenOptions = getFieldOptionsForName("screen");
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <p className="w-full text-muted-foreground text-center">
+      <p className="w-full text-muted-foreground text-left">
         Select the technical specifications you need. You can select multiple
         options for each field to get quotes for different configurations.
       </p>
@@ -116,20 +100,16 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
           </div>
         )}
 
-        {/* Model - Multi-select with add button */}
+        {/* Model - Multi-select */}
         {formFields.find((f) => f.name === "model") && (
           <div className="flex flex-col gap-2">
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <MultiSelectInput
-                  title="Model"
-                  placeholder="Enter model name"
-                  options={getFieldOptionsForName("model")}
-                  selectedValues={productData.models || []}
-                  onValuesChange={handleModelsChange}
-                />
-              </div>
-            </div>
+            <MultiSelectInput
+              title="Model"
+              placeholder="Enter model name"
+              options={getFieldOptionsForName("model")}
+              selectedValues={productData.models || []}
+              onValuesChange={handleModelsChange}
+            />
           </div>
         )}
 
@@ -176,77 +156,47 @@ export const StepTechnicalSpecs: React.FC<StepTechnicalSpecsProps> = ({
             />
           </div>
         )}
-
-        {/* Screen Size - Multi-select */}
-        {screenOptions.length > 0 && (
-          <div className="flex flex-col gap-2">
-            <MultiSelectInput
-              title="Screen Size"
-              placeholder="Enter screen size"
-              options={screenOptions}
-              selectedValues={productData.screenSize || []}
-              onValuesChange={handleScreenSizeChange}
-            />
-          </div>
-        )}
-
-        {/* Screen Technology - Multi-select (solo para Monitor) */}
-        {category.toLowerCase() === "monitor" && (
-          <div className="flex flex-col gap-2">
-            <MultiSelectInput
-              title="Screen Technology"
-              placeholder="Select screen technology"
-              options={["HD", "Full HD", "QHD", "4K", "8K"]}
-              selectedValues={productData.screenTechnology || []}
-              onValuesChange={handleScreenTechnologyChange}
-            />
-          </div>
-        )}
       </div>
 
       {/* Extended Warranty */}
       <div className="w-full">
-        {category.toLowerCase() === "computer" && (
-          <ExtendedWarrantyInput
-            enabled={productData.extendedWarranty?.enabled || false}
-            extraYears={productData.extendedWarranty?.extraYears}
-            onEnabledChange={(enabled) =>
-              onDataChange({
-                extendedWarranty: {
-                  enabled,
-                  extraYears: enabled
-                    ? productData.extendedWarranty?.extraYears || 1
-                    : undefined,
-                },
-              })
-            }
-            onExtraYearsChange={(years) =>
-              onDataChange({
-                extendedWarranty: {
-                  enabled: productData.extendedWarranty?.enabled || false,
-                  extraYears: years,
-                },
-              })
-            }
-          />
-        )}
+        <ExtendedWarrantyInput
+          enabled={productData.extendedWarranty?.enabled || false}
+          extraYears={productData.extendedWarranty?.extraYears}
+          onEnabledChange={(enabled) =>
+            onDataChange({
+              extendedWarranty: {
+                enabled,
+                extraYears: enabled
+                  ? productData.extendedWarranty?.extraYears || 1
+                  : undefined,
+              },
+            })
+          }
+          onExtraYearsChange={(years) =>
+            onDataChange({
+              extendedWarranty: {
+                enabled: productData.extendedWarranty?.enabled || false,
+                extraYears: years,
+              },
+            })
+          }
+        />
       </div>
 
       {/* Device Enrollment */}
-      {category.toLowerCase() === "computer" && (
-        <div className="flex items-center gap-2 w-full">
-          <Checkbox
-            id="device-enrollment"
-            checked={productData.deviceEnrollment || false}
-            onCheckedChange={(checked) =>
-              onDataChange({ deviceEnrollment: checked === true })
-            }
-          />
-          <Label htmlFor="device-enrollment">
-            Device Enrollment (ABM/Intune/MDM setup)
-          </Label>
-        </div>
-      )}
+      <div className="flex items-center gap-2 w-full">
+        <Checkbox
+          id="device-enrollment"
+          checked={productData.deviceEnrollment || false}
+          onCheckedChange={(checked) =>
+            onDataChange({ deviceEnrollment: checked === true })
+          }
+        />
+        <Label htmlFor="device-enrollment">
+          Device Enrollment (ABM/Intune/MDM setup)
+        </Label>
+      </div>
 
       {/* Other Specifications */}
       <div className="flex flex-col gap-2 w-full">

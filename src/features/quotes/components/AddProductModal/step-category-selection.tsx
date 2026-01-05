@@ -29,19 +29,19 @@ const categories: Category[] = [
     id: "audio",
     name: "Audio",
     icon: <Icons.HeadSet />,
-    enabled: false,
+    enabled: true,
   },
   {
     id: "peripherals",
     name: "Peripherals",
     icon: <Icons.Mouse />,
-    enabled: false,
+    enabled: true,
   },
   {
     id: "merchandising",
     name: "Merchandising",
     icon: <Icons.Gift />,
-    enabled: false,
+    enabled: true,
   },
   {
     id: "phone",
@@ -65,7 +65,7 @@ const categories: Category[] = [
     id: "other",
     name: "Other",
     icon: <Package className="w-6 h-6" />,
-    enabled: false,
+    enabled: true,
   },
 ];
 

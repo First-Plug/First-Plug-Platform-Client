@@ -7,7 +7,8 @@ import { Button } from "@/shared";
 import { useQuoteStore } from "../../store/quote.store";
 import { StepCategorySelection } from "./step-category-selection";
 import { StepOSSelection } from "./step-os-selection";
-import { StepTechnicalSpecs } from "./step-technical-specs";
+import { StepComputerSpecs } from "./step-computer-specs";
+import { StepMonitorSpecs } from "./step-monitor-specs";
 import { StepQuoteDetails } from "./step-quote-details";
 import type { QuoteProduct } from "../../types/quote.types";
 import { useToast } from "@/shared/components/ui/use-toast";
@@ -263,13 +264,26 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           />
         );
       case 3:
-        return (
-          <StepTechnicalSpecs
-            category={productData.category || ""}
-            productData={productData}
-            onDataChange={handleDataChange}
-          />
-        );
+        // Para Computer, mostrar Computer Specs
+        if (category === "computer") {
+          return (
+            <StepComputerSpecs
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
+        // Para Monitor, mostrar Monitor Specs
+        if (isMonitor) {
+          return (
+            <StepMonitorSpecs
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
+        // Por defecto, no mostrar nada (no debería llegar aquí)
+        return null;
       case 4:
         return (
           <StepQuoteDetails

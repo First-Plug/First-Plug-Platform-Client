@@ -186,6 +186,15 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
         </div>
       </div>
 
+      {/* Description for Merchandising */}
+      {product.category?.toLowerCase() === "merchandising" &&
+        product.description && (
+          <div className="mb-4 text-sm">
+            <span className="font-medium">Description: </span>
+            <span className="text-gray-700">{product.description}</span>
+          </div>
+        )}
+
       {/* Services */}
       {(product.extendedWarranty?.enabled || product.deviceEnrollment) && (
         <div className="flex gap-2 mb-4">
