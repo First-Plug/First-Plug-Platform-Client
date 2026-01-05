@@ -41,7 +41,7 @@ const categories: Category[] = [
     id: "merchandising",
     name: "Merchandising",
     icon: <Icons.Gift />,
-    enabled: false,
+    enabled: true,
   },
   {
     id: "phone",

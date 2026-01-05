@@ -9,6 +9,7 @@ import { StepComputerSpecs } from "../AddProductModal/step-computer-specs";
 import { StepMonitorSpecs } from "../AddProductModal/step-monitor-specs";
 import { StepPeripheralsSpecs } from "../AddProductModal/step-peripherals-specs";
 import { StepAudioSpecs } from "../AddProductModal/step-audio-specs";
+import { StepMerchandisingSpecs } from "../AddProductModal/step-merchandising-specs";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import type { QuoteProduct } from "../../types/quote.types";
 
@@ -97,6 +98,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
       const isMonitor = categoryLower === "monitor";
       const isAudio = categoryLower === "audio";
       const isPeripherals = categoryLower === "peripherals";
+      const isMerchandising = categoryLower === "merchandising";
 
       // Determinar el step mínimo según si es edición y la categoría
       const minStep = editingId
@@ -198,20 +200,20 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
         }
 
         // Navegación especial para Monitor: 4 -> 3 -> 1
-        // Navegación especial para Audio y Peripherals: 3 -> 2 -> 1
+        // Navegación especial para Audio, Peripherals y Merchandising: 3 -> 2 -> 1
         if (currentStepValue === 4 && isMonitor) {
           setCurrentStep(3);
         } else if (currentStepValue === 3 && isMonitor && !editingId) {
           setCurrentStep(1);
         } else if (
           currentStepValue === 3 &&
-          (isAudio || isPeripherals) &&
+          (isAudio || isPeripherals || isMerchandising) &&
           !editingId
         ) {
           setCurrentStep(2);
         } else if (
           currentStepValue === 2 &&
-          (isAudio || isPeripherals) &&
+          (isAudio || isPeripherals || isMerchandising) &&
           !editingId
         ) {
           setCurrentStep(1);
@@ -290,22 +292,32 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
         setCurrentStep(3);
       }
     } else if (currentStep === 3) {
-      if (isAudio || isPeripherals) {
-        // Step 3 para Audio o Peripherals: Quote Details - validar country y guardar producto
+      if (isAudio || isPeripherals || isMerchandising) {
+        // Step 3 para Audio, Peripherals o Merchandising: Quote Details - validar country y guardar producto
         if (!productData.country) return;
 
         // Si estamos editando, actualizar el producto existente
         if (editingProductId) {
-          updateProduct(editingProductId, {
+          const updateData: Partial<QuoteProduct> = {
             quantity: productData.quantity!,
-            brands: productData.brands || [],
-            models: productData.models || [],
-            otherSpecifications: productData.otherSpecifications,
             country: productData.country!,
             city: productData.city,
             requiredDeliveryDate: productData.requiredDeliveryDate,
             additionalComments: productData.additionalComments,
-          });
+          };
+
+          // Campos específicos según categoría
+          if (isAudio || isPeripherals) {
+            updateData.brands = productData.brands || [];
+            updateData.models = productData.models || [];
+            updateData.otherSpecifications = productData.otherSpecifications;
+          } else if (isMerchandising) {
+            updateData.description = productData.description;
+            updateData.additionalRequirements = productData.additionalRequirements;
+            updateData.otherSpecifications = productData.otherSpecifications;
+          }
+
+          updateProduct(editingProductId, updateData);
           setEditingProductId(undefined);
         } else {
           // Si es nuevo producto, agregarlo
@@ -313,14 +325,23 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
             id: productData.id!,
             category: productData.category!,
             quantity: productData.quantity!,
-            brands: productData.brands || [],
-            models: productData.models || [],
-            otherSpecifications: productData.otherSpecifications,
             country: productData.country!,
             city: productData.city,
             requiredDeliveryDate: productData.requiredDeliveryDate,
             additionalComments: productData.additionalComments,
           };
+
+          // Campos específicos según categoría
+          if (isAudio || isPeripherals) {
+            completeProduct.brands = productData.brands || [];
+            completeProduct.models = productData.models || [];
+            completeProduct.otherSpecifications = productData.otherSpecifications;
+          } else if (isMerchandising) {
+            completeProduct.description = productData.description;
+            completeProduct.additionalRequirements = productData.additionalRequirements;
+            completeProduct.otherSpecifications = productData.otherSpecifications;
+          }
+
           addProduct(completeProduct);
         }
         // Limpiar categoría y step al completar
@@ -425,6 +446,15 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
             />
           );
         }
+        // Si es Merchandising, mostrar StepMerchandisingSpecs
+        if (isMerchandising) {
+          return (
+            <StepMerchandisingSpecs
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
         // Si es Monitor, no mostrar step 2
         if (isMonitor) {
           return null;
@@ -438,8 +468,8 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
           />
         );
       case 3:
-        // Si es Audio o Peripherals, mostrar Quote Details
-        if (isAudio || isPeripherals) {
+        // Si es Audio, Peripherals o Merchandising, mostrar Quote Details
+        if (isAudio || isPeripherals || isMerchandising) {
           return (
             <StepQuoteDetails
               productData={productData}
@@ -484,18 +514,27 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
     const isMonitor = category === "monitor";
     const isAudio = category === "audio";
     const isPeripherals = category === "peripherals";
+    const isMerchandising = category === "merchandising";
 
     if (currentStep === 2) {
       if (isAudio || isPeripherals) {
         // Step 2 para Audio o Peripherals: quantity es requerido
         return !!productData.quantity && productData.quantity >= 1;
+      } else if (isMerchandising) {
+        // Step 2 para Merchandising: quantity y description son requeridos
+        return (
+          !!productData.quantity &&
+          productData.quantity >= 1 &&
+          !!productData.description &&
+          productData.description.trim().length > 0
+        );
       } else if (!isMonitor) {
         // Step 2 (OS selection) - siempre se puede avanzar (puede saltarse)
         return true;
       }
     } else if (currentStep === 3) {
-      if (isAudio || isPeripherals) {
-        // Step 3 para Audio o Peripherals: Quote Details - country es requerido
+      if (isAudio || isPeripherals || isMerchandising) {
+        // Step 3 para Audio, Peripherals o Merchandising: Quote Details - country es requerido
         return !!productData.country;
       } else {
         // Technical specs step - solo quantity es requerido para todas las categorías
@@ -510,6 +549,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
   const category = productData.category?.toLowerCase();
   const isAudio = category === "audio";
   const isPeripherals = category === "peripherals";
+  const isMerchandising = category === "merchandising";
 
   return (
     <div className="flex justify-center w-full">
@@ -521,7 +561,8 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
         {((currentStep === 2 &&
           (editingProductId ||
             productData.category?.toLowerCase() === "audio" ||
-            productData.category?.toLowerCase() === "peripherals")) ||
+            productData.category?.toLowerCase() === "peripherals" ||
+            productData.category?.toLowerCase() === "merchandising")) ||
           (currentStep === 2 &&
             editingProductId &&
             productData.category?.toLowerCase() !== "monitor") ||
@@ -535,7 +576,8 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
               size="small"
               body={
                 currentStep === 4 ||
-                (currentStep === 3 && (isAudio || isPeripherals))
+                (currentStep === 3 &&
+                  (isAudio || isPeripherals || isMerchandising))
                   ? "Save Product"
                   : "Continue"
               }
