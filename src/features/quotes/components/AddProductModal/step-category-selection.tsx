@@ -65,7 +65,7 @@ const categories: Category[] = [
     id: "other",
     name: "Other",
     icon: <Package className="w-6 h-6" />,
-    enabled: false,
+    enabled: true,
   },
 ];
 

@@ -90,6 +90,13 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
       handleAddCustom();
     } else if (e.key === "Escape") {
       setOpen(false);
+    } else if (e.key === " ") {
+      // Prevenir que el espacio cierre el popover
+      e.stopPropagation();
+      // Mantener el popover abierto
+      if (!open) {
+        setOpen(true);
+      }
     }
   };
 
@@ -148,47 +155,58 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
       )}
 
       {/* Input con botón + */}
-      <Popover open={open} onOpenChange={handleOpenChange}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            ref={containerRef as any}
-            className="bg-transparent p-0 border-none w-full text-left"
-            style={{ all: "unset", cursor: "text" }}
-          >
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  ref={inputRef}
-                  type={inputMode === "numeric" ? "number" : "text"}
-                  inputMode={inputMode === "numeric" ? "numeric" : "text"}
-                  placeholder={placeholder}
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  disabled={disabled}
-                  className="pr-10"
-                />
-                {inputValue.trim() &&
-                  !selectedValues.includes(inputValue.trim()) && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="top-1/2 right-1 z-10 absolute p-0 w-7 h-7 -translate-y-1/2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddCustom();
-                      }}
-                      disabled={disabled}
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  )}
+      <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
+        <div ref={containerRef as any} className="w-full">
+          <PopoverTrigger asChild>
+            <div
+              className="w-full cursor-text"
+              onClick={() => {
+                if (!open) {
+                  setOpen(true);
+                }
+                inputRef.current?.focus();
+              }}
+            >
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    ref={inputRef}
+                    type={inputMode === "numeric" ? "number" : "text"}
+                    inputMode={inputMode === "numeric" ? "numeric" : "text"}
+                    placeholder={placeholder}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => {
+                      if (!open) {
+                        setOpen(true);
+                      }
+                    }}
+                    disabled={disabled}
+                    className="pr-10"
+                  />
+                  {inputValue.trim() &&
+                    !selectedValues.includes(inputValue.trim()) && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="top-1/2 right-1 z-10 absolute p-0 w-7 h-7 -translate-y-1/2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleAddCustom();
+                        }}
+                        disabled={disabled}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    )}
+                </div>
               </div>
             </div>
-          </button>
-        </PopoverTrigger>
+          </PopoverTrigger>
+        </div>
         <PopoverContent
           className="bg-white p-0 w-[var(--radix-popover-trigger-width)]"
           align="start"
@@ -198,10 +216,15 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
             const target = e.target as HTMLElement;
             if (
               inputRef.current?.contains(target) ||
-              containerRef.current?.contains(target)
+              containerRef.current?.contains(target) ||
+              inputRef.current === target
             ) {
               e.preventDefault();
             }
+          }}
+          onEscapeKeyDown={(e) => {
+            // Permitir cerrar con Escape
+            setOpen(false);
           }}
         >
           <Command shouldFilter={false}>
@@ -229,9 +252,7 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
                 </CommandGroup>
               ) : (
                 <CommandEmpty>
-                  {inputValue.trim()
-                    ? "Press Enter or click + to add custom value"
-                    : "No options available"}
+                  Enter or click + to add custom value
                 </CommandEmpty>
               )}
             </CommandList>
