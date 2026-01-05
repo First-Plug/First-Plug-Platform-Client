@@ -91,7 +91,7 @@ export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
         <Label htmlFor="otherSpecifications">Other Specifications</Label>
         <textarea
           id="otherSpecifications"
-          placeholder="Any additional specifications or requirements (e.g., Noise cancelling)..."
+          placeholder="Type (headphones, speakers, microphone), connectivity (wireless, usb, bluetooth), noise cancellation, etc."
           value={productData.otherSpecifications || ""}
           onChange={(e) =>
             onDataChange({ otherSpecifications: e.target.value })

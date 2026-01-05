@@ -125,7 +125,7 @@ export const StepMonitorSpecs: React.FC<StepMonitorSpecsProps> = ({
         <Label htmlFor="otherSpecifications">Other Specifications</Label>
         <textarea
           id="otherSpecifications"
-          placeholder="Any additional specifications or requirements..."
+          placeholder="Refresh rate (Hz), panel type, connectivity options, etc."
           value={productData.otherSpecifications || ""}
           onChange={(e) =>
             onDataChange({ otherSpecifications: e.target.value })

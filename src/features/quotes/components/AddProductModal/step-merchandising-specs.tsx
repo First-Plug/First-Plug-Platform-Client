@@ -18,7 +18,9 @@ export const StepMerchandisingSpecs: React.FC<StepMerchandisingSpecsProps> = ({
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="w-full text-muted-foreground text-left">
-        Describe the merchandising items you need (clothing, mugs, thermoses, pens, notebooks, backpacks, onboarding kits, birthday/anniversary gifts, etc.).
+        Describe the merchandising items you need (clothing, mugs, thermoses,
+        pens, notebooks, backpacks, onboarding kits, birthday/anniversary gifts,
+        etc.).
       </p>
 
       <div className="gap-4 grid grid-cols-2 w-full">
@@ -49,11 +51,9 @@ export const StepMerchandisingSpecs: React.FC<StepMerchandisingSpecsProps> = ({
         </Label>
         <textarea
           id="description"
-          placeholder="Describe the merchandising items you need..."
+          placeholder="Describe the items you need: type of product, colors, sizes, branding requirements, etc."
           value={productData.description || ""}
-          onChange={(e) =>
-            onDataChange({ description: e.target.value })
-          }
+          onChange={(e) => onDataChange({ description: e.target.value })}
           rows={4}
           required
           className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[80px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
@@ -67,7 +67,7 @@ export const StepMerchandisingSpecs: React.FC<StepMerchandisingSpecsProps> = ({
         </Label>
         <textarea
           id="additionalRequirements"
-          placeholder="Any additional requirements or specifications..."
+          placeholder="Custom Packaging, logo placement, special materials, eco-friendly options, etc."
           value={productData.additionalRequirements || ""}
           onChange={(e) =>
             onDataChange({ additionalRequirements: e.target.value })
@@ -79,4 +79,3 @@ export const StepMerchandisingSpecs: React.FC<StepMerchandisingSpecsProps> = ({
     </div>
   );
 };
-

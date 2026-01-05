@@ -78,7 +78,7 @@ export const StepOtherSpecs: React.FC<StepOtherSpecsProps> = ({
         <Label htmlFor="otherSpecifications">Other Specifications</Label>
         <textarea
           id="otherSpecifications"
-          placeholder="Any additional specifications or requirements..."
+          placeholder="Describe the product and any specific requirements..."
           value={productData.otherSpecifications || ""}
           onChange={(e) =>
             onDataChange({ otherSpecifications: e.target.value })
@@ -90,4 +90,3 @@ export const StepOtherSpecs: React.FC<StepOtherSpecsProps> = ({
     </div>
   );
 };
-

@@ -35,7 +35,8 @@ export const StepPeripheralsSpecs: React.FC<StepPeripheralsSpecsProps> = ({
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="w-full text-muted-foreground text-left">
-        Select the peripheral specifications you need (mouse, keyboard, USB-C hub, cables, chargers, cases, etc.).
+        Select the peripheral specifications you need (mouse, keyboard, USB-C
+        hub, cables, chargers, cases, etc.).
       </p>
 
       <div className="gap-4 grid grid-cols-2 w-full">
@@ -90,7 +91,7 @@ export const StepPeripheralsSpecs: React.FC<StepPeripheralsSpecsProps> = ({
         <Label htmlFor="otherSpecifications">Other Specifications</Label>
         <textarea
           id="otherSpecifications"
-          placeholder="Any additional specifications or requirements..."
+          placeholder="Wireless / wired, keyboard language, ergonomic features, connectivity type, etc."
           value={productData.otherSpecifications || ""}
           onChange={(e) =>
             onDataChange({ otherSpecifications: e.target.value })
@@ -102,4 +103,3 @@ export const StepPeripheralsSpecs: React.FC<StepPeripheralsSpecsProps> = ({
     </div>
   );
 };
-

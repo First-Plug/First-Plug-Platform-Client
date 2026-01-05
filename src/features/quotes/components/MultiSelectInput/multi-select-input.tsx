@@ -158,15 +158,7 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
       <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
         <div ref={containerRef as any} className="w-full">
           <PopoverTrigger asChild>
-            <div
-              className="w-full cursor-text"
-              onClick={() => {
-                if (!open) {
-                  setOpen(true);
-                }
-                inputRef.current?.focus();
-              }}
-            >
+            <div className="w-full" onClick={(e) => e.stopPropagation()}>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Input
@@ -177,10 +169,21 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
                     value={inputValue}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
-                    onFocus={() => {
-                      if (!open) {
-                        setOpen(true);
-                      }
+                    onFocus={(e) => {
+                      e.stopPropagation();
+                      setOpen(true);
+                    }}
+                    onMouseDown={(e) => {
+                      // Prevenir que el PopoverTrigger capture el click
+                      e.stopPropagation();
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpen(true);
+                      // Asegurar que el input reciba el foco
+                      setTimeout(() => {
+                        inputRef.current?.focus();
+                      }, 0);
                     }}
                     disabled={disabled}
                     className="pr-10"
@@ -206,58 +209,61 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
               </div>
             </div>
           </PopoverTrigger>
+          <PopoverContent
+            className="bg-white p-0 w-[var(--radix-popover-trigger-width)]"
+            align="start"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onInteractOutside={(e) => {
+              // Prevenir que se cierre si el click fue en el input, el botón +, o el contenedor
+              const target = e.target as HTMLElement;
+              const isClickInside =
+                containerRef.current?.contains(target) ||
+                inputRef.current?.contains(target) ||
+                inputRef.current === target;
+
+              if (isClickInside) {
+                e.preventDefault();
+              }
+            }}
+            onEscapeKeyDown={(e) => {
+              // Permitir cerrar con Escape
+              setOpen(false);
+            }}
+          >
+            <Command shouldFilter={false}>
+              <CommandList>
+                {filteredOptions.length > 0 ? (
+                  <CommandGroup>
+                    {filteredOptions.map((option) => (
+                      <CommandItem
+                        key={option}
+                        value={option}
+                        onSelect={(selectedValue) => {
+                          handleSelect(selectedValue);
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 w-4 h-4",
+                            selectedValues.includes(option)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {option}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                ) : (
+                  <CommandEmpty>
+                    Enter or click + to add custom value
+                  </CommandEmpty>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
         </div>
-        <PopoverContent
-          className="bg-white p-0 w-[var(--radix-popover-trigger-width)]"
-          align="start"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          onInteractOutside={(e) => {
-            // Prevenir que se cierre si el click fue en el input, el botón +, o el contenedor
-            const target = e.target as HTMLElement;
-            if (
-              inputRef.current?.contains(target) ||
-              containerRef.current?.contains(target) ||
-              inputRef.current === target
-            ) {
-              e.preventDefault();
-            }
-          }}
-          onEscapeKeyDown={(e) => {
-            // Permitir cerrar con Escape
-            setOpen(false);
-          }}
-        >
-          <Command shouldFilter={false}>
-            <CommandList>
-              {filteredOptions.length > 0 ? (
-                <CommandGroup>
-                  {filteredOptions.map((option) => (
-                    <CommandItem
-                      key={option}
-                      value={option}
-                      onSelect={() => handleSelect(option)}
-                      className="cursor-pointer"
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 w-4 h-4",
-                          selectedValues.includes(option)
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                      {option}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              ) : (
-                <CommandEmpty>
-                  Enter or click + to add custom value
-                </CommandEmpty>
-              )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
       </Popover>
     </div>
   );
