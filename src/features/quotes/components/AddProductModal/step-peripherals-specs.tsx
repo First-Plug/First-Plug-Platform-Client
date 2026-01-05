@@ -8,16 +8,16 @@ import { Label } from "@/shared/components/ui/label";
 
 import type { QuoteProduct } from "../../types/quote.types";
 
-interface StepAudioSpecsProps {
+interface StepPeripheralsSpecsProps {
   productData: Partial<QuoteProduct>;
   onDataChange: (updates: Partial<QuoteProduct>) => void;
 }
 
-export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
+export const StepPeripheralsSpecs: React.FC<StepPeripheralsSpecsProps> = ({
   productData,
   onDataChange,
 }) => {
-  const category = "audio";
+  const category = "peripherals";
   const formFields = React.useMemo(() => loadFormFields(category), []);
 
   const handleBrandsChange = (brands: string[]) => {
@@ -35,8 +35,7 @@ export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="w-full text-muted-foreground text-left">
-        Select the audio equipment specifications you need. You can select
-        multiple options for each field.
+        Select the peripheral specifications you need (mouse, keyboard, USB-C hub, cables, chargers, cases, etc.).
       </p>
 
       <div className="gap-4 grid grid-cols-2 w-full">
@@ -91,7 +90,7 @@ export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
         <Label htmlFor="otherSpecifications">Other Specifications</Label>
         <textarea
           id="otherSpecifications"
-          placeholder="Any additional specifications or requirements (e.g., Noise cancelling)..."
+          placeholder="Any additional specifications or requirements..."
           value={productData.otherSpecifications || ""}
           onChange={(e) =>
             onDataChange({ otherSpecifications: e.target.value })
@@ -103,3 +102,4 @@ export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
     </div>
   );
 };
+

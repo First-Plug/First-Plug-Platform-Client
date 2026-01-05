@@ -8,16 +8,16 @@ import { Label } from "@/shared/components/ui/label";
 
 import type { QuoteProduct } from "../../types/quote.types";
 
-interface StepAudioSpecsProps {
+interface StepMonitorSpecsProps {
   productData: Partial<QuoteProduct>;
   onDataChange: (updates: Partial<QuoteProduct>) => void;
 }
 
-export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
+export const StepMonitorSpecs: React.FC<StepMonitorSpecsProps> = ({
   productData,
   onDataChange,
 }) => {
-  const category = "audio";
+  const category = "monitor";
   const formFields = React.useMemo(() => loadFormFields(category), []);
 
   const handleBrandsChange = (brands: string[]) => {
@@ -28,15 +28,25 @@ export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
     onDataChange({ models });
   };
 
+  const handleScreenSizeChange = (screenSize: string[]) => {
+    onDataChange({ screenSize });
+  };
+
+  const handleScreenTechnologyChange = (screenTechnology: string[]) => {
+    onDataChange({ screenTechnology });
+  };
+
   const getFieldOptionsForName = (fieldName: string): string[] => {
     return getFieldOptions(category, fieldName);
   };
 
+  const screenOptions = getFieldOptionsForName("screen");
+
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="w-full text-muted-foreground text-left">
-        Select the audio equipment specifications you need. You can select
-        multiple options for each field.
+        Select the monitor specifications you need. You can select multiple
+        options for each field.
       </p>
 
       <div className="gap-4 grid grid-cols-2 w-full">
@@ -84,6 +94,30 @@ export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
             />
           </div>
         )}
+
+        {/* Screen Size - Multi-select */}
+        {screenOptions.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <MultiSelectInput
+              title="Screen Size"
+              placeholder="Enter screen size"
+              options={screenOptions}
+              selectedValues={productData.screenSize || []}
+              onValuesChange={handleScreenSizeChange}
+            />
+          </div>
+        )}
+
+        {/* Screen Technology - Multi-select */}
+        <div className="flex flex-col gap-2">
+          <MultiSelectInput
+            title="Screen Technology"
+            placeholder="Select screen technology"
+            options={["HD", "Full HD", "QHD", "4K", "8K"]}
+            selectedValues={productData.screenTechnology || []}
+            onValuesChange={handleScreenTechnologyChange}
+          />
+        </div>
       </div>
 
       {/* Other Specifications */}
@@ -91,7 +125,7 @@ export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
         <Label htmlFor="otherSpecifications">Other Specifications</Label>
         <textarea
           id="otherSpecifications"
-          placeholder="Any additional specifications or requirements (e.g., Noise cancelling)..."
+          placeholder="Any additional specifications or requirements..."
           value={productData.otherSpecifications || ""}
           onChange={(e) =>
             onDataChange({ otherSpecifications: e.target.value })

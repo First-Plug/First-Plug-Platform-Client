@@ -65,7 +65,7 @@ export const StepQuoteDetails: React.FC<StepQuoteDetailsProps> = ({
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <p className="w-full text-muted-foreground text-center">
+      <p className="w-full text-muted-foreground text-left">
         Provide the delivery details and any additional comments for your quote
         request.
       </p>

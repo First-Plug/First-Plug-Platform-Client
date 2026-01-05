@@ -5,7 +5,9 @@ import { Button } from "@/shared";
 import { useQuoteStore } from "../../store/quote.store";
 import { StepCategorySelection } from "../AddProductModal/step-category-selection";
 import { StepOSSelection } from "../AddProductModal/step-os-selection";
-import { StepTechnicalSpecs } from "../AddProductModal/step-technical-specs";
+import { StepComputerSpecs } from "../AddProductModal/step-computer-specs";
+import { StepMonitorSpecs } from "../AddProductModal/step-monitor-specs";
+import { StepPeripheralsSpecs } from "../AddProductModal/step-peripherals-specs";
 import { StepAudioSpecs } from "../AddProductModal/step-audio-specs";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import type { QuoteProduct } from "../../types/quote.types";
@@ -127,9 +129,20 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
             additionalComments: undefined,
           }));
         } else if (currentStepValue === 3) {
-          // Si es Monitor, Audio o Peripherals y vamos al step 1, también limpiar la categoría
-          if ((isMonitor || isAudio || isPeripherals) && !editingId) {
-            // Resetear datos del step 3 y limpiar categoría, manteniendo el ID
+          // Determinar a qué step vamos antes de resetear datos
+          let nextStep = currentStepValue - 1;
+          if (currentStepValue === 3 && isMonitor && !editingId) {
+            nextStep = 1;
+          } else if (
+            currentStepValue === 3 &&
+            (isAudio || isPeripherals) &&
+            !editingId
+          ) {
+            nextStep = 2;
+          }
+
+          // Si es Monitor y vamos al step 1, limpiar categoría
+          if (isMonitor && nextStep === 1 && !editingId) {
             setProductData((prev) => ({
               id: prev.id || generateId(),
               quantity: 1,
@@ -139,8 +152,9 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
               category: undefined,
             }));
             setCurrentCategory(undefined);
-          } else if ((isAudio || isPeripherals) && !editingId) {
-            // Si es Audio o Peripherals y vamos al step 2, resetear datos del step 3 (quote details)
+          } else if (isAudio || isPeripherals) {
+            // Si es Audio o Peripherals y vamos al step 2, solo resetear datos del step 3 (quote details)
+            // NO limpiar la categoría
             setProductData((prev) => ({
               ...prev,
               country: undefined,
@@ -149,7 +163,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
               additionalComments: undefined,
             }));
           } else {
-            // Resetear solo datos del step 3 (technical specs o quote details)
+            // Para Computer u otras categorías, resetear datos del step 3 (technical specs)
             setProductData((prev) => ({
               ...prev,
               quantity: 1,
@@ -402,11 +416,10 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
             />
           );
         }
-        // Si es Peripherals, mostrar StepTechnicalSpecs
+        // Si es Peripherals, mostrar StepPeripheralsSpecs
         if (isPeripherals) {
           return (
-            <StepTechnicalSpecs
-              category={productData.category || ""}
+            <StepPeripheralsSpecs
               productData={productData}
               onDataChange={handleDataChange}
             />
@@ -434,14 +447,26 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
             />
           );
         }
-        // Para otras categorías, mostrar Technical Specs
-        return (
-          <StepTechnicalSpecs
-            category={productData.category || ""}
-            productData={productData}
-            onDataChange={handleDataChange}
-          />
-        );
+        // Para Computer, mostrar Computer Specs
+        if (category === "computer") {
+          return (
+            <StepComputerSpecs
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
+        // Para Monitor, mostrar Monitor Specs
+        if (isMonitor) {
+          return (
+            <StepMonitorSpecs
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
+        // Por defecto, no mostrar nada (no debería llegar aquí)
+        return null;
       case 4:
         return (
           <StepQuoteDetails
