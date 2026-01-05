@@ -35,7 +35,7 @@ const categories: Category[] = [
     id: "peripherals",
     name: "Peripherals",
     icon: <Icons.Mouse />,
-    enabled: false,
+    enabled: true,
   },
   {
     id: "merchandising",
