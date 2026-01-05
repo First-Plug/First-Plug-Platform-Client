@@ -328,7 +328,8 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
             updateData.otherSpecifications = productData.otherSpecifications;
           } else if (isMerchandising) {
             updateData.description = productData.description;
-            updateData.additionalRequirements = productData.additionalRequirements;
+            updateData.additionalRequirements =
+              productData.additionalRequirements;
             updateData.otherSpecifications = productData.otherSpecifications;
           }
 
@@ -340,6 +341,8 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
             id: productData.id!,
             category: productData.category!,
             quantity: productData.quantity!,
+            brands: productData.brands || [],
+            models: productData.models || [],
             country: productData.country!,
             city: productData.city,
             requiredDeliveryDate: productData.requiredDeliveryDate,
@@ -348,17 +351,17 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
 
           // Campos específicos según categoría
           if (isAudio || isPeripherals) {
-            completeProduct.brands = productData.brands || [];
-            completeProduct.models = productData.models || [];
-            completeProduct.otherSpecifications = productData.otherSpecifications;
+            completeProduct.otherSpecifications =
+              productData.otherSpecifications;
           } else if (isMerchandising) {
             completeProduct.description = productData.description;
-            completeProduct.additionalRequirements = productData.additionalRequirements;
-            completeProduct.otherSpecifications = productData.otherSpecifications;
+            completeProduct.additionalRequirements =
+              productData.additionalRequirements;
+            completeProduct.otherSpecifications =
+              productData.otherSpecifications;
           } else if (isOther) {
-            completeProduct.brands = productData.brands || [];
-            completeProduct.models = productData.models || [];
-            completeProduct.otherSpecifications = productData.otherSpecifications;
+            completeProduct.otherSpecifications =
+              productData.otherSpecifications;
           }
 
           addProduct(completeProduct);
