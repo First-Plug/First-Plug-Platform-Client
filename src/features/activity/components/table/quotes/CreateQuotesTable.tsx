@@ -154,6 +154,45 @@ interface StorageProduct {
   additionalComments?: string;
 }
 
+interface OffboardingProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    assignedEmail?: string;
+    countryCode: string;
+  };
+  destination: {
+    type: "Member" | "Office" | "Warehouse";
+    memberId?: string;
+    assignedMember?: string;
+    assignedEmail?: string;
+    officeId?: string;
+    officeName?: string;
+    warehouseId?: string;
+    warehouseName?: string;
+    countryCode: string;
+  };
+}
+
+interface OffboardingService {
+  originMember: {
+    memberId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    countryCode: string;
+  };
+  isSensitiveSituation?: boolean;
+  employeeKnows?: boolean;
+  desirablePickupDate?: string;
+}
+
 interface QuoteService {
   serviceCategory: string;
   issues?: string[];
@@ -177,7 +216,12 @@ interface QuoteService {
     | BuybackProduct[]
     | DonateProduct[]
     | CleaningProduct[]
-    | StorageProduct[];
+    | StorageProduct[]
+    | OffboardingProduct[];
+  originMember?: OffboardingService["originMember"];
+  isSensitiveSituation?: boolean;
+  employeeKnows?: boolean;
+  desirablePickupDate?: string;
   requiresCertificate?: boolean;
   comments?: string;
   additionalInfo?: string;
@@ -318,6 +362,25 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
               type: "service",
               serviceCategory: service.serviceCategory,
               storageProduct: product,
+              additionalDetails: service.additionalDetails,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Offboarding" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Offboarding, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              offboardingProduct: product,
+              originMember: service.originMember,
+              isSensitiveSituation: service.isSensitiveSituation,
+              employeeKnows: service.employeeKnows,
+              desirablePickupDate: service.desirablePickupDate,
               additionalDetails: service.additionalDetails,
             });
           });
@@ -793,6 +856,97 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             </span>
                           )}
                         </>
+                      ) : row.offboardingProduct ? (
+                        <>
+                          <span className="font-semibold">Offboarding</span>
+                          {row.originMember && (
+                            <span className="text-gray-600 text-xs">
+                              From: {row.originMember.firstName}{" "}
+                              {row.originMember.lastName}
+                              {row.originMember.countryCode && (
+                                <>
+                                  {" "}
+                                  <QuoteLocationWithCountry
+                                    country={row.originMember.countryCode}
+                                  />
+                                </>
+                              )}
+                            </span>
+                          )}
+                          <span className="font-semibold text-gray-700">
+                            {row.offboardingProduct.productSnapshot.category}
+                          </span>
+                          {(row.offboardingProduct.productSnapshot.brand ||
+                            row.offboardingProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.offboardingProduct.productSnapshot.brand}
+                              {row.offboardingProduct.productSnapshot.brand &&
+                                row.offboardingProduct.productSnapshot.model &&
+                                " - "}
+                              {row.offboardingProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.offboardingProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.offboardingProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN:{" "}
+                            {
+                              row.offboardingProduct.productSnapshot
+                                .serialNumber
+                            }
+                          </span>
+                          {row.offboardingProduct.destination && (
+                            <>
+                              <span className="font-semibold text-gray-700">
+                                To:{" "}
+                                {row.offboardingProduct.destination.type ===
+                                "Member"
+                                  ? row.offboardingProduct.destination
+                                      .assignedMember
+                                  : row.offboardingProduct.destination.type ===
+                                    "Office"
+                                  ? row.offboardingProduct.destination
+                                      .officeName
+                                  : row.offboardingProduct.destination
+                                      .warehouseName}
+                              </span>
+                              <span className="text-gray-600 text-xs">
+                                {row.offboardingProduct.destination.type}
+                                {row.offboardingProduct.destination
+                                  .countryCode && (
+                                  <>
+                                    {" "}
+                                    <QuoteLocationWithCountry
+                                      country={
+                                        row.offboardingProduct.destination
+                                          .countryCode
+                                      }
+                                    />
+                                  </>
+                                )}
+                              </span>
+                            </>
+                          )}
+                          {row.isSensitiveSituation && (
+                            <span className="text-red-600 font-semibold text-xs">
+                              ⚠️ Sensitive Situation
+                            </span>
+                          )}
+                          {row.employeeKnows !== undefined && (
+                            <span className="text-gray-600 text-xs">
+                              Employee Knows:{" "}
+                              {row.employeeKnows ? "✓ Yes" : "✗ No"}
+                            </span>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
                       ) : row.enrolledDevice ? (
                         <>
                           <span className="font-semibold">
@@ -877,6 +1031,8 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                       ? formatDateString(row.dataWipeAsset.desirableDate)
                       : row.cleaningProduct
                       ? formatDateString(row.cleaningProduct.desiredDate)
+                      : row.offboardingProduct
+                      ? formatDateString(row.desirablePickupDate)
                       : formatDateString(row.issueStartDate)}
                   </TableCell>
                 </>
