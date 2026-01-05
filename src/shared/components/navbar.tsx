@@ -59,7 +59,10 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
 
   // Obtener la categoría: primero del store, si no está, del producto en edición
   const editingProduct = editingProductId ? getProduct(editingProductId) : null;
-  const category = currentCategory?.toLowerCase() || editingProduct?.category?.toLowerCase() || "";
+  const category =
+    currentCategory?.toLowerCase() ||
+    editingProduct?.category?.toLowerCase() ||
+    "";
 
   const getStepTitle = (step: number) => {
     const stepTitles: Record<number, string> = {
@@ -74,22 +77,32 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   // Función helper para determinar el número total de pasos según la categoría y si se está editando
   const getTotalSteps = () => {
     const isEditing = !!editingProductId;
-    
+
     // Si estamos editando, usar steps dinámicos según categoría
     if (isEditing) {
-      const editCategory = editingProduct?.category?.toLowerCase() || currentCategory?.toLowerCase() || category;
+      const editCategory =
+        editingProduct?.category?.toLowerCase() ||
+        currentCategory?.toLowerCase() ||
+        category;
       if (editCategory === "computer") {
         return 3; // SO, Datos de computer, Detalles y tiempo
       } else if (editCategory === "monitor") {
         return 2; // Detalles del monitor, Detalles y tiempo
+      } else if (
+        editCategory === "audio" ||
+        editCategory === "peripherals" ||
+        editCategory === "merchandising" ||
+        editCategory === "other"
+      ) {
+        return 2; // Specs, Detalles y tiempo
       }
     }
-    
+
     // Si estamos en el step 1 y no estamos editando, siempre mostrar 3 pasos por defecto
     if (currentStep === 1 && !isEditing) {
       return 3;
     }
-    
+
     // Si no estamos editando y hay categoría seleccionada
     if (category === "computer") {
       return 4; // Categoría, SO, Datos, Detalles
@@ -100,10 +113,13 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   // Función helper para obtener el paso lógico desde el físico (para mostrar en UI)
   const getLogicalStep = (physicalStep: number): number => {
     const isEditing = !!editingProductId;
-    
+
     // Priorizar el modo edición
     if (isEditing) {
-      const editCategory = editingProduct?.category?.toLowerCase() || currentCategory?.toLowerCase() || category;
+      const editCategory =
+        editingProduct?.category?.toLowerCase() ||
+        currentCategory?.toLowerCase() ||
+        category;
       if (editCategory === "monitor") {
         // Monitor en edición: 3 (datos) -> 4 (detalles)
         // Lógicamente: 1 -> 2
@@ -118,9 +134,20 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         if (physicalStep === 3) return 2; // Datos de computer (step 2 lógico)
         if (physicalStep === 4) return 3; // Detalles y tiempo (step 3 lógico)
         return 1; // Por defecto para Computer en edición
+      } else if (
+        editCategory === "audio" ||
+        editCategory === "peripherals" ||
+        editCategory === "merchandising" ||
+        editCategory === "other"
+      ) {
+        // Audio, Peripherals, Merchandising u Other en edición: 2 (specs) -> 3 (detalles)
+        // Lógicamente: 1 -> 2
+        if (physicalStep === 2) return 1; // Specs (step 1 lógico)
+        if (physicalStep === 3) return 2; // Detalles y tiempo (step 2 lógico)
+        return 1; // Por defecto
       }
     }
-    
+
     // Modo creación
     if (category === "monitor") {
       // Monitor en creación: 1 (categoría) -> 3 (datos) -> 4 (detalles)
@@ -134,7 +161,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       // Lógicamente: 1 -> 2 -> 3 -> 4
       return physicalStep;
     }
-    
+
     // Sin categoría aún: mostrar paso físico directamente (por defecto 3 pasos)
     return physicalStep;
   };
@@ -143,14 +170,17 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   const getStepTitleForDisplay = (physicalStep: number) => {
     const isEditing = !!editingProductId;
     const logicalStep = getLogicalStep(physicalStep);
-    const editCategory = editingProduct?.category?.toLowerCase() || currentCategory?.toLowerCase() || category;
-    
+    const editCategory =
+      editingProduct?.category?.toLowerCase() ||
+      currentCategory?.toLowerCase() ||
+      category;
+
     // Mapeo de títulos según step lógico y contexto
     if (isEditing) {
       if (editCategory === "monitor") {
-        // Monitor en edición: step 1 lógico = Technical Specifications, step 2 lógico = Quote Details
+        // Monitor en edición: step 1 lógico = Monitor Specifications, step 2 lógico = Quote Details
         const monitorEditTitles: Record<number, string> = {
-          1: "Technical Specifications", // Detalles del monitor
+          1: "Monitor Specifications", // Detalles del monitor
           2: "Quote Details", // Detalles y tiempo
         };
         return monitorEditTitles[logicalStep] || "";
@@ -162,10 +192,82 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
           3: "Quote Details", // Detalles y tiempo
         };
         return computerEditTitles[logicalStep] || "";
+      } else if (editCategory === "peripherals") {
+        // Peripherals en edición: step 1 lógico = Peripheral Specifications, step 2 lógico = Quote Details
+        const peripheralsEditTitles: Record<number, string> = {
+          1: "Peripheral Specifications", // Detalles de peripherals
+          2: "Quote Details", // Detalles y tiempo
+        };
+        return peripheralsEditTitles[logicalStep] || "";
+      } else if (editCategory === "audio") {
+        // Audio en edición: step 1 lógico = Audio Specifications, step 2 lógico = Quote Details
+        const audioEditTitles: Record<number, string> = {
+          1: "Audio Specifications", // Detalles de audio
+          2: "Quote Details", // Detalles y tiempo
+        };
+        return audioEditTitles[logicalStep] || "";
+      } else if (editCategory === "merchandising") {
+        // Merchandising en edición: step 1 lógico = Merchandising Specifications, step 2 lógico = Quote Details
+        const merchandisingEditTitles: Record<number, string> = {
+          1: "Merchandising Specifications", // Detalles de merchandising
+          2: "Quote Details", // Detalles y tiempo
+        };
+        return merchandisingEditTitles[logicalStep] || "";
+      } else if (editCategory === "other") {
+        // Other en edición: step 1 lógico = Other Specifications, step 2 lógico = Quote Details
+        const otherEditTitles: Record<number, string> = {
+          1: "Other Specifications", // Detalles de other
+          2: "Quote Details", // Detalles y tiempo
+        };
+        return otherEditTitles[logicalStep] || "";
       }
     }
-    
-    // Para creación (no edición), usar los títulos estándar
+
+    // Para creación (no edición), determinar títulos según categoría y step físico
+    if (physicalStep === 1) {
+      return "Select Product Category";
+    }
+
+    // Step 2: diferentes títulos según categoría
+    if (physicalStep === 2) {
+      if (category === "computer") {
+        return "Select Operating System";
+      } else if (category === "audio") {
+        return "Audio Specifications";
+      } else if (category === "peripherals") {
+        return "Peripheral Specifications";
+      } else if (category === "merchandising") {
+        return "Merchandising Specifications";
+      } else if (category === "other") {
+        return "Other Specifications";
+      }
+      // Por defecto para otras categorías
+      return "Technical Specifications";
+    }
+
+    // Step 3: diferentes títulos según categoría
+    if (physicalStep === 3) {
+      if (category === "monitor") {
+        return "Monitor Specifications";
+      } else if (category === "computer") {
+        return "Technical Specifications";
+      } else if (
+        category === "audio" ||
+        category === "peripherals" ||
+        category === "merchandising" ||
+        category === "other"
+      ) {
+        return "Quote Details";
+      }
+      return "Technical Specifications";
+    }
+
+    // Step 4: siempre Quote Details
+    if (physicalStep === 4) {
+      return "Quote Details";
+    }
+
+    // Por defecto, usar los títulos estándar
     return getStepTitle(physicalStep);
   };
 
@@ -193,14 +295,14 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isMonitor = category === "monitor";
     const isEditing = !!editingProductId;
     const minStep = isEditing ? (isMonitor ? 3 : 2) : 1;
-    
+
     const shouldShowBackButton =
       onBack &&
       currentStep > minStep &&
       !(currentStep === 2 && isMonitor && !isEditing); // No mostrar back si es Monitor en creación y está en step 2
 
     return (
-      <nav className="flex justify-between items-center px-4 border-b h-[10vh] min-h-[10vh] max-h-[10vh]">
+      <nav className="flex justify-between items-center px-4 h-[10vh] min-h-[10vh] max-h-[10vh]">
         <div className="flex items-center gap-4">
           {shouldShowBackButton && (
             <button

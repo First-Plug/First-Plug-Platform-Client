@@ -151,7 +151,7 @@ export default function NewQuoteRequestPage() {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end">
+            <div className="flex justify-end pb-4">
               <Button
                 variant="primary"
                 icon={<Send size={18} color="white" strokeWidth={2} />}

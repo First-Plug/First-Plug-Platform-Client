@@ -16,6 +16,8 @@ export interface QuoteProduct {
   };
   deviceEnrollment?: boolean;
   otherSpecifications?: string;
+  description?: string; // Para Merchandising
+  additionalRequirements?: string; // Para Merchandising
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -36,6 +38,8 @@ export interface QuoteRequestPayload {
     screenSize?: string[];
     screenTechnology?: string[];
     otherSpecifications?: string;
+    description?: string; // Para Merchandising
+    additionalRequirements?: string; // Para Merchandising
     extendedWarranty?: boolean;
     extendedWarrantyYears?: number;
     deviceEnrollment?: boolean;
