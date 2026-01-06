@@ -10,6 +10,7 @@ import monitorData from "../components/JSON/monitorform.json";
 import peripheralsData from "../components/JSON/peripheralsform.json";
 import othersData from "../components/JSON/othersform.json";
 import merchandisingData from "../components/JSON/merchandisingform.json";
+import phoneData from "../components/JSON/phoneform.json";
 
 const categoryComponents = {
   Audio: audioData,
@@ -18,6 +19,7 @@ const categoryComponents = {
   Monitor: monitorData,
   Peripherals: peripheralsData,
   Other: othersData,
+  Phone: phoneData,
 };
 
 /**

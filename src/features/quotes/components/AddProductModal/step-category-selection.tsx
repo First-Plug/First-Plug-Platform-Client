@@ -47,7 +47,7 @@ const categories: Category[] = [
     id: "phone",
     name: "Phone",
     icon: <Smartphone className="w-6 h-6" />,
-    enabled: false,
+    enabled: true,
   },
   {
     id: "furniture",
