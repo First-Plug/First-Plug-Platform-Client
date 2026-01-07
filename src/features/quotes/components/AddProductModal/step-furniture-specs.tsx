@@ -8,40 +8,30 @@ import { Label } from "@/shared/components/ui/label";
 
 import type { QuoteProduct } from "../../types/quote.types";
 
-interface StepTabletSpecsProps {
+interface StepFurnitureSpecsProps {
   productData: Partial<QuoteProduct>;
   onDataChange: (updates: Partial<QuoteProduct>) => void;
 }
 
-export const StepTabletSpecs: React.FC<StepTabletSpecsProps> = ({
+export const StepFurnitureSpecs: React.FC<StepFurnitureSpecsProps> = ({
   productData,
   onDataChange,
 }) => {
-  const category = "tablet";
+  const category = "furniture";
   const formFields = React.useMemo(() => loadFormFields(category), []);
 
-  const handleBrandsChange = (brands: string[]) => {
-    onDataChange({ brands });
-  };
-
-  const handleModelsChange = (models: string[]) => {
-    onDataChange({ models });
-  };
-
-  const handleScreenSizeChange = (screenSize: string[]) => {
-    onDataChange({ screenSize });
+  const handleFurnitureTypeChange = (furnitureType: string[]) => {
+    onDataChange({ furnitureType });
   };
 
   const getFieldOptionsForName = (fieldName: string): string[] => {
     return getFieldOptions(category, fieldName);
   };
 
-  const screenOptions = getFieldOptionsForName("screen");
-
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="w-full text-muted-foreground text-left">
-        Select the tablet specifications you need. You can select multiple
+        Select the furniture specifications you need. You can select multiple
         options for each field.
       </p>
 
@@ -65,41 +55,15 @@ export const StepTabletSpecs: React.FC<StepTabletSpecsProps> = ({
           />
         </div>
 
-        {/* Brand - Multi-select */}
-        {formFields.find((f) => f.name === "brand") && (
+        {/* Furniture Type - Multi-select */}
+        {formFields.find((f) => f.name === "type") && (
           <div className="flex flex-col gap-2">
             <MultiSelectInput
-              title="Brand"
-              placeholder="Enter brand"
-              options={getFieldOptionsForName("brand")}
-              selectedValues={productData.brands || []}
-              onValuesChange={handleBrandsChange}
-            />
-          </div>
-        )}
-
-        {/* Model - Multi-select */}
-        {formFields.find((f) => f.name === "model") && (
-          <div className="flex flex-col gap-2">
-            <MultiSelectInput
-              title="Model"
-              placeholder="Enter model name"
-              options={getFieldOptionsForName("model")}
-              selectedValues={productData.models || []}
-              onValuesChange={handleModelsChange}
-            />
-          </div>
-        )}
-
-        {/* Screen Size - Multi-select */}
-        {screenOptions.length > 0 && (
-          <div className="flex flex-col gap-2">
-            <MultiSelectInput
-              title="Screen Size"
-              placeholder="Enter screen size"
-              options={screenOptions}
-              selectedValues={productData.screenSize || []}
-              onValuesChange={handleScreenSizeChange}
+              title="Furniture Type"
+              placeholder="Enter furniture type"
+              options={getFieldOptionsForName("type")}
+              selectedValues={productData.furnitureType || []}
+              onValuesChange={handleFurnitureTypeChange}
             />
           </div>
         )}
@@ -110,7 +74,7 @@ export const StepTabletSpecs: React.FC<StepTabletSpecsProps> = ({
         <Label htmlFor="otherSpecifications">Other Specifications</Label>
         <textarea
           id="otherSpecifications"
-          placeholder="Storage capacity, color, connectivity (Wi-Fi, Cellular), accessories (stylus, keyboard), etc."
+          placeholder="Ergonomic design, adjustable height, materials, dimensions, color preferences, etc."
           value={productData.otherSpecifications || ""}
           onChange={(e) =>
             onDataChange({ otherSpecifications: e.target.value })
@@ -122,3 +86,4 @@ export const StepTabletSpecs: React.FC<StepTabletSpecsProps> = ({
     </div>
   );
 };
+

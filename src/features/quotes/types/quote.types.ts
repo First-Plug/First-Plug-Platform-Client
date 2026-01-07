@@ -18,6 +18,7 @@ export interface QuoteProduct {
   otherSpecifications?: string;
   description?: string; // Para Merchandising
   additionalRequirements?: string; // Para Merchandising
+  furnitureType?: string[]; // Para Furniture
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -40,6 +41,7 @@ export interface QuoteRequestPayload {
     otherSpecifications?: string;
     description?: string; // Para Merchandising
     additionalRequirements?: string; // Para Merchandising
+    furnitureType?: string[]; // Para Furniture
     extendedWarranty?: boolean;
     extendedWarrantyYears?: number;
     deviceEnrollment?: boolean;

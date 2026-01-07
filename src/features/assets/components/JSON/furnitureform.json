@@ -1,0 +1,21 @@
+{
+  "fields": [
+    {
+      "name": "type",
+      "title": "Furniture Type*",
+      "options": [
+        "Desk",
+        "Chair",
+        "Standing Desk",
+        "Monitor Stand",
+        "Whiteboard",
+        "Shelving",
+        "Desk Lamp",
+        "Locker",
+        "Filing Cabinet",
+        "Bookcase",
+        "Other"
+      ]
+    }
+  ]
+}

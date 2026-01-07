@@ -93,6 +93,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         editCategory === "peripherals" ||
         editCategory === "phone" ||
         editCategory === "tablet" ||
+        editCategory === "furniture" ||
         editCategory === "merchandising" ||
         editCategory === "other"
       ) {
@@ -108,6 +109,18 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     // Si no estamos editando y hay categoría seleccionada
     if (category === "computer") {
       return 4; // Categoría, SO, Datos, Detalles
+    }
+    // Para furniture, phone, tablet, audio, peripherals, merchandising y other: 3 pasos (Categoría, Specs, Detalles)
+    if (
+      category === "furniture" ||
+      category === "phone" ||
+      category === "tablet" ||
+      category === "audio" ||
+      category === "peripherals" ||
+      category === "merchandising" ||
+      category === "other"
+    ) {
+      return 3;
     }
     return 3; // Por defecto 3 pasos (Monitor u otras categorías: Categoría, Datos, Detalles)
   };
@@ -141,10 +154,11 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         editCategory === "peripherals" ||
         editCategory === "phone" ||
         editCategory === "tablet" ||
+        editCategory === "furniture" ||
         editCategory === "merchandising" ||
         editCategory === "other"
       ) {
-        // Audio, Peripherals, Phone, Tablet, Merchandising u Other en edición: 2 (specs) -> 3 (detalles)
+        // Audio, Peripherals, Phone, Tablet, Furniture, Merchandising u Other en edición: 2 (specs) -> 3 (detalles)
         // Lógicamente: 1 -> 2
         if (physicalStep === 2) return 1; // Specs (step 1 lógico)
         if (physicalStep === 3) return 2; // Detalles y tiempo (step 2 lógico)
@@ -238,6 +252,13 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
           2: "Quote Details", // Detalles y tiempo
         };
         return tabletEditTitles[logicalStep] || "";
+      } else if (editCategory === "furniture") {
+        // Furniture en edición: step 1 lógico = Furniture Specifications, step 2 lógico = Quote Details
+        const furnitureEditTitles: Record<number, string> = {
+          1: "Furniture Specifications", // Detalles de furniture
+          2: "Quote Details", // Detalles y tiempo
+        };
+        return furnitureEditTitles[logicalStep] || "";
       }
     }
 
@@ -258,6 +279,8 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         return "Phone Specifications";
       } else if (category === "tablet") {
         return "Tablet Specifications";
+      } else if (category === "furniture") {
+        return "Furniture Specifications";
       } else if (category === "merchandising") {
         return "Merchandising Specifications";
       } else if (category === "other") {
@@ -278,6 +301,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         category === "peripherals" ||
         category === "phone" ||
         category === "tablet" ||
+        category === "furniture" ||
         category === "merchandising" ||
         category === "other"
       ) {

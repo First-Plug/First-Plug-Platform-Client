@@ -53,7 +53,7 @@ const categories: Category[] = [
     id: "furniture",
     name: "Furniture",
     icon: <Sofa className="w-6 h-6" />,
-    enabled: false,
+    enabled: true,
   },
   {
     id: "tablet",
