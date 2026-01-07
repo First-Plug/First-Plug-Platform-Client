@@ -5,6 +5,7 @@ import peripheralsForm from "../../assets/components/JSON/peripheralsform.json";
 import merchandisingForm from "../../assets/components/JSON/merchandisingform.json";
 import othersForm from "../../assets/components/JSON/othersform.json";
 import phoneForm from "../../assets/components/JSON/phoneform.json";
+import tabletForm from "../../assets/components/JSON/tabletform.json";
 
 export interface FormField {
   name: string;
@@ -24,6 +25,7 @@ const formFieldsMap: Record<string, FormFieldsData> = {
   merchandising: merchandisingForm as FormFieldsData,
   other: othersForm as FormFieldsData,
   phone: phoneForm as FormFieldsData,
+  tablet: tabletForm as FormFieldsData,
 };
 
 export const loadFormFields = (category: string): FormField[] => {

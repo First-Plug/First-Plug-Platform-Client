@@ -10,6 +10,7 @@ import { StepOSSelection } from "./step-os-selection";
 import { StepComputerSpecs } from "./step-computer-specs";
 import { StepMonitorSpecs } from "./step-monitor-specs";
 import { StepPhoneSpecs } from "./step-phone-specs";
+import { StepTabletSpecs } from "./step-tablet-specs";
 import { StepQuoteDetails } from "./step-quote-details";
 import type { QuoteProduct } from "../../types/quote.types";
 import { useToast } from "@/shared/components/ui/use-toast";
@@ -113,6 +114,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     const category = productData.category?.toLowerCase();
     const isMonitor = category === "monitor";
     const isPhone = category === "phone";
+    const isTablet = category === "tablet";
 
     // Validaciones antes de avanzar
     if (currentStep === 1) {
@@ -120,24 +122,24 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       // Si es Monitor, saltar directamente al step 3
       setCurrentStep(isMonitor ? 3 : 2);
     } else if (currentStep === 2) {
-      // Si es Phone, validar quantity y avanzar a Quote Details
-      if (isPhone) {
+      // Si es Phone o Tablet, validar quantity y avanzar a Quote Details
+      if (isPhone || isTablet) {
         if (!productData.quantity || productData.quantity < 1) return;
         setCurrentStep(3);
       } else if (!isMonitor) {
-        // Solo avanzar desde step 2 si NO es Monitor ni Phone
+        // Solo avanzar desde step 2 si NO es Monitor, Phone ni Tablet
         setCurrentStep(3);
       }
     } else if (
-      (currentStep === 3 && !isMonitor && !isPhone) ||
+      (currentStep === 3 && !isMonitor && !isPhone && !isTablet) ||
       (currentStep === 3 && isMonitor)
     ) {
       // Technical specs step (físico 3, pero lógico 2 para Monitor o 3 para Computer)
       // Solo quantity es requerido para todas las categorías
       if (!productData.quantity || productData.quantity < 1) return;
       setCurrentStep(4);
-    } else if (currentStep === 3 && isPhone) {
-      // Si es Phone en step 3, es Quote Details - validar country
+    } else if (currentStep === 3 && (isPhone || isTablet)) {
+      // Si es Phone o Tablet en step 3, es Quote Details - validar country
       if (!productData.country) return;
       // Guardar producto
       const completeProduct: QuoteProduct = {
@@ -203,6 +205,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     const category = productData.category?.toLowerCase();
     const isMonitor = category === "monitor";
     const isPhone = category === "phone";
+    const isTablet = category === "tablet";
 
     if (currentStep === 4) {
       // Desde quote details, volver a technical specs
@@ -214,8 +217,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         additionalComments: undefined,
       });
       setCurrentStep(3);
-    } else if (currentStep === 3 && isPhone) {
-      // Desde quote details (Phone), volver a Phone Specs
+    } else if (currentStep === 3 && (isPhone || isTablet)) {
+      // Desde quote details (Phone o Tablet), volver a Specs
       // Resetear datos del step 3
       handleDataChange({
         country: undefined,
@@ -224,7 +227,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         additionalComments: undefined,
       });
       setCurrentStep(2);
-    } else if (currentStep === 3 && !isMonitor && !isPhone) {
+    } else if (currentStep === 3 && !isMonitor && !isPhone && !isTablet) {
       // Desde technical specs (Computer), volver a OS selection
       // Resetear datos del step 3
       handleDataChange({
@@ -258,17 +261,18 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         otherSpecifications: undefined,
       });
       setCurrentStep(1);
-    } else if (currentStep === 2 && isPhone) {
-      // Desde Phone Specs, volver a category selection
+    } else if (currentStep === 2 && (isPhone || isTablet)) {
+      // Desde Phone o Tablet Specs, volver a category selection
       // Resetear datos del step 2
       handleDataChange({
         quantity: 1,
         brands: [],
         models: [],
+        screenSize: undefined,
         otherSpecifications: undefined,
       });
       setCurrentStep(1);
-    } else if (currentStep === 2 && !isMonitor && !isPhone) {
+    } else if (currentStep === 2 && !isMonitor && !isPhone && !isTablet) {
       // Desde OS selection, volver a category selection (solo si NO es Monitor ni Phone)
       // Resetear datos del step 2
       handleDataChange({
@@ -282,6 +286,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     const category = productData.category?.toLowerCase();
     const isMonitor = category === "monitor";
     const isPhone = category === "phone";
+    const isTablet = category === "tablet";
 
     // Para Monitor, el step 2 físico no debería mostrarse, pero si llegamos aquí mostrar el título correcto
     if (currentStep === 2 && isMonitor) {
@@ -295,9 +300,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         if (isPhone) {
           return "Phone Specifications";
         }
+        if (isTablet) {
+          return "Tablet Specifications";
+        }
         return "Select Operating System";
       case 3:
-        if (isPhone) {
+        if (isPhone || isTablet) {
           return "Quote Details";
         }
         return "Technical Specifications";
@@ -312,6 +320,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     const category = productData.category?.toLowerCase();
     const isMonitor = category === "monitor";
     const isPhone = category === "phone";
+    const isTablet = category === "tablet";
 
     switch (currentStep) {
       case 1:
@@ -331,6 +340,15 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             />
           );
         }
+        // Si es Tablet, mostrar Tablet Specs
+        if (isTablet) {
+          return (
+            <StepTabletSpecs
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
         // Solo mostrar OS selection si NO es Monitor
         if (isMonitor) {
           return null;
@@ -345,6 +363,15 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       case 3:
         // Si es Phone, mostrar Quote Details
         if (isPhone) {
+          return (
+            <StepQuoteDetails
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
+        // Si es Tablet, mostrar Quote Details
+        if (isTablet) {
           return (
             <StepQuoteDetails
               productData={productData}
@@ -387,15 +414,16 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const canProceed = () => {
     const category = productData.category?.toLowerCase();
     const isPhone = category === "phone";
+    const isTablet = category === "tablet";
 
     if (currentStep === 1) {
       return !!productData.category;
-    } else if (currentStep === 2 && isPhone) {
-      // Para Phone en step 2, quantity es requerido
+    } else if (currentStep === 2 && (isPhone || isTablet)) {
+      // Para Phone o Tablet en step 2, quantity es requerido
       return !!productData.quantity && productData.quantity >= 1;
     } else if (currentStep === 3) {
-      if (isPhone) {
-        // Para Phone en step 3, es Quote Details - country es requerido
+      if (isPhone || isTablet) {
+        // Para Phone o Tablet en step 3, es Quote Details - country es requerido
         return !!productData.country;
       }
       // Solo quantity es requerido para todas las categorías

@@ -12,6 +12,7 @@ import { StepAudioSpecs } from "../AddProductModal/step-audio-specs";
 import { StepMerchandisingSpecs } from "../AddProductModal/step-merchandising-specs";
 import { StepOtherSpecs } from "../AddProductModal/step-other-specs";
 import { StepPhoneSpecs } from "../AddProductModal/step-phone-specs";
+import { StepTabletSpecs } from "../AddProductModal/step-tablet-specs";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import type { QuoteProduct } from "../../types/quote.types";
 
@@ -105,12 +106,18 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
       const isMerchandising = categoryLower === "merchandising";
       const isOther = categoryLower === "other";
       const isPhone = categoryLower === "phone";
+      const isTablet = categoryLower === "tablet";
 
       // Determinar el step mínimo según si es edición y la categoría
       const minStep = editingId
         ? isMonitor
           ? 3
-          : isAudio || isPeripherals || isMerchandising || isOther || isPhone
+          : isAudio ||
+            isPeripherals ||
+            isMerchandising ||
+            isOther ||
+            isPhone ||
+            isTablet
           ? 2
           : 2
         : 1;
@@ -147,7 +154,8 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
               isPeripherals ||
               isMerchandising ||
               isOther ||
-              isPhone) &&
+              isPhone ||
+              isTablet) &&
             !editingId
           ) {
             nextStep = 2;
@@ -198,13 +206,14 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
             }));
           }
         } else if (currentStepValue === 2) {
-          // Resetear datos del step 2 (OS selection, Audio specs, Peripherals specs, Phone specs, Merchandising specs u Other specs)
-          if (isAudio || isPeripherals || isOther || isPhone) {
+          // Resetear datos del step 2 (OS selection, Audio specs, Peripherals specs, Phone specs, Tablet specs, Merchandising specs u Other specs)
+          if (isAudio || isPeripherals || isOther || isPhone || isTablet) {
             setProductData((prev) => ({
               ...prev,
               quantity: 1,
               brands: [],
               models: [],
+              screenSize: undefined,
               otherSpecifications: undefined,
             }));
           } else if (isMerchandising) {
@@ -224,20 +233,30 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
         }
 
         // Navegación especial para Monitor: 4 -> 3 -> 1
-        // Navegación especial para Audio, Peripherals, Merchandising, Other y Phone: 3 -> 2 -> 1
+        // Navegación especial para Audio, Peripherals, Merchandising, Other, Phone y Tablet: 3 -> 2 -> 1
         if (currentStepValue === 4 && isMonitor) {
           setCurrentStep(3);
         } else if (currentStepValue === 3 && isMonitor && !editingId) {
           setCurrentStep(1);
         } else if (
           currentStepValue === 3 &&
-          (isAudio || isPeripherals || isMerchandising || isOther || isPhone) &&
+          (isAudio ||
+            isPeripherals ||
+            isMerchandising ||
+            isOther ||
+            isPhone ||
+            isTablet) &&
           !editingId
         ) {
           setCurrentStep(2);
         } else if (
           currentStepValue === 2 &&
-          (isAudio || isPeripherals || isMerchandising || isOther || isPhone) &&
+          (isAudio ||
+            isPeripherals ||
+            isMerchandising ||
+            isOther ||
+            isPhone ||
+            isTablet) &&
           !editingId
         ) {
           setCurrentStep(1);
@@ -274,7 +293,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
     setCurrentCategory(category);
     const categoryLower = category.toLowerCase();
     // Si es Monitor, saltar directamente al step 3 (technical specs)
-    // Si es Audio, Peripherals, Phone, Merchandising u Other, ir al step 2 (specs)
+    // Si es Audio, Peripherals, Phone, Tablet, Merchandising u Other, ir al step 2 (specs)
     // Si es Computer u otra categoría que requiere OS, ir al step 2 (OS selection)
     if (categoryLower === "monitor") {
       setCurrentStep(3);
@@ -282,6 +301,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
       categoryLower === "audio" ||
       categoryLower === "peripherals" ||
       categoryLower === "phone" ||
+      categoryLower === "tablet" ||
       categoryLower === "merchandising" ||
       categoryLower === "other"
     ) {
@@ -311,11 +331,12 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
     const isAudio = category === "audio";
     const isPeripherals = category === "peripherals";
     const isPhone = category === "phone";
+    const isTablet = category === "tablet";
 
     // Validaciones antes de avanzar
     if (currentStep === 2) {
-      if (isAudio || isPeripherals || isPhone) {
-        // Step 2 para Audio, Peripherals o Phone: validar quantity
+      if (isAudio || isPeripherals || isPhone || isTablet) {
+        // Step 2 para Audio, Peripherals, Phone o Tablet: validar quantity
         if (!productData.quantity || productData.quantity < 1) return;
         setCurrentStep(3);
       } else if (!isMonitor) {
@@ -323,7 +344,14 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
         setCurrentStep(3);
       }
     } else if (currentStep === 3) {
-      if (isAudio || isPeripherals || isPhone || isMerchandising || isOther) {
+      if (
+        isAudio ||
+        isPeripherals ||
+        isPhone ||
+        isTablet ||
+        isMerchandising ||
+        isOther
+      ) {
         // Step 3 para Audio, Peripherals, Merchandising u Other: Quote Details - validar country y guardar producto
         if (!productData.country) return;
 
@@ -338,9 +366,10 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
           };
 
           // Campos específicos según categoría
-          if (isAudio || isPeripherals || isPhone) {
+          if (isAudio || isPeripherals || isPhone || isTablet) {
             updateData.brands = productData.brands || [];
             updateData.models = productData.models || [];
+            updateData.screenSize = productData.screenSize;
             updateData.otherSpecifications = productData.otherSpecifications;
           } else if (isMerchandising) {
             updateData.description = productData.description;
@@ -366,7 +395,8 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
           };
 
           // Campos específicos según categoría
-          if (isAudio || isPeripherals || isPhone) {
+          if (isAudio || isPeripherals || isPhone || isTablet) {
+            completeProduct.screenSize = productData.screenSize;
             completeProduct.otherSpecifications =
               productData.otherSpecifications;
           } else if (isMerchandising) {
@@ -453,6 +483,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
     const isAudio = category === "audio";
     const isPeripherals = category === "peripherals";
     const isPhone = category === "phone";
+    const isTablet = category === "tablet";
 
     switch (currentStep) {
       case 1:
@@ -494,6 +525,15 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
             />
           );
         }
+        // Si es Tablet, mostrar StepTabletSpecs
+        if (isTablet) {
+          return (
+            <StepTabletSpecs
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
         // Si es Merchandising, mostrar StepMerchandisingSpecs
         if (isMerchandising) {
           return (
@@ -525,8 +565,15 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
           />
         );
       case 3:
-        // Si es Audio, Peripherals, Phone, Merchandising u Other, mostrar Quote Details
-        if (isAudio || isPeripherals || isPhone || isMerchandising || isOther) {
+        // Si es Audio, Peripherals, Phone, Tablet, Merchandising u Other, mostrar Quote Details
+        if (
+          isAudio ||
+          isPeripherals ||
+          isPhone ||
+          isTablet ||
+          isMerchandising ||
+          isOther
+        ) {
           return (
             <StepQuoteDetails
               productData={productData}
@@ -574,10 +621,11 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
     const isMerchandising = category === "merchandising";
     const isOther = category === "other";
     const isPhone = category === "phone";
+    const isTablet = category === "tablet";
 
     if (currentStep === 2) {
-      if (isAudio || isPeripherals || isOther || isPhone) {
-        // Step 2 para Audio, Peripherals, Other o Phone: quantity es requerido
+      if (isAudio || isPeripherals || isOther || isPhone || isTablet) {
+        // Step 2 para Audio, Peripherals, Other, Phone o Tablet: quantity es requerido
         return !!productData.quantity && productData.quantity >= 1;
       } else if (isMerchandising) {
         // Step 2 para Merchandising: quantity y description son requeridos
@@ -592,8 +640,15 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
         return true;
       }
     } else if (currentStep === 3) {
-      if (isAudio || isPeripherals || isPhone || isMerchandising || isOther) {
-        // Step 3 para Audio, Peripherals, Phone, Merchandising u Other: Quote Details - country es requerido
+      if (
+        isAudio ||
+        isPeripherals ||
+        isPhone ||
+        isTablet ||
+        isMerchandising ||
+        isOther
+      ) {
+        // Step 3 para Audio, Peripherals, Phone, Tablet, Merchandising u Other: Quote Details - country es requerido
         return !!productData.country;
       } else {
         // Technical specs step - solo quantity es requerido para todas las categorías
@@ -609,6 +664,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
   const isAudio = category === "audio";
   const isPeripherals = category === "peripherals";
   const isPhone = category === "phone";
+  const isTablet = category === "tablet";
   const isMerchandising = category === "merchandising";
   const isOther = category === "other";
 
@@ -624,6 +680,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
             productData.category?.toLowerCase() === "audio" ||
             productData.category?.toLowerCase() === "peripherals" ||
             productData.category?.toLowerCase() === "phone" ||
+            productData.category?.toLowerCase() === "tablet" ||
             productData.category?.toLowerCase() === "merchandising" ||
             productData.category?.toLowerCase() === "other")) ||
           (currentStep === 2 &&
@@ -643,6 +700,7 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
                   (isAudio ||
                     isPeripherals ||
                     isPhone ||
+                    isTablet ||
                     isMerchandising ||
                     isOther))
                   ? "Save Product"

@@ -11,6 +11,7 @@ import peripheralsData from "../components/JSON/peripheralsform.json";
 import othersData from "../components/JSON/othersform.json";
 import merchandisingData from "../components/JSON/merchandisingform.json";
 import phoneData from "../components/JSON/phoneform.json";
+import tabletData from "../components/JSON/tabletform.json";
 
 const categoryComponents = {
   Audio: audioData,
@@ -20,6 +21,7 @@ const categoryComponents = {
   Peripherals: peripheralsData,
   Other: othersData,
   Phone: phoneData,
+  Tablet: tabletData,
 };
 
 /**

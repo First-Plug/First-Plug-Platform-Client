@@ -92,6 +92,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         editCategory === "audio" ||
         editCategory === "peripherals" ||
         editCategory === "phone" ||
+        editCategory === "tablet" ||
         editCategory === "merchandising" ||
         editCategory === "other"
       ) {
@@ -139,10 +140,11 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         editCategory === "audio" ||
         editCategory === "peripherals" ||
         editCategory === "phone" ||
+        editCategory === "tablet" ||
         editCategory === "merchandising" ||
         editCategory === "other"
       ) {
-        // Audio, Peripherals, Phone, Merchandising u Other en edición: 2 (specs) -> 3 (detalles)
+        // Audio, Peripherals, Phone, Tablet, Merchandising u Other en edición: 2 (specs) -> 3 (detalles)
         // Lógicamente: 1 -> 2
         if (physicalStep === 2) return 1; // Specs (step 1 lógico)
         if (physicalStep === 3) return 2; // Detalles y tiempo (step 2 lógico)
@@ -229,6 +231,13 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
           2: "Quote Details", // Detalles y tiempo
         };
         return phoneEditTitles[logicalStep] || "";
+      } else if (editCategory === "tablet") {
+        // Tablet en edición: step 1 lógico = Tablet Specifications, step 2 lógico = Quote Details
+        const tabletEditTitles: Record<number, string> = {
+          1: "Tablet Specifications", // Detalles de tablet
+          2: "Quote Details", // Detalles y tiempo
+        };
+        return tabletEditTitles[logicalStep] || "";
       }
     }
 
@@ -247,6 +256,8 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         return "Peripheral Specifications";
       } else if (category === "phone") {
         return "Phone Specifications";
+      } else if (category === "tablet") {
+        return "Tablet Specifications";
       } else if (category === "merchandising") {
         return "Merchandising Specifications";
       } else if (category === "other") {
@@ -266,6 +277,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         category === "audio" ||
         category === "peripherals" ||
         category === "phone" ||
+        category === "tablet" ||
         category === "merchandising" ||
         category === "other"
       ) {

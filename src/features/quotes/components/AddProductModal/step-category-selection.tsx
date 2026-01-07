@@ -59,7 +59,7 @@ const categories: Category[] = [
     id: "tablet",
     name: "Tablet",
     icon: <Tablet className="w-6 h-6" />,
-    enabled: false,
+    enabled: true,
   },
   {
     id: "other",
