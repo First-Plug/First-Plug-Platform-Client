@@ -9,6 +9,9 @@ import { StepCategorySelection } from "./step-category-selection";
 import { StepOSSelection } from "./step-os-selection";
 import { StepComputerSpecs } from "./step-computer-specs";
 import { StepMonitorSpecs } from "./step-monitor-specs";
+import { StepPhoneSpecs } from "./step-phone-specs";
+import { StepTabletSpecs } from "./step-tablet-specs";
+import { StepFurnitureSpecs } from "./step-furniture-specs";
 import { StepQuoteDetails } from "./step-quote-details";
 import type { QuoteProduct } from "../../types/quote.types";
 import { useToast } from "@/shared/components/ui/use-toast";
@@ -91,7 +94,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     if (productData.category?.toLowerCase() === "computer") {
       return 4;
     }
-    return 3; // Por defecto 3 pasos (Monitor u otras categorías)
+    return 3; // Por defecto 3 pasos (Monitor, Phone u otras categorías)
   };
 
   // Función helper para obtener el paso lógico desde el físico (para mostrar en UI)
@@ -111,20 +114,67 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const handleNext = () => {
     const category = productData.category?.toLowerCase();
     const isMonitor = category === "monitor";
+    const isPhone = category === "phone";
+    const isTablet = category === "tablet";
+    const isFurniture = category === "furniture";
 
     // Validaciones antes de avanzar
     if (currentStep === 1) {
       if (!productData.category) return;
       // Si es Monitor, saltar directamente al step 3
       setCurrentStep(isMonitor ? 3 : 2);
-    } else if (currentStep === 2 && !isMonitor) {
-      // Solo avanzar desde step 2 si NO es Monitor
-      setCurrentStep(3);
-    } else if ((currentStep === 3 && !isMonitor) || (currentStep === 3 && isMonitor)) {
+    } else if (currentStep === 2) {
+      // Si es Phone, Tablet o Furniture, validar quantity y avanzar a Quote Details
+      if (isPhone || isTablet || isFurniture) {
+        if (!productData.quantity || productData.quantity < 1) return;
+        setCurrentStep(3);
+      } else if (!isMonitor) {
+        // Solo avanzar desde step 2 si NO es Monitor, Phone, Tablet ni Furniture
+        setCurrentStep(3);
+      }
+    } else if (
+      (currentStep === 3 &&
+        !isMonitor &&
+        !isPhone &&
+        !isTablet &&
+        !isFurniture) ||
+      (currentStep === 3 && isMonitor)
+    ) {
       // Technical specs step (físico 3, pero lógico 2 para Monitor o 3 para Computer)
       // Solo quantity es requerido para todas las categorías
       if (!productData.quantity || productData.quantity < 1) return;
       setCurrentStep(4);
+    } else if (currentStep === 3 && (isPhone || isTablet || isFurniture)) {
+      // Si es Phone, Tablet o Furniture en step 3, es Quote Details - validar country
+      if (!productData.country) return;
+      // Guardar producto
+      const completeProduct: QuoteProduct = {
+        id: productData.id!,
+        category: productData.category!,
+        operatingSystem: productData.operatingSystem,
+        quantity: productData.quantity!,
+        brands: productData.brands || [],
+        models: productData.models || [],
+        processors: productData.processors,
+        ram: productData.ram,
+        storage: productData.storage,
+        screenSize: productData.screenSize,
+        screenTechnology: productData.screenTechnology,
+        extendedWarranty: productData.extendedWarranty,
+        deviceEnrollment: productData.deviceEnrollment,
+        otherSpecifications: productData.otherSpecifications,
+        furnitureType: productData.furnitureType,
+        country: productData.country!,
+        city: productData.city,
+        requiredDeliveryDate: productData.requiredDeliveryDate,
+        additionalComments: productData.additionalComments,
+      };
+      addProduct(completeProduct);
+      toast({
+        title: "Product Added",
+        description: "Product added to your quote request.",
+      });
+      onClose();
     } else if (currentStep === 4) {
       // Validar campos requeridos del step 4
       if (!productData.country) return;
@@ -144,6 +194,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         extendedWarranty: productData.extendedWarranty,
         deviceEnrollment: productData.deviceEnrollment,
         otherSpecifications: productData.otherSpecifications,
+        furnitureType: productData.furnitureType,
         country: productData.country!,
         city: productData.city,
         requiredDeliveryDate: productData.requiredDeliveryDate,
@@ -161,6 +212,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const handleBack = () => {
     const category = productData.category?.toLowerCase();
     const isMonitor = category === "monitor";
+    const isPhone = category === "phone";
+    const isTablet = category === "tablet";
+    const isFurniture = category === "furniture";
 
     if (currentStep === 4) {
       // Desde quote details, volver a technical specs
@@ -172,7 +226,23 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         additionalComments: undefined,
       });
       setCurrentStep(3);
-    } else if (currentStep === 3 && !isMonitor) {
+    } else if (currentStep === 3 && (isPhone || isTablet || isFurniture)) {
+      // Desde quote details (Phone, Tablet o Furniture), volver a Specs
+      // Resetear datos del step 3
+      handleDataChange({
+        country: undefined,
+        city: undefined,
+        requiredDeliveryDate: undefined,
+        additionalComments: undefined,
+      });
+      setCurrentStep(2);
+    } else if (
+      currentStep === 3 &&
+      !isMonitor &&
+      !isPhone &&
+      !isTablet &&
+      !isFurniture
+    ) {
       // Desde technical specs (Computer), volver a OS selection
       // Resetear datos del step 3
       handleDataChange({
@@ -206,8 +276,26 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         otherSpecifications: undefined,
       });
       setCurrentStep(1);
-    } else if (currentStep === 2 && !isMonitor) {
-      // Desde OS selection, volver a category selection (solo si NO es Monitor)
+    } else if (currentStep === 2 && (isPhone || isTablet || isFurniture)) {
+      // Desde Phone, Tablet o Furniture Specs, volver a category selection
+      // Resetear datos del step 2
+      handleDataChange({
+        quantity: 1,
+        brands: [],
+        models: [],
+        screenSize: undefined,
+        furnitureType: undefined,
+        otherSpecifications: undefined,
+      });
+      setCurrentStep(1);
+    } else if (
+      currentStep === 2 &&
+      !isMonitor &&
+      !isPhone &&
+      !isTablet &&
+      !isFurniture
+    ) {
+      // Desde OS selection, volver a category selection (solo si NO es Monitor ni Phone)
       // Resetear datos del step 2
       handleDataChange({
         operatingSystem: undefined,
@@ -219,18 +307,33 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const getStepTitle = () => {
     const category = productData.category?.toLowerCase();
     const isMonitor = category === "monitor";
-    
+    const isPhone = category === "phone";
+    const isTablet = category === "tablet";
+    const isFurniture = category === "furniture";
+
     // Para Monitor, el step 2 físico no debería mostrarse, pero si llegamos aquí mostrar el título correcto
     if (currentStep === 2 && isMonitor) {
       return "Select Product Category"; // Fallback, pero no debería ocurrir
     }
-    
+
     switch (currentStep) {
       case 1:
         return "Select Product Category";
       case 2:
+        if (isPhone) {
+          return "Phone Specifications";
+        }
+        if (isTablet) {
+          return "Tablet Specifications";
+        }
+        if (isFurniture) {
+          return "Furniture Specifications";
+        }
         return "Select Operating System";
       case 3:
+        if (isPhone || isTablet || isFurniture) {
+          return "Quote Details";
+        }
         return "Technical Specifications";
       case 4:
         return "Quote Details";
@@ -242,6 +345,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const renderStep = () => {
     const category = productData.category?.toLowerCase();
     const isMonitor = category === "monitor";
+    const isPhone = category === "phone";
+    const isTablet = category === "tablet";
+    const isFurniture = category === "furniture";
 
     switch (currentStep) {
       case 1:
@@ -252,6 +358,33 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           />
         );
       case 2:
+        // Si es Phone, mostrar Phone Specs
+        if (isPhone) {
+          return (
+            <StepPhoneSpecs
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
+        // Si es Tablet, mostrar Tablet Specs
+        if (isTablet) {
+          return (
+            <StepTabletSpecs
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
+        // Si es Furniture, mostrar Furniture Specs
+        if (isFurniture) {
+          return (
+            <StepFurnitureSpecs
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
         // Solo mostrar OS selection si NO es Monitor
         if (isMonitor) {
           return null;
@@ -264,6 +397,33 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           />
         );
       case 3:
+        // Si es Phone, mostrar Quote Details
+        if (isPhone) {
+          return (
+            <StepQuoteDetails
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
+        // Si es Tablet, mostrar Quote Details
+        if (isTablet) {
+          return (
+            <StepQuoteDetails
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
+        // Si es Furniture, mostrar Quote Details
+        if (isFurniture) {
+          return (
+            <StepQuoteDetails
+              productData={productData}
+              onDataChange={handleDataChange}
+            />
+          );
+        }
         // Para Computer, mostrar Computer Specs
         if (category === "computer") {
           return (
@@ -297,9 +457,21 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   };
 
   const canProceed = () => {
+    const category = productData.category?.toLowerCase();
+    const isPhone = category === "phone";
+    const isTablet = category === "tablet";
+    const isFurniture = category === "furniture";
+
     if (currentStep === 1) {
       return !!productData.category;
+    } else if (currentStep === 2 && (isPhone || isTablet || isFurniture)) {
+      // Para Phone, Tablet o Furniture en step 2, quantity es requerido
+      return !!productData.quantity && productData.quantity >= 1;
     } else if (currentStep === 3) {
+      if (isPhone || isTablet || isFurniture) {
+        // Para Phone, Tablet o Furniture en step 3, es Quote Details - country es requerido
+        return !!productData.country;
+      }
       // Solo quantity es requerido para todas las categorías
       return !!productData.quantity && productData.quantity >= 1;
     } else if (currentStep === 4) {
@@ -317,7 +489,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             {(() => {
               const category = productData.category?.toLowerCase();
               const isMonitor = category === "monitor";
-              const showBackButton = currentStep > 1 && !(currentStep === 2 && isMonitor);
+              const showBackButton =
+                currentStep > 1 && !(currentStep === 2 && isMonitor);
               return showBackButton ? (
                 <button
                   type="button"

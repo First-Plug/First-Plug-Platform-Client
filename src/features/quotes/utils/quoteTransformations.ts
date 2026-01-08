@@ -143,6 +143,10 @@ export function transformProductToBackendFormat(
     transformed.additionalRequirements = product.additionalRequirements;
   }
 
+  if (product.furnitureType && product.furnitureType.length > 0) {
+    transformed.furnitureType = product.furnitureType;
+  }
+
   if (product.extendedWarranty?.enabled !== undefined) {
     transformed.extendedWarranty = Boolean(product.extendedWarranty.enabled);
 

@@ -100,6 +100,125 @@ interface BuybackProduct {
   };
 }
 
+interface DonateProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    countryCode: string;
+  };
+  needsDataWipe?: boolean;
+  needsCleaning?: boolean;
+  comments?: string;
+}
+
+interface CleaningProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    assignedEmail?: string;
+    countryCode: string;
+  };
+  desiredDate?: string;
+  cleaningType?: string;
+  additionalComments?: string;
+}
+
+interface StorageProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    assignedEmail?: string;
+    countryCode: string;
+  };
+  approximateSize?: string;
+  approximateWeight?: string;
+  approximateStorageDays?: number;
+  additionalComments?: string;
+}
+
+interface OffboardingProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    assignedEmail?: string;
+    countryCode: string;
+  };
+  destination: {
+    type: "Member" | "Office" | "Warehouse";
+    memberId?: string;
+    assignedMember?: string;
+    assignedEmail?: string;
+    officeId?: string;
+    officeName?: string;
+    warehouseId?: string;
+    warehouseName?: string;
+    countryCode: string;
+  };
+}
+
+interface OffboardingService {
+  originMember: {
+    memberId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    countryCode: string;
+  };
+  isSensitiveSituation?: boolean;
+  employeeKnows?: boolean;
+  desirablePickupDate?: string;
+}
+
+interface LogisticsProduct {
+  productId: string;
+  productSnapshot: {
+    category?: string;
+    name?: string;
+    brand?: string;
+    model?: string;
+    serialNumber: string;
+    location: string;
+    assignedTo: string;
+    assignedEmail?: string;
+    countryCode: string;
+  };
+  destination: {
+    type: "Member" | "Office" | "Warehouse";
+    memberId?: string;
+    assignedMember?: string;
+    assignedEmail?: string;
+    officeId?: string;
+    officeName?: string;
+    warehouseId?: string;
+    warehouseName?: string;
+    countryCode: string;
+  };
+}
+
 interface QuoteService {
   serviceCategory: string;
   issues?: string[];
@@ -118,7 +237,18 @@ interface QuoteService {
   };
   enrolledDevices?: EnrolledDevice[];
   assets?: DataWipeAsset[];
-  products?: DestructionProduct[] | BuybackProduct[];
+  products?:
+    | DestructionProduct[]
+    | BuybackProduct[]
+    | DonateProduct[]
+    | CleaningProduct[]
+    | StorageProduct[]
+    | OffboardingProduct[]
+    | LogisticsProduct[];
+  originMember?: OffboardingService["originMember"];
+  isSensitiveSituation?: boolean;
+  employeeKnows?: boolean;
+  desirablePickupDate?: string;
   requiresCertificate?: boolean;
   comments?: string;
   additionalInfo?: string;
@@ -215,6 +345,86 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
               serviceCategory: service.serviceCategory,
               buybackProduct: product,
               additionalInfo: service.additionalInfo,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Donate" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Donate, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              donateProduct: product,
+              additionalDetails: service.additionalDetails,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Cleaning" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Cleaning, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              cleaningProduct: product,
+              additionalDetails: service.additionalDetails,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Storage" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Storage, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              storageProduct: product,
+              additionalDetails: service.additionalDetails,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Offboarding" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Offboarding, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              offboardingProduct: product,
+              originMember: service.originMember,
+              isSensitiveSituation: service.isSensitiveSituation,
+              employeeKnows: service.employeeKnows,
+              desirablePickupDate: service.desirablePickupDate,
+              additionalDetails: service.additionalDetails,
+            });
+          });
+        } else if (
+          service.serviceCategory === "Logistics" &&
+          service.products &&
+          service.products.length > 0
+        ) {
+          // For Logistics, create a row for each product
+          service.products.forEach((product) => {
+            rows.push({
+              quoteId: quote.requestId,
+              type: "service",
+              serviceCategory: service.serviceCategory,
+              logisticsProduct: product,
+              desirablePickupDate: service.desirablePickupDate,
+              additionalDetails: service.additionalDetails,
             });
           });
         } else {
@@ -516,6 +726,344 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             </span>
                           )}
                         </>
+                      ) : row.donateProduct ? (
+                        <>
+                          <span className="font-semibold">
+                            {row.donateProduct.productSnapshot.category}
+                          </span>
+                          {(row.donateProduct.productSnapshot.brand ||
+                            row.donateProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.donateProduct.productSnapshot.brand}
+                              {row.donateProduct.productSnapshot.brand &&
+                                row.donateProduct.productSnapshot.model &&
+                                " - "}
+                              {row.donateProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.donateProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.donateProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN: {row.donateProduct.productSnapshot.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            {row.donateProduct.productSnapshot.assignedTo} (
+                            {row.donateProduct.productSnapshot.location})
+                          </span>
+                          {row.donateProduct.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.donateProduct.productSnapshot.countryCode
+                              }
+                            />
+                          )}
+                          {(row.donateProduct.needsDataWipe ||
+                            row.donateProduct.needsCleaning) && (
+                            <>
+                              {row.donateProduct.needsDataWipe && (
+                                <span className="text-gray-600 text-xs">
+                                  ✓ Needs Data Wipe
+                                </span>
+                              )}
+                              {row.donateProduct.needsCleaning && (
+                                <span className="text-gray-600 text-xs">
+                                  ✓ Needs Cleaning
+                                </span>
+                              )}
+                            </>
+                          )}
+                          {row.donateProduct.comments && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.donateProduct.comments}
+                            </span>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
+                      ) : row.cleaningProduct ? (
+                        <>
+                          <span className="font-semibold">
+                            {row.cleaningProduct.productSnapshot.category}
+                          </span>
+                          {(row.cleaningProduct.productSnapshot.brand ||
+                            row.cleaningProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.cleaningProduct.productSnapshot.brand}
+                              {row.cleaningProduct.productSnapshot.brand &&
+                                row.cleaningProduct.productSnapshot.model &&
+                                " - "}
+                              {row.cleaningProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.cleaningProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.cleaningProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN:{" "}
+                            {row.cleaningProduct.productSnapshot.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            {row.cleaningProduct.productSnapshot.assignedTo} (
+                            {row.cleaningProduct.productSnapshot.location})
+                          </span>
+                          {row.cleaningProduct.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.cleaningProduct.productSnapshot.countryCode
+                              }
+                            />
+                          )}
+                          {row.cleaningProduct.cleaningType && (
+                            <span className="text-gray-600 font-semibold">
+                              {row.cleaningProduct.cleaningType} Cleaning
+                            </span>
+                          )}
+                          {row.cleaningProduct.additionalComments && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.cleaningProduct.additionalComments}
+                            </span>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
+                      ) : row.storageProduct ? (
+                        <>
+                          <span className="font-semibold">
+                            {row.storageProduct.productSnapshot.category}
+                          </span>
+                          {(row.storageProduct.productSnapshot.brand ||
+                            row.storageProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.storageProduct.productSnapshot.brand}
+                              {row.storageProduct.productSnapshot.brand &&
+                                row.storageProduct.productSnapshot.model &&
+                                " - "}
+                              {row.storageProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.storageProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.storageProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN:{" "}
+                            {row.storageProduct.productSnapshot.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            {row.storageProduct.productSnapshot.assignedTo} (
+                            {row.storageProduct.productSnapshot.location})
+                          </span>
+                          {row.storageProduct.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.storageProduct.productSnapshot.countryCode
+                              }
+                            />
+                          )}
+                          {row.storageProduct.approximateSize && (
+                            <span className="text-gray-600 text-xs">
+                              Size: {row.storageProduct.approximateSize}
+                            </span>
+                          )}
+                          {row.storageProduct.approximateWeight && (
+                            <span className="text-gray-600 text-xs">
+                              Weight: {row.storageProduct.approximateWeight}
+                            </span>
+                          )}
+                          {row.storageProduct.approximateStorageDays && (
+                            <span className="text-gray-600 text-xs">
+                              Storage Days:{" "}
+                              {row.storageProduct.approximateStorageDays}
+                            </span>
+                          )}
+                          {row.storageProduct.additionalComments && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.storageProduct.additionalComments}
+                            </span>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
+                      ) : row.offboardingProduct ? (
+                        <>
+                          <span className="font-semibold">Offboarding</span>
+                          {row.originMember && (
+                            <span className="text-gray-600 text-xs">
+                              From: {row.originMember.firstName}{" "}
+                              {row.originMember.lastName}
+                              {row.originMember.countryCode && (
+                                <>
+                                  {" "}
+                                  <QuoteLocationWithCountry
+                                    country={row.originMember.countryCode}
+                                  />
+                                </>
+                              )}
+                            </span>
+                          )}
+                          <span className="font-semibold text-gray-700">
+                            {row.offboardingProduct.productSnapshot.category}
+                          </span>
+                          {(row.offboardingProduct.productSnapshot.brand ||
+                            row.offboardingProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.offboardingProduct.productSnapshot.brand}
+                              {row.offboardingProduct.productSnapshot.brand &&
+                                row.offboardingProduct.productSnapshot.model &&
+                                " - "}
+                              {row.offboardingProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.offboardingProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.offboardingProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN:{" "}
+                            {
+                              row.offboardingProduct.productSnapshot
+                                .serialNumber
+                            }
+                          </span>
+                          {row.offboardingProduct.destination && (
+                            <>
+                              <span className="font-semibold text-gray-700">
+                                To:{" "}
+                                {row.offboardingProduct.destination.type ===
+                                "Member"
+                                  ? row.offboardingProduct.destination
+                                      .assignedMember
+                                  : row.offboardingProduct.destination.type ===
+                                    "Office"
+                                  ? row.offboardingProduct.destination
+                                      .officeName
+                                  : row.offboardingProduct.destination
+                                      .warehouseName}
+                              </span>
+                              <span className="text-gray-600 text-xs">
+                                {row.offboardingProduct.destination.type}
+                                {row.offboardingProduct.destination
+                                  .countryCode && (
+                                  <>
+                                    {" "}
+                                    <QuoteLocationWithCountry
+                                      country={
+                                        row.offboardingProduct.destination
+                                          .countryCode
+                                      }
+                                    />
+                                  </>
+                                )}
+                              </span>
+                            </>
+                          )}
+                          {row.isSensitiveSituation && (
+                            <span className="text-red-600 font-semibold text-xs">
+                              ⚠️ Sensitive Situation
+                            </span>
+                          )}
+                          {row.employeeKnows !== undefined && (
+                            <span className="text-gray-600 text-xs">
+                              Employee Knows:{" "}
+                              {row.employeeKnows ? "✓ Yes" : "✗ No"}
+                            </span>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
+                      ) : row.logisticsProduct ? (
+                        <>
+                          <span className="font-semibold">Logistics</span>
+                          <span className="font-semibold text-gray-700">
+                            {row.logisticsProduct.productSnapshot.category}
+                          </span>
+                          {(row.logisticsProduct.productSnapshot.brand ||
+                            row.logisticsProduct.productSnapshot.model) && (
+                            <span className="text-gray-700">
+                              {row.logisticsProduct.productSnapshot.brand}
+                              {row.logisticsProduct.productSnapshot.brand &&
+                                row.logisticsProduct.productSnapshot.model &&
+                                " - "}
+                              {row.logisticsProduct.productSnapshot.model}
+                            </span>
+                          )}
+                          {row.logisticsProduct.productSnapshot.name && (
+                            <span className="text-gray-600 italic">
+                              {row.logisticsProduct.productSnapshot.name}
+                            </span>
+                          )}
+                          <span className="text-gray-600">
+                            SN:{" "}
+                            {row.logisticsProduct.productSnapshot.serialNumber}
+                          </span>
+                          <span className="text-gray-600">
+                            From:{" "}
+                            {row.logisticsProduct.productSnapshot.assignedTo} (
+                            {row.logisticsProduct.productSnapshot.location})
+                          </span>
+                          {row.logisticsProduct.productSnapshot.countryCode && (
+                            <QuoteLocationWithCountry
+                              country={
+                                row.logisticsProduct.productSnapshot.countryCode
+                              }
+                            />
+                          )}
+                          {row.logisticsProduct.destination && (
+                            <>
+                              <span className="font-semibold text-gray-700">
+                                To:{" "}
+                                {row.logisticsProduct.destination.type ===
+                                "Member"
+                                  ? row.logisticsProduct.destination
+                                      .assignedMember
+                                  : row.logisticsProduct.destination.type ===
+                                    "Office"
+                                  ? row.logisticsProduct.destination.officeName
+                                  : row.logisticsProduct.destination
+                                      .warehouseName}
+                              </span>
+                              <span className="text-gray-600 text-xs">
+                                {row.logisticsProduct.destination.type}
+                                {row.logisticsProduct.destination
+                                  .countryCode && (
+                                  <>
+                                    {" "}
+                                    <QuoteLocationWithCountry
+                                      country={
+                                        row.logisticsProduct.destination
+                                          .countryCode
+                                      }
+                                    />
+                                  </>
+                                )}
+                              </span>
+                            </>
+                          )}
+                          {row.additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {row.additionalDetails}
+                            </span>
+                          )}
+                        </>
                       ) : row.enrolledDevice ? (
                         <>
                           <span className="font-semibold">
@@ -598,6 +1146,12 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                   <TableCell className="px-4 py-2 w-28 text-xs">
                     {row.dataWipeAsset
                       ? formatDateString(row.dataWipeAsset.desirableDate)
+                      : row.cleaningProduct
+                      ? formatDateString(row.cleaningProduct.desiredDate)
+                      : row.offboardingProduct
+                      ? formatDateString(row.desirablePickupDate)
+                      : row.logisticsProduct
+                      ? formatDateString(row.desirablePickupDate)
                       : formatDateString(row.issueStartDate)}
                   </TableCell>
                 </>

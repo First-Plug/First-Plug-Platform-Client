@@ -91,6 +91,9 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       } else if (
         editCategory === "audio" ||
         editCategory === "peripherals" ||
+        editCategory === "phone" ||
+        editCategory === "tablet" ||
+        editCategory === "furniture" ||
         editCategory === "merchandising" ||
         editCategory === "other"
       ) {
@@ -106,6 +109,18 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     // Si no estamos editando y hay categoría seleccionada
     if (category === "computer") {
       return 4; // Categoría, SO, Datos, Detalles
+    }
+    // Para furniture, phone, tablet, audio, peripherals, merchandising y other: 3 pasos (Categoría, Specs, Detalles)
+    if (
+      category === "furniture" ||
+      category === "phone" ||
+      category === "tablet" ||
+      category === "audio" ||
+      category === "peripherals" ||
+      category === "merchandising" ||
+      category === "other"
+    ) {
+      return 3;
     }
     return 3; // Por defecto 3 pasos (Monitor u otras categorías: Categoría, Datos, Detalles)
   };
@@ -137,10 +152,13 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       } else if (
         editCategory === "audio" ||
         editCategory === "peripherals" ||
+        editCategory === "phone" ||
+        editCategory === "tablet" ||
+        editCategory === "furniture" ||
         editCategory === "merchandising" ||
         editCategory === "other"
       ) {
-        // Audio, Peripherals, Merchandising u Other en edición: 2 (specs) -> 3 (detalles)
+        // Audio, Peripherals, Phone, Tablet, Furniture, Merchandising u Other en edición: 2 (specs) -> 3 (detalles)
         // Lógicamente: 1 -> 2
         if (physicalStep === 2) return 1; // Specs (step 1 lógico)
         if (physicalStep === 3) return 2; // Detalles y tiempo (step 2 lógico)
@@ -220,6 +238,27 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
           2: "Quote Details", // Detalles y tiempo
         };
         return otherEditTitles[logicalStep] || "";
+      } else if (editCategory === "phone") {
+        // Phone en edición: step 1 lógico = Phone Specifications, step 2 lógico = Quote Details
+        const phoneEditTitles: Record<number, string> = {
+          1: "Phone Specifications", // Detalles de phone
+          2: "Quote Details", // Detalles y tiempo
+        };
+        return phoneEditTitles[logicalStep] || "";
+      } else if (editCategory === "tablet") {
+        // Tablet en edición: step 1 lógico = Tablet Specifications, step 2 lógico = Quote Details
+        const tabletEditTitles: Record<number, string> = {
+          1: "Tablet Specifications", // Detalles de tablet
+          2: "Quote Details", // Detalles y tiempo
+        };
+        return tabletEditTitles[logicalStep] || "";
+      } else if (editCategory === "furniture") {
+        // Furniture en edición: step 1 lógico = Furniture Specifications, step 2 lógico = Quote Details
+        const furnitureEditTitles: Record<number, string> = {
+          1: "Furniture Specifications", // Detalles de furniture
+          2: "Quote Details", // Detalles y tiempo
+        };
+        return furnitureEditTitles[logicalStep] || "";
       }
     }
 
@@ -236,6 +275,12 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         return "Audio Specifications";
       } else if (category === "peripherals") {
         return "Peripheral Specifications";
+      } else if (category === "phone") {
+        return "Phone Specifications";
+      } else if (category === "tablet") {
+        return "Tablet Specifications";
+      } else if (category === "furniture") {
+        return "Furniture Specifications";
       } else if (category === "merchandising") {
         return "Merchandising Specifications";
       } else if (category === "other") {
@@ -254,6 +299,9 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       } else if (
         category === "audio" ||
         category === "peripherals" ||
+        category === "phone" ||
+        category === "tablet" ||
+        category === "furniture" ||
         category === "merchandising" ||
         category === "other"
       ) {

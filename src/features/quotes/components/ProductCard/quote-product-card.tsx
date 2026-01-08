@@ -180,6 +180,14 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
             <span className="text-gray-700">{product.storage.join(", ")}</span>
           </div>
         )}
+        {product.furnitureType && product.furnitureType.length > 0 && (
+          <div>
+            <span className="font-medium">Furniture Type: </span>
+            <span className="text-gray-700">
+              {product.furnitureType.join(", ")}
+            </span>
+          </div>
+        )}
         <div>
           <span className="font-medium">Quantity: </span>
           <span className="text-gray-700">{product.quantity}</span>

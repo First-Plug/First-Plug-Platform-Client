@@ -1,0 +1,89 @@
+"use client";
+
+import * as React from "react";
+import { MultiSelectInput } from "../MultiSelectInput/multi-select-input";
+import { loadFormFields, getFieldOptions } from "../../utils/loadFormFields";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+
+import type { QuoteProduct } from "../../types/quote.types";
+
+interface StepFurnitureSpecsProps {
+  productData: Partial<QuoteProduct>;
+  onDataChange: (updates: Partial<QuoteProduct>) => void;
+}
+
+export const StepFurnitureSpecs: React.FC<StepFurnitureSpecsProps> = ({
+  productData,
+  onDataChange,
+}) => {
+  const category = "furniture";
+  const formFields = React.useMemo(() => loadFormFields(category), []);
+
+  const handleFurnitureTypeChange = (furnitureType: string[]) => {
+    onDataChange({ furnitureType });
+  };
+
+  const getFieldOptionsForName = (fieldName: string): string[] => {
+    return getFieldOptions(category, fieldName);
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-6">
+      <p className="w-full text-muted-foreground text-left">
+        Select the furniture specifications you need. You can select multiple
+        options for each field.
+      </p>
+
+      <div className="gap-4 grid grid-cols-2 w-full">
+        {/* Quantity */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="quantity" className="font-medium text-sm">
+            Quantity<span className="ml-1 text-red-500">*</span>
+          </label>
+          <Input
+            id="quantity"
+            type="number"
+            min="1"
+            value={productData.quantity ?? 1}
+            onChange={(e) =>
+              onDataChange({
+                quantity: parseInt(e.target.value, 10) || 1,
+              })
+            }
+            required
+          />
+        </div>
+
+        {/* Furniture Type - Multi-select */}
+        {formFields.find((f) => f.name === "type") && (
+          <div className="flex flex-col gap-2">
+            <MultiSelectInput
+              title="Furniture Type"
+              placeholder="Enter furniture type"
+              options={getFieldOptionsForName("type")}
+              selectedValues={productData.furnitureType || []}
+              onValuesChange={handleFurnitureTypeChange}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Other Specifications */}
+      <div className="flex flex-col gap-2 w-full">
+        <Label htmlFor="otherSpecifications">Other Specifications</Label>
+        <textarea
+          id="otherSpecifications"
+          placeholder="Ergonomic design, adjustable height, materials, dimensions, color preferences, etc."
+          value={productData.otherSpecifications || ""}
+          onChange={(e) =>
+            onDataChange({ otherSpecifications: e.target.value })
+          }
+          rows={4}
+          className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[80px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
+        />
+      </div>
+    </div>
+  );
+};
+
