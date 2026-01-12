@@ -88,4 +88,16 @@ export class QuoteServices {
       throw error;
     }
   }
+
+  static async cancel(quoteId: string) {
+    try {
+      const response = await HTTPRequests.patch(
+        `${BASE_URL}/api/quotes/${quoteId}/cancel`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
 }

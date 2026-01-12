@@ -23,6 +23,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromTeam } from "@/features/teams";
 import { useDeleteAsset, usePrefetchAsset } from "@/features/assets";
 import { useCancelShipment } from "@/features/shipments";
+import { useCancelQuote } from "@/features/quotes";
 import { Member } from "@/features/members";
 import { useAlertStore } from "@/shared";
 
@@ -32,7 +33,8 @@ type DeleteTypes =
   | "team"
   | "memberUnassign"
   | "shipment"
-  | "office";
+  | "office"
+  | "quote";
 
 type ConfigType = {
   title: string;
@@ -65,6 +67,7 @@ export const DeleteAction = ({
   const removeFromTeamMutation = useRemoveFromTeam();
   const deleAssetMutation = useDeleteAsset();
   const cancelShipmentMutation = useCancelShipment();
+  const cancelQuoteMutation = useCancelQuote();
 
   const { setAlert } = useAlertStore();
 
@@ -249,6 +252,26 @@ export const DeleteAction = ({
     setLoading(true);
   };
 
+  const handleDeleteQuote = async () => {
+    if (!id) {
+      throw new Error("id is undefined");
+    }
+
+    setLoading(true);
+
+    await cancelQuoteMutation.mutateAsync(id, {
+      onSuccess: () => {
+        setOpen(false);
+        setLoading(false);
+      },
+      onError: (error) => {
+        console.error("Error cancelling quote:", error);
+        setOpen(false);
+        setLoading(false);
+      },
+    });
+  };
+
   const DeleteConfig: Record<DeleteTypes, ConfigType> = {
     product: {
       title: "Are you sure you want to delete this product? 🗑️",
@@ -285,6 +308,11 @@ export const DeleteAction = ({
         }
         setOpen(false);
       },
+    },
+    quote: {
+      title: "Are you sure you want to cancel this quote? 🗑️",
+      description: "This quote will be cancelled",
+      deleteAction: handleDeleteQuote,
     },
   };
   const { title, description, deleteAction } = DeleteConfig[type];

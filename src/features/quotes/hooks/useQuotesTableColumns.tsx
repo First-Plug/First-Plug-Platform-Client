@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DetailsButton } from "@/shared/components/Tables";
+import { DeleteAction } from "@/shared";
 import { Package } from "lucide-react";
 import type { QuoteTableWithDetailsDto } from "../types/quote.types";
 
@@ -146,7 +147,15 @@ export const useQuotesTableColumns = ({
         header: "Actions",
         size: 120,
         cell: ({ row }) => {
-          return row.getCanExpand() ? <DetailsButton row={row} /> : null;
+          const isRequested = row.original.status === "Requested";
+          return (
+            <div className="flex items-center gap-1">
+              {isRequested && (
+                <DeleteAction type="quote" id={row.original._id} />
+              )}
+              {row.getCanExpand() ? <DetailsButton row={row} /> : null}
+            </div>
+          );
         },
       },
     ];
