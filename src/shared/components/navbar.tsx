@@ -49,12 +49,16 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   const { memberOffBoarding } = useMemberStore();
   const {
     isAddingProduct,
+    isAddingService,
     currentStep,
     currentCategory,
+    currentServiceType,
     onBack,
     onCancel,
     editingProductId,
+    editingServiceId,
     getProduct,
+    getService,
   } = useQuoteStore();
 
   // Obtener la categoría: primero del store, si no está, del producto en edición
@@ -62,6 +66,13 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   const category =
     currentCategory?.toLowerCase() ||
     editingProduct?.category?.toLowerCase() ||
+    "";
+
+  // Obtener el tipo de servicio: primero del store, si no está, del servicio en edición
+  const editingService = editingServiceId ? getService(editingServiceId) : null;
+  const serviceType =
+    currentServiceType?.toLowerCase() ||
+    editingService?.serviceType?.toLowerCase() ||
     "";
 
   const getStepTitle = (step: number) => {
@@ -319,9 +330,46 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     return getStepTitle(physicalStep);
   };
 
+  // Función para obtener el título del step para servicios
+  const getServiceStepTitle = (step: number, serviceType?: string) => {
+    const isITSupport = serviceType === "it-support";
+
+    if (isITSupport) {
+      const itSupportStepTitles: Record<number, string> = {
+        1: "Select Service Type",
+        2: "Select Asset",
+        3: "Issue Type",
+        4: "Issue Details",
+        5: "Review & Submit",
+      };
+      return itSupportStepTitles[step] || "";
+    }
+
+    const serviceStepTitles: Record<number, string> = {
+      1: "Select Service Type",
+      2: "Quote Details",
+    };
+    return serviceStepTitles[step] || "";
+  };
+
+  // Función para obtener el paso lógico para servicios
+  const getServiceLogicalStep = (physicalStep: number): number => {
+    return physicalStep;
+  };
+
+  // Función para obtener el total de pasos para servicios
+  const getServiceTotalSteps = (serviceType?: string) => {
+    const isITSupport = serviceType === "it-support";
+    return isITSupport ? 5 : 2;
+  };
+
   const getTitle = () => {
     if (pathArray[3] === "request-off-boarding") {
       return memberOffBoarding ? memberOffBoarding : "";
+    }
+    // Verificar si la ruta incluye "new-request" y si está en modo agregar servicio
+    if (pathArray.includes("new-request") && isAddingService) {
+      return getServiceStepTitle(currentStep, currentServiceType);
     }
     // Verificar si la ruta incluye "new-request" y si está en modo agregar producto
     if (pathArray.includes("new-request") && isAddingProduct) {
@@ -337,6 +385,49 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     }
     return Titles[pathArray[2] as keyof typeof Titles] ?? "";
   };
+
+  // Si está en el flujo de add service, mostrar header dinámico
+  if (pathArray.includes("new-request") && isAddingService) {
+    const isEditing = !!editingServiceId;
+    const isITSupport = currentServiceType === "it-support";
+    const minStep = isEditing ? (isITSupport ? 2 : 3) : 1;
+
+    const shouldShowBackButton = onBack && currentStep > minStep;
+
+    return (
+      <nav className="flex justify-between items-center px-4 h-[10vh] min-h-[10vh] max-h-[10vh]">
+        <div className="flex items-center gap-4">
+          {shouldShowBackButton && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div className={!shouldShowBackButton ? "pl-4" : ""}>
+            <h2 className="font-semibold text-black text-2xl">
+              {getServiceStepTitle(currentStep, currentServiceType)}
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Step {getServiceLogicalStep(currentStep)} of{" "}
+              {getServiceTotalSteps(currentServiceType)}
+            </p>
+          </div>
+        </div>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="hover:bg-gray-100 p-2 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+      </nav>
+    );
+  }
 
   // Si está en el flujo de add product, mostrar header dinámico
   if (pathArray.includes("new-request") && isAddingProduct) {

@@ -1,18 +1,24 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 import type {
   QuoteProduct,
+  QuoteService,
   QuoteRequestPayload,
   QuoteHistoryResponse,
 } from "../types/quote.types";
-import { transformProductToBackendFormat } from "../utils/quoteTransformations";
+import {
+  transformProductToBackendFormat,
+  transformServiceToBackendFormat,
+} from "../utils/quoteTransformations";
 
 export class QuoteServices {
   static async submitQuoteRequest(
-    products: QuoteProduct[]
+    products: QuoteProduct[],
+    services?: QuoteService[],
+    assetsMap?: Map<string, any> // Map of assetId -> asset
   ): Promise<{ message: string }> {
     try {
-      if (!products || products.length === 0) {
-        throw new Error("No products to submit");
+      if ((!products || products.length === 0) && (!services || services.length === 0)) {
+        throw new Error("No products or services to submit");
       }
 
       const transformedProducts = products.map((product, index) => {
@@ -44,8 +50,30 @@ export class QuoteServices {
         }
       });
 
+      const transformedServices = services
+        ? services.map((service, index) => {
+            try {
+              // Obtener el asset si existe
+              const asset = service.assetId && assetsMap
+                ? assetsMap.get(service.assetId)
+                : undefined;
+
+              const transformed = transformServiceToBackendFormat(service, asset);
+
+              if (!transformed.serviceCategory) {
+                throw new Error(`Service ${index}: serviceCategory is required`);
+              }
+
+              return transformed;
+            } catch (error) {
+              throw error;
+            }
+          })
+        : undefined;
+
       const payload: QuoteRequestPayload = {
         products: transformedProducts,
+        ...(transformedServices && transformedServices.length > 0 && { services: transformedServices }),
       };
 
       const response = await HTTPRequests.post(

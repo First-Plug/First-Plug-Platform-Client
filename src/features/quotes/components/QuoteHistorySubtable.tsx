@@ -11,12 +11,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared";
-import type { QuoteHistoryProduct } from "../types/quote.types";
+import type {
+  QuoteHistoryProduct,
+  QuoteHistoryService,
+} from "../types/quote.types";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 
 interface QuoteHistorySubtableProps {
-  products: QuoteHistoryProduct[];
+  products?: QuoteHistoryProduct[];
+  services?: QuoteHistoryService[];
 }
 
 const formatDate = (date?: string) => {
@@ -31,8 +35,16 @@ const formatDate = (date?: string) => {
 
 export const QuoteHistorySubtable = ({
   products,
+  services,
 }: QuoteHistorySubtableProps) => {
-  const rows = Array.isArray(products) ? products : [];
+  const productRows = Array.isArray(products) ? products : [];
+  const serviceRows = Array.isArray(services) ? services : [];
+  
+  // Combinar productos y servicios en un solo array con tipo identificado
+  const allRows = [
+    ...productRows.map((item) => ({ type: "product" as const, data: item })),
+    ...serviceRows.map((item) => ({ type: "service" as const, data: item })),
+  ];
 
   const renderCountryAndCity = (country?: string, city?: string) => {
     if (!country) {
@@ -87,29 +99,33 @@ export const QuoteHistorySubtable = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {rows.length === 0 ? (
+        {allRows.length === 0 ? (
           <TableRow>
             <TableCell colSpan={5} className="h-20 text-xs text-center">
               No items found.
             </TableCell>
           </TableRow>
         ) : (
-          rows.map((item, index) => (
+          allRows.map((row, index) => (
             <TableRow key={index}>
               <TableCell className="px-4 py-2 border-r w-24 text-xs">
-                Product
+                {row.type === "product" ? "Product" : "Service"}
               </TableCell>
               <TableCell className="px-4 py-2 border-r w-32 text-xs">
-                {item.category || "N/A"}
+                {row.type === "product"
+                  ? row.data.category || "N/A"
+                  : row.data.serviceCategory || "N/A"}
               </TableCell>
               <TableCell className="px-4 py-2 border-r w-24 text-xs">
-                {item.quantity ?? 0}
+                {row.type === "product"
+                  ? row.data.quantity ?? 0
+                  : "—"}
               </TableCell>
               <TableCell className="px-4 py-2 border-r w-40 text-xs">
-                {renderCountryAndCity(item.country, item.city)}
+                {renderCountryAndCity(row.data.country, row.data.city)}
               </TableCell>
               <TableCell className="px-4 py-2 w-32 text-xs">
-                {formatDate(item.deliveryDate)}
+                {formatDate(row.data.deliveryDate)}
               </TableCell>
             </TableRow>
           ))

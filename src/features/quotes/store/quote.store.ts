@@ -1,15 +1,23 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { QuoteProduct, QuoteStore } from "../types/quote.types";
+import type {
+  QuoteProduct,
+  QuoteService,
+  QuoteStore,
+} from "../types/quote.types";
 
 export const useQuoteStore = create<QuoteStore>()(
   persist(
     (set, get) => ({
       products: [],
+      services: [],
       isAddingProduct: false,
+      isAddingService: false,
       currentStep: 1,
       currentCategory: undefined,
+      currentServiceType: undefined,
       editingProductId: undefined,
+      editingServiceId: undefined,
       onBack: undefined,
       onCancel: undefined,
 
@@ -41,8 +49,40 @@ export const useQuoteStore = create<QuoteStore>()(
         return get().products.find((product) => product.id === id);
       },
 
+      addService: (service: QuoteService) => {
+        set((state) => ({
+          services: [...state.services, service],
+        }));
+      },
+
+      updateService: (id: string, updates: Partial<QuoteService>) => {
+        set((state) => ({
+          services: state.services.map((service) =>
+            service.id === id ? { ...service, ...updates } : service
+          ),
+        }));
+      },
+
+      removeService: (id: string) => {
+        set((state) => ({
+          services: state.services.filter((service) => service.id !== id),
+        }));
+      },
+
+      clearServices: () => {
+        set({ services: [] });
+      },
+
+      getService: (id: string) => {
+        return get().services.find((service) => service.id === id);
+      },
+
       setIsAddingProduct: (isAdding: boolean) => {
         set({ isAddingProduct: isAdding });
+      },
+
+      setIsAddingService: (isAdding: boolean) => {
+        set({ isAddingService: isAdding });
       },
 
       setCurrentStep: (step: number) => {
@@ -51,6 +91,10 @@ export const useQuoteStore = create<QuoteStore>()(
 
       setCurrentCategory: (category: string | undefined) => {
         set({ currentCategory: category });
+      },
+
+      setCurrentServiceType: (serviceType: string | undefined) => {
+        set({ currentServiceType: serviceType });
       },
 
       setOnBack: (callback: (() => void) | undefined) => {
@@ -64,14 +108,38 @@ export const useQuoteStore = create<QuoteStore>()(
       setEditingProductId: (id: string | undefined) => {
         set({ editingProductId: id });
       },
+
+      setEditingServiceId: (id: string | undefined) => {
+        set({ editingServiceId: id });
+      },
     }),
     {
       name: "quote-store", // nombre único para la clave en localStorage
       storage: createJSONStorage(() => localStorage),
-      // Solo persistir los productos, no el estado del formulario
+      // Solo persistir los productos y servicios, no el estado del formulario
       partialize: (state) => ({
         products: state.products,
+        services: state.services,
       }),
+      // Migración: asegurar que los nuevos campos tengan valores por defecto
+      merge: (persistedState: any, currentState: any) => {
+        return {
+          ...currentState,
+          ...persistedState,
+          // Asegurar que services existe y es un array
+          services: persistedState?.services || [],
+          // Asegurar que los estados del formulario no se persistan
+          isAddingProduct: false,
+          isAddingService: false,
+          currentStep: 1,
+          currentCategory: undefined,
+          currentServiceType: undefined,
+          editingProductId: undefined,
+          editingServiceId: undefined,
+          onBack: undefined,
+          onCancel: undefined,
+        };
+      },
     }
   )
 );

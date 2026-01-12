@@ -1,0 +1,338 @@
+"use client";
+
+import * as React from "react";
+import { Badge, CountryFlag } from "@/shared";
+import {
+  useGetTableAssets,
+  Product,
+  ProductTable,
+  CategoryIcons,
+} from "@/features/assets";
+import { cn } from "@/shared";
+import { MapPin, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { countriesByCode } from "@/shared/constants/country-codes";
+import type { QuoteService } from "../../types/quote.types";
+
+interface StepReviewAndSubmitProps {
+  serviceData: QuoteService;
+  onSubmit: () => void;
+}
+
+const issueTypesMap: Record<string, string> = {
+  "software-issue": "Software issue",
+  "connectivity-network": "Connectivity / network",
+  "account-access": "Account / access issue",
+  performance: "Performance issues",
+  "damage-accident": "Damage / accident",
+  other: "Other",
+};
+
+const impactLevelMap: Record<
+  string,
+  { label: string; colorClass: string; textClass: string }
+> = {
+  low: {
+    label: "Low - Minor inconvenience",
+    colorClass: "bg-success",
+    textClass: "text-white",
+  },
+  medium: {
+    label: "Medium - Affects productivity",
+    colorClass: "bg-lightYellow",
+    textClass: "text-black",
+  },
+  high: {
+    label: "High - Cannot work",
+    colorClass: "bg-error",
+    textClass: "text-white",
+  },
+};
+
+export const StepReviewAndSubmit: React.FC<StepReviewAndSubmitProps> = ({
+  serviceData,
+  onSubmit,
+}) => {
+  const { data: assetsData, isLoading } = useGetTableAssets();
+
+  // Encontrar el asset seleccionado
+  const selectedAsset = React.useMemo(() => {
+    if (!serviceData.assetId || !assetsData) return null;
+
+    for (const categoryGroup of assetsData) {
+      if (categoryGroup.products) {
+        const asset = categoryGroup.products.find(
+          (p) => p._id === serviceData.assetId
+        );
+        if (asset) return asset;
+      }
+    }
+    return null;
+  }, [serviceData.assetId, assetsData]);
+
+  // Obtener información de asignación
+  const getAssignmentInfo = (product: Product) => {
+    // Si está asignado a un empleado
+    if (product.assignedMember || product.assignedEmail) {
+      const member =
+        product.assignedMember || product.assignedEmail || "Unassigned";
+      const location = product.location || product.officeName || "";
+      const country =
+        product.country ||
+        product.countryCode ||
+        product.office?.officeCountryCode ||
+        "";
+
+      return {
+        type: "employee" as const,
+        member,
+        location: location ? `${location}` : "",
+        country,
+      };
+    }
+
+    // Si está en una oficina
+    if (product.location === "Our office") {
+      const officeName =
+        product.office?.officeName || product.officeName || "Our office";
+      const country =
+        product.office?.officeCountryCode ||
+        product.country ||
+        product.countryCode ||
+        "";
+
+      return {
+        type: "office" as const,
+        officeName,
+        country,
+      };
+    }
+
+    // Si está en FP warehouse
+    if (product.location === "FP warehouse") {
+      const country =
+        product.country ||
+        product.countryCode ||
+        product.office?.officeCountryCode ||
+        "";
+
+      return {
+        type: "warehouse" as const,
+        country,
+      };
+    }
+
+    // Si tiene location pero no coincide con los casos anteriores
+    if (product.location) {
+      return {
+        type: "other" as const,
+        location: product.location,
+      };
+    }
+
+    return null;
+  };
+
+  // Obtener nombre y especificaciones del asset
+  const getAssetDisplayInfo = (product: Product) => {
+    const brand = product.attributes?.find(
+      (attr) => String(attr.key).toLowerCase() === "brand"
+    )?.value;
+    const model = product.attributes?.find(
+      (attr) => String(attr.key).toLowerCase() === "model"
+    )?.value;
+
+    let displayName = product.name || "";
+    let specifications = "";
+
+    if (brand || model) {
+      const parts: string[] = [];
+      if (brand) parts.push(brand);
+      if (model) parts.push(model);
+      specifications = parts.join(" • ");
+    } else {
+      specifications = product.name || "";
+    }
+
+    return { displayName, specifications };
+  };
+
+  // Obtener los labels de los issue types seleccionados
+  const selectedIssueTypeLabels = React.useMemo(() => {
+    if (!serviceData.issueTypes) return [];
+    return serviceData.issueTypes.map((id) => issueTypesMap[id] || id);
+  }, [serviceData.issueTypes]);
+
+  // Obtener información del impact level
+  const impactLevelInfo = serviceData.impactLevel
+    ? impactLevelMap[serviceData.impactLevel]
+    : null;
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  const assignmentInfo = selectedAsset
+    ? getAssignmentInfo(selectedAsset)
+    : null;
+  const assetDisplayInfo = selectedAsset
+    ? getAssetDisplayInfo(selectedAsset)
+    : null;
+
+  return (
+    <div className="flex flex-col gap-6 w-full">
+      {/* Header con checkmark */}
+      <div className="flex items-center gap-2">
+        <CheckCircle2 className="w-5 h-5 text-green-500" />
+        <p className="text-muted-foreground">
+          Review your IT support request before submitting
+        </p>
+      </div>
+
+      {/* Selected Asset */}
+      {selectedAsset && (
+        <div className="flex flex-col gap-3">
+          <h3 className="font-semibold text-lg">Selected Asset</h3>
+          <div className="flex items-start gap-4 bg-white p-4 border-2 border-gray-200 rounded-lg">
+            <div className="flex-shrink-0">
+              <CategoryIcons products={[selectedAsset]} />
+            </div>
+            <div className="flex flex-col flex-1 gap-2">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-base">
+                  {assetDisplayInfo?.displayName ||
+                    selectedAsset.name ||
+                    "Asset"}
+                </span>
+                <Badge variant="secondary" className="text-xs">
+                  {selectedAsset.category}
+                </Badge>
+              </div>
+              {assetDisplayInfo?.specifications && (
+                <p className="text-muted-foreground text-sm">
+                  {assetDisplayInfo.specifications}
+                </p>
+              )}
+              {selectedAsset.serialNumber && (
+                <p className="text-muted-foreground text-sm">
+                  SN: {selectedAsset.serialNumber}
+                </p>
+              )}
+              {assignmentInfo && (
+                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                  {assignmentInfo.type === "office" && (
+                    <>
+                      <span>Location: office {assignmentInfo.officeName}</span>
+                      {assignmentInfo.country && (
+                        <div className="flex items-center gap-1">
+                          <CountryFlag
+                            countryName={assignmentInfo.country}
+                            size={15}
+                          />
+                          <span>
+                            {countriesByCode[assignmentInfo.country] ||
+                              assignmentInfo.country}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {assignmentInfo.type === "employee" && (
+                    <>
+                      <span>Assigned to: {assignmentInfo.member}</span>
+                      {assignmentInfo.location && (
+                        <span>• {assignmentInfo.location}</span>
+                      )}
+                      {assignmentInfo.country && (
+                        <div className="flex items-center gap-1">
+                          <CountryFlag
+                            countryName={assignmentInfo.country}
+                            size={15}
+                          />
+                          <span>
+                            {countriesByCode[assignmentInfo.country] ||
+                              assignmentInfo.country}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {assignmentInfo.type === "warehouse" && (
+                    <>
+                      <span>FP Warehouse</span>
+                      {assignmentInfo.country && (
+                        <div className="flex items-center gap-1">
+                          <CountryFlag
+                            countryName={assignmentInfo.country}
+                            size={15}
+                          />
+                          <span>
+                            {countriesByCode[assignmentInfo.country] ||
+                              assignmentInfo.country}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Issue Types */}
+      {selectedIssueTypeLabels.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <h3 className="font-semibold text-lg">Issue Types</h3>
+          <div className="flex flex-wrap gap-2">
+            {selectedIssueTypeLabels.map((label) => (
+              <Badge
+                key={label}
+                variant="secondary"
+                className="bg-gray-100 text-gray-700"
+              >
+                {label}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Description */}
+      {serviceData.description && (
+        <div className="flex flex-col gap-3">
+          <h3 className="font-semibold text-lg">Description</h3>
+          <div className="bg-white p-4 border-2 border-gray-200 rounded-lg">
+            <p className="text-gray-700 text-sm whitespace-pre-wrap">
+              {serviceData.description}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Additional Details */}
+      {impactLevelInfo && (
+        <div className="flex flex-col gap-3">
+          <h3 className="font-semibold text-lg">Additional Details</h3>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-yellow-500" />
+            <span className="text-muted-foreground text-sm">Impact level:</span>
+            <Badge
+              className={cn(
+                "border-transparent",
+                impactLevelInfo.colorClass,
+                impactLevelInfo.textClass
+              )}
+            >
+              {impactLevelInfo.label}
+            </Badge>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

@@ -1,5 +1,7 @@
 export * from "./components/AddProductForm/add-product-form";
+export * from "./components/AddServiceForm/add-service-form";
 export * from "./components/ProductCard/quote-product-card";
+export * from "./components/ServiceCard/quote-service-card";
 export * from "./components/MultiSelectInput/multi-select-input";
 export * from "./components/QuotesTableActions";
 export * from "./store/quote.store";
