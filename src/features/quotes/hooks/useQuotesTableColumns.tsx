@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DetailsButton } from "@/shared/components/Tables";
 import { DeleteAction } from "@/shared";
-import { Package } from "lucide-react";
+import { Package, Wrench } from "lucide-react";
 import type { QuoteTableWithDetailsDto } from "../types/quote.types";
 
 interface UseQuotesTableColumnsProps {
@@ -66,8 +66,7 @@ export const useQuotesTableColumns = ({
             badgeClasses = "bg-blue/10 text-blue border";
             displayType = "Product";
           } else if (hasService) {
-            badgeClasses =
-              "bg-purple-50 text-purple-700 border border-purple-200";
+            badgeClasses = "bg-green/10 text-green border";
             displayType = "Service";
           } else {
             badgeClasses = "bg-gray-50 text-gray-700 border border-gray-200";
@@ -79,6 +78,9 @@ export const useQuotesTableColumns = ({
             >
               {hasProduct && !hasMixed && (
                 <Package className="mb-0.5 w-3 h-3" />
+              )}
+              {hasService && !hasMixed && (
+                <Wrench className="mb-0.5 w-3 h-3" />
               )}
               <span>{displayType}</span>
             </div>
