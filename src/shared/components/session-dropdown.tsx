@@ -35,8 +35,12 @@ export const SessionDropdown = () => {
   }, [open]);
 
   const handleLogOut = () => {
-    if (localStorage.getItem("token")) {
-      localStorage.removeItem("token");
+    if (typeof window !== "undefined") {
+      if (localStorage.getItem("token")) {
+        localStorage.removeItem("token");
+      }
+      // Limpiar quotes persistidos para que no queden guardados entre sesiones
+      localStorage.removeItem("quote-store");
     }
 
     queryClient.clear();

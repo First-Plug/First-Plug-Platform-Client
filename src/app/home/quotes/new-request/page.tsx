@@ -14,8 +14,8 @@ import {
   QuoteServices,
 } from "@/features/quotes";
 import { useGetTableAssets } from "@/features/assets";
+import { useFetchMembers } from "@/features/members";
 import { useDateFilterStore } from "@/features/activity/store/dateFilter.store";
-import { startOfDay, endOfDay, subDays } from "date-fns";
 
 export default function NewQuoteRequestPage() {
   const {
@@ -35,6 +35,7 @@ export default function NewQuoteRequestPage() {
   const queryClient = useQueryClient();
   const { resetToDefault } = useDateFilterStore();
   const { data: assetsData } = useGetTableAssets();
+  const { data: membersData = [] } = useFetchMembers();
 
   const handleAddProduct = () => {
     setIsAddingProduct(true);
@@ -86,7 +87,23 @@ export default function NewQuoteRequestPage() {
         });
       }
 
-      await QuoteServices.submitQuoteRequest(products, services, assetsMap);
+      // Crear un mapa de miembros (email -> member) para obtener countryCode de empleados
+      const membersMap = new Map();
+      if (membersData && membersData.length > 0) {
+        membersData.forEach((member) => {
+          if (member.email) {
+            // Normalizar el email a lowercase para evitar problemas de case sensitivity
+            membersMap.set(member.email.toLowerCase(), member);
+          }
+        });
+      }
+
+      await QuoteServices.submitQuoteRequest(
+        products,
+        services,
+        assetsMap,
+        membersMap
+      );
 
       // Invalidar la query de quotes history
       await queryClient.invalidateQueries({

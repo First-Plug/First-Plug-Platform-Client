@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Trash2, Wrench } from "lucide-react";
+import { Trash2, Wrench, Shield, Laptop } from "lucide-react";
 import {
   Badge,
   Dialog,
@@ -60,11 +60,12 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
     if (!serviceType) return null;
     const serviceTypeMap: Record<string, string> = {
       "it-support": "IT Support",
+      "enrollment": "Enrollment",
     };
     return serviceTypeMap[serviceType] || serviceType;
   };
 
-  // Encontrar el asset seleccionado
+  // Encontrar el asset seleccionado (para IT Support)
   const selectedAsset = React.useMemo(() => {
     if (!service.assetId || !assetsData) return null;
 
@@ -78,6 +79,75 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
     }
     return null;
   }, [service.assetId, assetsData]);
+
+  // Encontrar los assets seleccionados (para Enrollment)
+  const selectedAssets = React.useMemo(() => {
+    if (!service.assetIds || !assetsData || service.assetIds.length === 0)
+      return [];
+
+    const assets: Product[] = [];
+    for (const categoryGroup of assetsData) {
+      if (categoryGroup.products) {
+        service.assetIds.forEach((assetId) => {
+          const asset = categoryGroup.products.find((p) => p._id === assetId);
+          if (asset) assets.push(asset);
+        });
+      }
+    }
+    return assets;
+  }, [service.assetIds, assetsData]);
+
+  // Función para determinar el OS de un dispositivo
+  const getDeviceOS = (asset: Product): "Mac" | "Windows" | "Ubuntu" => {
+    const brand =
+      asset.attributes?.find(
+        (attr) => String(attr.key).toLowerCase() === "brand"
+      )?.value?.toLowerCase() || "";
+    const model =
+      asset.attributes?.find(
+        (attr) => String(attr.key).toLowerCase() === "model"
+      )?.value?.toLowerCase() || "";
+    const name = (asset.name || "").toLowerCase();
+
+    // Detectar Mac
+    if (
+      brand.includes("apple") ||
+      brand.includes("mac") ||
+      model.includes("macbook") ||
+      model.includes("imac") ||
+      name.includes("mac")
+    ) {
+      return "Mac";
+    }
+
+    // Detectar Ubuntu/Linux
+    if (
+      brand.includes("ubuntu") ||
+      model.includes("ubuntu") ||
+      name.includes("ubuntu") ||
+      name.includes("linux")
+    ) {
+      return "Ubuntu";
+    }
+
+    // Por defecto, Windows
+    return "Windows";
+  };
+
+  // Contar dispositivos por tipo (Mac/Windows/Ubuntu) para Enrollment
+  const deviceCounts = React.useMemo(() => {
+    if (selectedAssets.length === 0) return { mac: 0, windows: 0, ubuntu: 0 };
+    let mac = 0;
+    let windows = 0;
+    let ubuntu = 0;
+    selectedAssets.forEach((asset) => {
+      const os = getDeviceOS(asset);
+      if (os === "Mac") mac++;
+      else if (os === "Ubuntu") ubuntu++;
+      else windows++;
+    });
+    return { mac, windows, ubuntu };
+  }, [selectedAssets]);
 
   // Obtener nombre y especificaciones del asset
   const getAssetDisplayInfo = (product: Product) => {
@@ -190,7 +260,11 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <Badge variant="outline" className="flex items-center gap-1">
-          <Wrench className="w-3 h-3" />
+          {service.serviceType === "enrollment" ? (
+            <Shield className="w-3 h-3" />
+          ) : (
+            <Wrench className="w-3 h-3" />
+          )}
           Service
         </Badge>
         <button
@@ -240,8 +314,74 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         </span>
       </div>
 
-      {/* Asset */}
-      {selectedAsset && (
+      {/* Enrollment: Device Counts */}
+      {service.serviceType === "enrollment" && selectedAssets.length > 0 && (
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Laptop className="w-4 h-4 text-gray-600" />
+            <span className="font-medium text-sm">
+              {selectedAssets.length} device{selectedAssets.length !== 1 ? "s" : ""} to enroll
+            </span>
+          </div>
+          <div className="flex gap-4">
+            {deviceCounts.mac > 0 && (
+              <div className="flex items-center gap-2 bg-white p-3 border border-gray-200 rounded-lg">
+                <span className="text-2xl font-bold">{deviceCounts.mac}</span>
+                <span className="text-sm text-gray-700">Mac</span>
+              </div>
+            )}
+            {deviceCounts.windows > 0 && (
+              <div className="flex items-center gap-2 bg-white p-3 border border-gray-200 rounded-lg">
+                <span className="text-2xl font-bold">{deviceCounts.windows}</span>
+                <span className="text-sm text-gray-700">Windows</span>
+              </div>
+            )}
+            {deviceCounts.ubuntu > 0 && (
+              <div className="flex items-center gap-2 bg-white p-3 border border-gray-200 rounded-lg">
+                <span className="text-2xl font-bold">{deviceCounts.ubuntu}</span>
+                <span className="text-sm text-gray-700">Ubuntu</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Enrollment: Selected Devices List */}
+      {service.serviceType === "enrollment" && selectedAssets.length > 0 && (
+        <div className="mb-3">
+          <div className="font-medium text-sm mb-2">Selected devices:</div>
+          <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+            {selectedAssets.map((asset) => {
+              const displayInfo = getAssetDisplayInfo(asset);
+              const assignment = getAssignmentInfo(asset);
+              const memberName =
+                assignment?.type === "employee"
+                  ? assignment.member
+                  : assignment?.type === "office"
+                  ? assignment.officeName
+                  : "";
+              return (
+                <li key={asset._id}>
+                  {displayInfo?.displayName || asset.name || "Device"}
+                  {displayInfo?.specifications && ` - ${displayInfo.specifications}`}
+                  {memberName && ` - ${memberName}`}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Additional Details for Enrollment */}
+      {service.serviceType === "enrollment" && service.additionalDetails && (
+        <div className="mb-3">
+          <div className="font-medium text-sm mb-1">Additional details:</div>
+          <div className="text-sm text-gray-700">{service.additionalDetails}</div>
+        </div>
+      )}
+
+      {/* Asset (for IT Support) */}
+      {selectedAsset && service.serviceType !== "enrollment" && (
         <div className="mb-3 text-sm">
           <div className="mb-2 text-gray-700">
             <span className="font-medium">Asset: </span>

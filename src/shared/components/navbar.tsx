@@ -333,6 +333,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   // Función para obtener el título del step para servicios
   const getServiceStepTitle = (step: number, serviceType?: string) => {
     const isITSupport = serviceType === "it-support";
+    const isEnrollment = serviceType === "enrollment";
 
     if (isITSupport) {
       const itSupportStepTitles: Record<number, string> = {
@@ -343,6 +344,15 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
         5: "Review & Submit",
       };
       return itSupportStepTitles[step] || "";
+    }
+
+    if (isEnrollment) {
+      const enrollmentStepTitles: Record<number, string> = {
+        1: "Select Service Type",
+        2: "Select Devices to Enroll",
+        3: "Enrollment Details",
+      };
+      return enrollmentStepTitles[step] || "";
     }
 
     const serviceStepTitles: Record<number, string> = {
@@ -360,7 +370,10 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   // Función para obtener el total de pasos para servicios
   const getServiceTotalSteps = (serviceType?: string) => {
     const isITSupport = serviceType === "it-support";
-    return isITSupport ? 5 : 2;
+    const isEnrollment = serviceType === "enrollment";
+    if (isITSupport) return 5;
+    if (isEnrollment) return 3;
+    return 2;
   };
 
   const getTitle = () => {

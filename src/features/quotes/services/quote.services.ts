@@ -14,7 +14,8 @@ export class QuoteServices {
   static async submitQuoteRequest(
     products: QuoteProduct[],
     services?: QuoteService[],
-    assetsMap?: Map<string, any> // Map of assetId -> asset
+    assetsMap?: Map<string, any>, // Map of assetId -> asset
+    membersMap?: Map<string, any> // Map of email -> member
   ): Promise<{ message: string }> {
     try {
       if ((!products || products.length === 0) && (!services || services.length === 0)) {
@@ -53,12 +54,17 @@ export class QuoteServices {
       const transformedServices = services
         ? services.map((service, index) => {
             try {
-              // Obtener el asset si existe
+              // Obtener el asset si existe (para IT Support)
               const asset = service.assetId && assetsMap
                 ? assetsMap.get(service.assetId)
                 : undefined;
 
-              const transformed = transformServiceToBackendFormat(service, asset);
+              const transformed = transformServiceToBackendFormat(
+                service,
+                asset,
+                assetsMap, // Pasar assetsMap para Enrollment
+                membersMap // Pasar membersMap para obtener countryCode de empleados
+              );
 
               if (!transformed.serviceCategory) {
                 throw new Error(`Service ${index}: serviceCategory is required`);
@@ -75,6 +81,11 @@ export class QuoteServices {
         products: transformedProducts,
         ...(transformedServices && transformedServices.length > 0 && { services: transformedServices }),
       };
+
+      // Log para debugging (remover en producción si es necesario)
+      if (transformedServices && transformedServices.length > 0) {
+        console.log("Services payload:", JSON.stringify(transformedServices, null, 2));
+      }
 
       const response = await HTTPRequests.post(
         `${BASE_URL}/api/quotes`,

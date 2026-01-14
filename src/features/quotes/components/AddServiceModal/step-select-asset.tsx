@@ -10,33 +10,40 @@ import {
 } from "@/features/assets";
 import { cn } from "@/shared";
 import { Check } from "lucide-react";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Label } from "@/shared/components/ui/label";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface StepSelectAssetProps {
   selectedAssetIds: string[]; // Array de IDs seleccionados (permite single o multiple)
   onAssetSelect: (assetIds: string[]) => void; // Callback con array de IDs
   allowMultiple?: boolean; // Si es true, permite seleccionar múltiples; si es false, solo uno
+  allowedCategory?: string; // Categoría permitida (ej: "Computer")
 }
 
 export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
   selectedAssetIds,
   onAssetSelect,
   allowMultiple = false,
+  allowedCategory,
 }) => {
   const { data: assetsData, isLoading } = useGetTableAssets();
   const [searchQuery, setSearchQuery] = React.useState("");
 
-  // Aplanar todos los productos de todas las categorías
+  // Aplanar todos los productos de todas las categorías, filtrando por categoría si es necesario
   const allProducts = React.useMemo(() => {
     if (!assetsData) return [];
     const products: Product[] = [];
     assetsData.forEach((categoryGroup: ProductTable) => {
       if (categoryGroup.products) {
-        products.push(...categoryGroup.products);
+        const filteredProducts = allowedCategory
+          ? categoryGroup.products.filter((p) => p.category === allowedCategory)
+          : categoryGroup.products;
+        products.push(...filteredProducts);
       }
     });
     return products;
-  }, [assetsData]);
+  }, [assetsData, allowedCategory]);
 
   // Filtrar productos según la búsqueda
   const filteredProducts = React.useMemo(() => {
@@ -180,6 +187,24 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
   const selectedCount = selectedAssetIds.length;
   const maxAllowed = allowMultiple ? filteredProducts.length : 1;
 
+  // Calcular si todos están seleccionados
+  const allSelected =
+    allowMultiple &&
+    filteredProducts.length > 0 &&
+    filteredProducts.every((product) => selectedAssetIds.includes(product._id));
+
+  // Manejar select all
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      // Seleccionar todos los productos filtrados
+      const allIds = filteredProducts.map((product) => product._id);
+      onAssetSelect(allIds);
+    } else {
+      // Deseleccionar todos
+      onAssetSelect([]);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* Search Input */}
@@ -190,11 +215,30 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
         />
       </div>
 
-      {/* Selection Counter - Always visible */}
-      <div className="flex justify-end items-center">
-        <span className="text-muted-foreground text-sm">
-          selected {selectedCount} / {maxAllowed}
-        </span>
+      <div className="flex justify-between items-center">
+        {/* Select All Checkbox - Solo mostrar si allowMultiple es true */}
+        {allowMultiple && filteredProducts.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="select-all"
+              checked={allSelected}
+              onCheckedChange={handleSelectAll}
+            />
+            <Label
+              htmlFor="select-all"
+              className="font-medium text-sm cursor-pointer"
+            >
+              Select all
+            </Label>
+          </div>
+        )}
+
+        {/* Selection Counter - Always visible */}
+        <div className="flex justify-end items-center">
+          <span className="text-muted-foreground text-sm">
+            selected {selectedCount} / {maxAllowed}
+          </span>
+        </div>
       </div>
 
       {/* Assets List */}

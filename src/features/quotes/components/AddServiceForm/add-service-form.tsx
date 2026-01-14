@@ -8,6 +8,7 @@ import { StepSelectAsset } from "../AddServiceModal/step-select-asset";
 import { StepIssueTypeSelection } from "../AddServiceModal/step-issue-type-selection";
 import { StepIssueDetails } from "../AddServiceModal/step-issue-details";
 import { StepReviewAndSubmit } from "../AddServiceModal/step-review-and-submit";
+import { StepAdditionalDetails } from "../AddServiceModal/step-additional-details";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import type { QuoteService, QuoteProduct } from "../../types/quote.types";
 
@@ -93,7 +94,11 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       const serviceType = useQuoteStore.getState().currentServiceType;
 
       // Si estamos editando y estamos en el step mínimo, salir del modo de edición
-      const minStep = editingId ? (serviceType === "it-support" ? 2 : 3) : 1;
+      const minStep = editingId
+        ? serviceType === "it-support" || serviceType === "enrollment"
+          ? 2
+          : 3
+        : 1;
       if (editingId && currentStepValue === minStep) {
         setIsAddingService(false);
         setEditingServiceId(undefined);
@@ -108,7 +113,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
         if (currentStepValue === 5) {
           // No resetear nada en step 5 (review), solo retroceder
         } else if (currentStepValue === 4) {
-          // Resetear datos del step 4 (issue details)
+          // Resetear datos del step 4 (issue details para IT Support)
           setServiceData((prev) => ({
             ...prev,
             description: undefined,
@@ -116,17 +121,33 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             impactLevel: undefined,
           }));
         } else if (currentStepValue === 3) {
-          // Resetear datos del step 3 (issue type)
-          setServiceData((prev) => ({
-            ...prev,
-            issueTypes: undefined,
-          }));
+          // Resetear datos del step 3
+          if (serviceType === "it-support") {
+            // Para IT Support, resetear issue types
+            setServiceData((prev) => ({
+              ...prev,
+              issueTypes: undefined,
+            }));
+          } else if (serviceType === "enrollment") {
+            // Para Enrollment, resetear additional details
+            setServiceData((prev) => ({
+              ...prev,
+              additionalDetails: undefined,
+            }));
+          }
         } else if (currentStepValue === 2) {
           // Resetear datos del step 2 (select asset)
-          setServiceData((prev) => ({
-            ...prev,
-            assetId: undefined,
-          }));
+          if (serviceType === "enrollment") {
+            setServiceData((prev) => ({
+              ...prev,
+              assetIds: undefined,
+            }));
+          } else {
+            setServiceData((prev) => ({
+              ...prev,
+              assetId: undefined,
+            }));
+          }
         }
 
         setCurrentStep(currentStepValue - 1);
@@ -158,8 +179,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     handleDataChange({ serviceType });
     // Actualizar el tipo de servicio en el store
     setCurrentServiceType(serviceType);
-    // Si es IT Support, ir al step 2 (select asset), sino al step 3 (quote details)
-    if (serviceType === "it-support") {
+    // Si es IT Support o Enrollment, ir al step 2 (select asset)
+    if (serviceType === "it-support" || serviceType === "enrollment") {
       setCurrentStep(2);
     } else {
       setCurrentStep(3);
@@ -167,16 +188,30 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   };
 
   const handleAssetSelect = (assetIds: string[]) => {
-    // Para IT Support, solo se permite un asset (single selection)
-    const assetId = assetIds.length > 0 ? assetIds[0] : undefined;
-    handleDataChange({ assetId });
+    const serviceType = serviceData.serviceType || currentServiceType;
+    if (serviceType === "enrollment") {
+      // Para Enrollment, guardar múltiples assets
+      handleDataChange({ assetIds });
+    } else {
+      // Para IT Support, solo se permite un asset (single selection)
+      const assetId = assetIds.length > 0 ? assetIds[0] : undefined;
+      handleDataChange({ assetId });
+    }
   };
 
   const handleContinueFromAssetSelection = () => {
-    // Validar que hay un asset seleccionado
-    if (!serviceData.assetId) return;
-    // Ir al step 3 (issue type)
-    setCurrentStep(3);
+    const serviceType = serviceData.serviceType || currentServiceType;
+    if (serviceType === "enrollment") {
+      // Para Enrollment, validar que hay al menos un asset seleccionado
+      if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+      // Ir al step 3 (additional details)
+      setCurrentStep(3);
+    } else {
+      // Para IT Support, validar que hay un asset seleccionado
+      if (!serviceData.assetId) return;
+      // Ir al step 3 (issue type)
+      setCurrentStep(3);
+    }
   };
 
   const handleIssueTypeToggle = (issueTypeId: string) => {
@@ -201,9 +236,41 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     setCurrentStep(5);
   };
 
+  const handleContinueFromAdditionalDetails = () => {
+    // Para Enrollment, step 3 es additional details, guardar y completar
+    const completeService: QuoteService = {
+      id: serviceData.id!,
+      serviceType: serviceData.serviceType!,
+      assetIds: serviceData.assetIds || [],
+      additionalDetails: serviceData.additionalDetails,
+      country: serviceData.country || "",
+      city: serviceData.city,
+      requiredDeliveryDate: serviceData.requiredDeliveryDate,
+      additionalComments: serviceData.additionalComments,
+    };
+    
+    if (editingServiceId) {
+      updateService(editingServiceId, completeService);
+      setEditingServiceId(undefined);
+    } else {
+      addService(completeService);
+    }
+    
+    // Limpiar tipo de servicio, step y serviceData al completar
+    setServiceData({
+      id: generateId(),
+      impactLevel: "medium",
+    });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
+  };
+
   const handleNext = () => {
+    const serviceType = serviceData.serviceType || currentServiceType;
+    
     if (currentStep === 5) {
-      // Validar campos requeridos del step 5 (review & submit)
+      // Validar campos requeridos del step 5 (review & submit) para IT Support
       if (!serviceData.description || !serviceData.assetId) return;
 
       // Si estamos editando, actualizar el servicio existente
@@ -253,6 +320,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   const renderStep = () => {
     const serviceType = serviceData.serviceType || currentServiceType;
     const isITSupport = serviceType === "it-support";
+    const isEnrollment = serviceType === "enrollment";
 
     switch (currentStep) {
       case 1:
@@ -267,7 +335,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           />
         );
       case 2:
-        // Solo mostrar select asset si es IT Support
+        // Mostrar select asset si es IT Support o Enrollment
         if (isITSupport) {
           return (
             <StepSelectAsset
@@ -279,14 +347,36 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           );
         }
+        if (isEnrollment) {
+          return (
+            <StepSelectAsset
+              selectedAssetIds={serviceData.assetIds || []}
+              onAssetSelect={handleAssetSelect}
+              allowMultiple={true} // Enrollment permite múltiples assets
+              allowedCategory="Computer" // Solo Computer para Enrollment
+            />
+          );
+        }
         return null;
       case 3:
-        // Solo mostrar issue type si es IT Support
+        // Mostrar issue type si es IT Support
         if (isITSupport) {
           return (
             <StepIssueTypeSelection
               selectedIssueTypes={serviceData.issueTypes || []}
               onIssueTypeToggle={handleIssueTypeToggle}
+            />
+          );
+        }
+        // Mostrar additional details si es Enrollment
+        if (isEnrollment) {
+          return (
+            <StepAdditionalDetails
+              assetIds={serviceData.assetIds}
+              additionalDetails={serviceData.additionalDetails}
+              onDataChange={(updates) => {
+                handleDataChange(updates);
+              }}
             />
           );
         }
@@ -358,16 +448,25 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   const canProceed = () => {
     const serviceType = serviceData.serviceType || currentServiceType;
     const isITSupport = serviceType === "it-support";
+    const isEnrollment = serviceType === "enrollment";
 
     if (currentStep === 2 && isITSupport) {
       // En step 2 para IT Support, se necesita seleccionar un asset
       return !!serviceData.assetId;
     }
+    if (currentStep === 2 && isEnrollment) {
+      // En step 2 para Enrollment, se necesita seleccionar al menos un asset
+      return !!serviceData.assetIds && serviceData.assetIds.length > 0;
+    }
     if (currentStep === 3 && isITSupport) {
       // En step 3 para IT Support, se necesita seleccionar al menos un issue type
       return !!serviceData.issueTypes && serviceData.issueTypes.length > 0;
     }
-    if (currentStep === 3 && !isITSupport) {
+    if (currentStep === 3 && isEnrollment) {
+      // En step 3 para Enrollment (Additional Details), siempre se puede proceder (es opcional)
+      return true;
+    }
+    if (currentStep === 3 && !isITSupport && !isEnrollment) {
       // Para otros servicios, step 3 es Quote Details
       return !!serviceData.country;
     }
@@ -384,6 +483,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
 
   const serviceTypeForRender = serviceData.serviceType || currentServiceType;
   const isITSupportForRender = serviceTypeForRender === "it-support";
+  const isEnrollmentForRender = serviceTypeForRender === "enrollment";
 
   return (
     <div className="flex justify-center w-full">
@@ -416,6 +516,17 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           </div>
         )}
+        {currentStep === 3 && isEnrollmentForRender && (
+          <div className="flex justify-end items-center pt-4 border-t">
+            <Button
+              onClick={handleContinueFromAdditionalDetails}
+              disabled={!canProceed()}
+              variant="primary"
+              size="small"
+              body="Submit Request"
+            />
+          </div>
+        )}
         {currentStep === 4 && isITSupportForRender && (
           <div className="flex justify-end items-center pt-4 border-t">
             <Button
@@ -438,7 +549,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           </div>
         )}
-        {currentStep === 3 && !isITSupportForRender && (
+        {currentStep === 3 && !isITSupportForRender && !isEnrollmentForRender && (
           <div className="flex justify-end items-center pt-4 border-t">
             <Button
               onClick={handleNext}

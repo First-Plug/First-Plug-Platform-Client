@@ -27,12 +27,14 @@ export interface QuoteProduct {
 
 export interface QuoteService {
   id: string; // UUID temporal generado al iniciar el formulario
-  serviceType: string; // Tipo de servicio (ej: "it-support")
-  assetId?: string; // ID del asset seleccionado (para IT Support)
+  serviceType: string; // Tipo de servicio (ej: "it-support", "enrollment")
+  assetId?: string; // ID del asset seleccionado (para IT Support - single)
+  assetIds?: string[]; // IDs de los assets seleccionados (para Enrollment - multiple)
   issueTypes?: string[]; // Tipos de issues seleccionados (para IT Support)
   description?: string; // Descripción del issue (para IT Support)
   issueStartDate?: string; // Fecha de inicio del issue (para IT Support, formato ISO string)
   impactLevel?: string; // Nivel de impacto: "low", "medium", "high" (para IT Support)
+  additionalDetails?: string; // Detalles adicionales (para Enrollment)
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -66,6 +68,7 @@ export interface QuoteRequestPayload {
   services?: Array<{
     serviceCategory: string;
     productId?: string;
+    productIds?: string[];
     productSnapshot?: {
       category: string;
       name: string;
@@ -76,10 +79,21 @@ export interface QuoteRequestPayload {
       assignedTo: string;
       countryCode: string;
     };
+    enrolledDevices?: Array<{
+      category: string;
+      name: string;
+      brand: string;
+      model: string;
+      serialNumber: string;
+      location: string;
+      assignedTo: string;
+      countryCode: string;
+    }>;
     issues?: string[];
     description?: string;
     issueStartDate?: string;
     impactLevel?: string;
+    additionalDetails?: string;
   }>;
 }
 

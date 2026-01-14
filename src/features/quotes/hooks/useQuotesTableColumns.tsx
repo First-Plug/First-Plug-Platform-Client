@@ -79,9 +79,7 @@ export const useQuotesTableColumns = ({
               {hasProduct && !hasMixed && (
                 <Package className="mb-0.5 w-3 h-3" />
               )}
-              {hasService && !hasMixed && (
-                <Wrench className="mb-0.5 w-3 h-3" />
-              )}
+              {hasService && !hasMixed && <Wrench className="mb-0.5 w-3 h-3" />}
               <span>{displayType}</span>
             </div>
           );
@@ -93,7 +91,10 @@ export const useQuotesTableColumns = ({
         size: 120,
         cell: ({ row }) => {
           const quote = row.original;
-          return <span>{quote?.productCount ?? 0}</span>;
+          const productsCount = quote?.products?.length ?? 0;
+          const servicesCount = quote?.services?.length ?? 0;
+          const totalItems = productsCount + servicesCount;
+          return <span>{totalItems}</span>;
         },
       },
       {

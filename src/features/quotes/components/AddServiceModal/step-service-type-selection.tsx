@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Wrench } from "lucide-react";
+import { Wrench, Shield } from "lucide-react";
 import { cn } from "@/shared";
 
 interface ServiceType {
@@ -20,7 +20,13 @@ const serviceTypes: ServiceType[] = [
     icon: <Wrench className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },
-  // Se pueden agregar más tipos de servicios aquí en el futuro
+  {
+    id: "enrollment",
+    name: "Enrollment",
+    description: "Mobile Device Management for security and control",
+    icon: <Shield className="w-6 h-6" strokeWidth={2} />,
+    enabled: true,
+  },
 ];
 
 interface StepServiceTypeSelectionProps {
