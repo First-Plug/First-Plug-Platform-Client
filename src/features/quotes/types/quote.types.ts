@@ -162,12 +162,42 @@ export interface QuoteHistoryProduct {
   deviceEnrollment?: boolean;
 }
 
+export interface EnrolledDeviceSnapshot {
+  category?: string;
+  name?: string;
+  brand?: string;
+  model?: string;
+  serialNumber: string;
+  location: string;
+  assignedTo: string;
+  countryCode: string;
+  additionalDetails?: string;
+}
+
+export interface ITSupportProductSnapshot {
+  category?: string;
+  name?: string;
+  brand?: string;
+  model?: string;
+  serialNumber: string;
+  location: string;
+  assignedTo: string;
+  countryCode: string;
+}
+
 export interface QuoteHistoryService {
   serviceCategory: string;
-  country: string;
+  country?: string;
   city?: string;
   deliveryDate?: string;
   comments?: string;
+  enrolledDevices?: EnrolledDeviceSnapshot[];
+  productSnapshot?: ITSupportProductSnapshot;
+  issues?: string[];
+  description?: string;
+  impactLevel?: string;
+  issueStartDate?: string;
+  additionalDetails?: string;
 }
 
 export interface QuoteTableWithDetailsDto {
