@@ -177,7 +177,6 @@ export const QuoteHistorySubtable = ({
                   <div className="flex flex-col gap-1">
                     {isProduct ? (
                       <>
-                        <span>Qty: {(row as any).data.quantity}</span>
                         <QuoteLocationWithCountry
                           country={(row as any).data.country}
                         />
