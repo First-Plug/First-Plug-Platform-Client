@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { format, startOfToday, isBefore } from "date-fns";
+import { format, startOfToday, isAfter } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Label } from "@/shared/components/ui/label";
 import { Button } from "@/shared/components/ui/button";
@@ -103,7 +103,7 @@ export const StepIssueDetails: React.FC<StepIssueDetailsProps> = ({
               mode="single"
               selected={date}
               onSelect={handleDateSelect}
-              disabled={(date) => isBefore(date, today)}
+              disabled={(date) => isAfter(date, today)}
               initialFocus
             />
           </PopoverContent>
