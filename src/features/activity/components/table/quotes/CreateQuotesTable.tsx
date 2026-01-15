@@ -486,7 +486,7 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                   </TableCell>
                   <TableCell className="px-4 py-2 border-r w-64 text-xs">
                     <div className="flex flex-col gap-1">
-                      <span>Qty: {row.quantity}</span>
+                      <span>Quantity: {row.quantity}</span>
                       <QuoteLocationWithCountry country={row.country} />
                     </div>
                   </TableCell>
