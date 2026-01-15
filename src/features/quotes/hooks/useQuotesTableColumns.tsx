@@ -3,7 +3,8 @@
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DetailsButton } from "@/shared/components/Tables";
-import { Package } from "lucide-react";
+import { DeleteAction } from "@/shared";
+import { Package, Wrench } from "lucide-react";
 import type { QuoteTableWithDetailsDto } from "../types/quote.types";
 
 interface UseQuotesTableColumnsProps {
@@ -65,8 +66,7 @@ export const useQuotesTableColumns = ({
             badgeClasses = "bg-blue/10 text-blue border";
             displayType = "Product";
           } else if (hasService) {
-            badgeClasses =
-              "bg-purple-50 text-purple-700 border border-purple-200";
+            badgeClasses = "bg-green/10 text-green border";
             displayType = "Service";
           } else {
             badgeClasses = "bg-gray-50 text-gray-700 border border-gray-200";
@@ -79,6 +79,7 @@ export const useQuotesTableColumns = ({
               {hasProduct && !hasMixed && (
                 <Package className="mb-0.5 w-3 h-3" />
               )}
+              {hasService && !hasMixed && <Wrench className="mb-0.5 w-3 h-3" />}
               <span>{displayType}</span>
             </div>
           );
@@ -90,7 +91,10 @@ export const useQuotesTableColumns = ({
         size: 120,
         cell: ({ row }) => {
           const quote = row.original;
-          return <span>{quote?.productCount ?? 0}</span>;
+          const productsCount = quote?.products?.length ?? 0;
+          const servicesCount = quote?.services?.length ?? 0;
+          const totalItems = productsCount + servicesCount;
+          return <span>{totalItems}</span>;
         },
       },
       {
@@ -146,7 +150,15 @@ export const useQuotesTableColumns = ({
         header: "Actions",
         size: 120,
         cell: ({ row }) => {
-          return row.getCanExpand() ? <DetailsButton row={row} /> : null;
+          const isRequested = row.original.status === "Requested";
+          return (
+            <div className="flex items-center gap-1">
+              {isRequested && (
+                <DeleteAction type="quote" id={row.original._id} />
+              )}
+              {row.getCanExpand() ? <DetailsButton row={row} /> : null}
+            </div>
+          );
         },
       },
     ];

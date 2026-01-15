@@ -1,5 +1,7 @@
 export * from "./components/AddProductForm/add-product-form";
+export * from "./components/AddServiceForm/add-service-form";
 export * from "./components/ProductCard/quote-product-card";
+export * from "./components/ServiceCard/quote-service-card";
 export * from "./components/MultiSelectInput/multi-select-input";
 export * from "./components/QuotesTableActions";
 export * from "./store/quote.store";
@@ -10,4 +12,5 @@ export * from "./hooks/useFetchQuotesHistory";
 export * from "./hooks/useQuotesTable";
 export * from "./hooks/useQuotesTableColumns";
 export * from "./hooks/useQuotesSubtableLogic";
+export * from "./hooks/useCancelQuote";
 export * from "./components/QuoteHistorySubtable";

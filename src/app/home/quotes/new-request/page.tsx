@@ -7,22 +7,35 @@ import { PageLayout, Button, useToast, useAlertStore } from "@/shared";
 import { Package, Wrench, Send, Plus } from "lucide-react";
 import {
   AddProductForm,
+  AddServiceForm,
   QuoteProductCard,
+  QuoteServiceCard,
   useQuoteStore,
   QuoteServices,
 } from "@/features/quotes";
+import { useGetTableAssets } from "@/features/assets";
+import { useFetchMembers } from "@/features/members";
 import { useDateFilterStore } from "@/features/activity/store/dateFilter.store";
-import { startOfDay, endOfDay, subDays } from "date-fns";
 
 export default function NewQuoteRequestPage() {
-  const { products, isAddingProduct, setIsAddingProduct, clearProducts } =
-    useQuoteStore();
+  const {
+    products,
+    services,
+    isAddingProduct,
+    isAddingService,
+    setIsAddingProduct,
+    setIsAddingService,
+    clearProducts,
+    clearServices,
+  } = useQuoteStore();
   const { toast } = useToast();
   const { setAlert } = useAlertStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
   const { resetToDefault } = useDateFilterStore();
+  const { data: assetsData } = useGetTableAssets();
+  const { data: membersData = [] } = useFetchMembers();
 
   const handleAddProduct = () => {
     setIsAddingProduct(true);
@@ -36,12 +49,25 @@ export default function NewQuoteRequestPage() {
     setIsAddingProduct(false);
   };
 
+  const handleAddService = () => {
+    setIsAddingService(true);
+  };
+
+  const handleCancelAddService = () => {
+    setIsAddingService(false);
+  };
+
+  const handleCompleteAddService = () => {
+    setIsAddingService(false);
+  };
+
   const handleSubmitRequest = async () => {
-    if (products.length === 0) {
+    if (products.length === 0 && services.length === 0) {
       toast({
         variant: "destructive",
-        title: "No products",
-        description: "Please add at least one product before submitting.",
+        title: "No items",
+        description:
+          "Please add at least one product or service before submitting.",
       });
       return;
     }
@@ -49,7 +75,35 @@ export default function NewQuoteRequestPage() {
     setIsSubmitting(true);
 
     try {
-      await QuoteServices.submitQuoteRequest(products);
+      // Crear un mapa de assets (assetId -> asset) para los servicios
+      const assetsMap = new Map();
+      if (assetsData && services && services.length > 0) {
+        assetsData.forEach((categoryGroup) => {
+          if (categoryGroup.products) {
+            categoryGroup.products.forEach((product) => {
+              assetsMap.set(product._id, product);
+            });
+          }
+        });
+      }
+
+      // Crear un mapa de miembros (email -> member) para obtener countryCode de empleados
+      const membersMap = new Map();
+      if (membersData && membersData.length > 0) {
+        membersData.forEach((member) => {
+          if (member.email) {
+            // Normalizar el email a lowercase para evitar problemas de case sensitivity
+            membersMap.set(member.email.toLowerCase(), member);
+          }
+        });
+      }
+
+      await QuoteServices.submitQuoteRequest(
+        products,
+        services,
+        assetsMap,
+        membersMap
+      );
 
       // Invalidar la query de quotes history
       await queryClient.invalidateQueries({
@@ -59,8 +113,9 @@ export default function NewQuoteRequestPage() {
       // Resetear el calendario a últimos 7 días
       resetToDefault();
 
-      // Limpiar productos
+      // Limpiar productos y servicios
       clearProducts();
+      clearServices();
 
       // Mostrar alerta de éxito (la redirección se hará al cerrar la alerta)
       setAlert("quoteSubmittedSuccess");
@@ -87,11 +142,11 @@ export default function NewQuoteRequestPage() {
       <div className="flex flex-col mx-auto p-6 w-10/12 h-full">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          {!isAddingProduct && (
+          {!isAddingProduct && !isAddingService && (
             <h1 className="font-bold">Add Products or Services</h1>
           )}
           <div className="flex gap-3">
-            {!isAddingProduct && (
+            {!isAddingProduct && !isAddingService && (
               <>
                 <Button
                   variant="primary"
@@ -101,12 +156,12 @@ export default function NewQuoteRequestPage() {
                   body="Add Product"
                 />
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   icon={<Wrench size={18} strokeWidth={2} />}
-                  onClick={() => {}}
+                  onClick={handleAddService}
                   size="small"
                   body="Add Service"
-                  disabled
+                  disabled={false}
                 />
               </>
             )}
@@ -119,7 +174,12 @@ export default function NewQuoteRequestPage() {
             onCancel={handleCancelAddProduct}
             onComplete={handleCompleteAddProduct}
           />
-        ) : products.length === 0 ? (
+        ) : isAddingService ? (
+          <AddServiceForm
+            onCancel={handleCancelAddService}
+            onComplete={handleCompleteAddService}
+          />
+        ) : products.length === 0 && services.length === 0 ? (
           <div className="flex justify-center items-center bg-white border border-grey rounded-lg min-h-[400px]">
             <div className="flex flex-col justify-center items-center p-8 text-center">
               <div className="flex justify-center items-center mb-4">
@@ -147,6 +207,9 @@ export default function NewQuoteRequestPage() {
                 {products.map((product) => (
                   <QuoteProductCard key={product.id} product={product} />
                 ))}
+                {services.map((service) => (
+                  <QuoteServiceCard key={service.id} service={service} />
+                ))}
               </div>
             </div>
 
@@ -161,8 +224,10 @@ export default function NewQuoteRequestPage() {
                 body={
                   isSubmitting
                     ? "Submitting..."
-                    : `Submit Request (${products.length} ${
-                        products.length === 1 ? "item" : "items"
+                    : `Submit Request (${products.length + services.length} ${
+                        products.length + services.length === 1
+                          ? "item"
+                          : "items"
                       })`
                 }
               />

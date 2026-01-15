@@ -1,18 +1,25 @@
 import { BASE_URL, HTTPRequests } from "@/config/axios.config";
 import type {
   QuoteProduct,
+  QuoteService,
   QuoteRequestPayload,
   QuoteHistoryResponse,
 } from "../types/quote.types";
-import { transformProductToBackendFormat } from "../utils/quoteTransformations";
+import {
+  transformProductToBackendFormat,
+  transformServiceToBackendFormat,
+} from "../utils/quoteTransformations";
 
 export class QuoteServices {
   static async submitQuoteRequest(
-    products: QuoteProduct[]
+    products: QuoteProduct[],
+    services?: QuoteService[],
+    assetsMap?: Map<string, any>, // Map of assetId -> asset
+    membersMap?: Map<string, any> // Map of email -> member
   ): Promise<{ message: string }> {
     try {
-      if (!products || products.length === 0) {
-        throw new Error("No products to submit");
+      if ((!products || products.length === 0) && (!services || services.length === 0)) {
+        throw new Error("No products or services to submit");
       }
 
       const transformedProducts = products.map((product, index) => {
@@ -44,9 +51,41 @@ export class QuoteServices {
         }
       });
 
+      const transformedServices = services
+        ? services.map((service, index) => {
+            try {
+              // Obtener el asset si existe (para IT Support)
+              const asset = service.assetId && assetsMap
+                ? assetsMap.get(service.assetId)
+                : undefined;
+
+              const transformed = transformServiceToBackendFormat(
+                service,
+                asset,
+                assetsMap, // Pasar assetsMap para Enrollment
+                membersMap // Pasar membersMap para obtener countryCode de empleados
+              );
+
+              if (!transformed.serviceCategory) {
+                throw new Error(`Service ${index}: serviceCategory is required`);
+              }
+
+              return transformed;
+            } catch (error) {
+              throw error;
+            }
+          })
+        : undefined;
+
       const payload: QuoteRequestPayload = {
         products: transformedProducts,
+        ...(transformedServices && transformedServices.length > 0 && { services: transformedServices }),
       };
+
+      // Log para debugging (remover en producción si es necesario)
+      if (transformedServices && transformedServices.length > 0) {
+        console.log("Services payload:", JSON.stringify(transformedServices, null, 2));
+      }
 
       const response = await HTTPRequests.post(
         `${BASE_URL}/api/quotes`,
@@ -81,6 +120,18 @@ export class QuoteServices {
 
       const response = await HTTPRequests.get(
         `${BASE_URL}/api/quotes?${params.toString()}`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  static async cancel(quoteId: string) {
+    try {
+      const response = await HTTPRequests.patch(
+        `${BASE_URL}/api/quotes/${quoteId}/cancel`
       );
 
       return response.data;

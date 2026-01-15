@@ -1,5 +1,10 @@
-import type { QuoteProduct, QuoteRequestPayload } from "../types/quote.types";
+import type {
+  QuoteProduct,
+  QuoteService,
+  QuoteRequestPayload,
+} from "../types/quote.types";
 import { COUNTRY_TO_ISO } from "./constants";
+import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 
 /**
  * Convierte un nombre de país a su código ISO de 2 letras
@@ -179,4 +184,505 @@ export function transformProductToBackendFormat(
   return removeUndefinedFields(
     transformed
   ) as QuoteRequestPayload["products"][0];
+}
+
+/**
+ * Mapea los IDs de issue types a sus labels
+ */
+const issueTypesMap: Record<string, string> = {
+  "software-issue": "Software issue",
+  "connectivity-network": "Connectivity / network",
+  "account-access": "Account / access issue",
+  performance: "Performance issues",
+  "damage-accident": "Damage / accident",
+  other: "Other",
+};
+
+/**
+ * Mapea el serviceType a serviceCategory
+ */
+function mapServiceTypeToCategory(serviceType?: string): string {
+  if (!serviceType) return "";
+  const serviceTypeMap: Record<string, string> = {
+    "it-support": "IT Support",
+    "enrollment": "Enrollment",
+  };
+  return serviceTypeMap[serviceType] || serviceType;
+}
+
+/**
+ * Valida y muestra en consola todos los assets que no tienen countryCode
+ * @param assets - Array de assets a validar
+ * @param membersMap - Map opcional de email -> member
+ */
+export function validateAssetsCountryCode(
+  assets: any[],
+  membersMap?: Map<string, any>
+): void {
+  const assetsWithoutCountryCode: Array<{
+    asset: any;
+    location: string;
+    assignedTo: string;
+    availableFields: any;
+    suggestions: string[];
+  }> = [];
+
+  assets.forEach((asset) => {
+    let rawCountryCode: string | null = null;
+    let location = "";
+    let assignedTo = "";
+    const suggestions: string[] = [];
+
+    // Determinar location y assignedTo
+    if (asset.assignedMember || asset.assignedEmail) {
+      location = asset.location || "";
+      assignedTo = asset.assignedMember || asset.assignedEmail || "";
+      
+      // Intentar obtener countryCode del member
+      const memberEmail = asset.assignedEmail || asset.assignedMember;
+      if (memberEmail && membersMap) {
+        const member = membersMap.get(memberEmail.toLowerCase());
+        if (member?.country && member.country.trim() !== "") {
+          rawCountryCode = member.country;
+        } else {
+          suggestions.push(`Member "${memberEmail}" ${member ? "exists but has no country" : "not found in membersMap"}`);
+        }
+      }
+      if (!rawCountryCode) {
+        rawCountryCode = asset.countryCode || asset.country || null;
+        if (!rawCountryCode) {
+          suggestions.push("Asset has no countryCode or country field");
+        }
+      }
+    } else if (asset.location === "Our office") {
+      location = "Our office";
+      assignedTo = asset.office?.officeName || asset.officeName || "";
+      rawCountryCode =
+        asset.office?.officeCountryCode ||
+        asset.countryCode ||
+        asset.country ||
+        null;
+      
+      if (!rawCountryCode) {
+        suggestions.push("Office has no officeCountryCode");
+        if (asset.office) {
+          suggestions.push(`Office object available: ${JSON.stringify(asset.office)}`);
+        } else {
+          suggestions.push("No office object found on asset");
+        }
+      }
+    } else if (asset.location === "FP warehouse") {
+      location = "FP warehouse";
+      assignedTo = asset.officeName || asset.office?.officeName || "";
+      rawCountryCode =
+        asset.fpWarehouse?.warehouseCountryCode ||
+        asset.countryCode ||
+        asset.country ||
+        null;
+      
+      if (!rawCountryCode) {
+        suggestions.push("FP warehouse has no warehouseCountryCode");
+        if (asset.fpWarehouse) {
+          suggestions.push(`FP Warehouse object available: ${JSON.stringify(asset.fpWarehouse)}`);
+        } else {
+          suggestions.push("No fpWarehouse object found on asset");
+        }
+      }
+    } else {
+      location = asset.location || "";
+      rawCountryCode =
+        asset.office?.officeCountryCode ||
+        asset.fpWarehouse?.warehouseCountryCode ||
+        asset.countryCode ||
+        asset.country ||
+        null;
+    }
+
+    const countryCode = normalizeCountryCode(rawCountryCode);
+    
+    if (!countryCode || countryCode.trim() === "") {
+      const availableFields: any = {
+        assetId: asset._id,
+        name: asset.name,
+        location: asset.location,
+        countryCode: asset.countryCode,
+        country: asset.country,
+        assignedEmail: asset.assignedEmail,
+        assignedMember: asset.assignedMember,
+        office: asset.office ? {
+          officeId: asset.office.officeId,
+          officeName: asset.office.officeName,
+          officeCountryCode: asset.office.officeCountryCode,
+        } : null,
+        fpWarehouse: asset.fpWarehouse ? {
+          warehouseId: asset.fpWarehouse.warehouseId,
+          warehouseName: asset.fpWarehouse.warehouseName,
+          warehouseCountryCode: asset.fpWarehouse.warehouseCountryCode,
+        } : null,
+      };
+
+      assetsWithoutCountryCode.push({
+        asset,
+        location,
+        assignedTo,
+        availableFields,
+        suggestions,
+      });
+    }
+  });
+
+  if (assetsWithoutCountryCode.length > 0) {
+    console.group("🔴 Assets sin countryCode encontrados:");
+    console.log(`Total de assets sin countryCode: ${assetsWithoutCountryCode.length} de ${assets.length}`);
+    console.log("");
+    
+    assetsWithoutCountryCode.forEach((item, index) => {
+      console.group(`Asset ${index + 1}: ${item.asset.name || item.asset._id}`);
+      console.log("📍 Location:", item.location);
+      console.log("👤 Assigned To:", item.assignedTo || "N/A");
+      console.log("📋 Campos disponibles:", item.availableFields);
+      if (item.suggestions.length > 0) {
+        console.log("💡 Sugerencias:");
+        item.suggestions.forEach((suggestion) => {
+          console.log(`   - ${suggestion}`);
+        });
+      }
+      console.log("📦 Asset completo:", item.asset);
+      console.groupEnd();
+      console.log("");
+    });
+    
+    // Mostrar ejemplos de members que SÍ tienen country
+    if (membersMap && membersMap.size > 0) {
+      const membersWithCountry = Array.from(membersMap.values())
+        .filter((member: any) => member?.country && member.country.trim() !== "")
+        .slice(0, 5); // Mostrar máximo 5 ejemplos
+      
+      if (membersWithCountry.length > 0) {
+        console.group("✅ Ejemplos de Members que SÍ tienen country configurado:");
+        membersWithCountry.forEach((member: any, index: number) => {
+          console.log(`Member ${index + 1}:`, {
+            email: member.email,
+            fullName: member.fullName || `${member.firstName} ${member.lastName}`,
+            country: member.country,
+            // Mostrar solo los campos relevantes
+            _id: member._id,
+          });
+        });
+        console.groupEnd();
+      } else {
+        console.log("⚠️ No se encontraron members con country configurado en el membersMap");
+      }
+    }
+    
+    console.groupEnd();
+  } else {
+    console.log("✅ Todos los assets tienen countryCode válido");
+    
+    // Aún así mostrar ejemplos de members con country si están disponibles
+    if (membersMap && membersMap.size > 0) {
+      const membersWithCountry = Array.from(membersMap.values())
+        .filter((member: any) => member?.country && member.country.trim() !== "")
+        .slice(0, 3);
+      
+      if (membersWithCountry.length > 0) {
+        console.log("📋 Ejemplos de Members con country:", membersWithCountry.map((m: any) => ({
+          email: m.email,
+          fullName: m.fullName || `${m.firstName} ${m.lastName}`,
+          country: m.country,
+        })));
+      }
+    }
+  }
+}
+
+/**
+ * Construye el snapshot de un asset para enrolledDevices
+ */
+function buildEnrolledDeviceFromAsset(
+  asset: any,
+  membersMap?: Map<string, any>
+): {
+  category: string;
+  name: string;
+  brand: string;
+  model: string;
+  serialNumber: string;
+  location: string;
+  assignedTo: string;
+  countryCode: string;
+} {
+  const brand =
+    asset.attributes?.find(
+      (attr: any) =>
+        attr.key === "Brand" ||
+        attr.key === "brand" ||
+        String(attr.key).toLowerCase() === "brand"
+    )?.value || "";
+  const model =
+    asset.attributes?.find(
+      (attr: any) =>
+        attr.key === "Model" ||
+        attr.key === "model" ||
+        String(attr.key).toLowerCase() === "model"
+    )?.value || "";
+
+  // Determinar location y assignedTo según el formato esperado
+  let location = "";
+  let assignedTo = "";
+
+  if (asset.assignedMember || asset.assignedEmail) {
+    // Si está asignado a un empleado
+    location = asset.location || "";
+    assignedTo = asset.assignedMember || asset.assignedEmail || "";
+  } else if (asset.location === "Our office") {
+    // Para "Our office", location debe ser "Our office" y assignedTo el nombre de la oficina
+    location = "Our office";
+    assignedTo = asset.office?.officeName || asset.officeName || "";
+  } else if (asset.location === "FP warehouse") {
+    // Para "FP warehouse", location debe ser "FP warehouse" y assignedTo puede ser el nombre de la sede/warehouse
+    location = "FP warehouse";
+    // Buscar si hay información de warehouse o sede en el asset
+    assignedTo = asset.officeName || asset.office?.officeName || "";
+  } else if (asset.location) {
+    location = asset.location;
+    assignedTo = "";
+  }
+
+  // Obtener countryCode según el tipo de location
+  let rawCountryCode: string | null = null;
+
+  if (asset.assignedMember || asset.assignedEmail) {
+    // CASO 1: Employee (Member) - El countryCode debe venir del member
+    const memberEmail = asset.assignedEmail || asset.assignedMember;
+    if (memberEmail && membersMap) {
+      const member = membersMap.get(memberEmail.toLowerCase());
+      if (member?.country && member.country.trim() !== "") {
+        rawCountryCode = member.country;
+      }
+    }
+    // Fallback: intentar del asset directamente si no se encontró en el member
+    if (!rawCountryCode) {
+      rawCountryCode = asset.countryCode || asset.country || null;
+    }
+  } else if (asset.location === "Our office") {
+    // CASO 2: Our office - El countryCode debe venir de la oficina
+    rawCountryCode =
+      asset.office?.officeCountryCode ||
+      asset.countryCode ||
+      asset.country ||
+      null;
+  } else if (asset.location === "FP warehouse") {
+    // CASO 3: FP warehouse - El countryCode puede venir del fpWarehouse o del asset
+    rawCountryCode =
+      asset.fpWarehouse?.warehouseCountryCode ||
+      asset.countryCode ||
+      asset.country ||
+      null;
+  } else {
+    // CASO 4: Otros casos - Intentar todas las fuentes posibles
+    rawCountryCode =
+      asset.office?.officeCountryCode ||
+      asset.fpWarehouse?.warehouseCountryCode ||
+      asset.countryCode ||
+      asset.country ||
+      null;
+  }
+
+  // Normalizar el countryCode usando la función existente
+  const countryCode = normalizeCountryCode(rawCountryCode);
+
+  // Si después de todos los intentos no hay countryCode, lanzar error descriptivo
+  if (!countryCode || countryCode.trim() === "") {
+    let errorMessage = `Enrolled device countryCode is required but not found. `;
+    errorMessage += `Asset ID: ${asset._id}, `;
+    errorMessage += `Name: ${asset.name || "N/A"}, `;
+    errorMessage += `Location: ${asset.location || "N/A"}`;
+    
+    if (asset.assignedMember || asset.assignedEmail) {
+      // Error para Employee
+      const memberEmail = asset.assignedEmail || asset.assignedMember;
+      const member = memberEmail ? membersMap?.get(memberEmail.toLowerCase()) : null;
+      if (member) {
+        errorMessage += `, Assigned Email: ${memberEmail}. The assigned member exists but does not have a country configured. Please update the member's country in the members section.`;
+      } else {
+        errorMessage += `, Assigned Email: ${memberEmail || "N/A"}. The assigned member was not found in the system or does not have a country.`;
+      }
+    } else if (asset.location === "Our office") {
+      // Error para Our office
+      errorMessage += `, Office: ${asset.office?.officeName || asset.officeName || "N/A"}. Please ensure the office has an officeCountryCode set.`;
+    } else if (asset.location === "FP warehouse") {
+      // Error para FP warehouse
+      errorMessage += `. Please ensure the asset has a countryCode, or the fpWarehouse has a warehouseCountryCode set.`;
+    } else {
+      // Error genérico
+      errorMessage += `. Please ensure the asset has a country code, office country code, warehouse country code, or country set.`;
+    }
+    
+    throw new Error(errorMessage);
+  }
+
+  return {
+    category: asset.category || "Computer",
+    name: asset.name || "",
+    brand: brand || "",
+    model: model || "",
+    serialNumber: asset.serialNumber || "",
+    location: location || "",
+    assignedTo: assignedTo || "",
+    countryCode: countryCode,
+  };
+}
+
+/**
+ * Transforma un servicio de QuoteService al formato esperado por el backend
+ * @param service - Servicio en formato QuoteService
+ * @param asset - Asset opcional con la información del producto (para IT Support)
+ * @param assetsMap - Map opcional de assetId -> asset (para Enrollment)
+ * @param membersMap - Map opcional de email -> member (para obtener countryCode de empleados)
+ * @returns Servicio transformado en formato del backend
+ * @throws Error si hay problemas con la fecha o datos requeridos
+ */
+export function transformServiceToBackendFormat(
+  service: QuoteService,
+  asset?: any, // Product type from assets (para IT Support)
+  assetsMap?: Map<string, any>, // Map de assetId -> asset (para Enrollment)
+  membersMap?: Map<string, any> // Map de email -> member (para obtener countryCode)
+): NonNullable<QuoteRequestPayload["services"]>[0] {
+  let issueStartDate: string | undefined;
+  if (service.issueStartDate) {
+    const dateStr = service.issueStartDate;
+    // Extraer solo la fecha en formato YYYY-MM-DD (sin tiempo)
+    const dateOnly = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
+    // Validar que sea un formato de fecha válido (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(dateOnly)) {
+      throw new Error(`Invalid date format: ${dateStr}. Expected YYYY-MM-DD`);
+    }
+    issueStartDate = dateOnly;
+  }
+
+  const serviceCategory = mapServiceTypeToCategory(service.serviceType);
+  const isEnrollment = service.serviceType === "enrollment";
+
+  // Para Enrollment, construir enrolledDevices y productIds
+  let enrolledDevices: any[] | undefined = undefined;
+  let productIds: string[] | undefined = undefined;
+  
+  if (isEnrollment) {
+    if (!service.assetIds || service.assetIds.length === 0) {
+      throw new Error("Enrollment service requires at least one asset (assetIds)");
+    }
+    if (!assetsMap) {
+      throw new Error("Enrollment service requires assetsMap to build enrolledDevices");
+    }
+    
+    // Obtener todos los assets seleccionados
+    const selectedAssets = service.assetIds
+      .map((assetId) => assetsMap.get(assetId))
+      .filter((asset) => asset !== undefined);
+    
+    // Validar todos los assets antes de procesarlos
+    console.log("🔍 Validando countryCode para todos los assets seleccionados...");
+    validateAssetsCountryCode(selectedAssets, membersMap);
+    
+    productIds = service.assetIds;
+    enrolledDevices = selectedAssets.map((asset) => buildEnrolledDeviceFromAsset(asset, membersMap));
+    
+    if (enrolledDevices.length === 0) {
+      throw new Error("Enrollment service: no valid assets found in assetsMap");
+    }
+    
+    // Validar que todos los enrolledDevices tengan los campos requeridos
+    enrolledDevices.forEach((device, index) => {
+      if (!device.category || device.category.trim() === "") {
+        throw new Error(`Enrolled device ${index}: category is required`);
+      }
+      // brand y model pueden ser strings vacíos según el ejemplo
+      // serialNumber, location, countryCode son requeridos
+      if (device.serialNumber === undefined || device.serialNumber === null) {
+        throw new Error(`Enrolled device ${index}: serialNumber is required`);
+      }
+      if (!device.location || device.location.trim() === "") {
+        throw new Error(`Enrolled device ${index}: location is required`);
+      }
+      if (device.assignedTo === undefined || device.assignedTo === null) {
+        throw new Error(`Enrolled device ${index}: assignedTo is required (can be empty string)`);
+      }
+      if (!device.countryCode || device.countryCode.trim() === "") {
+        throw new Error(`Enrolled device ${index}: countryCode is required`);
+      }
+    });
+  }
+
+  // Construir productSnapshot si hay asset (para IT Support)
+  let productSnapshot: any = undefined;
+  if (asset && service.assetId && !isEnrollment) {
+    productSnapshot = buildEnrolledDeviceFromAsset(asset);
+  }
+
+  // Mapear issue types a labels
+  const issues: string[] = [];
+  if (service.issueTypes && service.issueTypes.length > 0) {
+    service.issueTypes.forEach((issueId) => {
+      const label = issueTypesMap[issueId] || issueId;
+      issues.push(label);
+    });
+  }
+
+  const transformed: any = {
+    serviceCategory: serviceCategory,
+  };
+
+  // Para IT Support
+  if (service.assetId && !isEnrollment) {
+    transformed.productId = service.assetId;
+  }
+
+  if (productSnapshot && !isEnrollment) {
+    transformed.productSnapshot = productSnapshot;
+  }
+
+  // Para Enrollment - estos campos son requeridos
+  if (isEnrollment) {
+    if (!productIds || productIds.length === 0) {
+      throw new Error("Enrollment service: productIds is required");
+    }
+    if (!enrolledDevices || enrolledDevices.length === 0) {
+      throw new Error("Enrollment service: enrolledDevices is required");
+    }
+    
+    transformed.productIds = productIds;
+    transformed.enrolledDevices = enrolledDevices;
+    
+    // additionalDetails es opcional
+    if (service.additionalDetails) {
+      transformed.additionalDetails = service.additionalDetails;
+    }
+    
+    // Para Enrollment, retornar solo los campos necesarios (no incluir campos de IT Support)
+    return transformed as NonNullable<QuoteRequestPayload["services"]>[0];
+  }
+
+  // Para IT Support - agregar campos específicos de IT Support
+  if (issues.length > 0) {
+    transformed.issues = issues;
+  }
+
+  if (service.description) {
+    transformed.description = service.description;
+  }
+
+  if (issueStartDate) {
+    transformed.issueStartDate = issueStartDate;
+  }
+
+  if (service.impactLevel) {
+    transformed.impactLevel = service.impactLevel;
+  }
+  
+  // Para otros servicios, usar removeUndefinedFields
+  return removeUndefinedFields(transformed) as NonNullable<
+    QuoteRequestPayload["services"]
+  >[0];
 }
