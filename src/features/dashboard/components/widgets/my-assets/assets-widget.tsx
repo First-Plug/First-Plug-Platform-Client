@@ -1,4 +1,5 @@
-import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
+"use client";
+import { useRouter } from "next/navigation";
 import { StockCard } from "@/features/dashboard";
 import { Card, EmptyDashboardCard, ShopIcon } from "@/shared";
 import { UserServices } from "@/features/settings";
@@ -12,6 +13,8 @@ interface Props {
 }
 
 export const AssetsWidget = ({ assets, user }: Props) => {
+  const router = useRouter();
+
   if (assets.length === 0) {
     return <EmptyDashboardCard type="stock" handleSwapy />;
   }
@@ -24,7 +27,7 @@ export const AssetsWidget = ({ assets, user }: Props) => {
       titleButton="Shop Now"
       icon={<ShopIcon />}
       onClick={() => {
-        window.open(CATALOGO_FIRST_PLUG, "_blank");
+        router.push("/home/quotes/new-request");
         UserServices.notifyShop(user.email, user.tenantName);
       }}
     >

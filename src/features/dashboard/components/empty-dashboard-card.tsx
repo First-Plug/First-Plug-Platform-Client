@@ -1,8 +1,9 @@
+"use client";
 import React from "react";
 import { AddIcon, ShopIcon, UploadIcon } from "@/shared";
 import { Button, CustomLink } from "@/shared";
 import Image from "next/image";
-import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { UserServices } from "@/features/settings";
 import { useAsideStore } from "@/shared";
@@ -35,7 +36,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     ButtonIcon: () => <UploadIcon />,
     buttonText: "Load Assets",
     LinkIcon: () => <ShopIcon />,
-    link: CATALOGO_FIRST_PLUG,
+    link: "/home/quotes/new-request",
     linkText: "Shop Now",
     additionalButtonText: "Add Product",
     additionalButtonIcon: () => <AddIcon />,
@@ -111,6 +112,7 @@ export function EmptyDashboardCard({ type, handleSwapy }: EmptyCardProps) {
     ButtonIcon,
   } = Config[type];
 
+  const router = useRouter();
   const { setAside } = useAsideStore();
 
   const handleActions = () => {
@@ -139,13 +141,13 @@ export function EmptyDashboardCard({ type, handleSwapy }: EmptyCardProps) {
             className="flex gap-2 rounded-md"
             href={link}
             onClick={
-              CATALOGO_FIRST_PLUG === link
+              link === "/home/quotes/new-request"
                 ? () => {
                     const {
                       user: { email, tenantName },
                     } = data;
 
-                    window.open(CATALOGO_FIRST_PLUG, "_blank");
+                    router.push("/home/quotes/new-request");
                     UserServices.notifyShop(email, tenantName);
                   }
                 : null
