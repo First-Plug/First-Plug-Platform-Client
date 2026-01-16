@@ -12,7 +12,6 @@ import {
 } from "@/shared";
 
 import { signOut, useSession } from "next-auth/react";
-import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { UserServices } from "@/features/settings";
 import { useAsideStore } from "@/shared";
 type EmptyCardType =
@@ -63,7 +62,7 @@ const Config: Record<EmptyCardType, TConfig> = {
     ButtonIcon: () => <UploadIcon />,
     buttonText: "Load Assets",
     LinkIcon: () => <ShopIcon />,
-    link: CATALOGO_FIRST_PLUG,
+    link: "/home/quotes/new-request",
     linkText: "Shop Now",
     additionalButtonText: "Add Product",
     additionalButtonIcon: () => <AddIcon />,
@@ -237,13 +236,13 @@ export const EmptyCard = ({ type }: EmptyCardProps) => {
             className="flex gap-2 rounded-md"
             href={link}
             onClick={
-              CATALOGO_FIRST_PLUG === link
+              link === "/home/quotes/new-request"
                 ? () => {
                     const {
                       user: { email, tenantName },
                     } = data;
 
-                    window.open(CATALOGO_FIRST_PLUG, "_blank");
+                    router.push("/home/quotes/new-request");
                     UserServices.notifyShop(email, tenantName);
                   }
                 : null

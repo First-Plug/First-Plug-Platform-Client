@@ -14,7 +14,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { X } from "lucide-react";
 
-import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { UserServices } from "@/features/settings";
 import { useMemberStore } from "@/features/members";
 import { useQuoteStore } from "@/features/quotes";
@@ -43,6 +42,7 @@ const Titles = {
 
 export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   const pathName = usePathname();
+  const router = useRouter();
   const { status, data } = useSession();
   const pathArray = pathName.split("/");
 
@@ -512,7 +512,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
                   user: { email, tenantName },
                 } = data;
 
-                window.open(CATALOGO_FIRST_PLUG, "_blank");
+                router.push("/home/quotes/new-request");
                 UserServices.notifyShop(email, tenantName);
               }}
             />

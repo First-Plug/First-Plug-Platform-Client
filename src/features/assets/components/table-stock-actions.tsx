@@ -1,7 +1,6 @@
 import { AddIcon, Button, ShopIcon, UploadIcon, DownloadIcon } from "@/shared";
 
 import { useRouter } from "next/navigation";
-import { CATALOGO_FIRST_PLUG } from "@/config/constanst";
 import { UserServices } from "@/features/settings";
 import { useSession } from "next-auth/react";
 import { useAsideStore } from "@/shared";
@@ -84,7 +83,7 @@ export const TableStockActions = () => {
               user: { email, tenantName },
             } = data;
 
-            window.open(CATALOGO_FIRST_PLUG, "_blank");
+            router.push("/home/quotes/new-request");
             UserServices.notifyShop(email, tenantName);
           }}
         />
