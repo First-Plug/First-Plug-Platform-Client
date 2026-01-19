@@ -206,6 +206,7 @@ function mapServiceTypeToCategory(serviceType?: string): string {
   const serviceTypeMap: Record<string, string> = {
     "it-support": "IT Support",
     "enrollment": "Enrollment",
+    "buyback": "Buyback",
   };
   return serviceTypeMap[serviceType] || serviceType;
 }
@@ -564,10 +565,224 @@ export function transformServiceToBackendFormat(
 
   const serviceCategory = mapServiceTypeToCategory(service.serviceType);
   const isEnrollment = service.serviceType === "enrollment";
+  const isBuyback = service.serviceType === "buyback";
 
   // Para Enrollment, construir enrolledDevices y productIds
   let enrolledDevices: any[] | undefined = undefined;
   let productIds: string[] | undefined = undefined;
+  
+  // Para Buyback, construir products array con productSnapshot y buybackDetails
+  let buybackProducts: any[] | undefined = undefined;
+  
+  if (isBuyback) {
+    if (!service.assetIds || service.assetIds.length === 0) {
+      throw new Error("Buyback service requires at least one asset (assetIds)");
+    }
+    if (!assetsMap) {
+      throw new Error("Buyback service requires assetsMap to build products");
+    }
+    
+    // Obtener todos los assets seleccionados
+    const selectedAssets = service.assetIds
+      .map((assetId) => assetsMap.get(assetId))
+      .filter((asset) => asset !== undefined);
+    
+    if (selectedAssets.length === 0) {
+      throw new Error("Buyback service: no valid assets found in assetsMap");
+    }
+    
+    // Validar countryCode para todos los assets
+    validateAssetsCountryCode(selectedAssets, membersMap);
+    
+    // Construir products array
+    buybackProducts = selectedAssets.map((asset) => {
+      // Construir productSnapshot completo (similar a buildEnrolledDeviceFromAsset pero con más campos)
+      const brand =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Brand" ||
+            attr.key === "brand" ||
+            String(attr.key).toLowerCase() === "brand"
+        )?.value || "";
+      const model =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Model" ||
+            attr.key === "model" ||
+            String(attr.key).toLowerCase() === "model"
+        )?.value || "";
+      const os =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "OS" ||
+            attr.key === "os" ||
+            attr.key === "Operating System" ||
+            String(attr.key).toLowerCase() === "operating system"
+        )?.value || "";
+      const processor =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Processor" ||
+            attr.key === "processor" ||
+            String(attr.key).toLowerCase() === "processor"
+        )?.value || "";
+      const ram =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "RAM" ||
+            attr.key === "ram" ||
+            String(attr.key).toLowerCase() === "ram"
+        )?.value || "";
+      const storage =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Storage" ||
+            attr.key === "storage" ||
+            String(attr.key).toLowerCase() === "storage"
+        )?.value || "";
+      const screenSize =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Screen Size" ||
+            attr.key === "screenSize" ||
+            attr.key === "screen size" ||
+            String(attr.key).toLowerCase() === "screen size"
+        )?.value || "";
+      // productCondition viene directamente del asset
+      const productCondition = asset.productCondition || "";
+      
+      // Determinar location y assignedTo
+      let location = "";
+      let assignedTo = "";
+      let rawCountryCode: string | null = null;
+
+      if (asset.assignedMember || asset.assignedEmail) {
+        location = asset.location || "";
+        assignedTo = asset.assignedMember || asset.assignedEmail || "";
+        const memberEmail = asset.assignedEmail || asset.assignedMember;
+        if (memberEmail && membersMap) {
+          const member = membersMap.get(memberEmail.toLowerCase());
+          if (member?.country && member.country.trim() !== "") {
+            rawCountryCode = member.country;
+          }
+        }
+        if (!rawCountryCode) {
+          rawCountryCode = asset.countryCode || asset.country || null;
+        }
+      } else if (asset.location === "Our office") {
+        location = "Our office";
+        assignedTo = asset.office?.officeName || asset.officeName || "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location === "FP warehouse") {
+        location = "FP warehouse";
+        assignedTo = asset.officeName || asset.office?.officeName || "";
+        rawCountryCode =
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location) {
+        location = asset.location;
+        assignedTo = "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      }
+
+      const countryCode = normalizeCountryCode(rawCountryCode);
+      
+      if (!countryCode || countryCode.trim() === "") {
+        throw new Error(`Buyback asset countryCode is required but not found. Asset ID: ${asset._id}`);
+      }
+
+      // Obtener buybackDetails para este asset
+      const buybackDetail = service.buybackDetails?.[asset._id];
+      
+      // Construir productSnapshot con campos requeridos
+      // Usar el nombre del asset o un valor por defecto basado en la categoría
+      const assetName = asset.name || asset.category || "Asset";
+      
+      const productSnapshot: any = {
+        category: asset.category || "Computer",
+        name: assetName,
+        brand: brand || "",
+        model: model || "",
+        serialNumber: asset.serialNumber || "",
+        location: location || "",
+        assignedTo: assignedTo || "",
+        countryCode: countryCode,
+      };
+
+      // Agregar campos opcionales si existen
+      if (os && os.trim() !== "") productSnapshot.os = os;
+      if (processor && processor.trim() !== "") productSnapshot.processor = processor;
+      if (ram && ram.trim() !== "") productSnapshot.ram = ram;
+      if (storage && storage.trim() !== "") productSnapshot.storage = storage;
+      if (screenSize && screenSize.trim() !== "") productSnapshot.screenSize = screenSize;
+      if (productCondition && productCondition.trim() !== "") {
+        productSnapshot.productCondition = productCondition;
+      }
+      
+      // additionalInfo puede venir del asset
+      if (asset.additionalInfo && asset.additionalInfo.trim() !== "") {
+        productSnapshot.additionalInfo = asset.additionalInfo;
+      }
+
+      // Validar que los campos requeridos no estén vacíos
+      if (!productSnapshot.category || productSnapshot.category.trim() === "") {
+        throw new Error(`Buyback asset ${asset._id}: category is required`);
+      }
+      // name puede ser el nombre del asset, la categoría, o "Asset" como fallback
+      if (!productSnapshot.name || productSnapshot.name.trim() === "") {
+        // Si aún está vacío después de los fallbacks, usar la categoría o "Asset"
+        productSnapshot.name = asset.category || "Asset";
+      }
+      if (!productSnapshot.serialNumber || productSnapshot.serialNumber.trim() === "") {
+        throw new Error(`Buyback asset ${asset._id}: serialNumber is required`);
+      }
+      if (!productSnapshot.location || productSnapshot.location.trim() === "") {
+        throw new Error(`Buyback asset ${asset._id}: location is required`);
+      }
+      if (productSnapshot.assignedTo === undefined || productSnapshot.assignedTo === null) {
+        throw new Error(`Buyback asset ${asset._id}: assignedTo is required (can be empty string)`);
+      }
+      if (!productSnapshot.countryCode || productSnapshot.countryCode.trim() === "") {
+        throw new Error(`Buyback asset ${asset._id}: countryCode is required`);
+      }
+
+      // Construir el objeto del producto
+      const productObj: any = {
+        productId: asset._id,
+        productSnapshot: removeUndefinedFields(productSnapshot),
+      };
+
+      // Agregar buybackDetails si existe (incluso si está vacío, para mantener la estructura)
+      if (buybackDetail) {
+        const cleanedBuybackDetails = removeUndefinedFields({
+          generalFunctionality: buybackDetail.generalFunctionality,
+          batteryCycles: buybackDetail.batteryCycles,
+          aestheticDetails: buybackDetail.aestheticDetails,
+          hasCharger: buybackDetail.hasCharger,
+          chargerWorks: buybackDetail.chargerWorks,
+          additionalComments: buybackDetail.additionalComments,
+        });
+        
+        // Solo agregar buybackDetails si tiene al menos un campo
+        if (Object.keys(cleanedBuybackDetails).length > 0) {
+          productObj.buybackDetails = cleanedBuybackDetails;
+        }
+      }
+
+      return productObj;
+    });
+  }
   
   if (isEnrollment) {
     if (!service.assetIds || service.assetIds.length === 0) {
@@ -635,11 +850,11 @@ export function transformServiceToBackendFormat(
   };
 
   // Para IT Support
-  if (service.assetId && !isEnrollment) {
+  if (service.assetId && !isEnrollment && !isBuyback) {
     transformed.productId = service.assetId;
   }
 
-  if (productSnapshot && !isEnrollment) {
+  if (productSnapshot && !isEnrollment && !isBuyback) {
     transformed.productSnapshot = productSnapshot;
   }
 
@@ -664,21 +879,40 @@ export function transformServiceToBackendFormat(
     return transformed as NonNullable<QuoteRequestPayload["services"]>[0];
   }
 
-  // Para IT Support - agregar campos específicos de IT Support
-  if (issues.length > 0) {
-    transformed.issues = issues;
+  // Para Buyback - estos campos son requeridos
+  if (isBuyback) {
+    if (!buybackProducts || buybackProducts.length === 0) {
+      throw new Error("Buyback service: products is required");
+    }
+    
+    transformed.products = buybackProducts;
+    
+    // additionalInfo es opcional
+    if (service.additionalInfo) {
+      transformed.additionalInfo = service.additionalInfo;
+    }
+    
+    // Para Buyback, retornar solo los campos necesarios (no incluir campos de otros servicios)
+    return removeUndefinedFields(transformed) as NonNullable<QuoteRequestPayload["services"]>[0];
   }
 
-  if (service.description) {
-    transformed.description = service.description;
-  }
+  // Para IT Support - agregar campos específicos de IT Support (solo si no es Buyback)
+  if (!isBuyback) {
+    if (issues.length > 0) {
+      transformed.issues = issues;
+    }
 
-  if (issueStartDate) {
-    transformed.issueStartDate = issueStartDate;
-  }
+    if (service.description) {
+      transformed.description = service.description;
+    }
 
-  if (service.impactLevel) {
-    transformed.impactLevel = service.impactLevel;
+    if (issueStartDate) {
+      transformed.issueStartDate = issueStartDate;
+    }
+
+    if (service.impactLevel) {
+      transformed.impactLevel = service.impactLevel;
+    }
   }
   
   // Para otros servicios, usar removeUndefinedFields

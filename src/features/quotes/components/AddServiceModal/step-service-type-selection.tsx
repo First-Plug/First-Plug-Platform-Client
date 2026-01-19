@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Wrench, Shield } from "lucide-react";
+import { Wrench, Shield, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/shared";
 
 interface ServiceType {
@@ -25,6 +25,13 @@ const serviceTypes: ServiceType[] = [
     name: "Enrollment",
     description: "Mobile Device Management for security and control",
     icon: <Shield className="w-6 h-6" strokeWidth={2} />,
+    enabled: true,
+  },
+  {
+    id: "buyback",
+    name: "Buyback",
+    description: "Sell your used equipment to FirstPlug for refurbishing",
+    icon: <ArrowLeftRight className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },
 ];

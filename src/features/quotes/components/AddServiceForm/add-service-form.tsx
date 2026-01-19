@@ -9,6 +9,7 @@ import { StepIssueTypeSelection } from "../AddServiceModal/step-issue-type-selec
 import { StepIssueDetails } from "../AddServiceModal/step-issue-details";
 import { StepReviewAndSubmit } from "../AddServiceModal/step-review-and-submit";
 import { StepAdditionalDetails } from "../AddServiceModal/step-additional-details";
+import { StepBuybackDetails } from "../AddServiceModal/step-buyback-details";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import type { QuoteService, QuoteProduct } from "../../types/quote.types";
 
@@ -179,8 +180,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     handleDataChange({ serviceType });
     // Actualizar el tipo de servicio en el store
     setCurrentServiceType(serviceType);
-    // Si es IT Support o Enrollment, ir al step 2 (select asset)
-    if (serviceType === "it-support" || serviceType === "enrollment") {
+    // Si es IT Support, Enrollment o Buyback, ir al step 2 (select asset)
+    if (serviceType === "it-support" || serviceType === "enrollment" || serviceType === "buyback") {
       setCurrentStep(2);
     } else {
       setCurrentStep(3);
@@ -189,8 +190,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
 
   const handleAssetSelect = (assetIds: string[]) => {
     const serviceType = serviceData.serviceType || currentServiceType;
-    if (serviceType === "enrollment") {
-      // Para Enrollment, guardar múltiples assets
+    if (serviceType === "enrollment" || serviceType === "buyback") {
+      // Para Enrollment y Buyback, guardar múltiples assets
       handleDataChange({ assetIds });
     } else {
       // Para IT Support, solo se permite un asset (single selection)
@@ -205,6 +206,11 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       // Para Enrollment, validar que hay al menos un asset seleccionado
       if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
       // Ir al step 3 (additional details)
+      setCurrentStep(3);
+    } else if (serviceType === "buyback") {
+      // Para Buyback, validar que hay al menos un asset seleccionado
+      if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+      // Ir al step 3 (buyback details)
       setCurrentStep(3);
     } else {
       // Para IT Support, validar que hay un asset seleccionado
@@ -243,6 +249,40 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType: serviceData.serviceType!,
       assetIds: serviceData.assetIds || [],
       additionalDetails: serviceData.additionalDetails,
+      country: serviceData.country || "",
+      city: serviceData.city,
+      requiredDeliveryDate: serviceData.requiredDeliveryDate,
+      additionalComments: serviceData.additionalComments,
+    };
+    
+    if (editingServiceId) {
+      updateService(editingServiceId, completeService);
+      setEditingServiceId(undefined);
+    } else {
+      addService(completeService);
+    }
+    
+    // Limpiar tipo de servicio, step y serviceData al completar
+    setServiceData({
+      id: generateId(),
+      impactLevel: "medium",
+    });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
+  };
+
+  const handleContinueFromBuybackDetails = () => {
+    // Para Buyback, step 3 es buyback details, validar y completar
+    // Validar que hay al menos un asset seleccionado
+    if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+
+    const completeService: QuoteService = {
+      id: serviceData.id!,
+      serviceType: serviceData.serviceType!,
+      assetIds: serviceData.assetIds || [],
+      buybackDetails: serviceData.buybackDetails || {},
+      additionalInfo: serviceData.additionalInfo,
       country: serviceData.country || "",
       city: serviceData.city,
       requiredDeliveryDate: serviceData.requiredDeliveryDate,
@@ -321,6 +361,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     const serviceType = serviceData.serviceType || currentServiceType;
     const isITSupport = serviceType === "it-support";
     const isEnrollment = serviceType === "enrollment";
+    const isBuyback = serviceType === "buyback";
 
     switch (currentStep) {
       case 1:
@@ -335,7 +376,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           />
         );
       case 2:
-        // Mostrar select asset si es IT Support o Enrollment
+        // Mostrar select asset si es IT Support, Enrollment o Buyback
         if (isITSupport) {
           return (
             <StepSelectAsset
@@ -354,6 +395,15 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               onAssetSelect={handleAssetSelect}
               allowMultiple={true} // Enrollment permite múltiples assets
               allowedCategory="Computer" // Solo Computer para Enrollment
+            />
+          );
+        }
+        if (isBuyback) {
+          return (
+            <StepSelectAsset
+              selectedAssetIds={serviceData.assetIds || []}
+              onAssetSelect={handleAssetSelect}
+              allowMultiple={true} // Buyback permite múltiples assets
             />
           );
         }
@@ -376,6 +426,22 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               additionalDetails={serviceData.additionalDetails}
               onDataChange={(updates) => {
                 handleDataChange(updates);
+              }}
+            />
+          );
+        }
+        // Mostrar buyback details si es Buyback
+        if (isBuyback) {
+          return (
+            <StepBuybackDetails
+              assetIds={serviceData.assetIds || []}
+              buybackDetails={serviceData.buybackDetails || {}}
+              additionalInfo={serviceData.additionalInfo}
+              onDataChange={(updates) => {
+                handleDataChange({ buybackDetails: updates });
+              }}
+              onAdditionalInfoChange={(additionalInfo) => {
+                handleDataChange({ additionalInfo });
               }}
             />
           );
@@ -449,6 +515,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     const serviceType = serviceData.serviceType || currentServiceType;
     const isITSupport = serviceType === "it-support";
     const isEnrollment = serviceType === "enrollment";
+    const isBuyback = serviceType === "buyback";
 
     if (currentStep === 2 && isITSupport) {
       // En step 2 para IT Support, se necesita seleccionar un asset
@@ -456,6 +523,10 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     }
     if (currentStep === 2 && isEnrollment) {
       // En step 2 para Enrollment, se necesita seleccionar al menos un asset
+      return !!serviceData.assetIds && serviceData.assetIds.length > 0;
+    }
+    if (currentStep === 2 && isBuyback) {
+      // En step 2 para Buyback, se necesita seleccionar al menos un asset
       return !!serviceData.assetIds && serviceData.assetIds.length > 0;
     }
     if (currentStep === 3 && isITSupport) {
@@ -466,7 +537,11 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       // En step 3 para Enrollment (Additional Details), siempre se puede proceder (es opcional)
       return true;
     }
-    if (currentStep === 3 && !isITSupport && !isEnrollment) {
+    if (currentStep === 3 && isBuyback) {
+      // En step 3 para Buyback (Buyback Details), siempre se puede proceder (todos los campos son opcionales)
+      return true;
+    }
+    if (currentStep === 3 && !isITSupport && !isEnrollment && !isBuyback) {
       // Para otros servicios, step 3 es Quote Details
       return !!serviceData.country;
     }
@@ -484,6 +559,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   const serviceTypeForRender = serviceData.serviceType || currentServiceType;
   const isITSupportForRender = serviceTypeForRender === "it-support";
   const isEnrollmentForRender = serviceTypeForRender === "enrollment";
+  const isBuybackForRender = serviceTypeForRender === "buyback";
 
   return (
     <div className="flex justify-center w-full">
@@ -527,6 +603,17 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           </div>
         )}
+        {currentStep === 3 && isBuybackForRender && (
+          <div className="flex justify-end items-center pt-4 border-t">
+            <Button
+              onClick={handleContinueFromBuybackDetails}
+              disabled={!canProceed()}
+              variant="primary"
+              size="small"
+              body="Submit Request"
+            />
+          </div>
+        )}
         {currentStep === 4 && isITSupportForRender && (
           <div className="flex justify-end items-center pt-4 border-t">
             <Button
@@ -549,14 +636,14 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           </div>
         )}
-        {currentStep === 3 && !isITSupportForRender && !isEnrollmentForRender && (
+        {currentStep === 3 && !isITSupportForRender && !isEnrollmentForRender && !isBuybackForRender && (
           <div className="flex justify-end items-center pt-4 border-t">
             <Button
               onClick={handleNext}
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Save Service"
+              body="Submit Request"
             />
           </div>
         )}

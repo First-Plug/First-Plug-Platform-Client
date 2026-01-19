@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Trash2, Wrench, Shield, Laptop } from "lucide-react";
+import { Trash2, Wrench, Shield, Laptop, ArrowLeftRight } from "lucide-react";
 import {
   Badge,
   Dialog,
@@ -61,6 +61,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
     const serviceTypeMap: Record<string, string> = {
       "it-support": "IT Support",
       "enrollment": "Enrollment",
+      "buyback": "Buyback",
     };
     return serviceTypeMap[serviceType] || serviceType;
   };
@@ -262,6 +263,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         <Badge variant="outline" className="flex items-center gap-1">
           {service.serviceType === "enrollment" ? (
             <Shield className="w-3 h-3" />
+          ) : service.serviceType === "buyback" ? (
+            <ArrowLeftRight className="w-3 h-3" />
           ) : (
             <Wrench className="w-3 h-3" />
           )}
@@ -377,6 +380,82 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         <div className="mb-3">
           <div className="font-medium text-sm mb-1">Additional details:</div>
           <div className="text-sm text-gray-700">{service.additionalDetails}</div>
+        </div>
+      )}
+
+      {/* Buyback: Selected Assets */}
+      {service.serviceType === "buyback" && selectedAssets.length > 0 && (
+        <div className="mb-3">
+          <div className="font-medium text-sm mb-2">
+            {selectedAssets.length} asset{selectedAssets.length !== 1 ? "s" : ""} to sell
+          </div>
+          <ul className="list-disc pl-5 text-sm text-gray-700 space-y-2">
+            {selectedAssets.map((asset) => {
+              const displayInfo = getAssetDisplayInfo(asset);
+              const assignment = getAssignmentInfo(asset);
+              const memberName =
+                assignment?.type === "employee"
+                  ? assignment.member
+                  : assignment?.type === "office"
+                  ? assignment.officeName
+                  : "";
+              const buybackDetail = service.buybackDetails?.[asset._id];
+              return (
+                <li key={asset._id}>
+                  <div className="font-medium">
+                    {displayInfo?.displayName || asset.name || "Asset"}
+                    {displayInfo?.specifications && ` - ${displayInfo.specifications}`}
+                    {memberName && ` - ${memberName}`}
+                  </div>
+                  {buybackDetail && (
+                    <div className="mt-1 text-xs text-gray-600 space-y-1">
+                      {buybackDetail.generalFunctionality && (
+                        <div>
+                          <span className="font-medium">General functionality: </span>
+                          {buybackDetail.generalFunctionality}
+                        </div>
+                      )}
+                      {buybackDetail.batteryCycles !== undefined && (
+                        <div>
+                          <span className="font-medium">Battery cycles: </span>
+                          {buybackDetail.batteryCycles}
+                        </div>
+                      )}
+                      {buybackDetail.aestheticDetails && (
+                        <div>
+                          <span className="font-medium">Aesthetic details: </span>
+                          {buybackDetail.aestheticDetails}
+                        </div>
+                      )}
+                      {buybackDetail.hasCharger !== undefined && (
+                        <div>
+                          <span className="font-medium">Has charger: </span>
+                          {buybackDetail.hasCharger ? "Yes" : "No"}
+                          {buybackDetail.hasCharger && buybackDetail.chargerWorks !== undefined && (
+                            <span> ({buybackDetail.chargerWorks ? "Works" : "Doesn't work"})</span>
+                          )}
+                        </div>
+                      )}
+                      {buybackDetail.additionalComments && (
+                        <div>
+                          <span className="font-medium">Additional comments: </span>
+                          {buybackDetail.additionalComments}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Additional Info for Buyback */}
+      {service.serviceType === "buyback" && service.additionalInfo && (
+        <div className="mb-3">
+          <div className="font-medium text-sm mb-1">Additional info:</div>
+          <div className="text-sm text-gray-700">{service.additionalInfo}</div>
         </div>
       )}
 
