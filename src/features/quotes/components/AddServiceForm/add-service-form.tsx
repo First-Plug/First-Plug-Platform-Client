@@ -276,6 +276,22 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     // Para Buyback, step 3 es buyback details, validar y completar
     // Validar que hay al menos un asset seleccionado
     if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+    
+    // Validar que todos los assets tengan generalFunctionality completado
+    if (serviceData.buybackDetails) {
+      const missingGeneralFunctionality = serviceData.assetIds.find((assetId) => {
+        const detail = serviceData.buybackDetails?.[assetId];
+        return !detail?.generalFunctionality || detail.generalFunctionality.trim() === "";
+      });
+      
+      if (missingGeneralFunctionality) {
+        // No continuar si falta generalFunctionality en algún asset
+        return;
+      }
+    } else {
+      // Si no hay buybackDetails, no se puede continuar
+      return;
+    }
 
     const completeService: QuoteService = {
       id: serviceData.id!,
@@ -404,6 +420,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               selectedAssetIds={serviceData.assetIds || []}
               onAssetSelect={handleAssetSelect}
               allowMultiple={true} // Buyback permite múltiples assets
+              serviceType="buyback"
             />
           );
         }
@@ -538,8 +555,17 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       return true;
     }
     if (currentStep === 3 && isBuyback) {
-      // En step 3 para Buyback (Buyback Details), siempre se puede proceder (todos los campos son opcionales)
-      return true;
+      // En step 3 para Buyback (Buyback Details), validar que todos los assets tengan generalFunctionality
+      if (!serviceData.assetIds || serviceData.assetIds.length === 0) return false;
+      if (!serviceData.buybackDetails) return false;
+      
+      // Verificar que todos los assets seleccionados tengan generalFunctionality completado
+      const allAssetsHaveGeneralFunctionality = serviceData.assetIds.every((assetId) => {
+        const detail = serviceData.buybackDetails?.[assetId];
+        return detail?.generalFunctionality && detail.generalFunctionality.trim() !== "";
+      });
+      
+      return allAssetsHaveGeneralFunctionality;
     }
     if (currentStep === 3 && !isITSupport && !isEnrollment && !isBuyback) {
       // Para otros servicios, step 3 es Quote Details

@@ -30,7 +30,7 @@ const serviceTypes: ServiceType[] = [
   {
     id: "buyback",
     name: "Buyback",
-    description: "Sell your used equipment to FirstPlug for refurbishing",
+    description: "Sell your used equipment",
     icon: <ArrowLeftRight className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },

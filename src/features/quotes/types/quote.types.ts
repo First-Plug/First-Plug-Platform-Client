@@ -28,7 +28,7 @@ export interface QuoteProduct {
 export interface BuybackDetail {
   assetId: string;
   generalFunctionality?: string;
-  batteryCycles?: number;
+  batteryCycles?: string;
   aestheticDetails?: string;
   hasCharger?: boolean;
   chargerWorks?: boolean;
@@ -122,7 +122,7 @@ export interface QuoteRequestPayload {
       };
       buybackDetails?: {
         generalFunctionality?: string;
-        batteryCycles?: number;
+        batteryCycles?: string;
         aestheticDetails?: string;
         hasCharger?: boolean;
         chargerWorks?: boolean;
@@ -246,7 +246,7 @@ export interface BuybackProductSnapshot {
 
 export interface BuybackDetails {
   generalFunctionality?: string;
-  batteryCycles?: number;
+  batteryCycles?: string;
   aestheticDetails?: string;
   hasCharger?: boolean;
   chargerWorks?: boolean;

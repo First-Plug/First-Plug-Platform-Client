@@ -20,6 +20,7 @@ interface StepSelectAssetProps {
   onAssetSelect: (assetIds: string[]) => void; // Callback con array de IDs
   allowMultiple?: boolean; // Si es true, permite seleccionar múltiples; si es false, solo uno
   allowedCategory?: string; // Categoría permitida (ej: "Computer")
+  serviceType?: string; // Tipo de servicio (ej: "buyback", "enrollment", "it-support")
 }
 
 export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
@@ -27,6 +28,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
   onAssetSelect,
   allowMultiple = false,
   allowedCategory,
+  serviceType,
 }) => {
   const { data: assetsData, isLoading } = useGetTableAssets();
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -250,6 +252,8 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
             <p className="text-muted-foreground">
               {searchQuery
                 ? "No assets found matching your search."
+                : serviceType === "buyback"
+                ? "You don't have any assets available for buyback yet."
                 : "No assets available."}
             </p>
             {!searchQuery && allProducts.length === 0 && (

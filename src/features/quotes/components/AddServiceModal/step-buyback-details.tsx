@@ -11,7 +11,7 @@ import { cn } from "@/shared";
 interface BuybackDetail {
   assetId: string;
   generalFunctionality?: string;
-  batteryCycles?: number;
+  batteryCycles?: string;
   aestheticDetails?: string;
   hasCharger?: boolean;
   chargerWorks?: boolean;
@@ -34,20 +34,6 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
   onAdditionalInfoChange,
 }) => {
   const { data: assetsData } = useGetTableAssets();
-  // Solo expandir el primer asset por defecto
-  const [expandedAssets, setExpandedAssets] = React.useState<Set<string>>(
-    assetIds.length > 0 ? new Set([assetIds[0]]) : new Set()
-  );
-
-  // Actualizar expandedAssets cuando cambien los assetIds
-  React.useEffect(() => {
-    if (assetIds.length > 0) {
-      // Solo expandir el primer asset
-      setExpandedAssets(new Set([assetIds[0]]));
-    } else {
-      setExpandedAssets(new Set());
-    }
-  }, [assetIds]);
 
   // Encontrar los assets seleccionados
   const selectedAssets = React.useMemo(() => {
@@ -64,6 +50,21 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
     }
     return assets;
   }, [assetIds, assetsData]);
+
+  // Solo expandir el primer asset por defecto (basado en selectedAssets, no assetIds)
+  const [expandedAssets, setExpandedAssets] = React.useState<Set<string>>(
+    selectedAssets.length > 0 ? new Set([selectedAssets[0]._id]) : new Set()
+  );
+
+  // Actualizar expandedAssets cuando cambien los selectedAssets
+  React.useEffect(() => {
+    if (selectedAssets.length > 0) {
+      // Solo expandir el primer asset
+      setExpandedAssets(new Set([selectedAssets[0]._id]));
+    } else {
+      setExpandedAssets(new Set());
+    }
+  }, [selectedAssets]);
 
   // Obtener información de display del asset
   const getAssetDisplayInfo = (product: Product) => {
@@ -125,7 +126,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
   return (
     <div className="flex flex-col gap-6 w-full">
       <p className="text-muted-foreground text-center">
-        Expand each asset to provide additional information (optional)
+        Expand each asset to provide additional details for a more accurate quote
       </p>
 
       <div className="flex flex-col gap-4 pr-2">
@@ -177,14 +178,14 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
               {/* Form Fields - Show when expanded */}
               {isExpanded && (
                 <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
-                  {/* General Functionality */}
+                  {/* Overall Condition */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`general-${asset._id}`}>
-                      General functionality (optional)
+                      Overall condition: Describe the general working condition
                     </Label>
                     <textarea
                       id={`general-${asset._id}`}
-                      placeholder="Describe the general condition of the equipment..."
+                      placeholder="Describe the general working condition"
                       value={detail.generalFunctionality || ""}
                       onChange={(e) =>
                         updateBuybackDetail(
@@ -195,40 +196,39 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                       }
                       rows={3}
                       className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[80px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
+                      required
                     />
                   </div>
 
-                  {/* Battery Cycles */}
+                  {/* Battery Cycle Count */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`battery-${asset._id}`}>
-                      Battery cycles (optional)
+                      Battery cycle count: Enter the number of battery cycles (if known)
                     </Label>
                     <Input
                       id={`battery-${asset._id}`}
-                      type="number"
-                      placeholder="e.g. 450"
-                      value={detail.batteryCycles?.toString() || ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
+                      type="text"
+                      placeholder="e.g. 450 or 'Unknown'"
+                      value={detail.batteryCycles || ""}
+                      onChange={(e) =>
                         updateBuybackDetail(
                           asset._id,
                           "batteryCycles",
-                          value === "" ? undefined : parseInt(value, 10)
-                        );
-                      }}
-                      min="0"
+                          e.target.value || undefined
+                        )
+                      }
                       className="w-full"
                     />
                   </div>
 
-                  {/* Aesthetic Details */}
+                  {/* Cosmetic Condition */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`aesthetic-${asset._id}`}>
-                      Has aesthetic details? (optional)
+                      Cosmetic condition: Describe any visible wear or damage
                     </Label>
                     <textarea
                       id={`aesthetic-${asset._id}`}
-                      placeholder="Describe any aesthetic details like scratches, dents, etc..."
+                      placeholder="Describe any visible wear or damage"
                       value={detail.aestheticDetails || ""}
                       onChange={(e) =>
                         updateBuybackDetail(
@@ -242,61 +242,35 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                     />
                   </div>
 
-                  {/* Charger Checkboxes */}
-                  <div className="flex flex-col gap-3">
-                    <Label>Charger information (optional)</Label>
-                    <div className="flex items-center gap-6">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id={`hasCharger-${asset._id}`}
-                          checked={detail.hasCharger || false}
-                          onCheckedChange={(checked) =>
-                            updateBuybackDetail(
-                              asset._id,
-                              "hasCharger",
-                              checked === true
-                            )
-                          }
-                        />
-                        <Label
-                          htmlFor={`hasCharger-${asset._id}`}
-                          className="font-normal cursor-pointer"
-                        >
-                          Has charger
-                        </Label>
-                      </div>
-                      {detail.hasCharger && (
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            id={`chargerWorks-${asset._id}`}
-                            checked={detail.chargerWorks || false}
-                            onCheckedChange={(checked) =>
-                              updateBuybackDetail(
-                                asset._id,
-                                "chargerWorks",
-                                checked === true
-                              )
-                            }
-                          />
-                          <Label
-                            htmlFor={`chargerWorks-${asset._id}`}
-                            className="font-normal cursor-pointer"
-                          >
-                            Works
-                          </Label>
-                        </div>
-                      )}
-                    </div>
+                  {/* Includes a working charger? */}
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id={`hasCharger-${asset._id}`}
+                      checked={detail.hasCharger || false}
+                      onCheckedChange={(checked) =>
+                        updateBuybackDetail(
+                          asset._id,
+                          "hasCharger",
+                          checked === true
+                        )
+                      }
+                    />
+                    <Label
+                      htmlFor={`hasCharger-${asset._id}`}
+                      className="font-normal cursor-pointer"
+                    >
+                      Includes a working charger? Select if a functional charger is included.
+                    </Label>
                   </div>
 
                   {/* Additional Comments */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`comments-${asset._id}`}>
-                      Additional comments (optional)
+                      Additional comments: Optional notes about the asset
                     </Label>
                     <textarea
                       id={`comments-${asset._id}`}
-                      placeholder="Any additional information about the equipment..."
+                      placeholder="Optional notes about the asset"
                       value={detail.additionalComments || ""}
                       onChange={(e) =>
                         updateBuybackDetail(

@@ -709,14 +709,32 @@ export function transformServiceToBackendFormat(
       // Usar el nombre del asset o un valor por defecto basado en la categoría
       const assetName = asset.name || asset.category || "Asset";
       
+      // Validar que los campos requeridos estén presentes antes de construir productSnapshot
+      if (!asset.category || asset.category.trim() === "") {
+        throw new Error(`Buyback asset ${asset._id}: category is required`);
+      }
+      if (!asset.serialNumber || asset.serialNumber.trim() === "") {
+        throw new Error(`Buyback asset ${asset._id}: serialNumber is required`);
+      }
+      if (!location || location.trim() === "") {
+        throw new Error(`Buyback asset ${asset._id}: location is required`);
+      }
+      if (assignedTo === undefined || assignedTo === null) {
+        throw new Error(`Buyback asset ${asset._id}: assignedTo is required (can be empty string)`);
+      }
+      if (!countryCode || countryCode.trim() === "") {
+        throw new Error(`Buyback asset ${asset._id}: countryCode is required`);
+      }
+      
+      // Construir productSnapshot - brand y model son requeridos según el ejemplo
       const productSnapshot: any = {
-        category: asset.category || "Computer",
+        category: asset.category,
         name: assetName,
-        brand: brand || "",
-        model: model || "",
-        serialNumber: asset.serialNumber || "",
-        location: location || "",
-        assignedTo: assignedTo || "",
+        brand: brand || "", // Brand es requerido, puede ser string vacío
+        model: model || "", // Model es requerido, puede ser string vacío
+        serialNumber: asset.serialNumber,
+        location: location,
+        assignedTo: assignedTo || "", // Asegurar que sea string, no null/undefined
         countryCode: countryCode,
       };
 
@@ -735,49 +753,59 @@ export function transformServiceToBackendFormat(
         productSnapshot.additionalInfo = asset.additionalInfo;
       }
 
-      // Validar que los campos requeridos no estén vacíos
-      if (!productSnapshot.category || productSnapshot.category.trim() === "") {
-        throw new Error(`Buyback asset ${asset._id}: category is required`);
-      }
-      // name puede ser el nombre del asset, la categoría, o "Asset" como fallback
-      if (!productSnapshot.name || productSnapshot.name.trim() === "") {
-        // Si aún está vacío después de los fallbacks, usar la categoría o "Asset"
-        productSnapshot.name = asset.category || "Asset";
-      }
-      if (!productSnapshot.serialNumber || productSnapshot.serialNumber.trim() === "") {
-        throw new Error(`Buyback asset ${asset._id}: serialNumber is required`);
-      }
-      if (!productSnapshot.location || productSnapshot.location.trim() === "") {
-        throw new Error(`Buyback asset ${asset._id}: location is required`);
-      }
-      if (productSnapshot.assignedTo === undefined || productSnapshot.assignedTo === null) {
-        throw new Error(`Buyback asset ${asset._id}: assignedTo is required (can be empty string)`);
-      }
-      if (!productSnapshot.countryCode || productSnapshot.countryCode.trim() === "") {
-        throw new Error(`Buyback asset ${asset._id}: countryCode is required`);
-      }
-
-      // Construir el objeto del producto
+      // Construir el objeto del producto - no usar removeUndefinedFields para asegurar que campos requeridos estén presentes
       const productObj: any = {
         productId: asset._id,
-        productSnapshot: removeUndefinedFields(productSnapshot),
+        productSnapshot: productSnapshot, // Incluir todos los campos, incluso strings vacíos para campos requeridos
       };
 
-      // Agregar buybackDetails si existe (incluso si está vacío, para mantener la estructura)
+      // Agregar buybackDetails si existe
+      // generalFunctionality es obligatorio según los requisitos
       if (buybackDetail) {
-        const cleanedBuybackDetails = removeUndefinedFields({
-          generalFunctionality: buybackDetail.generalFunctionality,
-          batteryCycles: buybackDetail.batteryCycles,
-          aestheticDetails: buybackDetail.aestheticDetails,
-          hasCharger: buybackDetail.hasCharger,
-          chargerWorks: buybackDetail.chargerWorks,
-          additionalComments: buybackDetail.additionalComments,
-        });
-        
-        // Solo agregar buybackDetails si tiene al menos un campo
-        if (Object.keys(cleanedBuybackDetails).length > 0) {
-          productObj.buybackDetails = cleanedBuybackDetails;
+        // Validar que generalFunctionality esté presente y no vacío
+        if (!buybackDetail.generalFunctionality || buybackDetail.generalFunctionality.trim() === "") {
+          throw new Error(`Buyback asset ${asset._id}: generalFunctionality is required`);
         }
+        
+        // Convertir batteryCycles a número si es posible, sino mantener como string
+        let batteryCyclesValue: string | number | undefined = buybackDetail.batteryCycles;
+        if (batteryCyclesValue && typeof batteryCyclesValue === "string" && batteryCyclesValue.trim() !== "") {
+          // Intentar convertir a número si es un número válido
+          const numValue = Number(batteryCyclesValue);
+          if (!isNaN(numValue) && isFinite(numValue) && batteryCyclesValue.trim() === numValue.toString()) {
+            batteryCyclesValue = numValue;
+          }
+          // Si no es un número válido, mantener como string (permite texto como "Unknown")
+        }
+        
+        // Construir buybackDetails
+        const buybackDetailsObj: any = {
+          generalFunctionality: buybackDetail.generalFunctionality,
+        };
+        
+        // Agregar campos opcionales solo si tienen valor
+        if (batteryCyclesValue !== undefined && batteryCyclesValue !== null && batteryCyclesValue !== "") {
+          buybackDetailsObj.batteryCycles = batteryCyclesValue;
+        }
+        if (buybackDetail.aestheticDetails && buybackDetail.aestheticDetails.trim() !== "") {
+          buybackDetailsObj.aestheticDetails = buybackDetail.aestheticDetails;
+        }
+        if (buybackDetail.hasCharger !== undefined) {
+          buybackDetailsObj.hasCharger = buybackDetail.hasCharger;
+          // Si hasCharger es true, chargerWorks también debe ser true (según el ejemplo del payload)
+          if (buybackDetail.hasCharger) {
+            buybackDetailsObj.chargerWorks = buybackDetail.chargerWorks !== undefined ? buybackDetail.chargerWorks : true;
+          }
+        }
+        if (buybackDetail.additionalComments && buybackDetail.additionalComments.trim() !== "") {
+          buybackDetailsObj.additionalComments = buybackDetail.additionalComments;
+        }
+        
+        // Siempre agregar buybackDetails ya que generalFunctionality es obligatorio
+        productObj.buybackDetails = buybackDetailsObj;
+      } else {
+        // Si no hay buybackDetail para este asset, lanzar error
+        throw new Error(`Buyback asset ${asset._id}: buybackDetails is required (generalFunctionality must be provided)`);
       }
 
       return productObj;
@@ -885,15 +913,19 @@ export function transformServiceToBackendFormat(
       throw new Error("Buyback service: products is required");
     }
     
-    transformed.products = buybackProducts;
+    // Para Buyback, construir objeto solo con los campos necesarios
+    const buybackService: any = {
+      serviceCategory: serviceCategory, // Siempre incluir serviceCategory
+      products: buybackProducts, // products es requerido
+    };
     
     // additionalInfo es opcional
-    if (service.additionalInfo) {
-      transformed.additionalInfo = service.additionalInfo;
+    if (service.additionalInfo && service.additionalInfo.trim() !== "") {
+      buybackService.additionalInfo = service.additionalInfo;
     }
     
-    // Para Buyback, retornar solo los campos necesarios (no incluir campos de otros servicios)
-    return removeUndefinedFields(transformed) as NonNullable<QuoteRequestPayload["services"]>[0];
+    // Retornar sin usar removeUndefinedFields para asegurar que serviceCategory y products siempre estén presentes
+    return buybackService as NonNullable<QuoteRequestPayload["services"]>[0];
   }
 
   // Para IT Support - agregar campos específicos de IT Support (solo si no es Buyback)

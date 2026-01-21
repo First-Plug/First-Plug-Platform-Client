@@ -83,8 +83,25 @@ export class QuoteServices {
       };
 
       // Log para debugging (remover en producción si es necesario)
+      console.log("=== FULL PAYLOAD ===");
+      console.log(JSON.stringify(payload, null, 2));
       if (transformedServices && transformedServices.length > 0) {
-        console.log("Services payload:", JSON.stringify(transformedServices, null, 2));
+        console.log("=== SERVICES PAYLOAD ===");
+        console.log(JSON.stringify(transformedServices, null, 2));
+        transformedServices.forEach((service, index) => {
+          console.log(`=== SERVICE ${index} DETAILS ===`);
+          console.log("serviceCategory:", service.serviceCategory);
+          if (service.products) {
+            console.log("products count:", service.products.length);
+            service.products.forEach((product, pIndex) => {
+              console.log(`Product ${pIndex}:`, {
+                productId: product.productId,
+                productSnapshot: product.productSnapshot,
+                buybackDetails: product.buybackDetails,
+              });
+            });
+          }
+        });
       }
 
       const response = await HTTPRequests.post(
