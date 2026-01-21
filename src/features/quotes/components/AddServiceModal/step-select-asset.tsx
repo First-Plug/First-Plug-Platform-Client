@@ -20,6 +20,7 @@ interface StepSelectAssetProps {
   onAssetSelect: (assetIds: string[]) => void; // Callback con array de IDs
   allowMultiple?: boolean; // Si es true, permite seleccionar múltiples; si es false, solo uno
   allowedCategory?: string; // Categoría permitida (ej: "Computer")
+  allowedCategories?: string[]; // Categorías permitidas (ej: ["Computer", "Other"])
 }
 
 export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
@@ -27,6 +28,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
   onAssetSelect,
   allowMultiple = false,
   allowedCategory,
+  allowedCategories,
 }) => {
   const { data: assetsData, isLoading } = useGetTableAssets();
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -38,14 +40,20 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
     const products: Product[] = [];
     assetsData.forEach((categoryGroup: ProductTable) => {
       if (categoryGroup.products) {
-        const filteredProducts = allowedCategory
-          ? categoryGroup.products.filter((p) => p.category === allowedCategory)
-          : categoryGroup.products;
+        let filteredProducts = categoryGroup.products;
+        // Filtrar por categoría única si existe
+        if (allowedCategory) {
+          filteredProducts = filteredProducts.filter((p) => p.category === allowedCategory);
+        }
+        // Filtrar por múltiples categorías si existe
+        else if (allowedCategories && allowedCategories.length > 0) {
+          filteredProducts = filteredProducts.filter((p) => allowedCategories.includes(p.category));
+        }
         products.push(...filteredProducts);
       }
     });
     return products;
-  }, [assetsData, allowedCategory]);
+  }, [assetsData, allowedCategory, allowedCategories]);
 
   // Filtrar productos según la búsqueda
   const filteredProducts = React.useMemo(() => {

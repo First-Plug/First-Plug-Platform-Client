@@ -207,6 +207,7 @@ function mapServiceTypeToCategory(serviceType?: string): string {
     "it-support": "IT Support",
     "enrollment": "Enrollment",
     "buyback": "Buyback",
+    "data-wipe": "Data Wipe",
   };
   return serviceTypeMap[serviceType] || serviceType;
 }
@@ -566,6 +567,7 @@ export function transformServiceToBackendFormat(
   const serviceCategory = mapServiceTypeToCategory(service.serviceType);
   const isEnrollment = service.serviceType === "enrollment";
   const isBuyback = service.serviceType === "buyback";
+  const isDataWipe = service.serviceType === "data-wipe";
 
   // Para Enrollment, construir enrolledDevices y productIds
   let enrolledDevices: any[] | undefined = undefined;
@@ -573,6 +575,8 @@ export function transformServiceToBackendFormat(
   
   // Para Buyback, construir products array con productSnapshot y buybackDetails
   let buybackProducts: any[] | undefined = undefined;
+  // Para Data Wipe, construir assets array con productSnapshot, desirableDate, currentLocation, currentMember, y destination
+  let dataWipeAssets: any[] | undefined = undefined;
   
   if (isBuyback) {
     if (!service.assetIds || service.assetIds.length === 0) {
@@ -783,6 +787,197 @@ export function transformServiceToBackendFormat(
       return productObj;
     });
   }
+
+  if (isDataWipe) {
+    if (!service.assetIds || service.assetIds.length === 0) {
+      throw new Error("Data Wipe service requires at least one asset (assetIds)");
+    }
+    if (!assetsMap) {
+      throw new Error("Data Wipe service requires assetsMap to build assets");
+    }
+    
+    // Obtener todos los assets seleccionados
+    const selectedAssets = service.assetIds
+      .map((assetId) => assetsMap.get(assetId))
+      .filter((asset) => asset !== undefined);
+    
+    if (selectedAssets.length === 0) {
+      throw new Error("Data Wipe service: no valid assets found in assetsMap");
+    }
+    
+    // Validar countryCode para todos los assets
+    validateAssetsCountryCode(selectedAssets, membersMap);
+    
+    // Construir assets array
+    dataWipeAssets = selectedAssets.map((asset) => {
+      // Construir productSnapshot (similar a Buyback)
+      const brand =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Brand" ||
+            attr.key === "brand" ||
+            String(attr.key).toLowerCase() === "brand"
+        )?.value || "";
+      const model =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Model" ||
+            attr.key === "model" ||
+            String(attr.key).toLowerCase() === "model"
+        )?.value || "";
+      
+      // Determinar location y assignedTo
+      let location = "";
+      let assignedTo = "";
+      let rawCountryCode: string | null = null;
+
+      if (asset.assignedMember || asset.assignedEmail) {
+        location = asset.location || "";
+        assignedTo = asset.assignedMember || asset.assignedEmail || "";
+        const memberEmail = asset.assignedEmail || asset.assignedMember;
+        if (memberEmail && membersMap) {
+          const member = membersMap.get(memberEmail.toLowerCase());
+          if (member?.country && member.country.trim() !== "") {
+            rawCountryCode = member.country;
+          }
+        }
+        if (!rawCountryCode) {
+          rawCountryCode = asset.countryCode || asset.country || null;
+        }
+      } else if (asset.location === "Our office") {
+        location = "Our office";
+        assignedTo = asset.office?.officeName || asset.officeName || "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location === "FP warehouse") {
+        location = "FP warehouse";
+        assignedTo = asset.officeName || asset.office?.officeName || "";
+        rawCountryCode =
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location) {
+        location = asset.location;
+        assignedTo = "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      }
+
+      const countryCode = normalizeCountryCode(rawCountryCode);
+      
+      if (!countryCode || countryCode.trim() === "") {
+        throw new Error(`Data Wipe asset countryCode is required but not found. Asset ID: ${asset._id}`);
+      }
+
+      // Obtener dataWipeDetail para este asset
+      const dataWipeDetail = service.dataWipeDetails?.[asset._id];
+      
+      // Construir productSnapshot con campos requeridos
+      const assetName = asset.name || asset.category || "Asset";
+      
+      const productSnapshot: any = {
+        category: asset.category || "Computer",
+        name: assetName,
+        brand: brand || "",
+        model: model || "",
+        serialNumber: asset.serialNumber || "",
+        location: location || "",
+        assignedTo: assignedTo || "",
+        countryCode: countryCode,
+      };
+
+      // Validar que los campos requeridos no estén vacíos
+      if (!productSnapshot.category || productSnapshot.category.trim() === "") {
+        throw new Error(`Data Wipe asset ${asset._id}: category is required`);
+      }
+      if (!productSnapshot.name || productSnapshot.name.trim() === "") {
+        productSnapshot.name = asset.category || "Asset";
+      }
+      if (!productSnapshot.serialNumber || productSnapshot.serialNumber.trim() === "") {
+        throw new Error(`Data Wipe asset ${asset._id}: serialNumber is required`);
+      }
+      if (!productSnapshot.location || productSnapshot.location.trim() === "") {
+        throw new Error(`Data Wipe asset ${asset._id}: location is required`);
+      }
+      if (productSnapshot.assignedTo === undefined || productSnapshot.assignedTo === null) {
+        throw new Error(`Data Wipe asset ${asset._id}: assignedTo is required (can be empty string)`);
+      }
+      if (!productSnapshot.countryCode || productSnapshot.countryCode.trim() === "") {
+        throw new Error(`Data Wipe asset ${asset._id}: countryCode is required`);
+      }
+
+      // Construir el objeto del asset
+      const assetObj: any = {
+        productId: asset._id,
+        productSnapshot: removeUndefinedFields(productSnapshot),
+      };
+
+      // Agregar desirableDate si existe
+      if (dataWipeDetail?.desirableDate) {
+        // Validar formato de fecha YYYY-MM-DD
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(dataWipeDetail.desirableDate)) {
+          throw new Error(`Data Wipe asset ${asset._id}: Invalid date format. Expected YYYY-MM-DD`);
+        }
+        assetObj.desirableDate = dataWipeDetail.desirableDate;
+      }
+
+      // Agregar currentLocation
+      if (location) {
+        assetObj.currentLocation = location;
+      }
+
+      // Agregar currentMember si está asignado a un miembro
+      if (asset.assignedMember || asset.assignedEmail) {
+        const memberEmail = asset.assignedEmail || asset.assignedMember;
+        if (memberEmail && membersMap) {
+          const member = membersMap.get(memberEmail.toLowerCase());
+          if (member) {
+            assetObj.currentMember = {
+              memberId: member._id,
+              assignedMember: `${member.firstName} ${member.lastName}`,
+              assignedEmail: member.email || "",
+              countryCode: normalizeCountryCode(member.country) || "",
+            };
+          }
+        }
+      }
+
+      // Agregar destination si existe
+      if (dataWipeDetail?.destination) {
+        const dest = dataWipeDetail.destination;
+        const destinationObj: any = {};
+        
+        if (dest.destinationType) {
+          destinationObj.destinationType = dest.destinationType;
+        }
+
+        if (dest.member) {
+          destinationObj.member = removeUndefinedFields(dest.member);
+        }
+        if (dest.office) {
+          destinationObj.office = removeUndefinedFields(dest.office);
+        }
+        if (dest.warehouse) {
+          destinationObj.warehouse = removeUndefinedFields(dest.warehouse);
+        }
+
+        if (Object.keys(destinationObj).length > 0) {
+          assetObj.destination = destinationObj;
+        }
+      }
+
+      return removeUndefinedFields(assetObj);
+    });
+  }
   
   if (isEnrollment) {
     if (!service.assetIds || service.assetIds.length === 0) {
@@ -850,11 +1045,11 @@ export function transformServiceToBackendFormat(
   };
 
   // Para IT Support
-  if (service.assetId && !isEnrollment && !isBuyback) {
+  if (service.assetId && !isEnrollment && !isBuyback && !isDataWipe) {
     transformed.productId = service.assetId;
   }
 
-  if (productSnapshot && !isEnrollment && !isBuyback) {
+  if (productSnapshot && !isEnrollment && !isBuyback && !isDataWipe) {
     transformed.productSnapshot = productSnapshot;
   }
 
@@ -896,8 +1091,25 @@ export function transformServiceToBackendFormat(
     return removeUndefinedFields(transformed) as NonNullable<QuoteRequestPayload["services"]>[0];
   }
 
-  // Para IT Support - agregar campos específicos de IT Support (solo si no es Buyback)
-  if (!isBuyback) {
+  // Para Data Wipe - estos campos son requeridos
+  if (isDataWipe) {
+    if (!dataWipeAssets || dataWipeAssets.length === 0) {
+      throw new Error("Data Wipe service: assets is required");
+    }
+    
+    transformed.assets = dataWipeAssets;
+    
+    // additionalDetails es opcional
+    if (service.additionalDetails) {
+      transformed.additionalDetails = service.additionalDetails;
+    }
+    
+    // Para Data Wipe, retornar solo los campos necesarios (no incluir campos de otros servicios)
+    return removeUndefinedFields(transformed) as NonNullable<QuoteRequestPayload["services"]>[0];
+  }
+
+  // Para IT Support - agregar campos específicos de IT Support (solo si no es Buyback ni Data Wipe)
+  if (!isBuyback && !isDataWipe) {
     if (issues.length > 0) {
       transformed.issues = issues;
     }

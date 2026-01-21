@@ -335,6 +335,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isITSupport = serviceType === "it-support";
     const isEnrollment = serviceType === "enrollment";
     const isBuyback = serviceType === "buyback";
+    const isDataWipe = serviceType === "data-wipe";
 
     if (isITSupport) {
       const itSupportStepTitles: Record<number, string> = {
@@ -365,6 +366,15 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       return buybackStepTitles[step] || "";
     }
 
+    if (isDataWipe) {
+      const dataWipeStepTitles: Record<number, string> = {
+        1: "Select Service Type",
+        2: "Select Assets",
+        3: "Data Wipe Details",
+      };
+      return dataWipeStepTitles[step] || "";
+    }
+
     const serviceStepTitles: Record<number, string> = {
       1: "Select Service Type",
       2: "Quote Details",
@@ -382,9 +392,11 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isITSupport = serviceType === "it-support";
     const isEnrollment = serviceType === "enrollment";
     const isBuyback = serviceType === "buyback";
+    const isDataWipe = serviceType === "data-wipe";
     if (isITSupport) return 5;
     if (isEnrollment) return 3;
     if (isBuyback) return 3;
+    if (isDataWipe) return 3;
     return 2;
   };
 
@@ -417,8 +429,9 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isITSupport = currentServiceType === "it-support";
     const isEnrollment = currentServiceType === "enrollment";
     const isBuyback = currentServiceType === "buyback";
+    const isDataWipe = currentServiceType === "data-wipe";
     const minStep = isEditing 
-      ? (isITSupport ? 2 : (isEnrollment || isBuyback ? 2 : 3))
+      ? (isITSupport ? 2 : (isEnrollment || isBuyback || isDataWipe ? 2 : 3))
       : 1;
 
     const shouldShowBackButton = onBack && currentStep > minStep;

@@ -37,16 +37,17 @@ export interface BuybackDetail {
 
 export interface QuoteService {
   id: string; // UUID temporal generado al iniciar el formulario
-  serviceType: string; // Tipo de servicio (ej: "it-support", "enrollment", "buyback")
+  serviceType: string; // Tipo de servicio (ej: "it-support", "enrollment", "buyback", "data-wipe")
   assetId?: string; // ID del asset seleccionado (para IT Support - single)
-  assetIds?: string[]; // IDs de los assets seleccionados (para Enrollment - multiple, Buyback - multiple)
+  assetIds?: string[]; // IDs de los assets seleccionados (para Enrollment - multiple, Buyback - multiple, Data Wipe - multiple)
   issueTypes?: string[]; // Tipos de issues seleccionados (para IT Support)
   description?: string; // Descripción del issue (para IT Support)
   issueStartDate?: string; // Fecha de inicio del issue (para IT Support, formato ISO string)
   impactLevel?: string; // Nivel de impacto: "low", "medium", "high" (para IT Support)
-  additionalDetails?: string; // Detalles adicionales (para Enrollment)
+  additionalDetails?: string; // Detalles adicionales (para Enrollment, Data Wipe)
   buybackDetails?: Record<string, BuybackDetail>; // Detalles de Buyback por assetId (para Buyback)
   additionalInfo?: string; // Información adicional para Buyback
+  dataWipeDetails?: Record<string, DataWipeDetail>; // Detalles de Data Wipe por assetId (para Data Wipe)
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -253,6 +254,32 @@ export interface BuybackDetails {
   additionalComments?: string;
 }
 
+export interface DataWipeDestination {
+  destinationType?: "Member" | "Office" | "FP warehouse";
+  member?: {
+    memberId: string;
+    assignedMember: string;
+    assignedEmail: string;
+    countryCode: string;
+  };
+  office?: {
+    officeId: string;
+    officeName: string;
+    countryCode?: string;
+  };
+  warehouse?: {
+    warehouseId: string;
+    warehouseName: string;
+    countryCode: string;
+  };
+}
+
+export interface DataWipeDetail {
+  assetId: string;
+  desirableDate?: string; // ISO date string (YYYY-MM-DD)
+  destination?: DataWipeDestination;
+}
+
 export interface QuoteHistoryService {
   serviceCategory: string;
   country?: string;
@@ -265,6 +292,28 @@ export interface QuoteHistoryService {
     productId: string;
     productSnapshot: BuybackProductSnapshot;
     buybackDetails?: BuybackDetails;
+  }>;
+  assets?: Array<{
+    productId: string;
+    productSnapshot: {
+      category: string;
+      name: string;
+      brand: string;
+      model: string;
+      serialNumber: string;
+      location: string;
+      assignedTo: string;
+      countryCode: string;
+    };
+    desirableDate?: string;
+    currentLocation?: string;
+    currentMember?: {
+      memberId: string;
+      assignedMember: string;
+      assignedEmail: string;
+      countryCode: string;
+    };
+    destination?: DataWipeDestination;
   }>;
   issues?: string[];
   description?: string;
