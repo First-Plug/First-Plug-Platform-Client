@@ -126,7 +126,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
   return (
     <div className="flex flex-col gap-6 w-full">
       <p className="text-muted-foreground text-center">
-        Expand each asset to provide additional details for a more accurate quote
+        Expand each asset to provide additional details for a more accurate quote. Overall condition is required.
       </p>
 
       <div className="flex flex-col gap-4 pr-2">
@@ -181,7 +181,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                   {/* Overall Condition */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`general-${asset._id}`}>
-                      Overall condition: Describe the general working condition
+                      Overall condition <span className="text-red-500">*</span>
                     </Label>
                     <textarea
                       id={`general-${asset._id}`}
@@ -203,12 +203,12 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                   {/* Battery Cycle Count */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`battery-${asset._id}`}>
-                      Battery cycle count: Enter the number of battery cycles (if known)
+                      Battery cycle count
                     </Label>
                     <Input
                       id={`battery-${asset._id}`}
                       type="text"
-                      placeholder="e.g. 450 or 'Unknown'"
+                      placeholder="Enter the number of battery cycles (if known)"
                       value={detail.batteryCycles || ""}
                       onChange={(e) =>
                         updateBuybackDetail(
@@ -224,7 +224,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                   {/* Cosmetic Condition */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`aesthetic-${asset._id}`}>
-                      Cosmetic condition: Describe any visible wear or damage
+                      Cosmetic condition
                     </Label>
                     <textarea
                       id={`aesthetic-${asset._id}`}
@@ -266,7 +266,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                   {/* Additional Comments */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`comments-${asset._id}`}>
-                      Additional comments: Optional notes about the asset
+                      Additional comments
                     </Label>
                     <textarea
                       id={`comments-${asset._id}`}

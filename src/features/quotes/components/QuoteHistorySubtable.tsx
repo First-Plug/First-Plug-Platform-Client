@@ -307,9 +307,11 @@ export const QuoteHistorySubtable = ({
                             {(row as any).data.name}
                           </span>
                         )}
-                        <span className="text-gray-600">
-                          SN: {(row as any).data.serialNumber}
-                        </span>
+                        {(row as any).data.serialNumber && (
+                          <span className="text-gray-600">
+                            SN: {(row as any).data.serialNumber}
+                          </span>
+                        )}
                         <span className="text-gray-600">
                           {(row as any).data.assignedTo} (
                           {(row as any).data.location})
@@ -321,7 +323,7 @@ export const QuoteHistorySubtable = ({
                           <div className="mt-1 pt-1 border-t border-gray-200 space-y-0.5">
                             {(row as any).buybackDetails.generalFunctionality && (
                               <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">General functionality: </span>
+                                <span className="font-medium">Overall condition: </span>
                                 {(row as any).buybackDetails.generalFunctionality}
                               </span>
                             )}
@@ -333,7 +335,7 @@ export const QuoteHistorySubtable = ({
                             )}
                             {(row as any).buybackDetails.aestheticDetails && (
                               <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Aesthetic details: </span>
+                                <span className="font-medium">Cosmetic condition: </span>
                                 {(row as any).buybackDetails.aestheticDetails}
                               </span>
                             )}

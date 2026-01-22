@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { TooltipArrow } from "@radix-ui/react-tooltip";
 import { Button } from "@/shared";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/components/ui/tooltip";
 import { useQuoteStore } from "../../store/quote.store";
 import { StepServiceTypeSelection } from "../AddServiceModal/step-service-type-selection";
 import { StepSelectAsset } from "../AddServiceModal/step-select-asset";
@@ -631,13 +633,31 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
         )}
         {currentStep === 3 && isBuybackForRender && (
           <div className="flex justify-end items-center pt-4 border-t">
-            <Button
-              onClick={handleContinueFromBuybackDetails}
-              disabled={!canProceed()}
-              variant="primary"
-              size="small"
-              body="Submit Request"
-            />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button
+                      onClick={handleContinueFromBuybackDetails}
+                      disabled={!canProceed()}
+                      variant="primary"
+                      size="small"
+                      body="Submit Request"
+                    />
+                  </div>
+                </TooltipTrigger>
+                {!canProceed() && (
+                  <TooltipContent
+                    side="top"
+                    align="end"
+                    className="z-50 bg-blue/80 p-2 rounded-md font-normal text-white text-xs"
+                  >
+                    Overall condition is required for all assets to continue.
+                    <TooltipArrow className="fill-blue/80" />
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </div>
         )}
         {currentStep === 4 && isITSupportForRender && (

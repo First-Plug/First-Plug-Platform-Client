@@ -713,9 +713,6 @@ export function transformServiceToBackendFormat(
       if (!asset.category || asset.category.trim() === "") {
         throw new Error(`Buyback asset ${asset._id}: category is required`);
       }
-      if (!asset.serialNumber || asset.serialNumber.trim() === "") {
-        throw new Error(`Buyback asset ${asset._id}: serialNumber is required`);
-      }
       if (!location || location.trim() === "") {
         throw new Error(`Buyback asset ${asset._id}: location is required`);
       }
@@ -732,11 +729,15 @@ export function transformServiceToBackendFormat(
         name: assetName,
         brand: brand || "", // Brand es requerido, puede ser string vacío
         model: model || "", // Model es requerido, puede ser string vacío
-        serialNumber: asset.serialNumber,
         location: location,
         assignedTo: assignedTo || "", // Asegurar que sea string, no null/undefined
         countryCode: countryCode,
       };
+      
+      // serialNumber solo se incluye si existe (el backend lo pide solo si existe)
+      if (asset.serialNumber && asset.serialNumber.trim() !== "") {
+        productSnapshot.serialNumber = asset.serialNumber;
+      }
 
       // Agregar campos opcionales si existen
       if (os && os.trim() !== "") productSnapshot.os = os;

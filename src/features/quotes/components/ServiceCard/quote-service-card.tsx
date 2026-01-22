@@ -411,7 +411,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                     <div className="mt-1 text-xs text-gray-600 space-y-1">
                       {buybackDetail.generalFunctionality && (
                         <div>
-                          <span className="font-medium">General functionality: </span>
+                          <span className="font-medium">Overall condition: </span>
                           {buybackDetail.generalFunctionality}
                         </div>
                       )}
@@ -423,7 +423,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                       )}
                       {buybackDetail.aestheticDetails && (
                         <div>
-                          <span className="font-medium">Aesthetic details: </span>
+                          <span className="font-medium">Cosmetic condition: </span>
                           {buybackDetail.aestheticDetails}
                         </div>
                       )}
