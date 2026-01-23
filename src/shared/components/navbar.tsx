@@ -334,6 +334,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   const getServiceStepTitle = (step: number, serviceType?: string) => {
     const isITSupport = serviceType === "it-support";
     const isEnrollment = serviceType === "enrollment";
+    const isBuyback = serviceType === "buyback";
 
     if (isITSupport) {
       const itSupportStepTitles: Record<number, string> = {
@@ -355,6 +356,15 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       return enrollmentStepTitles[step] || "";
     }
 
+    if (isBuyback) {
+      const buybackStepTitles: Record<number, string> = {
+        1: "Select Service Type",
+        2: "Select Assets",
+        3: "Buyback Details",
+      };
+      return buybackStepTitles[step] || "";
+    }
+
     const serviceStepTitles: Record<number, string> = {
       1: "Select Service Type",
       2: "Quote Details",
@@ -371,8 +381,10 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   const getServiceTotalSteps = (serviceType?: string) => {
     const isITSupport = serviceType === "it-support";
     const isEnrollment = serviceType === "enrollment";
+    const isBuyback = serviceType === "buyback";
     if (isITSupport) return 5;
     if (isEnrollment) return 3;
+    if (isBuyback) return 3;
     return 2;
   };
 
@@ -403,7 +415,11 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
   if (pathArray.includes("new-request") && isAddingService) {
     const isEditing = !!editingServiceId;
     const isITSupport = currentServiceType === "it-support";
-    const minStep = isEditing ? (isITSupport ? 2 : 3) : 1;
+    const isEnrollment = currentServiceType === "enrollment";
+    const isBuyback = currentServiceType === "buyback";
+    const minStep = isEditing 
+      ? (isITSupport ? 2 : (isEnrollment || isBuyback ? 2 : 3))
+      : 1;
 
     const shouldShowBackButton = onBack && currentStep > minStep;
 

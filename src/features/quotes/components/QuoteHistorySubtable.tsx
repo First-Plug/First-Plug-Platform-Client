@@ -16,6 +16,8 @@ import type {
   QuoteHistoryService,
   EnrolledDeviceSnapshot,
   ITSupportProductSnapshot,
+  BuybackProductSnapshot,
+  BuybackDetails,
 } from "../types/quote.types";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
@@ -42,6 +44,15 @@ type TableRow =
       description?: string;
       impactLevel?: string;
       issueStartDate?: string;
+    }
+  | {
+      type: "service";
+      serviceCategory: "Buyback";
+      data: BuybackProductSnapshot;
+      buybackDetails?: BuybackDetails;
+      additionalInfo?: string;
+      index: number;
+      total: number;
     };
 
 const formatDate = (date?: string) => {
@@ -121,6 +132,19 @@ export const QuoteHistorySubtable = ({
             issueStartDate: service.issueStartDate,
           },
         ] as TableRow[];
+      } else if (
+        service.serviceCategory === "Buyback" &&
+        service.products?.length
+      ) {
+        return service.products.map((product, idx) => ({
+          type: "service" as const,
+          serviceCategory: service.serviceCategory,
+          data: product.productSnapshot,
+          buybackDetails: product.buybackDetails,
+          additionalInfo: service.additionalInfo,
+          index: idx,
+          total: service.products!.length,
+        })) as TableRow[];
       }
       return [];
     }),
@@ -157,8 +181,9 @@ export const QuoteHistorySubtable = ({
         ) : (
           allRows.map((row, index) => {
             const isProduct = row.type === "product";
-            const isEnrollment = !isProduct && "index" in row;
+            const isEnrollment = !isProduct && "index" in row && row.serviceCategory === "Enrollment";
             const isITSupport = !isProduct && "issues" in row;
+            const isBuyback = !isProduct && "index" in row && row.serviceCategory === "Buyback";
 
             return (
               <TableRow key={index}>
@@ -261,6 +286,90 @@ export const QuoteHistorySubtable = ({
                               )}
                             </>
                           )}
+                      </>
+                    ) : isBuyback ? (
+                      <>
+                        <span className="font-semibold">
+                          {(row as any).data.category}
+                        </span>
+                        {((row as any).data.brand ||
+                          (row as any).data.model) && (
+                          <span className="text-gray-700">
+                            {(row as any).data.brand}
+                            {(row as any).data.brand &&
+                              (row as any).data.model &&
+                              " - "}
+                            {(row as any).data.model}
+                          </span>
+                        )}
+                        {(row as any).data.name && (
+                          <span className="text-gray-600 italic">
+                            {(row as any).data.name}
+                          </span>
+                        )}
+                        {(row as any).data.serialNumber && (
+                          <span className="text-gray-600">
+                            SN: {(row as any).data.serialNumber}
+                          </span>
+                        )}
+                        <span className="text-gray-600">
+                          {(row as any).data.assignedTo} (
+                          {(row as any).data.location})
+                        </span>
+                        <QuoteLocationWithCountry
+                          country={(row as any).data.countryCode}
+                        />
+                        {(row as any).buybackDetails && (
+                          <div className="mt-1 pt-1 border-t border-gray-200 space-y-0.5">
+                            {(row as any).buybackDetails.generalFunctionality && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Overall condition: </span>
+                                {(row as any).buybackDetails.generalFunctionality}
+                              </span>
+                            )}
+                            {(row as any).buybackDetails.batteryCycles !== undefined && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Battery cycles: </span>
+                                {(row as any).buybackDetails.batteryCycles}
+                              </span>
+                            )}
+                            {(row as any).buybackDetails.aestheticDetails && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Cosmetic condition: </span>
+                                {(row as any).buybackDetails.aestheticDetails}
+                              </span>
+                            )}
+                            {(row as any).buybackDetails.hasCharger !== undefined && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Has charger: </span>
+                                {(row as any).buybackDetails.hasCharger ? "Yes" : "No"}
+                                {(row as any).buybackDetails.hasCharger &&
+                                  (row as any).buybackDetails.chargerWorks !== undefined && (
+                                    <span>
+                                      {" "}
+                                      ({(row as any).buybackDetails.chargerWorks
+                                        ? "Works"
+                                        : "Doesn't work"})
+                                    </span>
+                                  )}
+                              </span>
+                            )}
+                            {(row as any).buybackDetails.additionalComments && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Additional comments: </span>
+                                {(row as any).buybackDetails.additionalComments}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {(row as any).additionalInfo && (row as any).index === 0 && (
+                          <div className="mt-1 pt-1 border-t border-gray-200">
+                            <span className="text-gray-500 text-xs italic block">
+                              <span className="font-medium">Additional info: </span>
+                              {(row as any).additionalInfo}
+                            </span>
+                          </div>
+                        )}
                       </>
                     ) : null}
                   </div>

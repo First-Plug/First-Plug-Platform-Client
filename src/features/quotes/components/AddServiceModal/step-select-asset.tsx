@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { SearchInput, Badge, CountryFlag } from "@/shared";
+import { useRouter } from "next/navigation";
+import { SearchInput, Badge, CountryFlag, Button } from "@/shared";
 import {
   useGetTableAssets,
   Product,
@@ -9,7 +10,7 @@ import {
   CategoryIcons,
 } from "@/features/assets";
 import { cn } from "@/shared";
-import { Check } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Label } from "@/shared/components/ui/label";
 import { countriesByCode } from "@/shared/constants/country-codes";
@@ -19,6 +20,7 @@ interface StepSelectAssetProps {
   onAssetSelect: (assetIds: string[]) => void; // Callback con array de IDs
   allowMultiple?: boolean; // Si es true, permite seleccionar múltiples; si es false, solo uno
   allowedCategory?: string; // Categoría permitida (ej: "Computer")
+  serviceType?: string; // Tipo de servicio (ej: "buyback", "enrollment", "it-support")
 }
 
 export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
@@ -26,9 +28,11 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
   onAssetSelect,
   allowMultiple = false,
   allowedCategory,
+  serviceType,
 }) => {
   const { data: assetsData, isLoading } = useGetTableAssets();
   const [searchQuery, setSearchQuery] = React.useState("");
+  const router = useRouter();
 
   // Aplanar todos los productos de todas las categorías, filtrando por categoría si es necesario
   const allProducts = React.useMemo(() => {
@@ -210,7 +214,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
       {/* Search Input */}
       <div className="w-full">
         <SearchInput
-          placeholder="Search by name, brand, model, or serial number..."
+          placeholder="Buscar por nombre, marca, modelo o número de serie..."
           onSearch={setSearchQuery}
         />
       </div>
@@ -224,12 +228,12 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
               checked={allSelected}
               onCheckedChange={handleSelectAll}
             />
-            <Label
-              htmlFor="select-all"
-              className="font-medium text-sm cursor-pointer"
-            >
-              Select all
-            </Label>
+              <Label
+                htmlFor="select-all"
+                className="font-medium text-sm cursor-pointer"
+              >
+                Select all
+              </Label>
           </div>
         )}
 
@@ -244,12 +248,23 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
       {/* Assets List */}
       <div className="flex flex-col gap-3 pr-2 max-h-[500px] overflow-y-auto">
         {filteredProducts.length === 0 ? (
-          <div className="flex justify-center items-center py-8">
+          <div className="flex flex-col justify-center items-center py-8 gap-4">
             <p className="text-muted-foreground">
               {searchQuery
                 ? "No assets found matching your search."
+                : serviceType === "buyback"
+                ? "You don't have any assets available for buyback yet."
                 : "No assets available."}
             </p>
+            {!searchQuery && allProducts.length === 0 && (
+              <Button
+                variant="primary"
+                size="small"
+                icon={<Plus size={18} color="white" strokeWidth={2} />}
+                onClick={() => router.push("/home/my-stock/add")}
+                body="Create Product"
+              />
+            )}
           </div>
         ) : (
           filteredProducts.map((product) => {

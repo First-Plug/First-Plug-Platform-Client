@@ -25,16 +25,28 @@ export interface QuoteProduct {
   additionalComments?: string;
 }
 
+export interface BuybackDetail {
+  assetId: string;
+  generalFunctionality?: string;
+  batteryCycles?: string;
+  aestheticDetails?: string;
+  hasCharger?: boolean;
+  chargerWorks?: boolean;
+  additionalComments?: string;
+}
+
 export interface QuoteService {
   id: string; // UUID temporal generado al iniciar el formulario
-  serviceType: string; // Tipo de servicio (ej: "it-support", "enrollment")
+  serviceType: string; // Tipo de servicio (ej: "it-support", "enrollment", "buyback")
   assetId?: string; // ID del asset seleccionado (para IT Support - single)
-  assetIds?: string[]; // IDs de los assets seleccionados (para Enrollment - multiple)
+  assetIds?: string[]; // IDs de los assets seleccionados (para Enrollment - multiple, Buyback - multiple)
   issueTypes?: string[]; // Tipos de issues seleccionados (para IT Support)
   description?: string; // Descripción del issue (para IT Support)
   issueStartDate?: string; // Fecha de inicio del issue (para IT Support, formato ISO string)
   impactLevel?: string; // Nivel de impacto: "low", "medium", "high" (para IT Support)
   additionalDetails?: string; // Detalles adicionales (para Enrollment)
+  buybackDetails?: Record<string, BuybackDetail>; // Detalles de Buyback por assetId (para Buyback)
+  additionalInfo?: string; // Información adicional para Buyback
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -89,11 +101,40 @@ export interface QuoteRequestPayload {
       assignedTo: string;
       countryCode: string;
     }>;
+    products?: Array<{
+      productId: string;
+      productSnapshot: {
+        category: string;
+        name: string;
+        brand: string;
+        model: string;
+        serialNumber: string;
+        location: string;
+        assignedTo: string;
+        countryCode: string;
+        os?: string;
+        processor?: string;
+        ram?: string;
+        storage?: string;
+        screenSize?: string;
+        productCondition?: string;
+        additionalInfo?: string;
+      };
+      buybackDetails?: {
+        generalFunctionality?: string;
+        batteryCycles?: string;
+        aestheticDetails?: string;
+        hasCharger?: boolean;
+        chargerWorks?: boolean;
+        additionalComments?: string;
+      };
+    }>;
     issues?: string[];
     description?: string;
     issueStartDate?: string;
     impactLevel?: string;
     additionalDetails?: string;
+    additionalInfo?: string;
   }>;
 }
 
@@ -185,6 +226,33 @@ export interface ITSupportProductSnapshot {
   countryCode: string;
 }
 
+export interface BuybackProductSnapshot {
+  category: string;
+  name: string;
+  brand: string;
+  model: string;
+  serialNumber: string;
+  location: string;
+  assignedTo: string;
+  countryCode: string;
+  os?: string;
+  processor?: string;
+  ram?: string;
+  storage?: string;
+  screenSize?: string;
+  productCondition?: string;
+  additionalInfo?: string;
+}
+
+export interface BuybackDetails {
+  generalFunctionality?: string;
+  batteryCycles?: string;
+  aestheticDetails?: string;
+  hasCharger?: boolean;
+  chargerWorks?: boolean;
+  additionalComments?: string;
+}
+
 export interface QuoteHistoryService {
   serviceCategory: string;
   country?: string;
@@ -193,11 +261,17 @@ export interface QuoteHistoryService {
   comments?: string;
   enrolledDevices?: EnrolledDeviceSnapshot[];
   productSnapshot?: ITSupportProductSnapshot;
+  products?: Array<{
+    productId: string;
+    productSnapshot: BuybackProductSnapshot;
+    buybackDetails?: BuybackDetails;
+  }>;
   issues?: string[];
   description?: string;
   impactLevel?: string;
   issueStartDate?: string;
   additionalDetails?: string;
+  additionalInfo?: string;
 }
 
 export interface QuoteTableWithDetailsDto {
