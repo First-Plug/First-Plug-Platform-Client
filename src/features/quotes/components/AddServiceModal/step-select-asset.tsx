@@ -272,8 +272,16 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
               getProductDisplayInfo(product);
             const assignment = getAssignmentInfo(product);
             const isSelected = selectedAssetIds.includes(product._id);
+            // Verificar si el asset tiene countryCode null o undefined
+            const hasMissingCountryCode = !product.countryCode;
 
             const handleCardClick = () => {
+              // Si el asset no tiene countryCode, no permitir seleccionarlo
+              // Pero sí permitir deseleccionarlo si ya está seleccionado
+              if (hasMissingCountryCode && !isSelected) {
+                return;
+              }
+
               if (allowMultiple) {
                 // Modo múltiple: toggle del asset
                 const newSelection = isSelected
@@ -287,18 +295,28 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
               }
             };
 
+
             return (
-              <button
+              <div
                 key={product._id}
-                type="button"
-                onClick={handleCardClick}
                 className={cn(
-                  "flex items-center gap-4 bg-white p-4 border-2 rounded-lg text-left transition-all",
-                  isSelected
+                  "flex flex-col gap-3 p-4 border-2 rounded-lg transition-all",
+                  hasMissingCountryCode
+                    ? "border-red-500 bg-red-50/50"
+                    : isSelected
                     ? "border-blue bg-blue/5"
-                    : "border-gray-200 hover:border-blue"
+                    : "border-gray-200"
                 )}
               >
+                <button
+                  type="button"
+                  onClick={handleCardClick}
+                  disabled={hasMissingCountryCode && !isSelected}
+                  className={cn(
+                    "flex items-center gap-4 text-left transition-all w-full",
+                    hasMissingCountryCode && !isSelected && "cursor-not-allowed opacity-75"
+                  )}
+                >
                 {/* Icon or Check - Dinámico según selección */}
                 <div className="flex-shrink-0">
                   {isSelected ? (
@@ -390,7 +408,17 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
                     SN: {product.serialNumber}
                   </div>
                 )}
-              </button>
+                </button>
+
+                {/* Mensaje informativo si falta countryCode */}
+                {hasMissingCountryCode && (
+                  <div className="flex justify-start items-center pt-2 border-t border-red-200">
+                    <p className="text-sm text-red-600">
+                      This product can&apos;t be selected because it&apos;s assigned to an unknown member.
+                    </p>
+                  </div>
+                )}
+              </div>
             );
           })
         )}
