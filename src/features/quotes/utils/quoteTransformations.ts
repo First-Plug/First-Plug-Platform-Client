@@ -917,11 +917,15 @@ export function transformServiceToBackendFormat(
         name: assetName,
         brand: brand || "",
         model: model || "",
-        serialNumber: asset.serialNumber || "",
         location: location || "",
         assignedTo: assignedTo || "",
         countryCode: countryCode,
       };
+
+      // serialNumber es opcional para Data Wipe, solo agregarlo si existe
+      if (asset.serialNumber && asset.serialNumber.trim() !== "") {
+        productSnapshot.serialNumber = asset.serialNumber;
+      }
 
       // Validar que los campos requeridos no estén vacíos
       if (!productSnapshot.category || productSnapshot.category.trim() === "") {
@@ -930,9 +934,7 @@ export function transformServiceToBackendFormat(
       if (!productSnapshot.name || productSnapshot.name.trim() === "") {
         productSnapshot.name = asset.category || "Asset";
       }
-      if (!productSnapshot.serialNumber || productSnapshot.serialNumber.trim() === "") {
-        throw new Error(`Data Wipe asset ${asset._id}: serialNumber is required`);
-      }
+      // serialNumber ya no es requerido para Data Wipe
       if (!productSnapshot.location || productSnapshot.location.trim() === "") {
         throw new Error(`Data Wipe asset ${asset._id}: location is required`);
       }

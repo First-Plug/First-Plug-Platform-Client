@@ -37,7 +37,7 @@ const serviceTypes: ServiceType[] = [
   {
     id: "data-wipe",
     name: "Data Wipe",
-    description: "Securely erase data from your devices before redeployment",
+    description: "Securely erase data from your devices",
     icon: <Eraser className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },

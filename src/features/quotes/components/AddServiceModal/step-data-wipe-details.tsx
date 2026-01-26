@@ -148,7 +148,7 @@ const AssetItem: React.FC<AssetItemProps> = ({
           {/* Desirable Date */}
           <div className="flex flex-col gap-2">
             <Label htmlFor={`date-${asset._id}`}>
-              For how long do you need it? (optional)
+              By when would you need it returned?
             </Label>
             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
               <PopoverTrigger asChild>
@@ -179,7 +179,7 @@ const AssetItem: React.FC<AssetItemProps> = ({
           {/* Destination */}
           <div className="flex flex-col gap-2">
             <Label htmlFor={`destination-${asset._id}`}>
-              Where should it be returned? (optional)
+              Where should it be returned?
             </Label>
             <SelectDropdownOptions
               label=""
@@ -226,28 +226,36 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
     assetIds.length > 0 ? new Set([assetIds[0]]) : new Set()
   );
 
-  // Actualizar expandedAssets cuando cambien los assetIds
+  // Actualizar expandedAssets cuando cambien los assetIds - siempre expandir el primero
   React.useEffect(() => {
-    if (assetIds.length > 0) {
+    if (assetIds.length > 0 && assetIds[0]) {
+      // Siempre expandir el primer asset según el orden de assetIds
       setExpandedAssets(new Set([assetIds[0]]));
     } else {
       setExpandedAssets(new Set());
     }
   }, [assetIds]);
 
-  // Encontrar los assets seleccionados
+  // Encontrar los assets seleccionados manteniendo el orden de assetIds
   const selectedAssets = React.useMemo(() => {
     if (!assetIds || assetIds.length === 0 || !assetsData) return [];
 
-    const assets: Product[] = [];
+    // Crear un mapa de todos los productos para búsqueda rápida
+    const productsMap = new Map<string, Product>();
     for (const categoryGroup of assetsData) {
       if (categoryGroup.products) {
-        assetIds.forEach((assetId) => {
-          const asset = categoryGroup.products.find((p) => p._id === assetId);
-          if (asset) assets.push(asset);
+        categoryGroup.products.forEach((product) => {
+          productsMap.set(product._id, product);
         });
       }
     }
+
+    // Mantener el orden de assetIds al construir el array
+    const assets: Product[] = [];
+    assetIds.forEach((assetId) => {
+      const asset = productsMap.get(assetId);
+      if (asset) assets.push(asset);
+    });
     return assets;
   }, [assetIds, assetsData]);
 
@@ -473,7 +481,7 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
 
       {/* Additional Details (for the whole service) */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="additional-details">Additional details (optional)</Label>
+        <Label htmlFor="additional-details">Additional details</Label>
         <textarea
           id="additional-details"
           placeholder="General information about the data wipe request..."
