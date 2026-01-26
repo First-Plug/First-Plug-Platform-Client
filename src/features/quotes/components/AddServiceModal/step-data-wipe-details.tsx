@@ -18,32 +18,35 @@ import { useOffices } from "@/features/settings";
 import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 import { CountryFlag, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import type { DataWipeDetail, DataWipeDestination } from "@/features/quotes/types/quote.types";
 
-interface DataWipeDestination {
-  destinationType?: "Member" | "Office" | "FP warehouse";
-  member?: {
-    memberId: string;
-    assignedMember: string;
-    assignedEmail: string;
-    countryCode: string;
-  };
-  office?: {
-    officeId: string;
-    officeName: string;
-    countryCode?: string;
-  };
-  warehouse?: {
-    warehouseId: string;
-    warehouseName: string;
-    countryCode: string;
-  };
-}
+// Función helper para obtener información de display del asset
+const getAssetDisplayInfo = (product: Product) => {
+  const brand =
+    product.attributes?.find(
+      (attr) => String(attr.key).toLowerCase() === "brand"
+    )?.value || "";
+  const model =
+    product.attributes?.find(
+      (attr) => String(attr.key).toLowerCase() === "model"
+    )?.value || "";
 
-interface DataWipeDetail {
-  assetId: string;
-  desirableDate?: string; // ISO date string (YYYY-MM-DD)
-  destination?: DataWipeDestination;
-}
+  let displayName = "";
+  if (brand && model) {
+    displayName = model === "Other" ? `${brand} Other` : `${brand} ${model}`;
+  } else {
+    displayName = product.name || "No name";
+  }
+
+  let specifications = "";
+  const parts: string[] = [];
+  if (brand) parts.push(brand);
+  if (model) parts.push(model);
+  specifications = parts.join(" • ");
+
+  return { displayName, specifications };
+};
+
 
 interface StepDataWipeDetailsProps {
   assetIds: string[];
@@ -52,6 +55,147 @@ interface StepDataWipeDetailsProps {
   onDataChange: (updates: Record<string, DataWipeDetail>) => void;
   onAdditionalDetailsChange?: (additionalDetails: string) => void;
 }
+
+// Componente para cada asset item (para evitar hooks dentro del map)
+interface AssetItemProps {
+  asset: Product;
+  detail: DataWipeDetail;
+  isExpanded: boolean;
+  onToggleExpanded: () => void;
+  onUpdateDetail: (field: keyof DataWipeDetail, value: any) => void;
+  destinationOptions: any[];
+  directOptions: any[];
+  getDestinationDisplayValue: (detail: DataWipeDetail) => string;
+  handleDestinationChange: (selectedValue: string) => void;
+}
+
+const AssetItem: React.FC<AssetItemProps> = ({
+  asset,
+  detail,
+  isExpanded,
+  onToggleExpanded,
+  onUpdateDetail,
+  destinationOptions,
+  directOptions,
+  getDestinationDisplayValue,
+  handleDestinationChange,
+}) => {
+  const { displayName, specifications } = getAssetDisplayInfo(asset);
+  const today = startOfToday();
+
+  const date = React.useMemo(() => {
+    if (!detail.desirableDate) return undefined;
+    const dateMatch = detail.desirableDate.match(/^(\d{4})[-\/](\d{2})[-\/](\d{2})/);
+    if (!dateMatch) return undefined;
+    const [, year, month, day] = dateMatch;
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  }, [detail.desirableDate]);
+
+  const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
+
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      const dateOnly = format(selectedDate, "yyyy-MM-dd");
+      onUpdateDetail("desirableDate", dateOnly);
+      setIsCalendarOpen(false);
+    } else {
+      onUpdateDetail("desirableDate", undefined);
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "border-2 rounded-lg p-4 bg-white transition-all",
+        isExpanded
+          ? "border-blue shadow-sm"
+          : "border-gray-200 hover:border-blue/50 cursor-pointer"
+      )}
+    >
+      {/* Asset Header - Clickable */}
+      <button
+        type="button"
+        onClick={onToggleExpanded}
+        className="flex justify-between items-center w-full text-left"
+      >
+        <div className="flex flex-col gap-1">
+          <span className="font-semibold text-base">{displayName}</span>
+          {specifications && (
+            <span className="text-sm text-gray-600">{specifications}</span>
+          )}
+          {asset.serialNumber && (
+            <span className="text-xs text-gray-500">
+              SN: {asset.serialNumber}
+            </span>
+          )}
+        </div>
+        {isExpanded ? (
+          <ChevronDown
+            size={20}
+            className="text-blue transition-all duration-200"
+          />
+        ) : (
+          <ChevronRight
+            size={20}
+            className="text-gray-500 transition-all duration-200"
+          />
+        )}
+      </button>
+
+      {/* Form Fields - Show when expanded */}
+      {isExpanded && (
+        <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
+          {/* Desirable Date */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor={`date-${asset._id}`}>
+              For how long do you need it? (optional)
+            </Label>
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  id={`date-${asset._id}`}
+                  variant="outline"
+                  className={cn(
+                    "justify-start w-full font-normal text-left",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 w-4 h-4" />
+                  {date ? format(date, "dd/MM/yyyy") : <span>dd/mm/yyyy</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="bg-white p-0 w-auto" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={handleDateSelect}
+                  disabled={(date) => date < today}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Destination */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor={`destination-${asset._id}`}>
+              Where should it be returned? (optional)
+            </Label>
+            <SelectDropdownOptions
+              label=""
+              placeholder="Select destination..."
+              value={getDestinationDisplayValue(detail)}
+              options={directOptions}
+              optionGroups={destinationOptions}
+              onChange={handleDestinationChange}
+              searchable={true}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
   assetIds,
@@ -107,33 +251,6 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
     return assets;
   }, [assetIds, assetsData]);
 
-  // Obtener información de display del asset
-  const getAssetDisplayInfo = (product: Product) => {
-    const brand =
-      product.attributes?.find(
-        (attr) => String(attr.key).toLowerCase() === "brand"
-      )?.value || "";
-    const model =
-      product.attributes?.find(
-        (attr) => String(attr.key).toLowerCase() === "model"
-      )?.value || "";
-
-    let displayName = "";
-    if (brand && model) {
-      displayName = model === "Other" ? `${brand} Other` : `${brand} ${model}`;
-    } else {
-      displayName = product.name || "No name";
-    }
-
-    let specifications = "";
-    const parts: string[] = [];
-    if (brand) parts.push(brand);
-    if (model) parts.push(model);
-    specifications = parts.join(" • ");
-
-    return { displayName, specifications };
-  };
-
   const updateDataWipeDetail = (
     assetId: string,
     field: keyof DataWipeDetail,
@@ -159,14 +276,6 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
     }
     setExpandedAssets(newExpanded);
   };
-
-  if (selectedAssets.length === 0) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <p className="text-muted-foreground">No assets selected.</p>
-      </div>
-    );
-  }
 
   // Ordenar oficinas para que la por defecto aparezca primero
   const sortedOffices = React.useMemo(() => {
@@ -249,6 +358,14 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
     }];
   }, []);
 
+  if (selectedAssets.length === 0) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <p className="text-muted-foreground">No assets selected.</p>
+      </div>
+    );
+  }
+
   const getDestinationDisplayValue = (detail: DataWipeDetail) => {
     if (!detail.destination) return "";
     const { destinationType, member, office, warehouse } = detail.destination;
@@ -275,7 +392,7 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
       // Para FP warehouse, usar el countryCode del asset actual
       const countryCode = asset?.countryCode || 
                          asset?.country || 
-                         asset?.fpWarehouse?.warehouseCountryCode || 
+                         (asset as any)?.fpWarehouse?.warehouseCountryCode || 
                          "";
       
       if (!countryCode) {
@@ -301,10 +418,10 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
         updateDataWipeDetail(assetId, "destination", {
           destinationType: "Member",
           member: {
-            memberId: member._id,
+            memberId: member._id || "",
             assignedMember: `${member.firstName} ${member.lastName}`,
             assignedEmail: member.email || "",
-            countryCode: member.countryCode || "",
+            countryCode: (member as any).countryCode || member.country || "",
           },
         });
       }
@@ -334,122 +451,22 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
 
       <div className="flex flex-col gap-4 pr-2">
         {selectedAssets.map((asset) => {
-          const { displayName, specifications } = getAssetDisplayInfo(asset);
           const detail = dataWipeDetails[asset._id] || { assetId: asset._id };
           const isExpanded = expandedAssets.has(asset._id);
 
-          const date = React.useMemo(() => {
-            if (!detail.desirableDate) return undefined;
-            const dateMatch = detail.desirableDate.match(/^(\d{4})[-\/](\d{2})[-\/](\d{2})/);
-            if (!dateMatch) return undefined;
-            const [, year, month, day] = dateMatch;
-            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-          }, [detail.desirableDate]);
-
-          const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
-
-          const handleDateSelect = (selectedDate: Date | undefined) => {
-            if (selectedDate) {
-              const dateOnly = format(selectedDate, "yyyy-MM-dd");
-              updateDataWipeDetail(asset._id, "desirableDate", dateOnly);
-              setIsCalendarOpen(false);
-            } else {
-              updateDataWipeDetail(asset._id, "desirableDate", undefined);
-            }
-          };
-
           return (
-            <div
+            <AssetItem
               key={asset._id}
-              className={cn(
-                "border-2 rounded-lg p-4 bg-white transition-all",
-                isExpanded
-                  ? "border-blue shadow-sm"
-                  : "border-gray-200 hover:border-blue/50 cursor-pointer"
-              )}
-            >
-              {/* Asset Header - Clickable */}
-              <button
-                type="button"
-                onClick={() => toggleExpanded(asset._id)}
-                className="flex justify-between items-center w-full text-left"
-              >
-                <div className="flex flex-col gap-1">
-                  <span className="font-semibold text-base">{displayName}</span>
-                  {specifications && (
-                    <span className="text-sm text-gray-600">{specifications}</span>
-                  )}
-                  {asset.serialNumber && (
-                    <span className="text-xs text-gray-500">
-                      SN: {asset.serialNumber}
-                    </span>
-                  )}
-                </div>
-                {isExpanded ? (
-                  <ChevronDown
-                    size={20}
-                    className="text-blue transition-all duration-200"
-                  />
-                ) : (
-                  <ChevronRight
-                    size={20}
-                    className="text-gray-500 transition-all duration-200"
-                  />
-                )}
-              </button>
-
-              {/* Form Fields - Show when expanded */}
-              {isExpanded && (
-                <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
-                  {/* Desirable Date */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor={`date-${asset._id}`}>
-                      For how long do you need it? (optional)
-                    </Label>
-                    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          id={`date-${asset._id}`}
-                          variant="outline"
-                          className={cn(
-                            "justify-start w-full font-normal text-left",
-                            !date && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 w-4 h-4" />
-                          {date ? format(date, "dd/MM/yyyy") : <span>dd/mm/yyyy</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="bg-white p-0 w-auto" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={date}
-                          onSelect={handleDateSelect}
-                          disabled={(date) => date < today}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  {/* Destination */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor={`destination-${asset._id}`}>
-                      Where should it be returned? (optional)
-                    </Label>
-                    <SelectDropdownOptions
-                      label=""
-                      placeholder="Select destination..."
-                      value={getDestinationDisplayValue(detail)}
-                      options={directOptions}
-                      optionGroups={destinationOptions}
-                      onChange={(value) => handleDestinationChange(asset._id, value, asset)}
-                      searchable={true}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+              asset={asset}
+              detail={detail}
+              isExpanded={isExpanded}
+              onToggleExpanded={() => toggleExpanded(asset._id)}
+              onUpdateDetail={(field, value) => updateDataWipeDetail(asset._id, field, value)}
+              destinationOptions={destinationOptions}
+              directOptions={directOptions}
+              getDestinationDisplayValue={getDestinationDisplayValue}
+              handleDestinationChange={(value) => handleDestinationChange(asset._id, value, asset)}
+            />
           );
         })}
       </div>
