@@ -185,7 +185,7 @@ export default function SelectDropdownOptions({
             }`}
           >
             <div
-              className={`flex items-center gap-2 ${
+              className={`flex items-center gap-2 text-sm ${
                 !value ? "text-grey" : "text-black"
               }`}
             >
@@ -275,7 +275,7 @@ export default function SelectDropdownOptions({
                   >
                     <button
                       type="button"
-                      className="flex justify-between items-center hover:bg-gray-50 px-3 py-2 rounded-sm w-full text-gray-900 text-sm cursor-pointer"
+                      className="flex justify-between items-center hover:bg-gray-50 px-3 py-2 rounded-sm w-full text-gray-900 text-xs cursor-pointer"
                       onClick={() => toggleGroup(group.label)}
                     >
                       <span className="font-medium">{group.label}</span>
@@ -298,7 +298,7 @@ export default function SelectDropdownOptions({
                             <DropdownMenu.Item
                               key={`${optionValue}-${optIdx}`}
                               onSelect={() => onChange(optionValue)}
-                              className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-sm leading-4 whitespace-nowrap cursor-pointer"
+                              className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-xs leading-4 whitespace-nowrap cursor-pointer"
                               title={
                                 typeof option === "string"
                                   ? option

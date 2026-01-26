@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Trash2, Wrench, Shield, Laptop, ArrowLeftRight } from "lucide-react";
+import { Trash2, Wrench, Shield, Laptop, ArrowLeftRight, Eraser } from "lucide-react";
 import {
   Badge,
   Dialog,
@@ -62,6 +62,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       "it-support": "IT Support",
       "enrollment": "Enrollment",
       "buyback": "Buyback",
+      "data-wipe": "Data Wipe",
     };
     return serviceTypeMap[serviceType] || serviceType;
   };
@@ -265,6 +266,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             <Shield className="w-3 h-3" />
           ) : service.serviceType === "buyback" ? (
             <ArrowLeftRight className="w-3 h-3" />
+          ) : service.serviceType === "data-wipe" ? (
+            <Eraser className="w-3 h-3" />
           ) : (
             <Wrench className="w-3 h-3" />
           )}
@@ -456,6 +459,92 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         <div className="mb-3">
           <div className="font-medium text-sm mb-1">Additional info:</div>
           <div className="text-sm text-gray-700">{service.additionalInfo}</div>
+        </div>
+      )}
+
+      {/* Data Wipe: Selected Assets */}
+      {service.serviceType === "data-wipe" && selectedAssets.length > 0 && (
+        <div className="mb-3">
+          <div className="font-medium text-sm mb-2">
+            {selectedAssets.length} asset{selectedAssets.length !== 1 ? "s" : ""} to wipe
+          </div>
+          <ul className="list-disc pl-5 text-sm text-gray-700 space-y-3">
+            {selectedAssets.map((asset) => {
+              const displayInfo = getAssetDisplayInfo(asset);
+              const assignment = getAssignmentInfo(asset);
+              const memberName =
+                assignment?.type === "employee"
+                  ? assignment.member
+                  : assignment?.type === "office"
+                  ? assignment.officeName
+                  : "";
+              const dataWipeDetail = service.dataWipeDetails?.[asset._id];
+              
+              // Formatear fecha deseable
+              const formatDate = (dateString?: string) => {
+                if (!dateString) return null;
+                try {
+                  const date = new Date(dateString);
+                  return date.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  });
+                } catch {
+                  return dateString;
+                }
+              };
+
+              return (
+                <li key={asset._id}>
+                  <div className="font-medium mb-1">
+                    {displayInfo?.displayName || asset.name || "Asset"}
+                    {displayInfo?.specifications && ` - ${displayInfo.specifications}`}
+                    {asset.serialNumber && ` • SN: ${asset.serialNumber}`}
+                    {memberName && ` • ${memberName}`}
+                  </div>
+                  {dataWipeDetail && (
+                    <div className="mt-2 text-xs text-gray-600 space-y-1">
+                      {dataWipeDetail.desirableDate && (
+                        <div>
+                          <span className="font-medium">Desirable date: </span>
+                          {formatDate(dataWipeDetail.desirableDate)}
+                        </div>
+                      )}
+                      {dataWipeDetail.destination && (
+                        <div>
+                          <span className="font-medium">Return destination: </span>
+                          {dataWipeDetail.destination.destinationType === "Member" &&
+                            dataWipeDetail.destination.member && (
+                              <span>
+                                {dataWipeDetail.destination.member.assignedMember}
+                                {dataWipeDetail.destination.member.assignedEmail &&
+                                  ` (${dataWipeDetail.destination.member.assignedEmail})`}
+                              </span>
+                            )}
+                          {dataWipeDetail.destination.destinationType === "Office" &&
+                            dataWipeDetail.destination.office && (
+                              <span>{dataWipeDetail.destination.office.officeName}</span>
+                            )}
+                          {dataWipeDetail.destination.destinationType === "FP warehouse" && (
+                            <span>FP warehouse</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Additional Details for Data Wipe */}
+      {service.serviceType === "data-wipe" && service.additionalDetails && (
+        <div className="mb-3">
+          <div className="font-medium text-sm mb-1">Additional details:</div>
+          <div className="text-sm text-gray-700">{service.additionalDetails}</div>
         </div>
       )}
 
