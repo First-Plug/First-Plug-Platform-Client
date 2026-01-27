@@ -480,16 +480,18 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                   : "";
               const dataWipeDetail = service.dataWipeDetails?.[asset._id];
               
-              // Formatear fecha deseable
+              // Formatear fecha deseable - parsea YYYY-MM-DD directamente sin problemas de zona horaria
               const formatDate = (dateString?: string) => {
                 if (!dateString) return null;
                 try {
-                  const date = new Date(dateString);
-                  return date.toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  });
+                  // Parsear el string YYYY-MM-DD directamente para evitar problemas de zona horaria
+                  const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                  if (!dateMatch) return dateString;
+                  
+                  const [, year, month, day] = dateMatch;
+                  
+                  // Formatear como dd/MM/yyyy para coincidir con el formato del formulario
+                  return `${day}/${month}/${year}`;
                 } catch {
                   return dateString;
                 }
