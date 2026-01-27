@@ -117,7 +117,17 @@ export default function SelectDropdownOptions({
     const normalizedSearch = normalizeText(searchTerm);
 
     return opts.filter((option) => {
-      const textToSearch = typeof option === "string" ? option : option.value;
+      // Buscar en el display si es un objeto, o en el string directamente
+      let textToSearch: string;
+      if (typeof option === "string") {
+        textToSearch = option;
+      } else {
+        // Buscar en el display (nombre visible) en lugar del value (ID)
+        const displayText = typeof option.display === "string" 
+          ? option.display 
+          : String(option.display || "");
+        textToSearch = displayText || option.value;
+      }
       return normalizeText(textToSearch).includes(normalizedSearch);
     });
   };
@@ -185,7 +195,7 @@ export default function SelectDropdownOptions({
             }`}
           >
             <div
-              className={`flex items-center gap-2 ${
+              className={`flex items-center gap-2 text-sm ${
                 !value ? "text-grey" : "text-black"
               }`}
             >
@@ -266,16 +276,18 @@ export default function SelectDropdownOptions({
               {/* Renderizar grupos de opciones como acordeón para que se desplieguen hacia abajo */}
               {filteredGroups.map((group, idx) => {
                 const isOpen = !!openGroups[group.label];
+                // Agregar separador si hay opciones directas antes o si no es el primer grupo
+                const shouldAddSeparator = (filteredOptions.length > 0 && idx === 0) || idx > 0;
                 return (
                   <div
                     key={group.label}
                     className={`${
-                      idx > 0 ? "mt-1 pt-1 border-t border-gray-100" : "mt-1"
+                      shouldAddSeparator ? "mt-1 pt-1 border-t border-gray-100" : "mt-1"
                     }`}
                   >
                     <button
                       type="button"
-                      className="flex justify-between items-center hover:bg-gray-50 px-3 py-2 rounded-sm w-full text-gray-900 text-sm cursor-pointer"
+                      className="flex justify-between items-center hover:bg-gray-50 px-3 py-2 rounded-sm w-full text-gray-900 text-xs cursor-pointer"
                       onClick={() => toggleGroup(group.label)}
                     >
                       <span className="font-medium">{group.label}</span>
@@ -298,7 +310,7 @@ export default function SelectDropdownOptions({
                             <DropdownMenu.Item
                               key={`${optionValue}-${optIdx}`}
                               onSelect={() => onChange(optionValue)}
-                              className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-sm leading-4 whitespace-nowrap cursor-pointer"
+                              className="hover:bg-gray-100 px-3 py-2 rounded-sm outline-none text-gray-900 text-xs leading-4 whitespace-nowrap cursor-pointer"
                               title={
                                 typeof option === "string"
                                   ? option

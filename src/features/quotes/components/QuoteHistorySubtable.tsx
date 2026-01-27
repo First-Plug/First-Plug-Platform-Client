@@ -53,6 +53,15 @@ type TableRow =
       additionalInfo?: string;
       index: number;
       total: number;
+    }
+  | {
+      type: "service";
+      serviceCategory: "Data Wipe";
+      data: any; // productSnapshot
+      dataWipeAsset?: any; // asset completo con destination, desirableDate, etc.
+      additionalDetails?: string;
+      index: number;
+      total: number;
     };
 
 const formatDate = (date?: string) => {
@@ -145,6 +154,19 @@ export const QuoteHistorySubtable = ({
           index: idx,
           total: service.products!.length,
         })) as TableRow[];
+      } else if (
+        service.serviceCategory === "Data Wipe" &&
+        service.assets?.length
+      ) {
+        return service.assets.map((asset, idx) => ({
+          type: "service" as const,
+          serviceCategory: service.serviceCategory,
+          data: asset.productSnapshot,
+          dataWipeAsset: asset,
+          additionalDetails: service.additionalDetails,
+          index: idx,
+          total: service.assets!.length,
+        })) as TableRow[];
       }
       return [];
     }),
@@ -184,6 +206,7 @@ export const QuoteHistorySubtable = ({
             const isEnrollment = !isProduct && "index" in row && row.serviceCategory === "Enrollment";
             const isITSupport = !isProduct && "issues" in row;
             const isBuyback = !isProduct && "index" in row && row.serviceCategory === "Buyback";
+            const isDataWipe = !isProduct && "index" in row && row.serviceCategory === "Data Wipe";
 
             return (
               <TableRow key={index}>
@@ -371,12 +394,129 @@ export const QuoteHistorySubtable = ({
                           </div>
                         )}
                       </>
+                    ) : isDataWipe ? (
+                      <>
+                        <span className="font-semibold">
+                          {(row as any).data.category}
+                        </span>
+                        {((row as any).data.brand ||
+                          (row as any).data.model) && (
+                          <span className="text-gray-700">
+                            {(row as any).data.brand}
+                            {(row as any).data.brand &&
+                              (row as any).data.model &&
+                              " - "}
+                            {(row as any).data.model}
+                          </span>
+                        )}
+                        {(row as any).data.name && (
+                          <span className="text-gray-600 italic">
+                            {(row as any).data.name}
+                          </span>
+                        )}
+                        {(row as any).data.serialNumber && (
+                          <span className="text-gray-600">
+                            SN: {(row as any).data.serialNumber}
+                          </span>
+                        )}
+                        <span className="text-gray-600">
+                          {(row as any).data.assignedTo} (
+                          {(row as any).data.location})
+                        </span>
+                        <QuoteLocationWithCountry
+                          country={(row as any).data.countryCode}
+                        />
+                        {(row as any).dataWipeAsset && (
+                          <div className="mt-1 pt-1 border-t border-gray-200 space-y-0.5">
+                            {(row as any).dataWipeAsset.desirableDate && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Desirable date: </span>
+                                {formatDate((row as any).dataWipeAsset.desirableDate)}
+                              </span>
+                            )}
+                            {(row as any).dataWipeAsset.currentLocation && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Current location: </span>
+                                {(row as any).dataWipeAsset.currentLocation}
+                              </span>
+                            )}
+                            {(row as any).dataWipeAsset.currentMember && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Current member: </span>
+                                {(row as any).dataWipeAsset.currentMember.assignedMember}
+                                {(row as any).dataWipeAsset.currentMember.assignedEmail &&
+                                  ` (${(row as any).dataWipeAsset.currentMember.assignedEmail})`}
+                              </span>
+                            )}
+                            {(row as any).dataWipeAsset.currentOffice && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Current office: </span>
+                                {(row as any).dataWipeAsset.currentOffice.officeName}
+                                {(row as any).dataWipeAsset.currentOffice.countryCode && (
+                                  <>
+                                    {" "}
+                                    <QuoteLocationWithCountry
+                                      country={(row as any).dataWipeAsset.currentOffice.countryCode}
+                                    />
+                                  </>
+                                )}
+                              </span>
+                            )}
+                            {(row as any).dataWipeAsset.currentWarehouse && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Current warehouse: </span>
+                                FP warehouse
+                                {(row as any).dataWipeAsset.currentWarehouse.countryCode && (
+                                  <>
+                                    {" "}
+                                    <QuoteLocationWithCountry
+                                      country={(row as any).dataWipeAsset.currentWarehouse.countryCode}
+                                    />
+                                  </>
+                                )}
+                              </span>
+                            )}
+                            {(row as any).dataWipeAsset.destination && (
+                              <span className="text-gray-500 text-xs block">
+                                <span className="font-medium">Return destination: </span>
+                                {(row as any).dataWipeAsset.destination.destinationType === "Employee" &&
+                                  (row as any).dataWipeAsset.destination.member && (
+                                    <span>
+                                      {(row as any).dataWipeAsset.destination.member.assignedMember}
+                                      {(row as any).dataWipeAsset.destination.member.assignedEmail &&
+                                        ` (${(row as any).dataWipeAsset.destination.member.assignedEmail})`}
+                                    </span>
+                                  )}
+                                {(row as any).dataWipeAsset.destination.destinationType === "Our office" &&
+                                  (row as any).dataWipeAsset.destination.office && (
+                                    <span>
+                                      {(row as any).dataWipeAsset.destination.office.officeName}
+                                    </span>
+                                  )}
+                                {(row as any).dataWipeAsset.destination.destinationType === "FP warehouse" && (
+                                  <span>FP warehouse</span>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {(row as any).additionalDetails && (row as any).index === 0 && (
+                          <div className="mt-1 pt-1 border-t border-gray-200">
+                            <span className="text-gray-500 text-xs italic block">
+                              <span className="font-medium">Additional details: </span>
+                              {(row as any).additionalDetails}
+                            </span>
+                          </div>
+                        )}
+                      </>
                     ) : null}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-2 w-32 text-xs">
                   {isProduct
                     ? formatDate((row as any).data.deliveryDate)
+                    : isDataWipe && (row as any).dataWipeAsset?.desirableDate
+                    ? formatDate((row as any).dataWipeAsset.desirableDate)
                     : "N/A"}
                 </TableCell>
               </TableRow>

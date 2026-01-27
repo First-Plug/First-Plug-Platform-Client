@@ -21,6 +21,7 @@ interface StepSelectAssetProps {
   allowMultiple?: boolean; // Si es true, permite seleccionar múltiples; si es false, solo uno
   allowedCategory?: string; // Categoría permitida (ej: "Computer")
   serviceType?: string; // Tipo de servicio (ej: "buyback", "enrollment", "it-support")
+  allowedCategories?: string[]; // Categorías permitidas (ej: ["Computer", "Other"])
 }
 
 export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
@@ -29,6 +30,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
   allowMultiple = false,
   allowedCategory,
   serviceType,
+  allowedCategories,
 }) => {
   const { data: assetsData, isLoading } = useGetTableAssets();
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -40,14 +42,24 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
     const products: Product[] = [];
     assetsData.forEach((categoryGroup: ProductTable) => {
       if (categoryGroup.products) {
-        const filteredProducts = allowedCategory
-          ? categoryGroup.products.filter((p) => p.category === allowedCategory)
-          : categoryGroup.products;
+        let filteredProducts = categoryGroup.products;
+        // Filtrar por categoría única si existe
+        if (allowedCategory) {
+          filteredProducts = filteredProducts.filter(
+            (p) => p.category === allowedCategory
+          );
+        }
+        // Filtrar por múltiples categorías si existe
+        else if (allowedCategories && allowedCategories.length > 0) {
+          filteredProducts = filteredProducts.filter((p) =>
+            allowedCategories.includes(p.category)
+          );
+        }
         products.push(...filteredProducts);
       }
     });
     return products;
-  }, [assetsData, allowedCategory]);
+  }, [assetsData, allowedCategory, allowedCategories]);
 
   // Filtrar productos según la búsqueda
   const filteredProducts = React.useMemo(() => {
@@ -228,12 +240,12 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
               checked={allSelected}
               onCheckedChange={handleSelectAll}
             />
-              <Label
-                htmlFor="select-all"
-                className="font-medium text-sm cursor-pointer"
-              >
-                Select all
-              </Label>
+            <Label
+              htmlFor="select-all"
+              className="font-medium text-sm cursor-pointer"
+            >
+              Select all
+            </Label>
           </div>
         )}
 
@@ -248,13 +260,13 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
       {/* Assets List */}
       <div className="flex flex-col gap-3 pr-2 max-h-[500px] overflow-y-auto">
         {filteredProducts.length === 0 ? (
-          <div className="flex flex-col justify-center items-center py-8 gap-4">
+          <div className="flex flex-col justify-center items-center gap-4 py-8">
             <p className="text-muted-foreground">
               {searchQuery
                 ? "No assets found matching your search."
                 : serviceType === "buyback"
-                ? "You don't have any assets available for buyback yet."
-                : "No assets available."}
+                  ? "You don't have any assets available for buyback yet."
+                  : "No assets available."}
             </p>
             {!searchQuery && allProducts.length === 0 && (
               <Button
@@ -295,7 +307,6 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
               }
             };
 
-
             return (
               <div
                 key={product._id}
@@ -304,8 +315,8 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
                   hasMissingCountryCode
                     ? "border-red-500 bg-red-50/50"
                     : isSelected
-                    ? "border-blue bg-blue/5"
-                    : "border-gray-200"
+                      ? "border-blue bg-blue/5"
+                      : "border-gray-200"
                 )}
               >
                 <button
@@ -313,108 +324,115 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
                   onClick={handleCardClick}
                   disabled={hasMissingCountryCode && !isSelected}
                   className={cn(
-                    "flex items-center gap-4 text-left transition-all w-full",
-                    hasMissingCountryCode && !isSelected && "cursor-not-allowed opacity-75"
+                    "flex items-center gap-4 w-full text-left transition-all",
+                    hasMissingCountryCode &&
+                      !isSelected &&
+                      "cursor-not-allowed opacity-75"
                   )}
                 >
-                {/* Icon or Check - Dinámico según selección */}
-                <div className="flex-shrink-0">
-                  {isSelected ? (
-                    <div className="flex justify-center items-center bg-blue rounded-full w-8 h-8">
-                      <Check className="w-6 h-6 text-white" strokeWidth={3} />
-                    </div>
-                  ) : (
-                    getCategoryIcon(product)
-                  )}
-                </div>
-
-                {/* Main Content */}
-                <div className="flex flex-col flex-1 gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-base">{displayName}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {product.category}
-                    </Badge>
+                  {/* Icon or Check - Dinámico según selección */}
+                  <div className="flex-shrink-0">
+                    {isSelected ? (
+                      <div className="flex justify-center items-center bg-blue rounded-full w-8 h-8">
+                        <Check className="w-6 h-6 text-white" strokeWidth={3} />
+                      </div>
+                    ) : (
+                      getCategoryIcon(product)
+                    )}
                   </div>
 
-                  <div className="text-gray-700 text-sm">{specifications}</div>
+                  {/* Main Content */}
+                  <div className="flex flex-col flex-1 gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-base">{displayName}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {product.category}
+                      </Badge>
+                    </div>
 
-                  {assignment && (
-                    <div className="flex items-center gap-2 text-gray-600 text-sm">
-                      {assignment.type === "employee" && (
-                        <>
-                          <span>Assigned to: {assignment.member}</span>
-                          {assignment.location && (
-                            <span>• {assignment.location}</span>
-                          )}
-                          {assignment.country && (
-                            <div className="flex items-center gap-1">
-                              <CountryFlag
-                                countryName={assignment.country}
-                                size={15}
-                              />
-                              <span>
-                                {countriesByCode[assignment.country] ||
-                                  assignment.country}
-                              </span>
-                            </div>
-                          )}
-                        </>
-                      )}
-                      {assignment.type === "office" && (
-                        <>
-                          <span>Location: office {assignment.officeName}</span>
-                          {assignment.country && (
-                            <div className="flex items-center gap-1">
-                              <CountryFlag
-                                countryName={assignment.country}
-                                size={15}
-                              />
-                              <span>
-                                {countriesByCode[assignment.country] ||
-                                  assignment.country}
-                              </span>
-                            </div>
-                          )}
-                        </>
-                      )}
-                      {assignment.type === "warehouse" && (
-                        <>
-                          <span>Location: FP warehouse</span>
-                          {assignment.country && (
-                            <div className="flex items-center gap-1">
-                              <CountryFlag
-                                countryName={assignment.country}
-                                size={15}
-                              />
-                              <span>
-                                {countriesByCode[assignment.country] ||
-                                  assignment.country}
-                              </span>
-                            </div>
-                          )}
-                        </>
-                      )}
-                      {assignment.type === "other" && (
-                        <span>Location: {assignment.location}</span>
-                      )}
+                    <div className="text-gray-700 text-sm">
+                      {specifications}
+                    </div>
+
+                    {assignment && (
+                      <div className="flex items-center gap-2 text-gray-600 text-sm">
+                        {assignment.type === "employee" && (
+                          <>
+                            <span>Assigned to: {assignment.member}</span>
+                            {assignment.location && (
+                              <span>• {assignment.location}</span>
+                            )}
+                            {assignment.country && (
+                              <div className="flex items-center gap-1">
+                                <CountryFlag
+                                  countryName={assignment.country}
+                                  size={15}
+                                />
+                                <span>
+                                  {countriesByCode[assignment.country] ||
+                                    assignment.country}
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {assignment.type === "office" && (
+                          <>
+                            <span>
+                              Location: office {assignment.officeName}
+                            </span>
+                            {assignment.country && (
+                              <div className="flex items-center gap-1">
+                                <CountryFlag
+                                  countryName={assignment.country}
+                                  size={15}
+                                />
+                                <span>
+                                  {countriesByCode[assignment.country] ||
+                                    assignment.country}
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {assignment.type === "warehouse" && (
+                          <>
+                            <span>Location: FP warehouse</span>
+                            {assignment.country && (
+                              <div className="flex items-center gap-1">
+                                <CountryFlag
+                                  countryName={assignment.country}
+                                  size={15}
+                                />
+                                <span>
+                                  {countriesByCode[assignment.country] ||
+                                    assignment.country}
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {assignment.type === "other" && (
+                          <span>Location: {assignment.location}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Serial Number */}
+                  {product.serialNumber && (
+                    <div className="flex-shrink-0 text-gray-600 text-sm">
+                      SN: {product.serialNumber}
                     </div>
                   )}
-                </div>
-
-                {/* Serial Number */}
-                {product.serialNumber && (
-                  <div className="flex-shrink-0 text-gray-600 text-sm">
-                    SN: {product.serialNumber}
-                  </div>
-                )}
                 </button>
 
                 {/* Mensaje informativo si falta countryCode */}
                 {hasMissingCountryCode && (
-                  <div className="flex justify-start items-center pt-2 border-t border-red-200">
-                    <p className="text-sm text-red-600">
-                      This product can&apos;t be selected because it&apos;s assigned to an unknown member.
+                  <div className="flex justify-start items-center pt-2 border-red-200 border-t">
+                    <p className="text-red-600 text-sm">
+                      This product can&apos;t be selected because it&apos;s
+                      assigned to an unknown member.
                     </p>
                   </div>
                 )}
