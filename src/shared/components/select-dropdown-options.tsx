@@ -117,7 +117,17 @@ export default function SelectDropdownOptions({
     const normalizedSearch = normalizeText(searchTerm);
 
     return opts.filter((option) => {
-      const textToSearch = typeof option === "string" ? option : option.value;
+      // Buscar en el display si es un objeto, o en el string directamente
+      let textToSearch: string;
+      if (typeof option === "string") {
+        textToSearch = option;
+      } else {
+        // Buscar en el display (nombre visible) en lugar del value (ID)
+        const displayText = typeof option.display === "string" 
+          ? option.display 
+          : String(option.display || "");
+        textToSearch = displayText || option.value;
+      }
       return normalizeText(textToSearch).includes(normalizedSearch);
     });
   };
@@ -266,11 +276,13 @@ export default function SelectDropdownOptions({
               {/* Renderizar grupos de opciones como acordeón para que se desplieguen hacia abajo */}
               {filteredGroups.map((group, idx) => {
                 const isOpen = !!openGroups[group.label];
+                // Agregar separador si hay opciones directas antes o si no es el primer grupo
+                const shouldAddSeparator = (filteredOptions.length > 0 && idx === 0) || idx > 0;
                 return (
                   <div
                     key={group.label}
                     className={`${
-                      idx > 0 ? "mt-1 pt-1 border-t border-gray-100" : "mt-1"
+                      shouldAddSeparator ? "mt-1 pt-1 border-t border-gray-100" : "mt-1"
                     }`}
                   >
                     <button
