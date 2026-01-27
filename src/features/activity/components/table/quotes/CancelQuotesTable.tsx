@@ -40,8 +40,25 @@ interface DataWipeAsset {
     countryCode: string;
   };
   desirableDate?: string;
+  currentMember?: {
+    memberId?: string;
+    assignedMember: string;
+    assignedEmail?: string;
+    countryCode: string;
+  };
   destination?: {
     destinationType?: string;
+    member?: {
+      memberId: string;
+      assignedMember: string;
+      assignedEmail?: string;
+      countryCode: string;
+    };
+    office?: {
+      officeId: string;
+      officeName: string;
+      countryCode: string;
+    };
     warehouse?: {
       warehouseName: string;
       countryCode: string;
@@ -487,57 +504,110 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                       {row.dataWipeAsset ? (
                         <>
                           <span className="font-semibold">
+                            {row.dataWipeAsset.productSnapshot.brand}
+                            {row.dataWipeAsset.productSnapshot.brand &&
+                              row.dataWipeAsset.productSnapshot.model &&
+                              " - "}
+                            {row.dataWipeAsset.productSnapshot.model}
+                          </span>
+                          <span className="text-gray-600">
                             {row.dataWipeAsset.productSnapshot.category}
                           </span>
-                          {(row.dataWipeAsset.productSnapshot.brand ||
-                            row.dataWipeAsset.productSnapshot.model) && (
-                            <span className="text-gray-700">
-                              {row.dataWipeAsset.productSnapshot.brand}
-                              {row.dataWipeAsset.productSnapshot.brand &&
-                                row.dataWipeAsset.productSnapshot.model &&
-                                " - "}
-                              {row.dataWipeAsset.productSnapshot.model}
-                            </span>
-                          )}
-                          {row.dataWipeAsset.productSnapshot.name && (
-                            <span className="text-gray-600 italic">
-                              {row.dataWipeAsset.productSnapshot.name}
-                            </span>
-                          )}
                           <span className="text-gray-600">
                             SN: {row.dataWipeAsset.productSnapshot.serialNumber}
                           </span>
-                          <span className="text-gray-600">
-                            Current:{" "}
-                            {row.dataWipeAsset.productSnapshot.location}
-                          </span>
-                          {row.dataWipeAsset.productSnapshot.countryCode && (
-                            <QuoteLocationWithCountry
-                              country={
-                                row.dataWipeAsset.productSnapshot.countryCode
-                              }
-                            />
-                          )}
-                          {row.dataWipeAsset.destination?.warehouse && (
+                          {row.dataWipeAsset.currentMember ? (
                             <>
-                              <span className="text-gray-600 font-semibold mt-1">
-                                New Location:
-                              </span>
                               <span className="text-gray-600">
-                                {
-                                  row.dataWipeAsset.destination.warehouse
-                                    .warehouseName
-                                }
+                                {row.dataWipeAsset.productSnapshot.location} (
+                                {row.dataWipeAsset.currentMember.assignedMember}
+                                )
                               </span>
-                              {row.dataWipeAsset.destination.warehouse
+                              {row.dataWipeAsset.currentMember.countryCode && (
+                                <QuoteLocationWithCountry
+                                  country={
+                                    row.dataWipeAsset.currentMember.countryCode
+                                  }
+                                />
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-gray-600">
+                                {row.dataWipeAsset.productSnapshot.location}
+                              </span>
+                              {row.dataWipeAsset.productSnapshot
                                 .countryCode && (
                                 <QuoteLocationWithCountry
                                   country={
-                                    row.dataWipeAsset.destination.warehouse
+                                    row.dataWipeAsset.productSnapshot
                                       .countryCode
                                   }
                                 />
                               )}
+                            </>
+                          )}
+                          {row.dataWipeAsset.destination && (
+                            <>
+                              <span className="text-gray-600 font-semibold mt-1">
+                                Return destination:
+                              </span>
+                              {row.dataWipeAsset.destination.destinationType ===
+                                "Member" ||
+                              row.dataWipeAsset.destination.destinationType ===
+                                "Employee" ? (
+                                <>
+                                  <span className="text-gray-600">
+                                    {row.dataWipeAsset.destination.member
+                                      ?.assignedMember || "N/A"}
+                                  </span>
+                                  {row.dataWipeAsset.destination.member
+                                    ?.countryCode && (
+                                    <QuoteLocationWithCountry
+                                      country={
+                                        row.dataWipeAsset.destination.member
+                                          .countryCode
+                                      }
+                                    />
+                                  )}
+                                </>
+                              ) : row.dataWipeAsset.destination
+                                  .destinationType === "Office" ||
+                                row.dataWipeAsset.destination
+                                  .destinationType === "Our office" ? (
+                                <>
+                                  <span className="text-gray-600">
+                                    {row.dataWipeAsset.destination.office
+                                      ?.officeName || "N/A"}
+                                  </span>
+                                  {row.dataWipeAsset.destination.office
+                                    ?.countryCode && (
+                                    <QuoteLocationWithCountry
+                                      country={
+                                        row.dataWipeAsset.destination.office
+                                          .countryCode
+                                      }
+                                    />
+                                  )}
+                                </>
+                              ) : row.dataWipeAsset.destination
+                                  .destinationType === "FP warehouse" ? (
+                                <>
+                                  <span className="text-gray-600">
+                                    {row.dataWipeAsset.destination.warehouse
+                                      ?.warehouseName || "FP warehouse"}
+                                  </span>
+                                  {row.dataWipeAsset.destination.warehouse
+                                    ?.countryCode && (
+                                    <QuoteLocationWithCountry
+                                      country={
+                                        row.dataWipeAsset.destination.warehouse
+                                          .countryCode
+                                      }
+                                    />
+                                  )}
+                                </>
+                              ) : null}
                             </>
                           )}
                           {row.additionalDetails && (
@@ -912,11 +982,11 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                                   ? row.offboardingProduct.destination
                                       .assignedMember
                                   : row.offboardingProduct.destination.type ===
-                                    "Office"
-                                  ? row.offboardingProduct.destination
-                                      .officeName
-                                  : row.offboardingProduct.destination
-                                      .warehouseName}
+                                      "Office"
+                                    ? row.offboardingProduct.destination
+                                        .officeName
+                                    : row.offboardingProduct.destination
+                                        .warehouseName}
                               </span>
                               <span className="text-gray-600 text-xs">
                                 {row.offboardingProduct.destination.type}
@@ -998,10 +1068,11 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                                   ? row.logisticsProduct.destination
                                       .assignedMember
                                   : row.logisticsProduct.destination.type ===
-                                    "Office"
-                                  ? row.logisticsProduct.destination.officeName
-                                  : row.logisticsProduct.destination
-                                      .warehouseName}
+                                      "Office"
+                                    ? row.logisticsProduct.destination
+                                        .officeName
+                                    : row.logisticsProduct.destination
+                                        .warehouseName}
                               </span>
                               <span className="text-gray-600 text-xs">
                                 {row.logisticsProduct.destination.type}
@@ -1106,20 +1177,20 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                         ? formatDate(row.dataWipeAsset.desirableDate)
                         : "N/A"
                       : row.cleaningProduct
-                      ? row.cleaningProduct.desiredDate
-                        ? formatDate(row.cleaningProduct.desiredDate)
-                        : "N/A"
-                      : row.offboardingProduct
-                      ? row.desirablePickupDate
-                        ? formatDate(row.desirablePickupDate)
-                        : "N/A"
-                      : row.logisticsProduct
-                      ? row.desirablePickupDate
-                        ? formatDate(row.desirablePickupDate)
-                        : "N/A"
-                      : row.issueStartDate
-                      ? formatDate(row.issueStartDate)
-                      : "N/A"}
+                        ? row.cleaningProduct.desiredDate
+                          ? formatDate(row.cleaningProduct.desiredDate)
+                          : "N/A"
+                        : row.offboardingProduct
+                          ? row.desirablePickupDate
+                            ? formatDate(row.desirablePickupDate)
+                            : "N/A"
+                          : row.logisticsProduct
+                            ? row.desirablePickupDate
+                              ? formatDate(row.desirablePickupDate)
+                              : "N/A"
+                            : row.issueStartDate
+                              ? formatDate(row.issueStartDate)
+                              : "N/A"}
                   </TableCell>
                 </>
               )}
