@@ -205,9 +205,10 @@ function mapServiceTypeToCategory(serviceType?: string): string {
   if (!serviceType) return "";
   const serviceTypeMap: Record<string, string> = {
     "it-support": "IT Support",
-    "enrollment": "Enrollment",
-    "buyback": "Buyback",
+    enrollment: "Enrollment",
+    buyback: "Buyback",
     "data-wipe": "Data Wipe",
+    cleaning: "Cleaning",
   };
   return serviceTypeMap[serviceType] || serviceType;
 }
@@ -239,7 +240,7 @@ export function validateAssetsCountryCode(
     if (asset.assignedMember || asset.assignedEmail) {
       location = asset.location || "";
       assignedTo = asset.assignedMember || asset.assignedEmail || "";
-      
+
       // Intentar obtener countryCode del member
       const memberEmail = asset.assignedEmail || asset.assignedMember;
       if (memberEmail && membersMap) {
@@ -247,7 +248,9 @@ export function validateAssetsCountryCode(
         if (member?.country && member.country.trim() !== "") {
           rawCountryCode = member.country;
         } else {
-          suggestions.push(`Member "${memberEmail}" ${member ? "exists but has no country" : "not found in membersMap"}`);
+          suggestions.push(
+            `Member "${memberEmail}" ${member ? "exists but has no country" : "not found in membersMap"}`
+          );
         }
       }
       if (!rawCountryCode) {
@@ -264,11 +267,13 @@ export function validateAssetsCountryCode(
         asset.countryCode ||
         asset.country ||
         null;
-      
+
       if (!rawCountryCode) {
         suggestions.push("Office has no officeCountryCode");
         if (asset.office) {
-          suggestions.push(`Office object available: ${JSON.stringify(asset.office)}`);
+          suggestions.push(
+            `Office object available: ${JSON.stringify(asset.office)}`
+          );
         } else {
           suggestions.push("No office object found on asset");
         }
@@ -281,11 +286,13 @@ export function validateAssetsCountryCode(
         asset.countryCode ||
         asset.country ||
         null;
-      
+
       if (!rawCountryCode) {
         suggestions.push("FP warehouse has no warehouseCountryCode");
         if (asset.fpWarehouse) {
-          suggestions.push(`FP Warehouse object available: ${JSON.stringify(asset.fpWarehouse)}`);
+          suggestions.push(
+            `FP Warehouse object available: ${JSON.stringify(asset.fpWarehouse)}`
+          );
         } else {
           suggestions.push("No fpWarehouse object found on asset");
         }
@@ -301,7 +308,7 @@ export function validateAssetsCountryCode(
     }
 
     const countryCode = normalizeCountryCode(rawCountryCode);
-    
+
     if (!countryCode || countryCode.trim() === "") {
       const availableFields: any = {
         assetId: asset._id,
@@ -311,16 +318,20 @@ export function validateAssetsCountryCode(
         country: asset.country,
         assignedEmail: asset.assignedEmail,
         assignedMember: asset.assignedMember,
-        office: asset.office ? {
-          officeId: asset.office.officeId,
-          officeName: asset.office.officeName,
-          officeCountryCode: asset.office.officeCountryCode,
-        } : null,
-        fpWarehouse: asset.fpWarehouse ? {
-          warehouseId: asset.fpWarehouse.warehouseId,
-          warehouseName: asset.fpWarehouse.warehouseName,
-          warehouseCountryCode: asset.fpWarehouse.warehouseCountryCode,
-        } : null,
+        office: asset.office
+          ? {
+              officeId: asset.office.officeId,
+              officeName: asset.office.officeName,
+              officeCountryCode: asset.office.officeCountryCode,
+            }
+          : null,
+        fpWarehouse: asset.fpWarehouse
+          ? {
+              warehouseId: asset.fpWarehouse.warehouseId,
+              warehouseName: asset.fpWarehouse.warehouseName,
+              warehouseCountryCode: asset.fpWarehouse.warehouseCountryCode,
+            }
+          : null,
       };
 
       assetsWithoutCountryCode.push({
@@ -335,9 +346,11 @@ export function validateAssetsCountryCode(
 
   if (assetsWithoutCountryCode.length > 0) {
     console.group("🔴 Assets sin countryCode encontrados:");
-    console.log(`Total de assets sin countryCode: ${assetsWithoutCountryCode.length} de ${assets.length}`);
+    console.log(
+      `Total de assets sin countryCode: ${assetsWithoutCountryCode.length} de ${assets.length}`
+    );
     console.log("");
-    
+
     assetsWithoutCountryCode.forEach((item, index) => {
       console.group(`Asset ${index + 1}: ${item.asset.name || item.asset._id}`);
       console.log("📍 Location:", item.location);
@@ -353,19 +366,24 @@ export function validateAssetsCountryCode(
       console.groupEnd();
       console.log("");
     });
-    
+
     // Mostrar ejemplos de members que SÍ tienen country
     if (membersMap && membersMap.size > 0) {
       const membersWithCountry = Array.from(membersMap.values())
-        .filter((member: any) => member?.country && member.country.trim() !== "")
+        .filter(
+          (member: any) => member?.country && member.country.trim() !== ""
+        )
         .slice(0, 5); // Mostrar máximo 5 ejemplos
-      
+
       if (membersWithCountry.length > 0) {
-        console.group("✅ Ejemplos de Members que SÍ tienen country configurado:");
+        console.group(
+          "✅ Ejemplos de Members que SÍ tienen country configurado:"
+        );
         membersWithCountry.forEach((member: any, index: number) => {
           console.log(`Member ${index + 1}:`, {
             email: member.email,
-            fullName: member.fullName || `${member.firstName} ${member.lastName}`,
+            fullName:
+              member.fullName || `${member.firstName} ${member.lastName}`,
             country: member.country,
             // Mostrar solo los campos relevantes
             _id: member._id,
@@ -373,26 +391,33 @@ export function validateAssetsCountryCode(
         });
         console.groupEnd();
       } else {
-        console.log("⚠️ No se encontraron members con country configurado en el membersMap");
+        console.log(
+          "⚠️ No se encontraron members con country configurado en el membersMap"
+        );
       }
     }
-    
+
     console.groupEnd();
   } else {
     console.log("✅ Todos los assets tienen countryCode válido");
-    
+
     // Aún así mostrar ejemplos de members con country si están disponibles
     if (membersMap && membersMap.size > 0) {
       const membersWithCountry = Array.from(membersMap.values())
-        .filter((member: any) => member?.country && member.country.trim() !== "")
+        .filter(
+          (member: any) => member?.country && member.country.trim() !== ""
+        )
         .slice(0, 3);
-      
+
       if (membersWithCountry.length > 0) {
-        console.log("📋 Ejemplos de Members con country:", membersWithCountry.map((m: any) => ({
-          email: m.email,
-          fullName: m.fullName || `${m.firstName} ${m.lastName}`,
-          country: m.country,
-        })));
+        console.log(
+          "📋 Ejemplos de Members con country:",
+          membersWithCountry.map((m: any) => ({
+            email: m.email,
+            fullName: m.fullName || `${m.firstName} ${m.lastName}`,
+            country: m.country,
+          }))
+        );
       }
     }
   }
@@ -500,11 +525,13 @@ function buildEnrolledDeviceFromAsset(
     errorMessage += `Asset ID: ${asset._id}, `;
     errorMessage += `Name: ${asset.name || "N/A"}, `;
     errorMessage += `Location: ${asset.location || "N/A"}`;
-    
+
     if (asset.assignedMember || asset.assignedEmail) {
       // Error para Employee
       const memberEmail = asset.assignedEmail || asset.assignedMember;
-      const member = memberEmail ? membersMap?.get(memberEmail.toLowerCase()) : null;
+      const member = memberEmail
+        ? membersMap?.get(memberEmail.toLowerCase())
+        : null;
       if (member) {
         errorMessage += `, Assigned Email: ${memberEmail}. The assigned member exists but does not have a country configured. Please update the member's country in the members section.`;
       } else {
@@ -520,7 +547,7 @@ function buildEnrolledDeviceFromAsset(
       // Error genérico
       errorMessage += `. Please ensure the asset has a country code, office country code, warehouse country code, or country set.`;
     }
-    
+
     throw new Error(errorMessage);
   }
 
@@ -568,16 +595,19 @@ export function transformServiceToBackendFormat(
   const isEnrollment = service.serviceType === "enrollment";
   const isBuyback = service.serviceType === "buyback";
   const isDataWipe = service.serviceType === "data-wipe";
+  const isCleaning = service.serviceType === "cleaning";
 
   // Para Enrollment, construir enrolledDevices y productIds
   let enrolledDevices: any[] | undefined = undefined;
   let productIds: string[] | undefined = undefined;
-  
+
   // Para Buyback, construir products array con productSnapshot y buybackDetails
   let buybackProducts: any[] | undefined = undefined;
   // Para Data Wipe, construir assets array con productSnapshot, desirableDate, currentLocation, currentMember, y destination
   let dataWipeAssets: any[] | undefined = undefined;
-  
+  // Para Cleaning, construir products array con productSnapshot, desiredDate, cleaningType, additionalComments
+  let cleaningProducts: any[] | undefined = undefined;
+
   if (isBuyback) {
     if (!service.assetIds || service.assetIds.length === 0) {
       throw new Error("Buyback service requires at least one asset (assetIds)");
@@ -585,19 +615,19 @@ export function transformServiceToBackendFormat(
     if (!assetsMap) {
       throw new Error("Buyback service requires assetsMap to build products");
     }
-    
+
     // Obtener todos los assets seleccionados
     const selectedAssets = service.assetIds
       .map((assetId) => assetsMap.get(assetId))
       .filter((asset) => asset !== undefined);
-    
+
     if (selectedAssets.length === 0) {
       throw new Error("Buyback service: no valid assets found in assetsMap");
     }
-    
+
     // Validar countryCode para todos los assets
     validateAssetsCountryCode(selectedAssets, membersMap);
-    
+
     // Construir products array
     buybackProducts = selectedAssets.map((asset) => {
       // Construir productSnapshot completo (similar a buildEnrolledDeviceFromAsset pero con más campos)
@@ -654,7 +684,7 @@ export function transformServiceToBackendFormat(
         )?.value || "";
       // productCondition viene directamente del asset
       const productCondition = asset.productCondition || "";
-      
+
       // Determinar location y assignedTo
       let location = "";
       let assignedTo = "";
@@ -701,18 +731,20 @@ export function transformServiceToBackendFormat(
       }
 
       const countryCode = normalizeCountryCode(rawCountryCode);
-      
+
       if (!countryCode || countryCode.trim() === "") {
-        throw new Error(`Buyback asset countryCode is required but not found. Asset ID: ${asset._id}`);
+        throw new Error(
+          `Buyback asset countryCode is required but not found. Asset ID: ${asset._id}`
+        );
       }
 
       // Obtener buybackDetails para este asset
       const buybackDetail = service.buybackDetails?.[asset._id];
-      
+
       // Construir productSnapshot con campos requeridos
       // Usar el nombre del asset o un valor por defecto basado en la categoría
       const assetName = asset.name || asset.category || "Asset";
-      
+
       // Validar que los campos requeridos estén presentes antes de construir productSnapshot
       if (!asset.category || asset.category.trim() === "") {
         throw new Error(`Buyback asset ${asset._id}: category is required`);
@@ -721,12 +753,14 @@ export function transformServiceToBackendFormat(
         throw new Error(`Buyback asset ${asset._id}: location is required`);
       }
       if (assignedTo === undefined || assignedTo === null) {
-        throw new Error(`Buyback asset ${asset._id}: assignedTo is required (can be empty string)`);
+        throw new Error(
+          `Buyback asset ${asset._id}: assignedTo is required (can be empty string)`
+        );
       }
       if (!countryCode || countryCode.trim() === "") {
         throw new Error(`Buyback asset ${asset._id}: countryCode is required`);
       }
-      
+
       // Construir productSnapshot - brand y model son requeridos según el ejemplo
       const productSnapshot: any = {
         category: asset.category,
@@ -737,7 +771,7 @@ export function transformServiceToBackendFormat(
         assignedTo: assignedTo || "", // Asegurar que sea string, no null/undefined
         countryCode: countryCode,
       };
-      
+
       // serialNumber solo se incluye si existe (el backend lo pide solo si existe)
       if (asset.serialNumber && asset.serialNumber.trim() !== "") {
         productSnapshot.serialNumber = asset.serialNumber;
@@ -745,14 +779,16 @@ export function transformServiceToBackendFormat(
 
       // Agregar campos opcionales si existen
       if (os && os.trim() !== "") productSnapshot.os = os;
-      if (processor && processor.trim() !== "") productSnapshot.processor = processor;
+      if (processor && processor.trim() !== "")
+        productSnapshot.processor = processor;
       if (ram && ram.trim() !== "") productSnapshot.ram = ram;
       if (storage && storage.trim() !== "") productSnapshot.storage = storage;
-      if (screenSize && screenSize.trim() !== "") productSnapshot.screenSize = screenSize;
+      if (screenSize && screenSize.trim() !== "")
+        productSnapshot.screenSize = screenSize;
       if (productCondition && productCondition.trim() !== "") {
         productSnapshot.productCondition = productCondition;
       }
-      
+
       // additionalInfo puede venir del asset
       if (asset.additionalInfo && asset.additionalInfo.trim() !== "") {
         productSnapshot.additionalInfo = asset.additionalInfo;
@@ -768,49 +804,79 @@ export function transformServiceToBackendFormat(
       // generalFunctionality es obligatorio según los requisitos
       if (buybackDetail) {
         // Validar que generalFunctionality esté presente y no vacío
-        if (!buybackDetail.generalFunctionality || buybackDetail.generalFunctionality.trim() === "") {
-          throw new Error(`Buyback asset ${asset._id}: generalFunctionality is required`);
+        if (
+          !buybackDetail.generalFunctionality ||
+          buybackDetail.generalFunctionality.trim() === ""
+        ) {
+          throw new Error(
+            `Buyback asset ${asset._id}: generalFunctionality is required`
+          );
         }
-        
+
         // Convertir batteryCycles a número si es posible, sino mantener como string
-        let batteryCyclesValue: string | number | undefined = buybackDetail.batteryCycles;
-        if (batteryCyclesValue && typeof batteryCyclesValue === "string" && batteryCyclesValue.trim() !== "") {
+        let batteryCyclesValue: string | number | undefined =
+          buybackDetail.batteryCycles;
+        if (
+          batteryCyclesValue &&
+          typeof batteryCyclesValue === "string" &&
+          batteryCyclesValue.trim() !== ""
+        ) {
           // Intentar convertir a número si es un número válido
           const numValue = Number(batteryCyclesValue);
-          if (!isNaN(numValue) && isFinite(numValue) && batteryCyclesValue.trim() === numValue.toString()) {
+          if (
+            !isNaN(numValue) &&
+            isFinite(numValue) &&
+            batteryCyclesValue.trim() === numValue.toString()
+          ) {
             batteryCyclesValue = numValue;
           }
           // Si no es un número válido, mantener como string (permite texto como "Unknown")
         }
-        
+
         // Construir buybackDetails
         const buybackDetailsObj: any = {
           generalFunctionality: buybackDetail.generalFunctionality,
         };
-        
+
         // Agregar campos opcionales solo si tienen valor
-        if (batteryCyclesValue !== undefined && batteryCyclesValue !== null && batteryCyclesValue !== "") {
+        if (
+          batteryCyclesValue !== undefined &&
+          batteryCyclesValue !== null &&
+          batteryCyclesValue !== ""
+        ) {
           buybackDetailsObj.batteryCycles = batteryCyclesValue;
         }
-        if (buybackDetail.aestheticDetails && buybackDetail.aestheticDetails.trim() !== "") {
+        if (
+          buybackDetail.aestheticDetails &&
+          buybackDetail.aestheticDetails.trim() !== ""
+        ) {
           buybackDetailsObj.aestheticDetails = buybackDetail.aestheticDetails;
         }
         if (buybackDetail.hasCharger !== undefined) {
           buybackDetailsObj.hasCharger = buybackDetail.hasCharger;
           // Si hasCharger es true, chargerWorks también debe ser true (según el ejemplo del payload)
           if (buybackDetail.hasCharger) {
-            buybackDetailsObj.chargerWorks = buybackDetail.chargerWorks !== undefined ? buybackDetail.chargerWorks : true;
+            buybackDetailsObj.chargerWorks =
+              buybackDetail.chargerWorks !== undefined
+                ? buybackDetail.chargerWorks
+                : true;
           }
         }
-        if (buybackDetail.additionalComments && buybackDetail.additionalComments.trim() !== "") {
-          buybackDetailsObj.additionalComments = buybackDetail.additionalComments;
+        if (
+          buybackDetail.additionalComments &&
+          buybackDetail.additionalComments.trim() !== ""
+        ) {
+          buybackDetailsObj.additionalComments =
+            buybackDetail.additionalComments;
         }
-        
+
         // Siempre agregar buybackDetails ya que generalFunctionality es obligatorio
         productObj.buybackDetails = buybackDetailsObj;
       } else {
         // Si no hay buybackDetail para este asset, lanzar error
-        throw new Error(`Buyback asset ${asset._id}: buybackDetails is required (generalFunctionality must be provided)`);
+        throw new Error(
+          `Buyback asset ${asset._id}: buybackDetails is required (generalFunctionality must be provided)`
+        );
       }
 
       return productObj;
@@ -819,24 +885,26 @@ export function transformServiceToBackendFormat(
 
   if (isDataWipe) {
     if (!service.assetIds || service.assetIds.length === 0) {
-      throw new Error("Data Wipe service requires at least one asset (assetIds)");
+      throw new Error(
+        "Data Wipe service requires at least one asset (assetIds)"
+      );
     }
     if (!assetsMap) {
       throw new Error("Data Wipe service requires assetsMap to build assets");
     }
-    
+
     // Obtener todos los assets seleccionados
     const selectedAssets = service.assetIds
       .map((assetId) => assetsMap.get(assetId))
       .filter((asset) => asset !== undefined);
-    
+
     if (selectedAssets.length === 0) {
       throw new Error("Data Wipe service: no valid assets found in assetsMap");
     }
-    
+
     // Validar countryCode para todos los assets
     validateAssetsCountryCode(selectedAssets, membersMap);
-    
+
     // Construir assets array
     dataWipeAssets = selectedAssets.map((asset) => {
       // Construir productSnapshot (similar a Buyback)
@@ -854,7 +922,7 @@ export function transformServiceToBackendFormat(
             attr.key === "model" ||
             String(attr.key).toLowerCase() === "model"
         )?.value || "";
-      
+
       // Determinar location y assignedTo
       let location = "";
       let assignedTo = "";
@@ -901,17 +969,19 @@ export function transformServiceToBackendFormat(
       }
 
       const countryCode = normalizeCountryCode(rawCountryCode);
-      
+
       if (!countryCode || countryCode.trim() === "") {
-        throw new Error(`Data Wipe asset countryCode is required but not found. Asset ID: ${asset._id}`);
+        throw new Error(
+          `Data Wipe asset countryCode is required but not found. Asset ID: ${asset._id}`
+        );
       }
 
       // Obtener dataWipeDetail para este asset
       const dataWipeDetail = service.dataWipeDetails?.[asset._id];
-      
+
       // Construir productSnapshot con campos requeridos
       const assetName = asset.name || asset.category || "Asset";
-      
+
       const productSnapshot: any = {
         category: asset.category || "Computer",
         name: assetName,
@@ -938,11 +1008,21 @@ export function transformServiceToBackendFormat(
       if (!productSnapshot.location || productSnapshot.location.trim() === "") {
         throw new Error(`Data Wipe asset ${asset._id}: location is required`);
       }
-      if (productSnapshot.assignedTo === undefined || productSnapshot.assignedTo === null) {
-        throw new Error(`Data Wipe asset ${asset._id}: assignedTo is required (can be empty string)`);
+      if (
+        productSnapshot.assignedTo === undefined ||
+        productSnapshot.assignedTo === null
+      ) {
+        throw new Error(
+          `Data Wipe asset ${asset._id}: assignedTo is required (can be empty string)`
+        );
       }
-      if (!productSnapshot.countryCode || productSnapshot.countryCode.trim() === "") {
-        throw new Error(`Data Wipe asset ${asset._id}: countryCode is required`);
+      if (
+        !productSnapshot.countryCode ||
+        productSnapshot.countryCode.trim() === ""
+      ) {
+        throw new Error(
+          `Data Wipe asset ${asset._id}: countryCode is required`
+        );
       }
 
       // Construir el objeto del asset
@@ -956,7 +1036,9 @@ export function transformServiceToBackendFormat(
         // Validar formato de fecha YYYY-MM-DD
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(dataWipeDetail.desirableDate)) {
-          throw new Error(`Data Wipe asset ${asset._id}: Invalid date format. Expected YYYY-MM-DD`);
+          throw new Error(
+            `Data Wipe asset ${asset._id}: Invalid date format. Expected YYYY-MM-DD`
+          );
         }
         assetObj.desirableDate = dataWipeDetail.desirableDate;
       }
@@ -985,10 +1067,10 @@ export function transformServiceToBackendFormat(
       // Agregar currentOffice si está en "Our office"
       if (asset.location === "Our office" && asset.office) {
         const officeCountryCode = normalizeCountryCode(
-          asset.office.officeCountryCode || 
-          asset.countryCode || 
-          asset.country || 
-          ""
+          asset.office.officeCountryCode ||
+            asset.countryCode ||
+            asset.country ||
+            ""
         );
         if (officeCountryCode) {
           assetObj.currentOffice = {
@@ -1003,9 +1085,9 @@ export function transformServiceToBackendFormat(
       if (asset.location === "FP warehouse") {
         const warehouseCountryCode = normalizeCountryCode(
           asset.fpWarehouse?.warehouseCountryCode ||
-          asset.countryCode ||
-          asset.country ||
-          ""
+            asset.countryCode ||
+            asset.country ||
+            ""
         );
         if (warehouseCountryCode) {
           assetObj.currentWarehouse = {
@@ -1018,7 +1100,7 @@ export function transformServiceToBackendFormat(
       if (dataWipeDetail?.destination) {
         const dest = dataWipeDetail.destination;
         const destinationObj: any = {};
-        
+
         // Mapear los tipos de destino para el backend
         if (dest.destinationType) {
           if (dest.destinationType === "Member") {
@@ -1048,31 +1130,173 @@ export function transformServiceToBackendFormat(
       return removeUndefinedFields(assetObj);
     });
   }
-  
-  if (isEnrollment) {
+
+  if (isCleaning) {
     if (!service.assetIds || service.assetIds.length === 0) {
-      throw new Error("Enrollment service requires at least one asset (assetIds)");
+      throw new Error(
+        "Cleaning service requires at least one asset (assetIds)"
+      );
     }
     if (!assetsMap) {
-      throw new Error("Enrollment service requires assetsMap to build enrolledDevices");
+      throw new Error("Cleaning service requires assetsMap to build products");
     }
-    
+
+    const selectedCleaningAssets = service.assetIds
+      .map((assetId) => assetsMap.get(assetId))
+      .filter((asset) => asset !== undefined);
+
+    if (selectedCleaningAssets.length === 0) {
+      throw new Error("Cleaning service: no valid assets found in assetsMap");
+    }
+
+    validateAssetsCountryCode(selectedCleaningAssets, membersMap);
+
+    const desiredDate =
+      service.requiredDeliveryDate &&
+      /^\d{4}-\d{2}-\d{2}$/.test(
+        service.requiredDeliveryDate.includes("T")
+          ? service.requiredDeliveryDate.split("T")[0]
+          : service.requiredDeliveryDate
+      )
+        ? service.requiredDeliveryDate.includes("T")
+          ? service.requiredDeliveryDate.split("T")[0]
+          : service.requiredDeliveryDate
+        : undefined;
+    const cleaningTypeValue = service.cleaningType ?? "Deep";
+    const additionalCommentsValue = service.additionalComments;
+
+    cleaningProducts = selectedCleaningAssets.map((asset) => {
+      const brand =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Brand" ||
+            attr.key === "brand" ||
+            String(attr.key).toLowerCase() === "brand"
+        )?.value || "";
+      const model =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Model" ||
+            attr.key === "model" ||
+            String(attr.key).toLowerCase() === "model"
+        )?.value || "";
+
+      let location = "";
+      let assignedTo = "";
+      let assignedEmail: string | undefined = undefined;
+      let rawCountryCode: string | null = null;
+
+      if (asset.assignedMember || asset.assignedEmail) {
+        location = "Employee";
+        assignedTo = asset.assignedMember || asset.assignedEmail || "";
+        assignedEmail = asset.assignedEmail || undefined;
+        const memberEmail = asset.assignedEmail || asset.assignedMember;
+        if (memberEmail && membersMap) {
+          const member = membersMap.get(memberEmail.toLowerCase());
+          if (member?.country && member.country.trim() !== "") {
+            rawCountryCode = member.country;
+          }
+        }
+        if (!rawCountryCode) {
+          rawCountryCode = asset.countryCode || asset.country || null;
+        }
+      } else if (asset.location === "Our office") {
+        location = "Our office";
+        assignedTo = asset.office?.officeName || asset.officeName || "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location === "FP warehouse") {
+        location = "FP warehouse";
+        assignedTo = asset.officeName || asset.office?.officeName || "";
+        rawCountryCode =
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location) {
+        location = asset.location;
+        assignedTo = "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      }
+
+      const countryCode = normalizeCountryCode(rawCountryCode);
+
+      if (!countryCode || countryCode.trim() === "") {
+        throw new Error(
+          `Cleaning asset countryCode is required but not found. Asset ID: ${asset._id}`
+        );
+      }
+
+      const productSnapshot: any = {
+        category: asset.category || "Computer",
+        name: asset.name || "",
+        brand: brand || "",
+        model: model || "",
+        serialNumber: asset.serialNumber || "",
+        location: location || "",
+        assignedTo: assignedTo || "",
+        countryCode: countryCode,
+      };
+      if (assignedEmail) {
+        productSnapshot.assignedEmail = assignedEmail;
+      }
+
+      const productObj: any = {
+        productId: asset._id,
+        productSnapshot: removeUndefinedFields(productSnapshot),
+        cleaningType: cleaningTypeValue,
+      };
+      if (desiredDate) {
+        productObj.desiredDate = desiredDate;
+      }
+      if (additionalCommentsValue && additionalCommentsValue.trim() !== "") {
+        productObj.additionalComments = additionalCommentsValue;
+      }
+
+      return removeUndefinedFields(productObj);
+    });
+  }
+
+  if (isEnrollment) {
+    if (!service.assetIds || service.assetIds.length === 0) {
+      throw new Error(
+        "Enrollment service requires at least one asset (assetIds)"
+      );
+    }
+    if (!assetsMap) {
+      throw new Error(
+        "Enrollment service requires assetsMap to build enrolledDevices"
+      );
+    }
+
     // Obtener todos los assets seleccionados
     const selectedAssets = service.assetIds
       .map((assetId) => assetsMap.get(assetId))
       .filter((asset) => asset !== undefined);
-    
+
     // Validar todos los assets antes de procesarlos
-    console.log("🔍 Validando countryCode para todos los assets seleccionados...");
+    console.log(
+      "🔍 Validando countryCode para todos los assets seleccionados..."
+    );
     validateAssetsCountryCode(selectedAssets, membersMap);
-    
+
     productIds = service.assetIds;
-    enrolledDevices = selectedAssets.map((asset) => buildEnrolledDeviceFromAsset(asset, membersMap));
-    
+    enrolledDevices = selectedAssets.map((asset) =>
+      buildEnrolledDeviceFromAsset(asset, membersMap)
+    );
+
     if (enrolledDevices.length === 0) {
       throw new Error("Enrollment service: no valid assets found in assetsMap");
     }
-    
+
     // Validar que todos los enrolledDevices tengan los campos requeridos
     enrolledDevices.forEach((device, index) => {
       if (!device.category || device.category.trim() === "") {
@@ -1087,7 +1311,9 @@ export function transformServiceToBackendFormat(
         throw new Error(`Enrolled device ${index}: location is required`);
       }
       if (device.assignedTo === undefined || device.assignedTo === null) {
-        throw new Error(`Enrolled device ${index}: assignedTo is required (can be empty string)`);
+        throw new Error(
+          `Enrolled device ${index}: assignedTo is required (can be empty string)`
+        );
       }
       if (!device.countryCode || device.countryCode.trim() === "") {
         throw new Error(`Enrolled device ${index}: countryCode is required`);
@@ -1115,12 +1341,46 @@ export function transformServiceToBackendFormat(
   };
 
   // Para IT Support
-  if (service.assetId && !isEnrollment && !isBuyback && !isDataWipe) {
+  if (
+    service.assetId &&
+    !isEnrollment &&
+    !isBuyback &&
+    !isDataWipe &&
+    !isCleaning
+  ) {
     transformed.productId = service.assetId;
   }
 
-  if (productSnapshot && !isEnrollment && !isBuyback && !isDataWipe) {
+  if (
+    productSnapshot &&
+    !isEnrollment &&
+    !isBuyback &&
+    !isDataWipe &&
+    !isCleaning
+  ) {
     transformed.productSnapshot = productSnapshot;
+  }
+
+  // Para Cleaning - payload: serviceCategory, products[], additionalDetails
+  if (isCleaning) {
+    if (!cleaningProducts || cleaningProducts.length === 0) {
+      throw new Error("Cleaning service: products is required");
+    }
+
+    const cleaningService: any = {
+      serviceCategory: serviceCategory,
+      products: cleaningProducts,
+    };
+    if (
+      service.additionalComments &&
+      service.additionalComments.trim() !== ""
+    ) {
+      cleaningService.additionalDetails = service.additionalComments;
+    }
+
+    return removeUndefinedFields(cleaningService) as NonNullable<
+      QuoteRequestPayload["services"]
+    >[0];
   }
 
   // Para Enrollment - estos campos son requeridos
@@ -1131,15 +1391,15 @@ export function transformServiceToBackendFormat(
     if (!enrolledDevices || enrolledDevices.length === 0) {
       throw new Error("Enrollment service: enrolledDevices is required");
     }
-    
+
     transformed.productIds = productIds;
     transformed.enrolledDevices = enrolledDevices;
-    
+
     // additionalDetails es opcional
     if (service.additionalDetails) {
       transformed.additionalDetails = service.additionalDetails;
     }
-    
+
     // Para Enrollment, retornar solo los campos necesarios (no incluir campos de IT Support)
     return transformed as NonNullable<QuoteRequestPayload["services"]>[0];
   }
@@ -1149,18 +1409,18 @@ export function transformServiceToBackendFormat(
     if (!buybackProducts || buybackProducts.length === 0) {
       throw new Error("Buyback service: products is required");
     }
-    
+
     // Para Buyback, construir objeto solo con los campos necesarios
     const buybackService: any = {
       serviceCategory: serviceCategory, // Siempre incluir serviceCategory
       products: buybackProducts, // products es requerido
     };
-    
+
     // additionalInfo es opcional
     if (service.additionalInfo && service.additionalInfo.trim() !== "") {
       buybackService.additionalInfo = service.additionalInfo;
     }
-    
+
     // Retornar sin usar removeUndefinedFields para asegurar que serviceCategory y products siempre estén presentes
     return buybackService as NonNullable<QuoteRequestPayload["services"]>[0];
   }
@@ -1170,20 +1430,22 @@ export function transformServiceToBackendFormat(
     if (!dataWipeAssets || dataWipeAssets.length === 0) {
       throw new Error("Data Wipe service: assets is required");
     }
-    
+
     transformed.assets = dataWipeAssets;
-    
+
     // additionalDetails es opcional
     if (service.additionalDetails) {
       transformed.additionalDetails = service.additionalDetails;
     }
-    
+
     // Para Data Wipe, retornar solo los campos necesarios (no incluir campos de otros servicios)
-    return removeUndefinedFields(transformed) as NonNullable<QuoteRequestPayload["services"]>[0];
+    return removeUndefinedFields(transformed) as NonNullable<
+      QuoteRequestPayload["services"]
+    >[0];
   }
 
-  // Para IT Support - agregar campos específicos de IT Support (solo si no es Buyback ni Data Wipe)
-  if (!isBuyback && !isDataWipe) {
+  // Para IT Support - agregar campos específicos de IT Support (solo si no es Buyback, Data Wipe ni Cleaning)
+  if (!isBuyback && !isDataWipe && !isCleaning) {
     if (issues.length > 0) {
       transformed.issues = issues;
     }
@@ -1200,7 +1462,7 @@ export function transformServiceToBackendFormat(
       transformed.impactLevel = service.impactLevel;
     }
   }
-  
+
   // Para otros servicios, usar removeUndefinedFields
   return removeUndefinedFields(transformed) as NonNullable<
     QuoteRequestPayload["services"]

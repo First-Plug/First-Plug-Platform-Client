@@ -48,6 +48,7 @@ export interface QuoteService {
   buybackDetails?: Record<string, BuybackDetail>; // Detalles de Buyback por assetId (para Buyback)
   additionalInfo?: string; // Información adicional para Buyback
   dataWipeDetails?: Record<string, DataWipeDetail>; // Detalles de Data Wipe por assetId (para Data Wipe)
+  cleaningType?: "Superficial" | "Deep"; // Tipo de limpieza (opcional, por defecto Deep)
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -288,11 +289,29 @@ export interface QuoteHistoryService {
   comments?: string;
   enrolledDevices?: EnrolledDeviceSnapshot[];
   productSnapshot?: ITSupportProductSnapshot;
-  products?: Array<{
-    productId: string;
-    productSnapshot: BuybackProductSnapshot;
-    buybackDetails?: BuybackDetails;
-  }>;
+  products?:
+    | Array<{
+        productId: string;
+        productSnapshot: BuybackProductSnapshot;
+        buybackDetails?: BuybackDetails;
+      }>
+    | Array<{
+        productId: string;
+        productSnapshot: {
+          category: string;
+          name?: string;
+          brand: string;
+          model: string;
+          serialNumber?: string;
+          location: string;
+          assignedTo: string;
+          assignedEmail?: string;
+          countryCode: string;
+        };
+        desiredDate?: string;
+        cleaningType?: string;
+        additionalComments?: string;
+      }>;
   assets?: Array<{
     productId: string;
     productSnapshot: {

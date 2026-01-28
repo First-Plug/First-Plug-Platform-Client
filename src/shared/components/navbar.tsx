@@ -336,6 +336,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isEnrollment = serviceType === "enrollment";
     const isBuyback = serviceType === "buyback";
     const isDataWipe = serviceType === "data-wipe";
+    const isCleaning = serviceType === "cleaning";
 
     if (isITSupport) {
       const itSupportStepTitles: Record<number, string> = {
@@ -375,6 +376,15 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       return dataWipeStepTitles[step] || "";
     }
 
+    if (isCleaning) {
+      const cleaningStepTitles: Record<number, string> = {
+        1: "Select Service Type",
+        2: "Select Assets",
+        3: "Cleaning Options",
+      };
+      return cleaningStepTitles[step] || "";
+    }
+
     const serviceStepTitles: Record<number, string> = {
       1: "Select Service Type",
       2: "Quote Details",
@@ -393,10 +403,12 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isEnrollment = serviceType === "enrollment";
     const isBuyback = serviceType === "buyback";
     const isDataWipe = serviceType === "data-wipe";
+    const isCleaning = serviceType === "cleaning";
     if (isITSupport) return 5;
     if (isEnrollment) return 3;
     if (isBuyback) return 3;
     if (isDataWipe) return 3;
+    if (isCleaning) return 3;
     return 2;
   };
 
@@ -430,8 +442,13 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isEnrollment = currentServiceType === "enrollment";
     const isBuyback = currentServiceType === "buyback";
     const isDataWipe = currentServiceType === "data-wipe";
-    const minStep = isEditing 
-      ? (isITSupport ? 2 : (isEnrollment || isBuyback || isDataWipe ? 2 : 3))
+    const isCleaning = currentServiceType === "cleaning";
+    const minStep = isEditing
+      ? isITSupport
+        ? 2
+        : isEnrollment || isBuyback || isDataWipe || isCleaning
+          ? 2
+          : 3
       : 1;
 
     const shouldShowBackButton = onBack && currentStep > minStep;

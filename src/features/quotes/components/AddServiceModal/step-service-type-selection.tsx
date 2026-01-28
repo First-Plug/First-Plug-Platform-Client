@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Wrench, Shield, ArrowLeftRight, Eraser } from "lucide-react";
+import { Wrench, Shield, ArrowLeftRight, Eraser, Sparkles } from "lucide-react";
 import { cn } from "@/shared";
 
 interface ServiceType {
@@ -39,6 +39,13 @@ const serviceTypes: ServiceType[] = [
     name: "Data Wipe",
     description: "Securely erase data from your devices",
     icon: <Eraser className="w-6 h-6" strokeWidth={2} />,
+    enabled: true,
+  },
+  {
+    id: "cleaning",
+    name: "Cleaning",
+    description: "Professional cleaning for your equipment",
+    icon: <Sparkles className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },
 ];

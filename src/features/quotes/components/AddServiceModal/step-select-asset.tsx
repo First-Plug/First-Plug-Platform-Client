@@ -266,7 +266,9 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
                 ? "No assets found matching your search."
                 : serviceType === "buyback"
                   ? "You don't have any assets available for buyback yet."
-                  : "No assets available."}
+                  : serviceType === "cleaning"
+                    ? "You don't have any assets available for cleaning yet."
+                    : "No assets available."}
             </p>
             {!searchQuery && allProducts.length === 0 && (
               <Button
@@ -274,7 +276,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
                 size="small"
                 icon={<Plus size={18} color="white" strokeWidth={2} />}
                 onClick={() => router.push("/home/my-stock/add")}
-                body="Create Product"
+                body="Create asset"
               />
             )}
           </div>
