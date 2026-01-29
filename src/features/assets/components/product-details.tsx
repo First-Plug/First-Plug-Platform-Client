@@ -248,8 +248,8 @@ const MembersList = function MembersList({
       const showShipmentCreated = () => {
         if (shipmentValue.shipment !== "yes") return;
         setAlert("dynamicSuccess", {
-          title: "Shipment created successfully",
-          description: "The shipment has been created successfully.",
+          title: "Success",
+          description: "The shipment has been successfully created.",
         });
       };
 
@@ -299,8 +299,8 @@ const MembersList = function MembersList({
             setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
             if (shipmentValue.shipment === "yes") {
               setAlert("dynamicSuccess", {
-                title: "Shipment created successfully",
-                description: "The shipment has been created successfully.",
+                title: "Success",
+                description: "The shipment has been successfully created.",
               });
             }
           }}

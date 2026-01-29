@@ -47,6 +47,7 @@ export default function SelectDropdownOptions({
   const [searchTerm, setSearchTerm] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const isSmall = compact;
 
   const groupsToRender = optionGroups;
 
@@ -123,9 +124,10 @@ export default function SelectDropdownOptions({
         textToSearch = option;
       } else {
         // Buscar en el display (nombre visible) en lugar del value (ID)
-        const displayText = typeof option.display === "string" 
-          ? option.display 
-          : String(option.display || "");
+        const displayText =
+          typeof option.display === "string"
+            ? option.display
+            : String(option.display || "");
         textToSearch = displayText || option.value;
       }
       return normalizeText(textToSearch).includes(normalizedSearch);
@@ -189,15 +191,13 @@ export default function SelectDropdownOptions({
             } ${
               productFormStyle
                 ? "h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border text-black p-4 focus:outline-none"
-                : compact
-                ? "h-14 py-2 pl-4 pr-12 rounded-xl p-4"
                 : "py-3 pr-12 pl-4 rounded-md"
             }`}
           >
             <div
-              className={`flex items-center gap-2 text-sm ${
-                !value ? "text-grey" : "text-black"
-              }`}
+              className={`flex items-center gap-2 ${
+                isSmall ? "text-sm" : "text-base"
+              } ${!value ? "text-grey" : "text-black"}`}
             >
               {typeof displayValue === "string" ? (
                 <span>{displayValue}</span>
@@ -277,12 +277,15 @@ export default function SelectDropdownOptions({
               {filteredGroups.map((group, idx) => {
                 const isOpen = !!openGroups[group.label];
                 // Agregar separador si hay opciones directas antes o si no es el primer grupo
-                const shouldAddSeparator = (filteredOptions.length > 0 && idx === 0) || idx > 0;
+                const shouldAddSeparator =
+                  (filteredOptions.length > 0 && idx === 0) || idx > 0;
                 return (
                   <div
                     key={group.label}
                     className={`${
-                      shouldAddSeparator ? "mt-1 pt-1 border-t border-gray-100" : "mt-1"
+                      shouldAddSeparator
+                        ? "mt-1 pt-1 border-t border-gray-100"
+                        : "mt-1"
                     }`}
                   >
                     <button
@@ -315,9 +318,9 @@ export default function SelectDropdownOptions({
                                 typeof option === "string"
                                   ? option
                                   : optionValue.startsWith("__") &&
-                                    optionValue.endsWith("__")
-                                  ? undefined
-                                  : optionValue
+                                      optionValue.endsWith("__")
+                                    ? undefined
+                                    : optionValue
                               }
                             >
                               <div className="flex items-center gap-2">

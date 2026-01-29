@@ -232,6 +232,12 @@ export function ReturnProduct({
     const missingMessagesForSource = await validateAfterAction(source, null);
 
     const missingMessages = await validateAfterAction(source, destination);
+    // La validación "source + destination" suele incluir también los mismos mensajes del source,
+    // así que los filtramos para evitar que se repitan en el flujo de modales.
+    const sourceMessagesSet = new Set(missingMessagesForSource);
+    const missingMessagesWithoutSourceDuplicates = missingMessages.filter(
+      (m) => !sourceMessagesSet.has(m)
+    );
     const missingSourceHtml =
       missingMessagesForSource.length > 0
         ? missingMessagesForSource
@@ -246,8 +252,8 @@ export function ReturnProduct({
         : null;
 
     const missingHtml =
-      missingMessages.length > 0
-        ? missingMessages
+      missingMessagesWithoutSourceDuplicates.length > 0
+        ? missingMessagesWithoutSourceDuplicates
             .map(
               (message) =>
                 `<div class="mb-2"><span>${message
@@ -351,8 +357,8 @@ export function ReturnProduct({
       const showShipmentCreated = () => {
         if (shipmentValue.shipment !== "yes") return;
         setAlert("dynamicSuccess", {
-          title: "Shipment created successfully",
-          description: "The shipment has been created successfully.",
+          title: "Success",
+          description: "The shipment has been successfully created.",
         });
       };
 
@@ -442,8 +448,8 @@ export function ReturnProduct({
             setPendingMissingAlerts([]);
             if (shipmentValue.shipment === "yes") {
               setAlert("dynamicSuccess", {
-                title: "Shipment created successfully",
-                description: "The shipment has been created successfully.",
+                title: "Success",
+                description: "The shipment has been successfully created.",
               });
             }
           }}
