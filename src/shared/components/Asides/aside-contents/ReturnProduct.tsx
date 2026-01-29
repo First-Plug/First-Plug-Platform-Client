@@ -25,7 +25,7 @@ import { useShipmentValues } from "@/features/shipments";
 import { ShipmentWithFp } from "@/features/shipments";
 import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 
-import { useAsideStore } from "@/shared";
+import { useAsideStore, useAlertStore } from "@/shared";
 import { useOffices, useOfficeStore } from "@/features/settings";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import {
@@ -49,6 +49,7 @@ export function ReturnProduct({
   className = "",
 }: IRemoveItems & { className?: string }) {
   const { closeAside, pushAside } = useAsideStore();
+  const { setAlert } = useAlertStore();
   const { newlyCreatedOffice, clearNewlyCreatedOffice, setShouldAutoSelect } =
     useOfficeStore();
 
@@ -71,11 +72,18 @@ export function ReturnProduct({
   const [showInternationalWarning, setShowInternationalWarning] =
     useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
-  const [genericAlertData, setGenericAlertData] = useState({
+  const [genericAlertData, setGenericAlertData] = useState<{
+    title: string;
+    description: string;
+    isOpen: boolean;
+  }>({
     title: "",
     description: "",
     isOpen: false,
   });
+  const [pendingMissingAlerts, setPendingMissingAlerts] = useState<
+    { title: string; description: string }[]
+  >([]);
 
   const { unassignProduct } = useActions();
 
@@ -223,66 +231,63 @@ export function ReturnProduct({
 
     const missingMessagesForSource = await validateAfterAction(source, null);
 
-    if (missingMessagesForSource.length > 0) {
-      const formattedMessages = missingMessagesForSource
-        .map(
-          (message) =>
-            `<div class="mb-2"><span>${message.replace(
-              /Current holder \((.*?)\)/,
-              "Current holder (<strong>$1</strong>)"
-            )}</span></div>`
-        )
-        .join("");
-
-      setGenericAlertData({
-        title: "Details are missing for the current holder",
-        description: formattedMessages,
-        isOpen: true,
-      });
-    }
-
     const missingMessages = await validateAfterAction(source, destination);
+    const missingSourceHtml =
+      missingMessagesForSource.length > 0
+        ? missingMessagesForSource
+            .map(
+              (message) =>
+                `<div class="mb-2"><span>${message.replace(
+                  /Current holder \((.*?)\)/,
+                  "Current holder (<strong>$1</strong>)"
+                )}</span></div>`
+            )
+            .join("")
+        : null;
 
-    if (missingMessages.length > 0) {
-      const formattedMessages = missingMessages
-        .map(
-          (message) =>
-            `<div class="mb-2"><span>${message
-              .replace(
-                /Current holder \((.*?)\)/,
-                "Current holder (<strong>$1</strong>)"
-              )
-              .replace(
-                /Current location \((.*?)\)/,
-                "Current location (<strong>$1</strong>)"
-              )
-              .replace(
-                /Assigned location \((.*?)\)/,
-                "Assigned location (<strong>$1</strong>)"
-              )}</span></div>`
-        )
-        .join("");
-
-      setGenericAlertData({
-        title: "The return was completed successfully, but details are missing",
-        description: formattedMessages,
-        isOpen: true,
-      });
-    }
+    const missingHtml =
+      missingMessages.length > 0
+        ? missingMessages
+            .map(
+              (message) =>
+                `<div class="mb-2"><span>${message
+                  .replace(
+                    /Current holder \((.*?)\)/,
+                    "Current holder (<strong>$1</strong>)"
+                  )
+                  .replace(
+                    /Current location \((.*?)\)/,
+                    "Current location (<strong>$1</strong>)"
+                  )
+                  .replace(
+                    /Assigned location \((.*?)\)/,
+                    "Assigned location (<strong>$1</strong>)"
+                  )}</span></div>`
+            )
+            .join("")
+        : null;
 
     const isInternational = isInternationalShipment(source, destination);
     const requiresFpShipment = shipmentValue.shipment === "yes";
 
+    const run = () => executeReturn({ missingSourceHtml, missingHtml });
+
     if (isInternational && requiresFpShipment) {
-      setPendingAction(() => () => executeReturn());
+      setPendingAction(() => () => run());
       setShowInternationalWarning(true);
       return;
     }
 
-    await executeReturn();
+    await run();
   };
 
-  const executeReturn = async () => {
+  const executeReturn = async ({
+    missingSourceHtml,
+    missingHtml,
+  }: {
+    missingSourceHtml: string | null;
+    missingHtml: string | null;
+  }) => {
     setIsRemoving(true);
     setHasFpShipment(false);
     setCreatedShipmentId(null);
@@ -324,20 +329,57 @@ export function ReturnProduct({
       setReturnStatus("success");
       setHasFpShipment(shipmentValue.shipment === "yes");
 
-      onRemoveSuccess();
+      onRemoveSuccess?.();
 
       // Si se creó un shipment, esperar refetch para reflejar los datos más recientes
-      if (
+      const shipmentId =
         response &&
         "shipment" in response &&
         response.shipment &&
         response.shipment._id
-      ) {
-        setCreatedShipmentId(response.shipment._id);
+          ? response.shipment._id
+          : null;
+
+      if (shipmentId && shipmentValue.shipment === "yes") {
+        setCreatedShipmentId(shipmentId);
         await queryClient.invalidateQueries({ queryKey: ["shipments"] });
         await queryClient.refetchQueries({ queryKey: ["shipments"] });
       } else {
         setCreatedShipmentId(null);
+      }
+
+      const showShipmentCreated = () => {
+        if (shipmentValue.shipment !== "yes") return;
+        setAlert("dynamicSuccess", {
+          title: "Shipment created successfully",
+          description: "The shipment has been created successfully.",
+        });
+      };
+
+      const missingAlerts: { title: string; description: string }[] = [];
+      if (missingSourceHtml) {
+        missingAlerts.push({
+          title: "Details are missing for the current holder",
+          description: missingSourceHtml,
+        });
+      }
+      if (missingHtml) {
+        missingAlerts.push({
+          title:
+            "The return was completed successfully, but details are missing",
+          description: missingHtml,
+        });
+      }
+
+      if (missingAlerts.length > 0) {
+        setPendingMissingAlerts(missingAlerts);
+        setGenericAlertData({
+          title: missingAlerts[0].title,
+          description: missingAlerts[0].description,
+          isOpen: true,
+        });
+      } else {
+        showShipmentCreated();
       }
     } catch (error) {
       setReturnStatus("error");
@@ -374,15 +416,37 @@ export function ReturnProduct({
       {genericAlertData.isOpen && (
         <GenericAlertDialog
           open={genericAlertData.isOpen}
-          onClose={() =>
-            setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
-          }
+          onClose={() => {
+            setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
+            setPendingMissingAlerts([]);
+          }}
           title={genericAlertData.title || "Warning"}
           description={genericAlertData.description || ""}
           buttonText="OK"
-          onButtonClick={() =>
-            setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
-          }
+          onButtonClick={() => {
+            const remaining = pendingMissingAlerts.slice(1);
+            setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
+
+            if (remaining.length > 0) {
+              setPendingMissingAlerts(remaining);
+              setTimeout(() => {
+                setGenericAlertData({
+                  title: remaining[0].title,
+                  description: remaining[0].description,
+                  isOpen: true,
+                });
+              }, 0);
+              return;
+            }
+
+            setPendingMissingAlerts([]);
+            if (shipmentValue.shipment === "yes") {
+              setAlert("dynamicSuccess", {
+                title: "Shipment created successfully",
+                description: "The shipment has been created successfully.",
+              });
+            }
+          }}
           isHtml={true}
         />
       )}

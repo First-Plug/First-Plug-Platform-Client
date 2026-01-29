@@ -19,7 +19,7 @@ import { ShipmentWithFp } from "@/features/shipments";
 import { ShipmentStateColors, StatusColors } from "@/features/shipments";
 import { Member } from "@/features/members";
 import { useSession } from "next-auth/react";
-import { useAsideStore } from "@/shared";
+import { useAlertStore, useAsideStore } from "@/shared";
 import { useFetchMembers } from "@/features/members";
 import { CategoryIcons } from "@/features/assets";
 import {
@@ -54,6 +54,7 @@ const MembersList = function MembersList({
   );
 
   const { setAside } = useAsideStore();
+  const { setAlert } = useAlertStore();
   const {
     data: { user: sessionUser },
   } = useSession();
@@ -64,16 +65,23 @@ const MembersList = function MembersList({
     useState<RelocateStatus>(undefined);
   const [selectedMember, setSelectedMember] = useState<Member>();
   const [hasFpShipment, setHasFpShipment] = useState(false);
+  const [createdShipmentId, setCreatedShipmentId] = useState<string | null>(
+    null
+  );
+  const [genericAlertData, setGenericAlertData] = useState<{
+    title: string;
+    description: string;
+    isOpen: boolean;
+  }>({
+    title: "",
+    description: "",
+    isOpen: false,
+  });
   const { handleReassignProduct } = useActions();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [missingMemberData, setMissingMemberData] = useState("");
-  const [genericAlertData, setGenericAlertData] = useState({
-    title: "",
-    description: "",
-    isOpen: false,
-  });
   const [showInternationalWarning, setShowInternationalWarning] =
     useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
@@ -148,52 +156,51 @@ const MembersList = function MembersList({
     }
 
     const missingMessages = await validateAfterAction(source, destination);
-
-    if (missingMessages.length > 0) {
-      const formattedMessages = missingMessages
-        .map(
-          (message) =>
-            `<div class="mb-2"><span>${message
-              .replace(
-                /Current holder \((.*?)\)/,
-                "Current holder (<strong>$1</strong>)"
-              )
-              .replace(
-                /Assigned member \((.*?)\)/,
-                "Assigned member (<strong>$1</strong>)"
-              )
-              .replace(
-                /Current location \((.*?)\)/,
-                "Current location (<strong>$1</strong>)"
-              )
-              .replace(
-                /Assigned location \((.*?)\)/,
-                "Assigned location (<strong>$1</strong>)"
-              )}</span></div>`
-        )
-        .join("");
-
-      setGenericAlertData({
-        title:
-          "The relocation was completed successfully, but details are missing",
-        description: formattedMessages,
-        isOpen: true,
-      });
-    }
+    const missingHtml =
+      missingMessages.length > 0
+        ? missingMessages
+            .map(
+              (message) =>
+                `<div class="mb-2"><span>${message
+                  .replace(
+                    /Current holder \((.*?)\)/,
+                    "Current holder (<strong>$1</strong>)"
+                  )
+                  .replace(
+                    /Assigned member \((.*?)\)/,
+                    "Assigned member (<strong>$1</strong>)"
+                  )
+                  .replace(
+                    /Current location \((.*?)\)/,
+                    "Current location (<strong>$1</strong>)"
+                  )
+                  .replace(
+                    /Assigned location \((.*?)\)/,
+                    "Assigned location (<strong>$1</strong>)"
+                  )}</span></div>`
+            )
+            .join("")
+        : null;
 
     const isInternational = isInternationalShipment(source, destination);
     const requiresFpShipment = shipmentValue.shipment === "yes";
 
+    const run = () => executeRelocation({ missingHtml });
+
     if (isInternational && requiresFpShipment) {
-      setPendingAction(() => () => executeRelocation());
+      setPendingAction(() => () => run());
       setShowInternationalWarning(true);
       return;
     }
 
-    await executeRelocation();
+    await run();
   };
 
-  const executeRelocation = async () => {
+  const executeRelocation = async ({
+    missingHtml,
+  }: {
+    missingHtml: string | null;
+  }) => {
     setRelocating(true);
     try {
       const productToSend = {
@@ -219,10 +226,43 @@ const MembersList = function MembersList({
       // Guardar si tiene shipment con FP
       const hasShipment = shipmentValue.shipment === "yes";
       setHasFpShipment(hasShipment);
+      const shipmentId =
+        response &&
+        typeof response === "object" &&
+        "shipment" in response &&
+        (response as any).shipment &&
+        (response as any).shipment._id
+          ? (response as any).shipment._id
+          : null;
+
+      setCreatedShipmentId(shipmentId);
+      if (shipmentId && shipmentValue.shipment === "yes") {
+        await queryClient.invalidateQueries({ queryKey: ["shipments"] });
+        await queryClient.refetchQueries({ queryKey: ["shipments"] });
+      }
 
       setRelocateResult("success");
       setRelocateStauts("success");
       handleSuccess();
+
+      const showShipmentCreated = () => {
+        if (shipmentValue.shipment !== "yes") return;
+        setAlert("dynamicSuccess", {
+          title: "Shipment created successfully",
+          description: "The shipment has been created successfully.",
+        });
+      };
+
+      if (missingHtml) {
+        setGenericAlertData({
+          title:
+            "The relocation was completed successfully, but details are missing",
+          description: missingHtml,
+          isOpen: true,
+        });
+      } else {
+        showShipmentCreated();
+      }
     } catch (error) {
       setRelocateResult("error");
       setRelocateStauts("error");
@@ -246,19 +286,27 @@ const MembersList = function MembersList({
 
   return (
     <section>
-      <GenericAlertDialog
-        open={genericAlertData.isOpen}
-        onClose={() =>
-          setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
-        }
-        title={genericAlertData.title || "Warning"}
-        description={genericAlertData.description || ""}
-        buttonText="OK"
-        onButtonClick={() =>
-          setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
-        }
-        isHtml={true}
-      />
+      {genericAlertData.isOpen && (
+        <GenericAlertDialog
+          open={genericAlertData.isOpen}
+          onClose={() =>
+            setGenericAlertData((prev) => ({ ...prev, isOpen: false }))
+          }
+          title={genericAlertData.title || "Warning"}
+          description={genericAlertData.description || ""}
+          buttonText="OK"
+          onButtonClick={() => {
+            setGenericAlertData((prev) => ({ ...prev, isOpen: false }));
+            if (shipmentValue.shipment === "yes") {
+              setAlert("dynamicSuccess", {
+                title: "Shipment created successfully",
+                description: "The shipment has been created successfully.",
+              });
+            }
+          }}
+          isHtml={true}
+        />
+      )}
       <GenericAlertDialog
         open={showErrorDialog}
         onClose={() => setShowErrorDialog(false)}
@@ -319,7 +367,10 @@ const MembersList = function MembersList({
                 variant="text"
                 onClick={() => {
                   setAside(undefined);
-                  router.push("/home/shipments");
+                  const destination = createdShipmentId
+                    ? `/home/shipments?id=${createdShipmentId}`
+                    : "/home/shipments";
+                  router.push(destination);
                 }}
               >
                 View Shipments
