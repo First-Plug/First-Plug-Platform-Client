@@ -645,12 +645,13 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         </div>
       )}
 
-      {/* Cleaning: Additional comments */}
-      {service.serviceType === "cleaning" && service.additionalComments && (
+      {/* Cleaning: Additional details */}
+      {service.serviceType === "cleaning" &&
+        (service.additionalDetails || service.additionalComments) && (
         <div className="mb-3">
-          <div className="mb-1 font-medium text-sm">Additional comments:</div>
+          <div className="mb-1 font-medium text-sm">Additional details:</div>
           <div className="text-gray-700 text-sm">
-            {service.additionalComments}
+            {service.additionalDetails || service.additionalComments}
           </div>
         </div>
       )}

@@ -20,11 +20,11 @@ interface StepCleaningDetailsProps {
   assetIds: string[];
   requiredDeliveryDate?: string;
   cleaningType?: "Superficial" | "Deep";
-  additionalComments?: string;
+  additionalDetails?: string;
   onDataChange: (updates: {
     requiredDeliveryDate?: string;
     cleaningType?: "Superficial" | "Deep";
-    additionalComments?: string;
+    additionalDetails?: string;
   }) => void;
 }
 
@@ -55,7 +55,7 @@ export const StepCleaningDetails: React.FC<StepCleaningDetailsProps> = ({
   assetIds,
   requiredDeliveryDate,
   cleaningType = "Deep",
-  additionalComments,
+  additionalDetails,
   onDataChange,
 }) => {
   const { data: assetsData } = useGetTableAssets();
@@ -207,17 +207,17 @@ export const StepCleaningDetails: React.FC<StepCleaningDetailsProps> = ({
         </p>
       </div>
 
-      {/* Additional comments */}
+      {/* Additional details */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="cleaning-comments" className="font-medium text-sm">
-          Additional comments
+        <Label htmlFor="cleaning-details" className="font-medium text-sm">
+          Additional details
         </Label>
         <textarea
-          id="cleaning-comments"
+          id="cleaning-details"
           placeholder="Any specific cleaning requirements or notes..."
-          value={additionalComments || ""}
+          value={additionalDetails || ""}
           onChange={(e) =>
-            onDataChange({ additionalComments: e.target.value || undefined })
+            onDataChange({ additionalDetails: e.target.value || undefined })
           }
           rows={4}
           className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[80px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"

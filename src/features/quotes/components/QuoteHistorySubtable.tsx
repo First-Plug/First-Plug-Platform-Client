@@ -444,7 +444,7 @@ export const QuoteHistorySubtable = ({
                             {(row as any).buybackDetails.additionalComments && (
                               <span className="block text-gray-500 text-xs">
                                 <span className="font-medium">
-                                  Additional comments:{" "}
+                                  Additional details:{" "}
                                 </span>
                                 {(row as any).buybackDetails.additionalComments}
                               </span>
@@ -655,17 +655,11 @@ export const QuoteHistorySubtable = ({
                           country={(row as any).data.countryCode}
                         />
                         {(row as any).cleaningProduct?.cleaningType && (
-                          <span className="block font-semibold text-gray-600">
+                          <span className="block text-gray-600">
                             {(row as any).cleaningProduct.cleaningType} Cleaning
                           </span>
                         )}
-                        {(row as any).cleaningProduct?.additionalComments && (
-                          <span className="block text-gray-500 text-xs italic">
-                            {(row as any).cleaningProduct.additionalComments}
-                          </span>
-                        )}
-                        {(row as any).additionalDetails &&
-                          (row as any).index === 0 && (
+                        {(row as any).additionalDetails && (
                             <div className="mt-1 pt-1 border-gray-200 border-t">
                               <span className="block text-gray-500 text-xs italic">
                                 <span className="font-medium">

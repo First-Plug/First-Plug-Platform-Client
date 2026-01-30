@@ -152,7 +152,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               ...prev,
               requiredDeliveryDate: undefined,
               cleaningType: undefined,
-              additionalComments: undefined,
+              additionalDetails: undefined,
             }));
           }
         } else if (currentStepValue === 2) {
@@ -420,9 +420,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       assetIds: serviceData.assetIds || [],
       requiredDeliveryDate: serviceData.requiredDeliveryDate,
       cleaningType: serviceData.cleaningType ?? "Deep",
+      additionalDetails: serviceData.additionalDetails,
       country: serviceData.country || "",
       city: serviceData.city,
-      additionalComments: serviceData.additionalComments,
     };
 
     if (editingServiceId) {
@@ -628,7 +628,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               assetIds={serviceData.assetIds || []}
               requiredDeliveryDate={serviceData.requiredDeliveryDate}
               cleaningType={serviceData.cleaningType ?? "Deep"}
-              additionalComments={serviceData.additionalComments}
+              additionalDetails={
+                serviceData.additionalDetails ?? serviceData.additionalComments
+              }
               onDataChange={(updates) => {
                 handleDataChange(updates);
               }}

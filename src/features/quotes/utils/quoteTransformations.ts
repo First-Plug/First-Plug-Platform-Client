@@ -1163,7 +1163,6 @@ export function transformServiceToBackendFormat(
           : service.requiredDeliveryDate
         : undefined;
     const cleaningTypeValue = service.cleaningType ?? "Deep";
-    const additionalCommentsValue = service.additionalComments;
 
     cleaningProducts = selectedCleaningAssets.map((asset) => {
       const brand =
@@ -1256,9 +1255,6 @@ export function transformServiceToBackendFormat(
       };
       if (desiredDate) {
         productObj.desiredDate = desiredDate;
-      }
-      if (additionalCommentsValue && additionalCommentsValue.trim() !== "") {
-        productObj.additionalComments = additionalCommentsValue;
       }
 
       return removeUndefinedFields(productObj);
@@ -1361,7 +1357,7 @@ export function transformServiceToBackendFormat(
     transformed.productSnapshot = productSnapshot;
   }
 
-  // Para Cleaning - payload: serviceCategory, products[], additionalDetails
+  // Para Cleaning - payload: serviceCategory, products[], additionalDetails (comentario global)
   if (isCleaning) {
     if (!cleaningProducts || cleaningProducts.length === 0) {
       throw new Error("Cleaning service: products is required");
@@ -1371,11 +1367,10 @@ export function transformServiceToBackendFormat(
       serviceCategory: serviceCategory,
       products: cleaningProducts,
     };
-    if (
-      service.additionalComments &&
-      service.additionalComments.trim() !== ""
-    ) {
-      cleaningService.additionalDetails = service.additionalComments;
+    const cleaningAdditionalDetails =
+      service.additionalDetails ?? (service as any).additionalComments;
+    if (cleaningAdditionalDetails && cleaningAdditionalDetails.trim() !== "") {
+      cleaningService.additionalDetails = cleaningAdditionalDetails;
     }
 
     return removeUndefinedFields(cleaningService) as NonNullable<
