@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Wrench, Shield, ArrowLeftRight, Eraser, Sparkles } from "lucide-react";
+import {
+  Wrench,
+  Shield,
+  ArrowLeftRight,
+  Eraser,
+  Sparkles,
+  Gift,
+} from "lucide-react";
 import { cn } from "@/shared";
 
 interface ServiceType {
@@ -46,6 +53,13 @@ const serviceTypes: ServiceType[] = [
     name: "Cleaning",
     description: "Professional cleaning for your equipment",
     icon: <Sparkles className="w-6 h-6" strokeWidth={2} />,
+    enabled: true,
+  },
+  {
+    id: "donations",
+    name: "Donations",
+    description: "Donate equipment to charitable organizations.",
+    icon: <Gift className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },
 ];

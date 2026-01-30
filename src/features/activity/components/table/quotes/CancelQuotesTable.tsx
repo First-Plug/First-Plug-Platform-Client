@@ -806,11 +806,12 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               )}
                             </>
                           )}
-                          {row.donateProduct.comments && (
-                            <span className="text-gray-500 text-xs italic">
-                              {row.donateProduct.comments}
-                            </span>
-                          )}
+                          {row.donateProduct.comments &&
+                            row.donateProduct.comments !== row.additionalDetails && (
+                              <span className="text-gray-500 text-xs italic">
+                                {row.donateProduct.comments}
+                              </span>
+                            )}
                           {row.additionalDetails && (
                             <span className="text-gray-500 text-xs italic">
                               {row.additionalDetails}
