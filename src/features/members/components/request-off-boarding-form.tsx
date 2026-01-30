@@ -724,7 +724,7 @@ export const RequestOffBoardingForm = ({
                 optionGroups={officeGroups}
                 disabled={isDisabledDropdown}
                 required
-                compact
+                productFormStyle
                 searchable
               />
             )}

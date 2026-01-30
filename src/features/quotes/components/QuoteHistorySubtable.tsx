@@ -62,6 +62,20 @@ type TableRow =
       additionalDetails?: string;
       index: number;
       total: number;
+    }
+  | {
+      type: "service";
+      serviceCategory: "Cleaning";
+      data: any; // productSnapshot
+      cleaningProduct?: {
+        productSnapshot: any;
+        desiredDate?: string;
+        cleaningType?: string;
+        additionalComments?: string;
+      };
+      additionalDetails?: string;
+      index: number;
+      total: number;
     };
 
 const formatDate = (date?: string) => {
@@ -167,6 +181,26 @@ export const QuoteHistorySubtable = ({
           index: idx,
           total: service.assets!.length,
         })) as TableRow[];
+      } else if (
+        service.serviceCategory === "Cleaning" &&
+        service.products?.length
+      ) {
+        const cleaningProducts = service.products as Array<{
+          productId: string;
+          productSnapshot: any;
+          desiredDate?: string;
+          cleaningType?: string;
+          additionalComments?: string;
+        }>;
+        return cleaningProducts.map((product, idx) => ({
+          type: "service" as const,
+          serviceCategory: "Cleaning" as const,
+          data: product.productSnapshot,
+          cleaningProduct: product,
+          additionalDetails: service.additionalDetails,
+          index: idx,
+          total: cleaningProducts.length,
+        })) as TableRow[];
       }
       return [];
     }),
@@ -203,10 +237,21 @@ export const QuoteHistorySubtable = ({
         ) : (
           allRows.map((row, index) => {
             const isProduct = row.type === "product";
-            const isEnrollment = !isProduct && "index" in row && row.serviceCategory === "Enrollment";
+            const isEnrollment =
+              !isProduct &&
+              "index" in row &&
+              row.serviceCategory === "Enrollment";
             const isITSupport = !isProduct && "issues" in row;
-            const isBuyback = !isProduct && "index" in row && row.serviceCategory === "Buyback";
-            const isDataWipe = !isProduct && "index" in row && row.serviceCategory === "Data Wipe";
+            const isBuyback =
+              !isProduct && "index" in row && row.serviceCategory === "Buyback";
+            const isDataWipe =
+              !isProduct &&
+              "index" in row &&
+              row.serviceCategory === "Data Wipe";
+            const isCleaning =
+              !isProduct &&
+              "index" in row &&
+              row.serviceCategory === "Cleaning";
 
             return (
               <TableRow key={index}>
@@ -219,7 +264,7 @@ export const QuoteHistorySubtable = ({
                     : (row as any).serviceCategory || "N/A"}
                 </TableCell>
                 <TableCell className="px-4 py-2 border-r w-24 text-xs">
-                  {isProduct ? (row as any).data.quantity ?? 0 : "1"}
+                  {isProduct ? ((row as any).data.quantity ?? 0) : "1"}
                 </TableCell>
                 <TableCell className="px-4 py-2 border-r w-64 text-xs">
                   <div className="flex flex-col gap-1">
@@ -343,56 +388,80 @@ export const QuoteHistorySubtable = ({
                           country={(row as any).data.countryCode}
                         />
                         {(row as any).buybackDetails && (
-                          <div className="mt-1 pt-1 border-t border-gray-200 space-y-0.5">
-                            {(row as any).buybackDetails.generalFunctionality && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Overall condition: </span>
-                                {(row as any).buybackDetails.generalFunctionality}
+                          <div className="space-y-0.5 mt-1 pt-1 border-gray-200 border-t">
+                            {(row as any).buybackDetails
+                              .generalFunctionality && (
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Overall condition:{" "}
+                                </span>
+                                {
+                                  (row as any).buybackDetails
+                                    .generalFunctionality
+                                }
                               </span>
                             )}
-                            {(row as any).buybackDetails.batteryCycles !== undefined && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Battery cycles: </span>
+                            {(row as any).buybackDetails.batteryCycles !==
+                              undefined && (
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Battery cycles:{" "}
+                                </span>
                                 {(row as any).buybackDetails.batteryCycles}
                               </span>
                             )}
                             {(row as any).buybackDetails.aestheticDetails && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Cosmetic condition: </span>
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Cosmetic condition:{" "}
+                                </span>
                                 {(row as any).buybackDetails.aestheticDetails}
                               </span>
                             )}
-                            {(row as any).buybackDetails.hasCharger !== undefined && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Has charger: </span>
-                                {(row as any).buybackDetails.hasCharger ? "Yes" : "No"}
+                            {(row as any).buybackDetails.hasCharger !==
+                              undefined && (
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Has charger:{" "}
+                                </span>
+                                {(row as any).buybackDetails.hasCharger
+                                  ? "Yes"
+                                  : "No"}
                                 {(row as any).buybackDetails.hasCharger &&
-                                  (row as any).buybackDetails.chargerWorks !== undefined && (
+                                  (row as any).buybackDetails.chargerWorks !==
+                                    undefined && (
                                     <span>
                                       {" "}
-                                      ({(row as any).buybackDetails.chargerWorks
+                                      (
+                                      {(row as any).buybackDetails.chargerWorks
                                         ? "Works"
-                                        : "Doesn't work"})
+                                        : "Doesn't work"}
+                                      )
                                     </span>
                                   )}
                               </span>
                             )}
                             {(row as any).buybackDetails.additionalComments && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Additional comments: </span>
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Additional details:{" "}
+                                </span>
                                 {(row as any).buybackDetails.additionalComments}
                               </span>
                             )}
                           </div>
                         )}
-                        {(row as any).additionalInfo && (row as any).index === 0 && (
-                          <div className="mt-1 pt-1 border-t border-gray-200">
-                            <span className="text-gray-500 text-xs italic block">
-                              <span className="font-medium">Additional info: </span>
-                              {(row as any).additionalInfo}
-                            </span>
-                          </div>
-                        )}
+                        {(row as any).additionalInfo &&
+                          (row as any).index === 0 && (
+                            <div className="mt-1 pt-1 border-gray-200 border-t">
+                              <span className="block text-gray-500 text-xs italic">
+                                <span className="font-medium">
+                                  Additional info:{" "}
+                                </span>
+                                {(row as any).additionalInfo}
+                              </span>
+                            </div>
+                          )}
                       </>
                     ) : isDataWipe ? (
                       <>
@@ -427,87 +496,179 @@ export const QuoteHistorySubtable = ({
                           country={(row as any).data.countryCode}
                         />
                         {(row as any).dataWipeAsset && (
-                          <div className="mt-1 pt-1 border-t border-gray-200 space-y-0.5">
+                          <div className="space-y-0.5 mt-1 pt-1 border-gray-200 border-t">
                             {(row as any).dataWipeAsset.desirableDate && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Desirable date: </span>
-                                {formatDate((row as any).dataWipeAsset.desirableDate)}
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Desirable date:{" "}
+                                </span>
+                                {formatDate(
+                                  (row as any).dataWipeAsset.desirableDate
+                                )}
                               </span>
                             )}
                             {(row as any).dataWipeAsset.currentLocation && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Current location: </span>
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Current location:{" "}
+                                </span>
                                 {(row as any).dataWipeAsset.currentLocation}
                               </span>
                             )}
                             {(row as any).dataWipeAsset.currentMember && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Current member: </span>
-                                {(row as any).dataWipeAsset.currentMember.assignedMember}
-                                {(row as any).dataWipeAsset.currentMember.assignedEmail &&
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Current member:{" "}
+                                </span>
+                                {
+                                  (row as any).dataWipeAsset.currentMember
+                                    .assignedMember
+                                }
+                                {(row as any).dataWipeAsset.currentMember
+                                  .assignedEmail &&
                                   ` (${(row as any).dataWipeAsset.currentMember.assignedEmail})`}
                               </span>
                             )}
                             {(row as any).dataWipeAsset.currentOffice && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Current office: </span>
-                                {(row as any).dataWipeAsset.currentOffice.officeName}
-                                {(row as any).dataWipeAsset.currentOffice.countryCode && (
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Current office:{" "}
+                                </span>
+                                {
+                                  (row as any).dataWipeAsset.currentOffice
+                                    .officeName
+                                }
+                                {(row as any).dataWipeAsset.currentOffice
+                                  .countryCode && (
                                   <>
                                     {" "}
                                     <QuoteLocationWithCountry
-                                      country={(row as any).dataWipeAsset.currentOffice.countryCode}
+                                      country={
+                                        (row as any).dataWipeAsset.currentOffice
+                                          .countryCode
+                                      }
                                     />
                                   </>
                                 )}
                               </span>
                             )}
                             {(row as any).dataWipeAsset.currentWarehouse && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Current warehouse: </span>
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Current warehouse:{" "}
+                                </span>
                                 FP warehouse
-                                {(row as any).dataWipeAsset.currentWarehouse.countryCode && (
+                                {(row as any).dataWipeAsset.currentWarehouse
+                                  .countryCode && (
                                   <>
                                     {" "}
                                     <QuoteLocationWithCountry
-                                      country={(row as any).dataWipeAsset.currentWarehouse.countryCode}
+                                      country={
+                                        (row as any).dataWipeAsset
+                                          .currentWarehouse.countryCode
+                                      }
                                     />
                                   </>
                                 )}
                               </span>
                             )}
                             {(row as any).dataWipeAsset.destination && (
-                              <span className="text-gray-500 text-xs block">
-                                <span className="font-medium">Return destination: </span>
-                                {(row as any).dataWipeAsset.destination.destinationType === "Employee" &&
-                                  (row as any).dataWipeAsset.destination.member && (
+                              <span className="block text-gray-500 text-xs">
+                                <span className="font-medium">
+                                  Return destination:{" "}
+                                </span>
+                                {(row as any).dataWipeAsset.destination
+                                  .destinationType === "Employee" &&
+                                  (row as any).dataWipeAsset.destination
+                                    .member && (
                                     <span>
-                                      {(row as any).dataWipeAsset.destination.member.assignedMember}
-                                      {(row as any).dataWipeAsset.destination.member.assignedEmail &&
+                                      {
+                                        (row as any).dataWipeAsset.destination
+                                          .member.assignedMember
+                                      }
+                                      {(row as any).dataWipeAsset.destination
+                                        .member.assignedEmail &&
                                         ` (${(row as any).dataWipeAsset.destination.member.assignedEmail})`}
                                     </span>
                                   )}
-                                {(row as any).dataWipeAsset.destination.destinationType === "Our office" &&
-                                  (row as any).dataWipeAsset.destination.office && (
+                                {(row as any).dataWipeAsset.destination
+                                  .destinationType === "Our office" &&
+                                  (row as any).dataWipeAsset.destination
+                                    .office && (
                                     <span>
-                                      {(row as any).dataWipeAsset.destination.office.officeName}
+                                      {
+                                        (row as any).dataWipeAsset.destination
+                                          .office.officeName
+                                      }
                                     </span>
                                   )}
-                                {(row as any).dataWipeAsset.destination.destinationType === "FP warehouse" && (
+                                {(row as any).dataWipeAsset.destination
+                                  .destinationType === "FP warehouse" && (
                                   <span>FP warehouse</span>
                                 )}
                               </span>
                             )}
                           </div>
                         )}
-                        {(row as any).additionalDetails && (row as any).index === 0 && (
-                          <div className="mt-1 pt-1 border-t border-gray-200">
-                            <span className="text-gray-500 text-xs italic block">
-                              <span className="font-medium">Additional details: </span>
-                              {(row as any).additionalDetails}
-                            </span>
-                          </div>
+                        {(row as any).additionalDetails &&
+                          (row as any).index === 0 && (
+                            <div className="mt-1 pt-1 border-gray-200 border-t">
+                              <span className="block text-gray-500 text-xs italic">
+                                <span className="font-medium">
+                                  Additional details:{" "}
+                                </span>
+                                {(row as any).additionalDetails}
+                              </span>
+                            </div>
+                          )}
+                      </>
+                    ) : isCleaning ? (
+                      <>
+                        <span className="font-semibold">
+                          {(row as any).data.category}
+                        </span>
+                        {((row as any).data.brand ||
+                          (row as any).data.model) && (
+                          <span className="text-gray-700">
+                            {(row as any).data.brand}
+                            {(row as any).data.brand &&
+                              (row as any).data.model &&
+                              " - "}
+                            {(row as any).data.model}
+                          </span>
                         )}
+                        {(row as any).data.name && (
+                          <span className="text-gray-600 italic">
+                            {(row as any).data.name}
+                          </span>
+                        )}
+                        {(row as any).data.serialNumber && (
+                          <span className="text-gray-600">
+                            SN: {(row as any).data.serialNumber}
+                          </span>
+                        )}
+                        <span className="text-gray-600">
+                          {(row as any).data.assignedTo} (
+                          {(row as any).data.location})
+                        </span>
+                        <QuoteLocationWithCountry
+                          country={(row as any).data.countryCode}
+                        />
+                        {(row as any).cleaningProduct?.cleaningType && (
+                          <span className="block text-gray-600">
+                            {(row as any).cleaningProduct.cleaningType} Cleaning
+                          </span>
+                        )}
+                        {(row as any).additionalDetails && (
+                            <div className="mt-1 pt-1 border-gray-200 border-t">
+                              <span className="block text-gray-500 text-xs italic">
+                                <span className="font-medium">
+                                  Additional details:{" "}
+                                </span>
+                                {(row as any).additionalDetails}
+                              </span>
+                            </div>
+                          )}
                       </>
                     ) : null}
                   </div>
@@ -516,8 +677,10 @@ export const QuoteHistorySubtable = ({
                   {isProduct
                     ? formatDate((row as any).data.deliveryDate)
                     : isDataWipe && (row as any).dataWipeAsset?.desirableDate
-                    ? formatDate((row as any).dataWipeAsset.desirableDate)
-                    : "N/A"}
+                      ? formatDate((row as any).dataWipeAsset.desirableDate)
+                      : isCleaning && (row as any).cleaningProduct?.desiredDate
+                        ? formatDate((row as any).cleaningProduct.desiredDate)
+                        : "N/A"}
                 </TableCell>
               </TableRow>
             );

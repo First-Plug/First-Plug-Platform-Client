@@ -143,7 +143,6 @@ interface CleaningProduct {
   };
   desiredDate?: string;
   cleaningType?: string;
-  additionalComments?: string;
 }
 
 interface StorageProduct {
@@ -865,17 +864,15 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             />
                           )}
                           {row.cleaningProduct.cleaningType && (
-                            <span className="text-gray-600 font-semibold">
+                            <span className="text-gray-600">
                               {row.cleaningProduct.cleaningType} Cleaning
-                            </span>
-                          )}
-                          {row.cleaningProduct.additionalComments && (
-                            <span className="text-gray-500 text-xs italic">
-                              {row.cleaningProduct.additionalComments}
                             </span>
                           )}
                           {row.additionalDetails && (
                             <span className="text-gray-500 text-xs italic">
+                              <span className="font-medium">
+                                Additional details:{" "}
+                              </span>
                               {row.additionalDetails}
                             </span>
                           )}

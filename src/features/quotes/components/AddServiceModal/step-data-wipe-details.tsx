@@ -16,9 +16,18 @@ import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
 import { useFetchMembers } from "@/features/members";
 import { useOffices } from "@/features/settings";
 import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
-import { CountryFlag, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared";
+import {
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
-import type { DataWipeDetail, DataWipeDestination } from "@/features/quotes/types/quote.types";
+import type {
+  DataWipeDetail,
+  DataWipeDestination,
+} from "@/features/quotes/types/quote.types";
 
 // Función helper para obtener información de display del asset
 const getAssetDisplayInfo = (product: Product) => {
@@ -46,7 +55,6 @@ const getAssetDisplayInfo = (product: Product) => {
 
   return { displayName, specifications };
 };
-
 
 interface StepDataWipeDetailsProps {
   assetIds: string[];
@@ -85,7 +93,9 @@ const AssetItem: React.FC<AssetItemProps> = ({
 
   const date = React.useMemo(() => {
     if (!detail.desirableDate) return undefined;
-    const dateMatch = detail.desirableDate.match(/^(\d{4})[-\/](\d{2})[-\/](\d{2})/);
+    const dateMatch = detail.desirableDate.match(
+      /^(\d{4})[-\/](\d{2})[-\/](\d{2})/
+    );
     if (!dateMatch) return undefined;
     const [, year, month, day] = dateMatch;
     return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -106,7 +116,7 @@ const AssetItem: React.FC<AssetItemProps> = ({
   return (
     <div
       className={cn(
-        "border-2 rounded-lg p-4 bg-white transition-all",
+        "bg-white p-4 border-2 rounded-lg transition-all",
         isExpanded
           ? "border-blue shadow-sm"
           : "border-gray-200 hover:border-blue/50 cursor-pointer"
@@ -121,10 +131,10 @@ const AssetItem: React.FC<AssetItemProps> = ({
         <div className="flex flex-col gap-1">
           <span className="font-semibold text-base">{displayName}</span>
           {specifications && (
-            <span className="text-sm text-gray-600">{specifications}</span>
+            <span className="text-gray-600 text-sm">{specifications}</span>
           )}
           {asset.serialNumber && (
-            <span className="text-xs text-gray-500">
+            <span className="text-gray-500 text-xs">
               SN: {asset.serialNumber}
             </span>
           )}
@@ -144,7 +154,7 @@ const AssetItem: React.FC<AssetItemProps> = ({
 
       {/* Form Fields - Show when expanded */}
       {isExpanded && (
-        <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
+        <div className="space-y-4 mt-4 pt-4 border-gray-200 border-t">
           {/* Desirable Date */}
           <div className="flex flex-col gap-2">
             <Label htmlFor={`date-${asset._id}`}>
@@ -189,6 +199,7 @@ const AssetItem: React.FC<AssetItemProps> = ({
               optionGroups={destinationOptions}
               onChange={handleDestinationChange}
               searchable={true}
+              compact={true}
             />
           </div>
         </div>
@@ -207,18 +218,18 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
   const { data: assetsData } = useGetTableAssets();
   const { data: membersData, isLoading: isLoadingMembers } = useFetchMembers();
   const { offices: officesData, isLoading: isLoadingOffices } = useOffices();
-  
+
   // Extraer los datos correctamente con validación defensiva para evitar errores de hidratación
   const members = React.useMemo(() => {
     if (!membersData || !Array.isArray(membersData)) return [];
     return membersData;
   }, [membersData]);
-  
+
   const offices = React.useMemo(() => {
     if (!officesData || !Array.isArray(officesData)) return [];
     return officesData;
   }, [officesData]);
-  
+
   const today = startOfToday();
 
   // Solo expandir el primer asset por defecto
@@ -298,8 +309,12 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
   // Construir opciones para el dropdown de destino
   const destinationOptions = React.useMemo(() => {
     // Validar que los datos sean arrays válidos para evitar errores de hidratación
-    const safeMembers = (Array.isArray(members) && members.length > 0) ? members : [];
-    const safeOffices = (Array.isArray(sortedOffices) && sortedOffices.length > 0) ? sortedOffices : [];
+    const safeMembers =
+      Array.isArray(members) && members.length > 0 ? members : [];
+    const safeOffices =
+      Array.isArray(sortedOffices) && sortedOffices.length > 0
+        ? sortedOffices
+        : [];
 
     const memberOptions = safeMembers.map((member) => ({
       display: `${member.firstName} ${member.lastName}`,
@@ -340,14 +355,14 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
     });
 
     const groups = [];
-    
+
     if (memberOptions.length > 0) {
       groups.push({
         label: "Member",
         options: memberOptions,
       });
     }
-    
+
     if (officeOptions.length > 0) {
       groups.push({
         label: "Our offices",
@@ -360,10 +375,12 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
 
   // FP warehouse como opción directa (sin grupo)
   const directOptions = React.useMemo(() => {
-    return [{
-      display: "FP warehouse",
-      value: "FP warehouse",
-    }];
+    return [
+      {
+        display: "FP warehouse",
+        value: "FP warehouse",
+      },
+    ];
   }, []);
 
   if (selectedAssets.length === 0) {
@@ -390,7 +407,11 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
     return "";
   };
 
-  const handleDestinationChange = (assetId: string, selectedValue: string, asset?: Product) => {
+  const handleDestinationChange = (
+    assetId: string,
+    selectedValue: string,
+    asset?: Product
+  ) => {
     if (!selectedValue) {
       updateDataWipeDetail(assetId, "destination", undefined);
       return;
@@ -398,17 +419,20 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
 
     if (selectedValue === "FP warehouse") {
       // Para FP warehouse, usar el countryCode del asset actual
-      const countryCode = asset?.countryCode || 
-                         asset?.country || 
-                         (asset as any)?.fpWarehouse?.warehouseCountryCode || 
-                         "";
-      
+      const countryCode =
+        asset?.countryCode ||
+        asset?.country ||
+        (asset as any)?.fpWarehouse?.warehouseCountryCode ||
+        "";
+
       if (!countryCode) {
         // Si no hay countryCode, no se puede continuar
-        console.warn(`Asset ${assetId} does not have a countryCode for FP warehouse destination`);
+        console.warn(
+          `Asset ${assetId} does not have a countryCode for FP warehouse destination`
+        );
         return;
       }
-      
+
       updateDataWipeDetail(assetId, "destination", {
         destinationType: "FP warehouse",
         warehouse: {
@@ -469,11 +493,15 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
               detail={detail}
               isExpanded={isExpanded}
               onToggleExpanded={() => toggleExpanded(asset._id)}
-              onUpdateDetail={(field, value) => updateDataWipeDetail(asset._id, field, value)}
+              onUpdateDetail={(field, value) =>
+                updateDataWipeDetail(asset._id, field, value)
+              }
               destinationOptions={destinationOptions}
               directOptions={directOptions}
               getDestinationDisplayValue={getDestinationDisplayValue}
-              handleDestinationChange={(value) => handleDestinationChange(asset._id, value, asset)}
+              handleDestinationChange={(value) =>
+                handleDestinationChange(asset._id, value, asset)
+              }
             />
           );
         })}

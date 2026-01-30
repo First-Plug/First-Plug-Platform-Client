@@ -19,8 +19,6 @@ interface IConfig {
   closeAction: () => void;
 }
 
-type DynamicAlertType = AlertType | "dynamicWarning";
-
 export const AlertProvider = () => {
   const { setAlert, alertType, alertData } = useAlertStore();
   const { setAside } = useAsideStore();
@@ -42,6 +40,15 @@ export const AlertProvider = () => {
       title: alertData?.title || "Warning",
       type: "warning",
       description: alertData?.description || "Details are missing.",
+      closeAction: () => {
+        setAlert(undefined);
+        if (alertData?.onClose) alertData.onClose();
+      },
+    },
+    dynamicSuccess: {
+      title: alertData?.title || "Success",
+      type: "succes",
+      description: alertData?.description || "Action completed successfully.",
       closeAction: () => {
         setAlert(undefined);
         if (alertData?.onClose) alertData.onClose();
@@ -591,6 +598,10 @@ export const AlertProvider = () => {
 
   if (!alertType) return null;
   const { description, title, closeAction, type } = Config[alertType];
+  const titleClassName =
+    alertData?.titleClassName || "font-semibold text-black text-2xl";
+  const descriptionClassName =
+    alertData?.descriptionClassName || "my-2 text-lg text-center";
 
   return (
     <Dialog.Root open={alertType !== undefined}>
@@ -608,9 +619,9 @@ export const AlertProvider = () => {
                 <XIcon />
               </div>
             )}
-            <span className="font-semibold text-black text-2xl">{title}</span>
+            <span className={titleClassName}>{title}</span>
           </Dialog.Title>
-          <Dialog.Description className="my-2 text-lg text-center">
+          <Dialog.Description className={descriptionClassName}>
             {alertData?.isHtml ? (
               <div dangerouslySetInnerHTML={{ __html: description }} />
             ) : (
