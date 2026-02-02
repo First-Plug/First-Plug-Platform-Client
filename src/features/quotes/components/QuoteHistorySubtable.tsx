@@ -288,9 +288,7 @@ export const QuoteHistorySubtable = ({
               "index" in row &&
               row.serviceCategory === "Cleaning";
             const isDonate =
-              !isProduct &&
-              "index" in row &&
-              row.serviceCategory === "Donate";
+              !isProduct && "index" in row && row.serviceCategory === "Donate";
 
             return (
               <TableRow key={index}>
@@ -303,7 +301,7 @@ export const QuoteHistorySubtable = ({
                     : (row as any).serviceCategory || "N/A"}
                 </TableCell>
                 <TableCell className="px-4 py-2 border-r w-24 text-xs">
-                  {isProduct ? ((row as any).data.quantity ?? 0) : "1"}
+                  {isProduct ? (row as any).data.quantity ?? 0 : "1"}
                 </TableCell>
                 <TableCell className="px-4 py-2 border-r w-64 text-xs">
                   <div className="flex flex-col gap-1">
@@ -565,7 +563,10 @@ export const QuoteHistorySubtable = ({
                                 }
                                 {(row as any).dataWipeAsset.currentMember
                                   .assignedEmail &&
-                                  ` (${(row as any).dataWipeAsset.currentMember.assignedEmail})`}
+                                  ` (${
+                                    (row as any).dataWipeAsset.currentMember
+                                      .assignedEmail
+                                  })`}
                               </span>
                             )}
                             {(row as any).dataWipeAsset.currentOffice && (
@@ -627,7 +628,10 @@ export const QuoteHistorySubtable = ({
                                       }
                                       {(row as any).dataWipeAsset.destination
                                         .member.assignedEmail &&
-                                        ` (${(row as any).dataWipeAsset.destination.member.assignedEmail})`}
+                                        ` (${
+                                          (row as any).dataWipeAsset.destination
+                                            .member.assignedEmail
+                                        })`}
                                     </span>
                                   )}
                                 {(row as any).dataWipeAsset.destination
@@ -699,22 +703,23 @@ export const QuoteHistorySubtable = ({
                           </span>
                         )}
                         {(row as any).additionalDetails && (
-                            <div className="mt-1 pt-1 border-gray-200 border-t">
-                              <span className="block text-gray-500 text-xs italic">
-                                <span className="font-medium">
-                                  Additional details:{" "}
-                                </span>
-                                {(row as any).additionalDetails}
+                          <div className="mt-1 pt-1 border-gray-200 border-t">
+                            <span className="block text-gray-500 text-xs italic">
+                              <span className="font-medium">
+                                Additional details:{" "}
                               </span>
-                            </div>
-                          )}
+                              {(row as any).additionalDetails}
+                            </span>
+                          </div>
+                        )}
                       </>
                     ) : isDonate ? (
                       <>
                         <span className="font-semibold">
                           {(row as any).data.category}
                         </span>
-                        {((row as any).data.brand || (row as any).data.model) && (
+                        {((row as any).data.brand ||
+                          (row as any).data.model) && (
                           <span className="text-gray-700">
                             {(row as any).data.brand}
                             {(row as any).data.brand &&
@@ -734,7 +739,8 @@ export const QuoteHistorySubtable = ({
                           </span>
                         )}
                         <span className="text-gray-600">
-                          {(row as any).data.assignedTo} ({(row as any).data.location})
+                          {(row as any).data.assignedTo} (
+                          {(row as any).data.location})
                         </span>
                         <QuoteLocationWithCountry
                           country={(row as any).data.countryCode}
@@ -762,17 +768,16 @@ export const QuoteHistorySubtable = ({
                               {(row as any).donateProduct.comments}
                             </span>
                           )}
-                        {(row as any).additionalDetails &&
-                          (row as any).index === 0 && (
-                            <div className="mt-1 pt-1 border-gray-200 border-t">
-                              <span className="block text-gray-500 text-xs italic">
-                                <span className="font-medium">
-                                  Additional details:{" "}
-                                </span>
-                                {(row as any).additionalDetails}
+                        {(row as any).additionalDetails && (
+                          <div className="mt-1 pt-1 border-gray-200 border-t">
+                            <span className="block text-gray-500 text-xs italic">
+                              <span className="font-medium">
+                                Additional details:{" "}
                               </span>
-                            </div>
-                          )}
+                              {(row as any).additionalDetails}
+                            </span>
+                          </div>
+                        )}
                       </>
                     ) : null}
                   </div>
@@ -781,10 +786,10 @@ export const QuoteHistorySubtable = ({
                   {isProduct
                     ? formatDate((row as any).data.deliveryDate)
                     : isDataWipe && (row as any).dataWipeAsset?.desirableDate
-                      ? formatDate((row as any).dataWipeAsset.desirableDate)
-                      : isCleaning && (row as any).cleaningProduct?.desiredDate
-                        ? formatDate((row as any).cleaningProduct.desiredDate)
-                        : "N/A"}
+                    ? formatDate((row as any).dataWipeAsset.desirableDate)
+                    : isCleaning && (row as any).cleaningProduct?.desiredDate
+                    ? formatDate((row as any).cleaningProduct.desiredDate)
+                    : "N/A"}
                 </TableCell>
               </TableRow>
             );

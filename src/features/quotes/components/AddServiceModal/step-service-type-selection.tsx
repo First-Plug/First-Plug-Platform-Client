@@ -58,7 +58,7 @@ const serviceTypes: ServiceType[] = [
   {
     id: "donations",
     name: "Donations",
-    description: "Donate equipment to charitable organizations.",
+    description: "Donate equipment to charitable organizations",
     icon: <Gift className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },

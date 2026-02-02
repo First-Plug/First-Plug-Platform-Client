@@ -5,9 +5,15 @@ import * as Switch from "@radix-ui/react-switch";
 import { Eraser, Sparkles } from "lucide-react";
 import { Label } from "@/shared/components/ui/label";
 import { cn } from "@/shared";
-import { useGetTableAssets, Product, ProductTable, CategoryIcons } from "@/features/assets";
+import {
+  useGetTableAssets,
+  Product,
+  ProductTable,
+  CategoryIcons,
+} from "@/features/assets";
 import { CountryFlag } from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
+import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 
 interface StepDonationDetailsProps {
   assetIds: string[];
@@ -36,14 +42,14 @@ const getAssetDisplayInfo = (product: Product) => {
 
   const base = [brand, model].filter(Boolean).join(" ").trim();
 
-  // Mostrar paréntesis solo si hay name
+  // Si hay name, concatenarlo sin paréntesis
   const displayName = base
     ? hasName
-      ? `${base} (${name})`
+      ? `${base} ${name}`.trim()
       : base
     : hasName
-      ? name
-      : (product.category || "Asset");
+    ? name
+    : product.category || "Asset";
 
   const specificationsParts: string[] = [];
   if (brand) specificationsParts.push(brand);
@@ -109,7 +115,10 @@ const getAssignmentInfo = (product: Product): AssignmentInfo => {
   // FP warehouse
   if (product.location === "FP warehouse") {
     const country =
-      product.country || product.countryCode || product.office?.officeCountryCode || "";
+      product.country ||
+      product.countryCode ||
+      product.office?.officeCountryCode ||
+      "";
     return {
       type: "warehouse",
       location: "FP warehouse",
@@ -169,10 +178,27 @@ export const StepDonationDetails: React.FC<StepDonationDetailsProps> = ({
               {selectedAssets.map((asset) => {
                 const { displayName } = getAssetDisplayInfo(asset);
                 const assignment = getAssignmentInfo(asset);
-                const countryCode =
-                  assignment && "country" in assignment ? assignment.country : "";
-                const countryName =
-                  countryCode ? countriesByCode[countryCode] || countryCode : "";
+                const rawCountryCode =
+                  assignment && "country" in assignment
+                    ? assignment.country
+                    : "";
+                const normalizedCountryCode = rawCountryCode
+                  ? normalizeCountryCode(rawCountryCode) || rawCountryCode
+                  : "";
+                const countryName = normalizedCountryCode
+                  ? countriesByCode[normalizedCountryCode] ||
+                    normalizedCountryCode
+                  : "";
+
+                const specificLocation = (() => {
+                  if (!assignment) return "";
+                  if (assignment.type === "warehouse") return "FP warehouse";
+                  if (assignment.type === "office")
+                    return assignment.assignedTo || "";
+                  if (assignment.type === "employee")
+                    return assignment.assignedTo || "";
+                  return assignment.location || "";
+                })();
                 return (
                   <li
                     key={asset._id}
@@ -196,29 +222,19 @@ export const StepDonationDetails: React.FC<StepDonationDetailsProps> = ({
 
                       {assignment && (
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 text-xs">
-                          <span>
-                            <span className="font-medium">Location:</span>{" "}
-                            {assignment.location}
-                          </span>
-
-                          {countryCode ? (
-                            <span className="flex items-center gap-1">
-                              <CountryFlag countryName={countryCode} size={14} />
-                              <span className="truncate">
-                                {countryName}
-                                {"assignedTo" in assignment &&
-                                  assignment.assignedTo &&
-                                  ` - ${assignment.assignedTo}`}
-                              </span>
+                          <span className="flex flex-wrap items-center gap-1 min-w-0">
+                            <span className="font-medium">Location:</span>
+                            {normalizedCountryCode && (
+                              <CountryFlag
+                                countryName={normalizedCountryCode}
+                                size={14}
+                              />
+                            )}
+                            <span className="truncate">
+                              {countryName || "N/A"}
+                              {specificLocation ? ` - ${specificLocation}` : ""}
                             </span>
-                          ) : (
-                            "assignedTo" in assignment &&
-                            assignment.assignedTo && (
-                              <span className="truncate">
-                                {assignment.assignedTo}
-                              </span>
-                            )
-                          )}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -322,4 +338,3 @@ export const StepDonationDetails: React.FC<StepDonationDetailsProps> = ({
     </div>
   );
 };
-
