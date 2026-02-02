@@ -204,7 +204,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
     const hasName = name.length > 0;
     const base = [brand, model].filter(Boolean).join(" ").trim();
 
-    if (base) return hasName ? `${base} (${name})` : base;
+    if (base) return hasName ? `${base} ${name}`.trim() : base;
     if (hasName) return name;
     return product.category || "Asset";
   };
@@ -233,8 +233,9 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
 
     // Si está en una oficina
     if (product.location === "Our office") {
-      const officeName =
-        String(product.office?.officeName || product.officeName || "Our office");
+      const officeName = String(
+        product.office?.officeName || product.officeName || "Our office"
+      );
       const country =
         product.office?.officeCountryCode ||
         product.country ||
@@ -408,8 +409,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                 assignment?.type === "employee"
                   ? assignment.member
                   : assignment?.type === "office"
-                    ? assignment.officeName
-                    : "";
+                  ? assignment.officeName
+                  : "";
               return (
                 <li key={asset._id}>
                   {displayInfo?.displayName || asset.name || "Device"}
@@ -448,8 +449,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                 assignment?.type === "employee"
                   ? assignment.member
                   : assignment?.type === "office"
-                    ? assignment.officeName
-                    : "";
+                  ? assignment.officeName
+                  : "";
               const buybackDetail = service.buybackDetails?.[asset._id];
               return (
                 <li key={asset._id}>
@@ -540,8 +541,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                 assignment?.type === "employee"
                   ? assignment.member
                   : assignment?.type === "office"
-                    ? assignment.officeName
-                    : "";
+                  ? assignment.officeName
+                  : "";
               const dataWipeDetail = service.dataWipeDetails?.[asset._id];
 
               // Formatear fecha deseable - parsea YYYY-MM-DD directamente sin problemas de zona horaria
@@ -676,13 +677,13 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       {/* Cleaning: Additional details */}
       {service.serviceType === "cleaning" &&
         (service.additionalDetails || service.additionalComments) && (
-        <div className="mb-3">
-          <div className="mb-1 font-medium text-sm">Additional details:</div>
-          <div className="text-gray-700 text-sm">
-            {service.additionalDetails || service.additionalComments}
+          <div className="mb-3">
+            <div className="mb-1 font-medium text-sm">Additional details:</div>
+            <div className="text-gray-700 text-sm">
+              {service.additionalDetails || service.additionalComments}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Donations: Selected Assets */}
       {service.serviceType === "donations" && selectedAssets.length > 0 && (
@@ -697,16 +698,17 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
               const assignment = getAssignmentInfo(asset);
               const countryCode =
                 assignment && "country" in assignment ? assignment.country : "";
-              const countryName =
-                countryCode ? countriesByCode[countryCode] || countryCode : "";
+              const countryName = countryCode
+                ? countriesByCode[countryCode] || countryCode
+                : "";
               const assignedToLabel =
                 assignment?.type === "employee"
                   ? assignment.member
                   : assignment?.type === "office"
-                    ? `office ${assignment.officeName}`
-                    : assignment?.type === "warehouse"
-                      ? "FP warehouse"
-                      : "";
+                  ? assignment.officeName
+                  : assignment?.type === "warehouse"
+                  ? "FP warehouse"
+                  : "";
               return (
                 <li
                   key={asset._id}
@@ -783,7 +785,9 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       {service.serviceType === "donations" && service.additionalDetails && (
         <div className="mb-3">
           <div className="mb-1 font-medium text-sm">Additional details:</div>
-          <div className="text-gray-700 text-sm">{service.additionalDetails}</div>
+          <div className="text-gray-700 text-sm">
+            {service.additionalDetails}
+          </div>
         </div>
       )}
 
@@ -807,9 +811,9 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
               <div className="flex items-center gap-2 text-gray-600 text-sm">
                 {assignmentInfo.type === "employee" && (
                   <>
-                      <span>{assignmentInfo.member}</span>
+                    <span>{assignmentInfo.member}</span>
                     {assignmentInfo.location && (
-                        <span>• {assignmentInfo.location}</span>
+                      <span>• {assignmentInfo.location}</span>
                     )}
                     {assignmentInfo.country && (
                       <div className="flex items-center gap-1">
