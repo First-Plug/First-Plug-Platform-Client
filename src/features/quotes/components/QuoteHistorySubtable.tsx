@@ -76,6 +76,21 @@ type TableRow =
       additionalDetails?: string;
       index: number;
       total: number;
+    }
+  | {
+      type: "service";
+      serviceCategory: "Donate";
+      data: any; // productSnapshot
+      donateProduct?: {
+        productId: string;
+        productSnapshot: any;
+        needsDataWipe?: boolean;
+        needsCleaning?: boolean;
+        comments?: string;
+      };
+      additionalDetails?: string;
+      index: number;
+      total: number;
     };
 
 const formatDate = (date?: string) => {
@@ -201,6 +216,26 @@ export const QuoteHistorySubtable = ({
           index: idx,
           total: cleaningProducts.length,
         })) as TableRow[];
+      } else if (
+        service.serviceCategory === "Donate" &&
+        service.products?.length
+      ) {
+        const donateProducts = service.products as Array<{
+          productId: string;
+          productSnapshot: any;
+          needsDataWipe?: boolean;
+          needsCleaning?: boolean;
+          comments?: string;
+        }>;
+        return donateProducts.map((product, idx) => ({
+          type: "service" as const,
+          serviceCategory: "Donate" as const,
+          data: product.productSnapshot,
+          donateProduct: product,
+          additionalDetails: service.additionalDetails,
+          index: idx,
+          total: donateProducts.length,
+        })) as TableRow[];
       }
       return [];
     }),
@@ -252,6 +287,8 @@ export const QuoteHistorySubtable = ({
               !isProduct &&
               "index" in row &&
               row.serviceCategory === "Cleaning";
+            const isDonate =
+              !isProduct && "index" in row && row.serviceCategory === "Donate";
 
             return (
               <TableRow key={index}>
@@ -264,7 +301,7 @@ export const QuoteHistorySubtable = ({
                     : (row as any).serviceCategory || "N/A"}
                 </TableCell>
                 <TableCell className="px-4 py-2 border-r w-24 text-xs">
-                  {isProduct ? ((row as any).data.quantity ?? 0) : "1"}
+                  {isProduct ? (row as any).data.quantity ?? 0 : "1"}
                 </TableCell>
                 <TableCell className="px-4 py-2 border-r w-64 text-xs">
                   <div className="flex flex-col gap-1">
@@ -526,7 +563,10 @@ export const QuoteHistorySubtable = ({
                                 }
                                 {(row as any).dataWipeAsset.currentMember
                                   .assignedEmail &&
-                                  ` (${(row as any).dataWipeAsset.currentMember.assignedEmail})`}
+                                  ` (${
+                                    (row as any).dataWipeAsset.currentMember
+                                      .assignedEmail
+                                  })`}
                               </span>
                             )}
                             {(row as any).dataWipeAsset.currentOffice && (
@@ -588,7 +628,10 @@ export const QuoteHistorySubtable = ({
                                       }
                                       {(row as any).dataWipeAsset.destination
                                         .member.assignedEmail &&
-                                        ` (${(row as any).dataWipeAsset.destination.member.assignedEmail})`}
+                                        ` (${
+                                          (row as any).dataWipeAsset.destination
+                                            .member.assignedEmail
+                                        })`}
                                     </span>
                                   )}
                                 {(row as any).dataWipeAsset.destination
@@ -660,15 +703,81 @@ export const QuoteHistorySubtable = ({
                           </span>
                         )}
                         {(row as any).additionalDetails && (
-                            <div className="mt-1 pt-1 border-gray-200 border-t">
-                              <span className="block text-gray-500 text-xs italic">
-                                <span className="font-medium">
-                                  Additional details:{" "}
-                                </span>
-                                {(row as any).additionalDetails}
+                          <div className="mt-1 pt-1 border-gray-200 border-t">
+                            <span className="block text-gray-500 text-xs italic">
+                              <span className="font-medium">
+                                Additional details:{" "}
                               </span>
-                            </div>
+                              {(row as any).additionalDetails}
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    ) : isDonate ? (
+                      <>
+                        <span className="font-semibold">
+                          {(row as any).data.category}
+                        </span>
+                        {((row as any).data.brand ||
+                          (row as any).data.model) && (
+                          <span className="text-gray-700">
+                            {(row as any).data.brand}
+                            {(row as any).data.brand &&
+                              (row as any).data.model &&
+                              " - "}
+                            {(row as any).data.model}
+                          </span>
+                        )}
+                        {(row as any).data.name && (
+                          <span className="text-gray-600 italic">
+                            {(row as any).data.name}
+                          </span>
+                        )}
+                        {(row as any).data.serialNumber && (
+                          <span className="text-gray-600">
+                            SN: {(row as any).data.serialNumber}
+                          </span>
+                        )}
+                        <span className="text-gray-600">
+                          {(row as any).data.assignedTo} (
+                          {(row as any).data.location})
+                        </span>
+                        <QuoteLocationWithCountry
+                          country={(row as any).data.countryCode}
+                        />
+                        {((row as any).donateProduct?.needsDataWipe ||
+                          (row as any).donateProduct?.needsCleaning) && (
+                          <>
+                            {(row as any).donateProduct?.needsDataWipe && (
+                              <span className="text-gray-600 text-xs">
+                                ✓ Needs Data Wipe
+                              </span>
+                            )}
+                            {(row as any).donateProduct?.needsCleaning && (
+                              <span className="text-gray-600 text-xs">
+                                ✓ Needs Cleaning
+                              </span>
+                            )}
+                          </>
+                        )}
+                        {/* Compatibilidad: si viene comments, mostrar solo si no duplica additionalDetails */}
+                        {(row as any).donateProduct?.comments &&
+                          (row as any).donateProduct.comments !==
+                            (row as any).additionalDetails && (
+                            <span className="text-gray-500 text-xs italic">
+                              {(row as any).donateProduct.comments}
+                            </span>
                           )}
+                        {(row as any).additionalDetails && (
+                          <div className="mt-1 pt-1 border-gray-200 border-t">
+                            <span className="block text-gray-500 text-xs italic">
+                              <span className="font-medium">
+                                Additional details:{" "}
+                              </span>
+                              {(row as any).additionalDetails}
+                            </span>
+                          </div>
+                        )}
                       </>
                     ) : null}
                   </div>
@@ -677,10 +786,10 @@ export const QuoteHistorySubtable = ({
                   {isProduct
                     ? formatDate((row as any).data.deliveryDate)
                     : isDataWipe && (row as any).dataWipeAsset?.desirableDate
-                      ? formatDate((row as any).dataWipeAsset.desirableDate)
-                      : isCleaning && (row as any).cleaningProduct?.desiredDate
-                        ? formatDate((row as any).cleaningProduct.desiredDate)
-                        : "N/A"}
+                    ? formatDate((row as any).dataWipeAsset.desirableDate)
+                    : isCleaning && (row as any).cleaningProduct?.desiredDate
+                    ? formatDate((row as any).cleaningProduct.desiredDate)
+                    : "N/A"}
                 </TableCell>
               </TableRow>
             );

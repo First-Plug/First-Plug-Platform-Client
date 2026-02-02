@@ -9,6 +9,7 @@ import {
   ArrowLeftRight,
   Eraser,
   Sparkles,
+  Gift,
 } from "lucide-react";
 import {
   Badge,
@@ -23,7 +24,12 @@ import {
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { useQuoteStore } from "../../store/quote.store";
 import type { QuoteService } from "../../types/quote.types";
-import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
+import {
+  useGetTableAssets,
+  Product,
+  ProductTable,
+  CategoryIcons,
+} from "@/features/assets";
 import { cn } from "@/shared";
 
 const issueTypesMap: Record<string, string> = {
@@ -72,6 +78,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       buyback: "Buyback",
       "data-wipe": "Data Wipe",
       cleaning: "Cleaning",
+      donations: "Donations",
     };
     return serviceTypeMap[serviceType] || serviceType;
   };
@@ -184,13 +191,32 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
     return { displayName, specifications };
   };
 
+  const getDonationAssetTitle = (product: Product) => {
+    const brand =
+      product.attributes?.find(
+        (attr) => String(attr.key).toLowerCase() === "brand"
+      )?.value || "";
+    const model =
+      product.attributes?.find(
+        (attr) => String(attr.key).toLowerCase() === "model"
+      )?.value || "";
+    const name = (product.name || "").trim();
+    const hasName = name.length > 0;
+    const base = [brand, model].filter(Boolean).join(" ").trim();
+
+    if (base) return hasName ? `${base} ${name}`.trim() : base;
+    if (hasName) return name;
+    return product.category || "Asset";
+  };
+
   // Obtener información de asignación
   const getAssignmentInfo = (product: Product) => {
     // Si está asignado a un empleado
     if (product.assignedMember || product.assignedEmail) {
-      const member =
-        product.assignedMember || product.assignedEmail || "Unassigned";
-      const location = product.location || product.officeName || "";
+      const member = String(
+        product.assignedMember || product.assignedEmail || "Unassigned"
+      );
+      const location = String(product.location || product.officeName || "");
       const country =
         product.country ||
         product.countryCode ||
@@ -199,7 +225,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
 
       return {
         type: "employee" as const,
-        member,
+        member: member,
         location: location ? `${location}` : "",
         country,
       };
@@ -207,8 +233,9 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
 
     // Si está en una oficina
     if (product.location === "Our office") {
-      const officeName =
-        product.office?.officeName || product.officeName || "Our office";
+      const officeName = String(
+        product.office?.officeName || product.officeName || "Our office"
+      );
       const country =
         product.office?.officeCountryCode ||
         product.country ||
@@ -240,7 +267,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
     if (product.location) {
       return {
         type: "other" as const,
-        location: product.location,
+        location: String(product.location),
       };
     }
 
@@ -279,6 +306,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             <Eraser className="w-3 h-3" />
           ) : service.serviceType === "cleaning" ? (
             <Sparkles className="w-3 h-3" />
+          ) : service.serviceType === "donations" ? (
+            <Gift className="w-3 h-3" />
           ) : (
             <Wrench className="w-3 h-3" />
           )}
@@ -380,8 +409,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                 assignment?.type === "employee"
                   ? assignment.member
                   : assignment?.type === "office"
-                    ? assignment.officeName
-                    : "";
+                  ? assignment.officeName
+                  : "";
               return (
                 <li key={asset._id}>
                   {displayInfo?.displayName || asset.name || "Device"}
@@ -420,8 +449,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                 assignment?.type === "employee"
                   ? assignment.member
                   : assignment?.type === "office"
-                    ? assignment.officeName
-                    : "";
+                  ? assignment.officeName
+                  : "";
               const buybackDetail = service.buybackDetails?.[asset._id];
               return (
                 <li key={asset._id}>
@@ -512,8 +541,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                 assignment?.type === "employee"
                   ? assignment.member
                   : assignment?.type === "office"
-                    ? assignment.officeName
-                    : "";
+                  ? assignment.officeName
+                  : "";
               const dataWipeDetail = service.dataWipeDetails?.[asset._id];
 
               // Formatear fecha deseable - parsea YYYY-MM-DD directamente sin problemas de zona horaria
@@ -648,10 +677,116 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       {/* Cleaning: Additional details */}
       {service.serviceType === "cleaning" &&
         (service.additionalDetails || service.additionalComments) && (
+          <div className="mb-3">
+            <div className="mb-1 font-medium text-sm">Additional details:</div>
+            <div className="text-gray-700 text-sm">
+              {service.additionalDetails || service.additionalComments}
+            </div>
+          </div>
+        )}
+
+      {/* Donations: Selected Assets */}
+      {service.serviceType === "donations" && selectedAssets.length > 0 && (
+        <div className="mb-3">
+          <div className="mb-2 font-medium text-sm">
+            {selectedAssets.length} asset
+            {selectedAssets.length !== 1 ? "s" : ""} to donate
+          </div>
+          <ul className="flex flex-col gap-3">
+            {selectedAssets.map((asset) => {
+              const title = getDonationAssetTitle(asset);
+              const assignment = getAssignmentInfo(asset);
+              const countryCode =
+                assignment && "country" in assignment ? assignment.country : "";
+              const countryName = countryCode
+                ? countriesByCode[countryCode] || countryCode
+                : "";
+              const assignedToLabel =
+                assignment?.type === "employee"
+                  ? assignment.member
+                  : assignment?.type === "office"
+                  ? assignment.officeName
+                  : assignment?.type === "warehouse"
+                  ? "FP warehouse"
+                  : "";
+              return (
+                <li
+                  key={asset._id}
+                  className="flex items-start gap-3 bg-gray-50 p-3 border border-gray-200 rounded-lg"
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    <CategoryIcons products={[asset]} />
+                  </div>
+
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm truncate">
+                      {title}
+                    </div>
+
+                    {asset.serialNumber && (
+                      <div className="text-gray-600 text-xs">
+                        <span className="font-medium">SN:</span>{" "}
+                        {asset.serialNumber}
+                      </div>
+                    )}
+
+                    {assignment && (
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 text-xs">
+                        <span>
+                          <span className="font-medium">Location:</span>{" "}
+                          {assignment.location}
+                        </span>
+
+                        {countryCode ? (
+                          <span className="flex items-center gap-1">
+                            <CountryFlag countryName={countryCode} size={14} />
+                            <span className="truncate">
+                              {countryName}
+                              {assignedToLabel ? ` - ${assignedToLabel}` : ""}
+                            </span>
+                          </span>
+                        ) : (
+                          assignedToLabel && (
+                            <span className="truncate">{assignedToLabel}</span>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Donations: Preparation options */}
+      {service.serviceType === "donations" && (
+        <div className="mb-3 text-sm">
+          <div className="mb-1 font-medium text-sm">Preparation options:</div>
+          <ul className="space-y-1 text-gray-700 text-sm list-disc list-inside">
+            <li>
+              Data wipe:{" "}
+              <span className="font-medium">
+                {service.donationDataWipe ? "Yes" : "No"}
+              </span>
+            </li>
+            <li>
+              Professional cleaning:{" "}
+              <span className="font-medium">
+                {service.donationProfessionalCleaning ? "Yes" : "No"}
+              </span>
+            </li>
+          </ul>
+        </div>
+      )}
+
+      {/* Donations: Additional details */}
+      {service.serviceType === "donations" && service.additionalDetails && (
         <div className="mb-3">
           <div className="mb-1 font-medium text-sm">Additional details:</div>
           <div className="text-gray-700 text-sm">
-            {service.additionalDetails || service.additionalComments}
+            {service.additionalDetails}
           </div>
         </div>
       )}
@@ -659,6 +794,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       {/* Asset (for IT Support) */}
       {selectedAsset &&
         service.serviceType !== "enrollment" &&
+        service.serviceType !== "donations" &&
         service.serviceType !== "cleaning" && (
           <div className="mb-3 text-sm">
             <div className="mb-2 text-gray-700">
@@ -675,7 +811,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
               <div className="flex items-center gap-2 text-gray-600 text-sm">
                 {assignmentInfo.type === "employee" && (
                   <>
-                    <span>Assigned to: {assignmentInfo.member}</span>
+                    <span>{assignmentInfo.member}</span>
                     {assignmentInfo.location && (
                       <span>• {assignmentInfo.location}</span>
                     )}

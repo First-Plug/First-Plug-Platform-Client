@@ -49,6 +49,8 @@ export interface QuoteService {
   additionalInfo?: string; // Información adicional para Buyback
   dataWipeDetails?: Record<string, DataWipeDetail>; // Detalles de Data Wipe por assetId (para Data Wipe)
   cleaningType?: "Superficial" | "Deep"; // Tipo de limpieza (opcional, por defecto Deep)
+  donationDataWipe?: boolean; // Donations: solicitar data wipe antes de donar
+  donationProfessionalCleaning?: boolean; // Donations: solicitar limpieza profesional antes de donar
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -130,6 +132,10 @@ export interface QuoteRequestPayload {
         chargerWorks?: boolean;
         additionalComments?: string;
       };
+      // Donations
+      needsDataWipe?: boolean;
+      needsCleaning?: boolean;
+      comments?: string;
     }>;
     issues?: string[];
     description?: string;

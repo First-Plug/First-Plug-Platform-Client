@@ -19,6 +19,7 @@ import { StepAdditionalDetails } from "../AddServiceModal/step-additional-detail
 import { StepBuybackDetails } from "../AddServiceModal/step-buyback-details";
 import { StepDataWipeDetails } from "../AddServiceModal/step-data-wipe-details";
 import { StepCleaningDetails } from "../AddServiceModal/step-cleaning-details";
+import { StepDonationDetails } from "../AddServiceModal/step-donation-details";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import type { QuoteService, QuoteProduct } from "../../types/quote.types";
 
@@ -40,6 +41,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     setCurrentServiceType,
     currentStep,
     currentServiceType,
+    onBack,
     editingServiceId,
     setEditingServiceId,
     setOnBack,
@@ -78,18 +80,57 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
         if (editingService.serviceType) {
           setCurrentServiceType(editingService.serviceType);
         }
-        // Determinar el step inicial según qué datos tiene
+        // Determinar el step inicial según el tipo de servicio y qué datos tiene
         let initialStep = 2;
-        if (editingService.assetId) {
-          if (
-            editingService.issueTypes &&
-            editingService.issueTypes.length > 0
-          ) {
-            // Si tiene issue types, verificar si tiene description (step 4) o ya pasó a quote details (step 5)
-            initialStep = editingService.description ? 5 : 4;
+        const type = editingService.serviceType;
+
+        if (type === "it-support") {
+          if (editingService.assetId) {
+            if (editingService.issueTypes && editingService.issueTypes.length > 0) {
+              initialStep = editingService.description ? 5 : 4;
+            } else {
+              initialStep = 3;
+            }
           } else {
-            initialStep = 3;
+            initialStep = 2;
           }
+        } else if (
+          type === "enrollment" ||
+          type === "buyback" ||
+          type === "data-wipe" ||
+          type === "cleaning" ||
+          type === "donations"
+        ) {
+          // Servicios multi-asset: si ya hay datos del paso 3, arrancar en step 3, si no en step 2
+          const hasAssets = !!editingService.assetIds && editingService.assetIds.length > 0;
+          if (!hasAssets) {
+            initialStep = 2;
+          } else if (type === "enrollment") {
+            initialStep = editingService.additionalDetails ? 3 : 2;
+          } else if (type === "buyback") {
+            initialStep = editingService.buybackDetails ? 3 : 2;
+          } else if (type === "data-wipe") {
+            initialStep =
+              editingService.dataWipeDetails || editingService.additionalDetails ? 3 : 2;
+          } else if (type === "cleaning") {
+            initialStep =
+              editingService.requiredDeliveryDate ||
+              editingService.cleaningType ||
+              editingService.additionalDetails ||
+              editingService.additionalComments
+                ? 3
+                : 2;
+          } else if (type === "donations") {
+            initialStep =
+              editingService.donationDataWipe ||
+              editingService.donationProfessionalCleaning ||
+              editingService.additionalComments
+                ? 3
+                : 2;
+          }
+        } else {
+          // Otros servicios: default step 3 (quote details)
+          initialStep = 3;
         }
         setCurrentStep(initialStep);
       }
@@ -107,7 +148,10 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       const minStep = editingId
         ? serviceType === "it-support" ||
           serviceType === "enrollment" ||
-          serviceType === "cleaning"
+          serviceType === "buyback" ||
+          serviceType === "data-wipe" ||
+          serviceType === "cleaning" ||
+          serviceType === "donations"
           ? 2
           : 3
         : 1;
@@ -146,6 +190,14 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               ...prev,
               additionalDetails: undefined,
             }));
+          } else if (serviceType === "donations") {
+            // Para Donations, resetear donation options
+            setServiceData((prev) => ({
+              ...prev,
+              donationDataWipe: undefined,
+              donationProfessionalCleaning: undefined,
+              additionalDetails: undefined,
+            }));
           } else if (serviceType === "cleaning") {
             // Para Cleaning, resetear cleaning options
             setServiceData((prev) => ({
@@ -161,7 +213,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             serviceType === "enrollment" ||
             serviceType === "buyback" ||
             serviceType === "data-wipe" ||
-            serviceType === "cleaning"
+            serviceType === "cleaning" ||
+            serviceType === "donations"
           ) {
             setServiceData((prev) => ({
               ...prev,
@@ -210,7 +263,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "enrollment" ||
       serviceType === "buyback" ||
       serviceType === "data-wipe" ||
-      serviceType === "cleaning"
+      serviceType === "cleaning" ||
+      serviceType === "donations"
     ) {
       setCurrentStep(2);
     } else {
@@ -224,7 +278,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "enrollment" ||
       serviceType === "buyback" ||
       serviceType === "data-wipe" ||
-      serviceType === "cleaning"
+      serviceType === "cleaning" ||
+      serviceType === "donations"
     ) {
       // Para Enrollment, Buyback, Data Wipe y Cleaning, guardar múltiples assets
       handleDataChange({ assetIds });
@@ -260,6 +315,11 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
         handleDataChange({ cleaningType: "Deep" });
       }
       // Ir al step 3 (cleaning options)
+      setCurrentStep(3);
+    } else if (serviceType === "donations") {
+      // Para Donations, validar que hay al menos un asset seleccionado
+      if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+      // Ir al step 3 (donation options)
       setCurrentStep(3);
     } else {
       // Para IT Support, validar que hay un asset seleccionado
@@ -441,6 +501,37 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     onComplete();
   };
 
+  const handleContinueFromDonationDetails = () => {
+    if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+
+    const completeService: QuoteService = {
+      id: serviceData.id!,
+      serviceType: serviceData.serviceType!,
+      assetIds: serviceData.assetIds || [],
+      donationDataWipe: serviceData.donationDataWipe,
+      donationProfessionalCleaning: serviceData.donationProfessionalCleaning,
+      additionalDetails: serviceData.additionalDetails,
+      country: serviceData.country || "",
+      city: serviceData.city,
+      requiredDeliveryDate: serviceData.requiredDeliveryDate,
+    };
+
+    if (editingServiceId) {
+      updateService(editingServiceId, completeService);
+      setEditingServiceId(undefined);
+    } else {
+      addService(completeService);
+    }
+
+    setServiceData({
+      id: generateId(),
+      impactLevel: "medium",
+    });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
+  };
+
   const handleNext = () => {
     const serviceType = serviceData.serviceType || currentServiceType;
 
@@ -499,6 +590,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     const isBuyback = serviceType === "buyback";
     const isDataWipe = serviceType === "data-wipe";
     const isCleaning = serviceType === "cleaning";
+    const isDonations = serviceType === "donations";
 
     switch (currentStep) {
       case 1:
@@ -563,6 +655,16 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               allowMultiple={true}
               allowedCategories={["Computer", "Other"]}
               serviceType="cleaning"
+            />
+          );
+        }
+        if (isDonations) {
+          return (
+            <StepSelectAsset
+              selectedAssetIds={serviceData.assetIds || []}
+              onAssetSelect={handleAssetSelect}
+              allowMultiple={true}
+              serviceType="donations"
             />
           );
         }
@@ -631,6 +733,20 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               additionalDetails={
                 serviceData.additionalDetails ?? serviceData.additionalComments
               }
+              onDataChange={(updates) => {
+                handleDataChange(updates);
+              }}
+            />
+          );
+        }
+        // Mostrar donation options si es Donations
+        if (isDonations) {
+          return (
+            <StepDonationDetails
+              assetIds={serviceData.assetIds || []}
+              donationDataWipe={serviceData.donationDataWipe}
+              donationProfessionalCleaning={serviceData.donationProfessionalCleaning}
+              additionalDetails={serviceData.additionalDetails}
               onDataChange={(updates) => {
                 handleDataChange(updates);
               }}
@@ -709,6 +825,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     const isBuyback = serviceType === "buyback";
     const isDataWipe = serviceType === "data-wipe";
     const isCleaning = serviceType === "cleaning";
+    const isDonations = serviceType === "donations";
 
     if (currentStep === 2 && isITSupport) {
       // En step 2 para IT Support, se necesita seleccionar un asset
@@ -728,6 +845,10 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     }
     if (currentStep === 2 && isCleaning) {
       // En step 2 para Cleaning, se necesita seleccionar al menos un asset
+      return !!serviceData.assetIds && serviceData.assetIds.length > 0;
+    }
+    if (currentStep === 2 && isDonations) {
+      // En step 2 para Donations, se necesita seleccionar al menos un asset
       return !!serviceData.assetIds && serviceData.assetIds.length > 0;
     }
     if (currentStep === 3 && isITSupport) {
@@ -765,6 +886,10 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       // En step 3 para Cleaning (Cleaning Options), siempre se puede proceder (todos los campos son opcionales)
       return true;
     }
+    if (currentStep === 3 && isDonations) {
+      // En step 3 para Donations (Donation Options), siempre se puede proceder (todos los campos son opcionales)
+      return true;
+    }
     if (
       currentStep === 3 &&
       !isITSupport &&
@@ -793,6 +918,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   const isBuybackForRender = serviceTypeForRender === "buyback";
   const isDataWipeForRender = serviceTypeForRender === "data-wipe";
   const isCleaningForRender = serviceTypeForRender === "cleaning";
+  const isDonationsForRender = serviceTypeForRender === "donations";
 
   return (
     <div className="flex justify-center w-full">
@@ -887,6 +1013,17 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           </div>
         )}
+        {currentStep === 3 && isDonationsForRender && (
+          <div className="flex justify-end items-center pt-4 border-t">
+            <Button
+              onClick={handleContinueFromDonationDetails}
+              disabled={!canProceed()}
+              variant="primary"
+              size="small"
+              body="Submit Request"
+            />
+          </div>
+        )}
         {currentStep === 4 && isITSupportForRender && (
           <div className="flex justify-end items-center pt-4 border-t">
             <Button
@@ -914,7 +1051,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           !isEnrollmentForRender &&
           !isBuybackForRender &&
           !isDataWipeForRender &&
-          !isCleaningForRender && (
+          !isCleaningForRender &&
+          !isDonationsForRender && (
             <div className="flex justify-end items-center pt-4 border-t">
               <Button
                 onClick={handleNext}

@@ -337,6 +337,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isBuyback = serviceType === "buyback";
     const isDataWipe = serviceType === "data-wipe";
     const isCleaning = serviceType === "cleaning";
+    const isDonations = serviceType === "donations";
 
     if (isITSupport) {
       const itSupportStepTitles: Record<number, string> = {
@@ -385,6 +386,15 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       return cleaningStepTitles[step] || "";
     }
 
+    if (isDonations) {
+      const donationsStepTitles: Record<number, string> = {
+        1: "Select Service Type",
+        2: "Select Assets",
+        3: "Donation Options",
+      };
+      return donationsStepTitles[step] || "";
+    }
+
     const serviceStepTitles: Record<number, string> = {
       1: "Select Service Type",
       2: "Quote Details",
@@ -404,11 +414,13 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isBuyback = serviceType === "buyback";
     const isDataWipe = serviceType === "data-wipe";
     const isCleaning = serviceType === "cleaning";
+    const isDonations = serviceType === "donations";
     if (isITSupport) return 5;
     if (isEnrollment) return 3;
     if (isBuyback) return 3;
     if (isDataWipe) return 3;
     if (isCleaning) return 3;
+    if (isDonations) return 3;
     return 2;
   };
 
@@ -443,10 +455,11 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isBuyback = currentServiceType === "buyback";
     const isDataWipe = currentServiceType === "data-wipe";
     const isCleaning = currentServiceType === "cleaning";
+    const isDonations = currentServiceType === "donations";
     const minStep = isEditing
       ? isITSupport
         ? 2
-        : isEnrollment || isBuyback || isDataWipe || isCleaning
+        : isEnrollment || isBuyback || isDataWipe || isCleaning || isDonations
           ? 2
           : 3
       : 1;
