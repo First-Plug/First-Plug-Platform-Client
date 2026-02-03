@@ -22,6 +22,8 @@ interface StepSelectAssetProps {
   allowedCategory?: string; // Categoría permitida (ej: "Computer")
   serviceType?: string; // Tipo de servicio (ej: "buyback", "enrollment", "it-support")
   allowedCategories?: string[]; // Categorías permitidas (ej: ["Computer", "Other"])
+  /** Si true, excluir assets que están en FP warehouse (location === "FP warehouse") */
+  excludeFromWarehouse?: boolean;
 }
 
 export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
@@ -31,6 +33,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
   allowedCategory,
   serviceType,
   allowedCategories,
+  excludeFromWarehouse = false,
 }) => {
   const { data: assetsData, isLoading } = useGetTableAssets();
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -55,11 +58,17 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
             allowedCategories.includes(p.category)
           );
         }
+        // Excluir assets que están en FP warehouse (solo mostrar los que NO están en warehouse)
+        if (excludeFromWarehouse) {
+          filteredProducts = filteredProducts.filter(
+            (p) => p.location !== "FP warehouse"
+          );
+        }
         products.push(...filteredProducts);
       }
     });
     return products;
-  }, [assetsData, allowedCategory, allowedCategories]);
+  }, [assetsData, allowedCategory, allowedCategories, excludeFromWarehouse]);
 
   // Filtrar productos según la búsqueda
   const filteredProducts = React.useMemo(() => {
@@ -265,10 +274,10 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
               {searchQuery
                 ? "No assets found matching your search."
                 : serviceType === "buyback"
-                  ? "You don't have any assets available for buyback yet."
-                  : serviceType === "cleaning"
-                    ? "You don't have any assets available for cleaning yet."
-                    : "No assets available."}
+                ? "You don't have any assets available for buyback yet."
+                : serviceType === "cleaning"
+                ? "You don't have any assets available for cleaning yet."
+                : "No assets available."}
             </p>
             {!searchQuery && allProducts.length === 0 && (
               <Button
@@ -317,8 +326,8 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
                   hasMissingCountryCode
                     ? "border-red-500 bg-red-50/50"
                     : isSelected
-                      ? "border-blue bg-blue/5"
-                      : "border-gray-200"
+                    ? "border-blue bg-blue/5"
+                    : "border-gray-200"
                 )}
               >
                 <button

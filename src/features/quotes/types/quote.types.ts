@@ -35,6 +35,15 @@ export interface BuybackDetail {
   additionalComments?: string;
 }
 
+export interface StorageDetail {
+  assetId: string;
+  approximateSize?: string;
+  approximateWeight?: string;
+  /** Duración estimada en texto, ej: "30 days", "3 months", "indefinite..." */
+  approximateStorageDays?: string;
+  additionalComments?: string;
+}
+
 export interface QuoteService {
   id: string; // UUID temporal generado al iniciar el formulario
   serviceType: string; // Tipo de servicio (ej: "it-support", "enrollment", "buyback", "data-wipe")
@@ -49,8 +58,9 @@ export interface QuoteService {
   additionalInfo?: string; // Información adicional para Buyback
   dataWipeDetails?: Record<string, DataWipeDetail>; // Detalles de Data Wipe por assetId (para Data Wipe)
   cleaningType?: "Superficial" | "Deep"; // Tipo de limpieza (opcional, por defecto Deep)
-  donationDataWipe?: boolean; // Donations: solicitar data wipe antes de donar
-  donationProfessionalCleaning?: boolean; // Donations: solicitar limpieza profesional antes de donar
+  donationDataWipe?: boolean; // Donations
+  donationProfessionalCleaning?: boolean; // Donations
+  storageDetails?: Record<string, StorageDetail>; // Detalles de Storage por assetId
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -132,10 +142,11 @@ export interface QuoteRequestPayload {
         chargerWorks?: boolean;
         additionalComments?: string;
       };
-      // Donations
-      needsDataWipe?: boolean;
-      needsCleaning?: boolean;
-      comments?: string;
+      // Storage
+      approximateSize?: string;
+      approximateWeight?: string;
+      approximateStorageDays?: string;
+      additionalComments?: string;
     }>;
     issues?: string[];
     description?: string;
@@ -316,6 +327,24 @@ export interface QuoteHistoryService {
         };
         desiredDate?: string;
         cleaningType?: string;
+        additionalComments?: string;
+      }>
+    | Array<{
+        productId: string;
+        productSnapshot: {
+          category: string;
+          name?: string;
+          brand: string;
+          model: string;
+          serialNumber?: string;
+          location: string;
+          assignedTo: string;
+          assignedEmail?: string;
+          countryCode: string;
+        };
+        approximateSize?: string;
+        approximateWeight?: string;
+        approximateStorageDays?: string;
         additionalComments?: string;
       }>;
   assets?: Array<{
