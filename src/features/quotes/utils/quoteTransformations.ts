@@ -2,6 +2,7 @@ import type {
   QuoteProduct,
   QuoteService,
   QuoteRequestPayload,
+  StorageDetail,
 } from "../types/quote.types";
 import { COUNTRY_TO_ISO } from "./constants";
 import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
@@ -210,6 +211,7 @@ function mapServiceTypeToCategory(serviceType?: string): string {
     "data-wipe": "Data Wipe",
     cleaning: "Cleaning",
     donations: "Donate",
+    storage: "Storage",
   };
   return serviceTypeMap[serviceType] || serviceType;
 }
@@ -250,7 +252,9 @@ export function validateAssetsCountryCode(
           rawCountryCode = member.country;
         } else {
           suggestions.push(
-            `Member "${memberEmail}" ${member ? "exists but has no country" : "not found in membersMap"}`
+            `Member "${memberEmail}" ${
+              member ? "exists but has no country" : "not found in membersMap"
+            }`
           );
         }
       }
@@ -292,7 +296,9 @@ export function validateAssetsCountryCode(
         suggestions.push("FP warehouse has no warehouseCountryCode");
         if (asset.fpWarehouse) {
           suggestions.push(
-            `FP Warehouse object available: ${JSON.stringify(asset.fpWarehouse)}`
+            `FP Warehouse object available: ${JSON.stringify(
+              asset.fpWarehouse
+            )}`
           );
         } else {
           suggestions.push("No fpWarehouse object found on asset");
@@ -536,11 +542,15 @@ function buildEnrolledDeviceFromAsset(
       if (member) {
         errorMessage += `, Assigned Email: ${memberEmail}. The assigned member exists but does not have a country configured. Please update the member's country in the members section.`;
       } else {
-        errorMessage += `, Assigned Email: ${memberEmail || "N/A"}. The assigned member was not found in the system or does not have a country.`;
+        errorMessage += `, Assigned Email: ${
+          memberEmail || "N/A"
+        }. The assigned member was not found in the system or does not have a country.`;
       }
     } else if (asset.location === "Our office") {
       // Error para Our office
-      errorMessage += `, Office: ${asset.office?.officeName || asset.officeName || "N/A"}. Please ensure the office has an officeCountryCode set.`;
+      errorMessage += `, Office: ${
+        asset.office?.officeName || asset.officeName || "N/A"
+      }. Please ensure the office has an officeCountryCode set.`;
     } else if (asset.location === "FP warehouse") {
       // Error para FP warehouse
       errorMessage += `. Please ensure the asset has a countryCode, or the fpWarehouse has a warehouseCountryCode set.`;
@@ -598,6 +608,7 @@ export function transformServiceToBackendFormat(
   const isDataWipe = service.serviceType === "data-wipe";
   const isCleaning = service.serviceType === "cleaning";
   const isDonations = service.serviceType === "donations";
+  const isStorage = service.serviceType === "storage";
 
   // Para Enrollment, construir enrolledDevices y productIds
   let enrolledDevices: any[] | undefined = undefined;
@@ -611,6 +622,8 @@ export function transformServiceToBackendFormat(
   let cleaningProducts: any[] | undefined = undefined;
   // Para Donations, construir products array con productSnapshot y options simples
   let donationProducts: any[] | undefined = undefined;
+  // Para Storage, construir products array con productSnapshot y storage details
+  let storageProducts: any[] | undefined = undefined;
 
   if (isBuyback) {
     if (!service.assetIds || service.assetIds.length === 0) {
@@ -1323,7 +1336,9 @@ export function transformServiceToBackendFormat(
 
   if (isDonations) {
     if (!service.assetIds || service.assetIds.length === 0) {
-      throw new Error("Donations service requires at least one asset (assetIds)");
+      throw new Error(
+        "Donations service requires at least one asset (assetIds)"
+      );
     }
     if (!assetsMap) {
       throw new Error("Donations service requires assetsMap to build products");
@@ -1428,8 +1443,147 @@ export function transformServiceToBackendFormat(
         productId: asset._id,
         productSnapshot: removeUndefinedFields(productSnapshot),
         ...(service.donationDataWipe ? { needsDataWipe: true } : {}),
-        ...(service.donationProfessionalCleaning ? { needsCleaning: true } : {}),
+        ...(service.donationProfessionalCleaning
+          ? { needsCleaning: true }
+          : {}),
       };
+
+      return removeUndefinedFields(productObj);
+    });
+  }
+
+  if (isStorage) {
+    if (!service.assetIds || service.assetIds.length === 0) {
+      throw new Error("Storage service requires at least one asset (assetIds)");
+    }
+    if (!assetsMap) {
+      throw new Error("Storage service requires assetsMap to build products");
+    }
+
+    const selectedStorageAssets = service.assetIds
+      .map((assetId) => assetsMap.get(assetId))
+      .filter((a) => a !== undefined);
+
+    if (selectedStorageAssets.length === 0) {
+      throw new Error("Storage service: no valid assets found in assetsMap");
+    }
+
+    validateAssetsCountryCode(selectedStorageAssets, membersMap);
+
+    const storageDetailsMap = service.storageDetails || {};
+
+    storageProducts = selectedStorageAssets.map((asset) => {
+      const brand =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Brand" ||
+            attr.key === "brand" ||
+            String(attr.key).toLowerCase() === "brand"
+        )?.value || "";
+      const model =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Model" ||
+            attr.key === "model" ||
+            String(attr.key).toLowerCase() === "model"
+        )?.value || "";
+
+      let location = "";
+      let assignedTo = "";
+      let assignedEmail: string | undefined = undefined;
+      let rawCountryCode: string | null = null;
+
+      if (asset.assignedMember || asset.assignedEmail) {
+        location = "Employee";
+        assignedTo = asset.assignedMember || asset.assignedEmail || "";
+        assignedEmail = asset.assignedEmail || undefined;
+        const memberEmail = asset.assignedEmail || asset.assignedMember;
+        if (memberEmail && membersMap) {
+          const member = membersMap.get(memberEmail.toLowerCase());
+          if (member?.country && member.country.trim() !== "") {
+            rawCountryCode = member.country;
+          }
+        }
+        if (!rawCountryCode) {
+          rawCountryCode = asset.countryCode || asset.country || null;
+        }
+      } else if (asset.location === "Our office") {
+        location = "Our office";
+        assignedTo = asset.office?.officeName || asset.officeName || "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location === "FP warehouse") {
+        location = "FP warehouse";
+        assignedTo = asset.officeName || asset.office?.officeName || "";
+        rawCountryCode =
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location) {
+        location = asset.location;
+        assignedTo = "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      }
+
+      const countryCode = normalizeCountryCode(rawCountryCode);
+      if (!countryCode || countryCode.trim() === "") {
+        throw new Error(
+          `Storage asset countryCode is required but not found. Asset ID: ${asset._id}`
+        );
+      }
+
+      const productSnapshot: any = {
+        category: asset.category || "Computer",
+        name: asset.name || "",
+        brand: brand || "",
+        model: model || "",
+        serialNumber: asset.serialNumber || "",
+        location: location || "",
+        assignedTo: assignedTo || "",
+        countryCode: countryCode,
+      };
+      if (assignedEmail) {
+        productSnapshot.assignedEmail = assignedEmail;
+      }
+
+      const detail: Partial<StorageDetail> = storageDetailsMap[asset._id] ?? {};
+      const productObj: any = {
+        productId: asset._id,
+        productSnapshot: removeUndefinedFields(productSnapshot),
+      };
+      if (
+        detail.approximateSize !== undefined &&
+        detail.approximateSize !== ""
+      ) {
+        productObj.approximateSize = detail.approximateSize;
+      }
+      if (
+        detail.approximateWeight !== undefined &&
+        detail.approximateWeight !== ""
+      ) {
+        productObj.approximateWeight = detail.approximateWeight;
+      }
+      if (
+        detail.approximateStorageDays !== undefined &&
+        detail.approximateStorageDays.trim() !== ""
+      ) {
+        productObj.approximateStorageDays = detail.approximateStorageDays;
+      }
+      if (
+        detail.additionalComments !== undefined &&
+        detail.additionalComments.trim() !== ""
+      ) {
+        productObj.additionalComments = detail.additionalComments;
+      }
 
       return removeUndefinedFields(productObj);
     });
@@ -1437,7 +1591,7 @@ export function transformServiceToBackendFormat(
 
   // Construir productSnapshot si hay asset (para IT Support)
   let productSnapshot: any = undefined;
-  if (asset && service.assetId && !isEnrollment) {
+  if (asset && service.assetId && !isEnrollment && !isStorage) {
     productSnapshot = buildEnrolledDeviceFromAsset(asset);
   }
 
@@ -1460,7 +1614,9 @@ export function transformServiceToBackendFormat(
     !isEnrollment &&
     !isBuyback &&
     !isDataWipe &&
-    !isCleaning
+    !isCleaning &&
+    !isDonations &&
+    !isStorage
   ) {
     transformed.productId = service.assetId;
   }
@@ -1470,9 +1626,27 @@ export function transformServiceToBackendFormat(
     !isEnrollment &&
     !isBuyback &&
     !isDataWipe &&
-    !isCleaning
+    !isCleaning &&
+    !isDonations &&
+    !isStorage
   ) {
     transformed.productSnapshot = productSnapshot;
+  }
+
+  // Para Storage - payload: serviceCategory "Storage", products[] con productSnapshot y storage details
+  if (isStorage) {
+    if (!storageProducts || storageProducts.length === 0) {
+      throw new Error("Storage service: products is required");
+    }
+
+    const storageService: any = {
+      serviceCategory: serviceCategory,
+      products: storageProducts,
+    };
+
+    return removeUndefinedFields(storageService) as NonNullable<
+      QuoteRequestPayload["services"]
+    >[0];
   }
 
   // Para Cleaning - payload: serviceCategory, products[], additionalDetails (comentario global)
@@ -1578,8 +1752,8 @@ export function transformServiceToBackendFormat(
     >[0];
   }
 
-  // Para IT Support - agregar campos específicos de IT Support (solo si no es Buyback, Data Wipe ni Cleaning)
-  if (!isBuyback && !isDataWipe && !isCleaning && !isDonations) {
+  // Para IT Support - agregar campos específicos de IT Support (solo si no es Buyback, Data Wipe, Cleaning, Donations ni Storage)
+  if (!isBuyback && !isDataWipe && !isCleaning && !isDonations && !isStorage) {
     if (issues.length > 0) {
       transformed.issues = issues;
     }

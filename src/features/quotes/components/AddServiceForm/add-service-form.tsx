@@ -20,6 +20,7 @@ import { StepBuybackDetails } from "../AddServiceModal/step-buyback-details";
 import { StepDataWipeDetails } from "../AddServiceModal/step-data-wipe-details";
 import { StepCleaningDetails } from "../AddServiceModal/step-cleaning-details";
 import { StepDonationDetails } from "../AddServiceModal/step-donation-details";
+import { StepStorageDetails } from "../AddServiceModal/step-storage-details";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import type { QuoteService, QuoteProduct } from "../../types/quote.types";
 
@@ -86,7 +87,10 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
 
         if (type === "it-support") {
           if (editingService.assetId) {
-            if (editingService.issueTypes && editingService.issueTypes.length > 0) {
+            if (
+              editingService.issueTypes &&
+              editingService.issueTypes.length > 0
+            ) {
               initialStep = editingService.description ? 5 : 4;
             } else {
               initialStep = 3;
@@ -99,10 +103,12 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           type === "buyback" ||
           type === "data-wipe" ||
           type === "cleaning" ||
-          type === "donations"
+          type === "donations" ||
+          type === "storage"
         ) {
           // Servicios multi-asset: si ya hay datos del paso 3, arrancar en step 3, si no en step 2
-          const hasAssets = !!editingService.assetIds && editingService.assetIds.length > 0;
+          const hasAssets =
+            !!editingService.assetIds && editingService.assetIds.length > 0;
           if (!hasAssets) {
             initialStep = 2;
           } else if (type === "enrollment") {
@@ -111,7 +117,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             initialStep = editingService.buybackDetails ? 3 : 2;
           } else if (type === "data-wipe") {
             initialStep =
-              editingService.dataWipeDetails || editingService.additionalDetails ? 3 : 2;
+              editingService.dataWipeDetails || editingService.additionalDetails
+                ? 3
+                : 2;
           } else if (type === "cleaning") {
             initialStep =
               editingService.requiredDeliveryDate ||
@@ -125,6 +133,12 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               editingService.donationDataWipe ||
               editingService.donationProfessionalCleaning ||
               editingService.additionalComments
+                ? 3
+                : 2;
+          } else if (type === "storage") {
+            initialStep =
+              editingService.storageDetails &&
+              Object.keys(editingService.storageDetails).length > 0
                 ? 3
                 : 2;
           }
@@ -151,7 +165,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           serviceType === "buyback" ||
           serviceType === "data-wipe" ||
           serviceType === "cleaning" ||
-          serviceType === "donations"
+          serviceType === "donations" ||
+          serviceType === "storage"
           ? 2
           : 3
         : 1;
@@ -206,6 +221,12 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               cleaningType: undefined,
               additionalDetails: undefined,
             }));
+          } else if (serviceType === "storage") {
+            setServiceData((prev) => ({
+              ...prev,
+              storageDetails: undefined,
+              additionalDetails: undefined,
+            }));
           }
         } else if (currentStepValue === 2) {
           // Resetear datos del step 2 (select asset)
@@ -214,7 +235,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             serviceType === "buyback" ||
             serviceType === "data-wipe" ||
             serviceType === "cleaning" ||
-            serviceType === "donations"
+            serviceType === "donations" ||
+            serviceType === "storage"
           ) {
             setServiceData((prev) => ({
               ...prev,
@@ -264,7 +286,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "buyback" ||
       serviceType === "data-wipe" ||
       serviceType === "cleaning" ||
-      serviceType === "donations"
+      serviceType === "donations" ||
+      serviceType === "storage"
     ) {
       setCurrentStep(2);
     } else {
@@ -279,9 +302,10 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "buyback" ||
       serviceType === "data-wipe" ||
       serviceType === "cleaning" ||
-      serviceType === "donations"
+      serviceType === "donations" ||
+      serviceType === "storage"
     ) {
-      // Para Enrollment, Buyback, Data Wipe y Cleaning, guardar múltiples assets
+      // Para Enrollment, Buyback, Data Wipe, Cleaning, Donations y Storage, guardar múltiples assets
       handleDataChange({ assetIds });
     } else {
       // Para IT Support, solo se permite un asset (single selection)
@@ -320,6 +344,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       // Para Donations, validar que hay al menos un asset seleccionado
       if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
       // Ir al step 3 (donation options)
+      setCurrentStep(3);
+    } else if (serviceType === "storage") {
+      if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
       setCurrentStep(3);
     } else {
       // Para IT Support, validar que hay un asset seleccionado
@@ -532,6 +559,35 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     onComplete();
   };
 
+  const handleContinueFromStorageDetails = () => {
+    if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+
+    const completeService: QuoteService = {
+      id: serviceData.id!,
+      serviceType: serviceData.serviceType!,
+      assetIds: serviceData.assetIds || [],
+      storageDetails: serviceData.storageDetails || {},
+      country: serviceData.country || "",
+      city: serviceData.city,
+      requiredDeliveryDate: serviceData.requiredDeliveryDate,
+    };
+
+    if (editingServiceId) {
+      updateService(editingServiceId, completeService);
+      setEditingServiceId(undefined);
+    } else {
+      addService(completeService);
+    }
+
+    setServiceData({
+      id: generateId(),
+      impactLevel: "medium",
+    });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
+  };
+
   const handleNext = () => {
     const serviceType = serviceData.serviceType || currentServiceType;
 
@@ -591,6 +647,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     const isDataWipe = serviceType === "data-wipe";
     const isCleaning = serviceType === "cleaning";
     const isDonations = serviceType === "donations";
+    const isStorage = serviceType === "storage";
 
     switch (currentStep) {
       case 1:
@@ -665,6 +722,17 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               onAssetSelect={handleAssetSelect}
               allowMultiple={true}
               serviceType="donations"
+            />
+          );
+        }
+        if (isStorage) {
+          return (
+            <StepSelectAsset
+              selectedAssetIds={serviceData.assetIds || []}
+              onAssetSelect={handleAssetSelect}
+              allowMultiple={true}
+              serviceType="storage"
+              excludeFromWarehouse={true}
             />
           );
         }
@@ -745,8 +813,22 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             <StepDonationDetails
               assetIds={serviceData.assetIds || []}
               donationDataWipe={serviceData.donationDataWipe}
-              donationProfessionalCleaning={serviceData.donationProfessionalCleaning}
+              donationProfessionalCleaning={
+                serviceData.donationProfessionalCleaning
+              }
               additionalDetails={serviceData.additionalDetails}
+              onDataChange={(updates) => {
+                handleDataChange(updates);
+              }}
+            />
+          );
+        }
+        // Mostrar storage details si es Storage
+        if (isStorage) {
+          return (
+            <StepStorageDetails
+              assetIds={serviceData.assetIds || []}
+              storageDetails={serviceData.storageDetails || {}}
               onDataChange={(updates) => {
                 handleDataChange(updates);
               }}
@@ -826,6 +908,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     const isDataWipe = serviceType === "data-wipe";
     const isCleaning = serviceType === "cleaning";
     const isDonations = serviceType === "donations";
+    const isStorage = serviceType === "storage";
 
     if (currentStep === 2 && isITSupport) {
       // En step 2 para IT Support, se necesita seleccionar un asset
@@ -849,6 +932,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     }
     if (currentStep === 2 && isDonations) {
       // En step 2 para Donations, se necesita seleccionar al menos un asset
+      return !!serviceData.assetIds && serviceData.assetIds.length > 0;
+    }
+    if (currentStep === 2 && isStorage) {
       return !!serviceData.assetIds && serviceData.assetIds.length > 0;
     }
     if (currentStep === 3 && isITSupport) {
@@ -887,7 +973,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       return true;
     }
     if (currentStep === 3 && isDonations) {
-      // En step 3 para Donations (Donation Options), siempre se puede proceder (todos los campos son opcionales)
+      return true;
+    }
+    if (currentStep === 3 && isStorage) {
       return true;
     }
     if (
@@ -896,7 +984,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       !isEnrollment &&
       !isBuyback &&
       !isDataWipe &&
-      !isCleaning
+      !isCleaning &&
+      !isDonations &&
+      !isStorage
     ) {
       // Para otros servicios, step 3 es Quote Details
       return !!serviceData.country;
@@ -919,6 +1009,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   const isDataWipeForRender = serviceTypeForRender === "data-wipe";
   const isCleaningForRender = serviceTypeForRender === "cleaning";
   const isDonationsForRender = serviceTypeForRender === "donations";
+  const isStorageForRender = serviceTypeForRender === "storage";
 
   return (
     <div className="flex justify-center w-full">
@@ -1024,6 +1115,17 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           </div>
         )}
+        {currentStep === 3 && isStorageForRender && (
+          <div className="flex justify-end items-center pt-4 border-t">
+            <Button
+              onClick={handleContinueFromStorageDetails}
+              disabled={!canProceed()}
+              variant="primary"
+              size="small"
+              body="Add Storage Request"
+            />
+          </div>
+        )}
         {currentStep === 4 && isITSupportForRender && (
           <div className="flex justify-end items-center pt-4 border-t">
             <Button
@@ -1052,7 +1154,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           !isBuybackForRender &&
           !isDataWipeForRender &&
           !isCleaningForRender &&
-          !isDonationsForRender && (
+          !isDonationsForRender &&
+          !isStorageForRender && (
             <div className="flex justify-end items-center pt-4 border-t">
               <Button
                 onClick={handleNext}

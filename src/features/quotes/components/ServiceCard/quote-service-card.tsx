@@ -10,6 +10,7 @@ import {
   Eraser,
   Sparkles,
   Gift,
+  Package,
 } from "lucide-react";
 import {
   Badge,
@@ -79,6 +80,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       "data-wipe": "Data Wipe",
       cleaning: "Cleaning",
       donations: "Donations",
+      storage: "Storage",
     };
     return serviceTypeMap[serviceType] || serviceType;
   };
@@ -308,6 +310,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             <Sparkles className="w-3 h-3" />
           ) : service.serviceType === "donations" ? (
             <Gift className="w-3 h-3" />
+          ) : service.serviceType === "storage" ? (
+            <Package className="w-3 h-3" />
           ) : (
             <Wrench className="w-3 h-3" />
           )}
@@ -791,11 +795,107 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         </div>
       )}
 
+      {/* Storage: Selected Assets */}
+      {service.serviceType === "storage" && selectedAssets.length > 0 && (
+        <div className="mb-3">
+          <div className="mb-2 font-medium text-sm">
+            {selectedAssets.length} asset
+            {selectedAssets.length !== 1 ? "s" : ""} for storage
+          </div>
+          <ul className="flex flex-col gap-3">
+            {selectedAssets.map((asset) => {
+              const title = getDonationAssetTitle(asset);
+              const assignment = getAssignmentInfo(asset);
+              const storageDetail = service.storageDetails?.[asset._id];
+              const countryCode =
+                assignment && "country" in assignment ? assignment.country : "";
+              const countryName = countryCode
+                ? countriesByCode[countryCode] || countryCode
+                : "";
+              const assignedToLabel =
+                assignment?.type === "employee"
+                  ? assignment.member
+                  : assignment?.type === "office"
+                  ? assignment.officeName
+                  : assignment?.type === "warehouse"
+                  ? "FP warehouse"
+                  : "";
+              return (
+                <li
+                  key={asset._id}
+                  className="flex items-start gap-3 bg-gray-50 p-3 border border-gray-200 rounded-lg"
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    <CategoryIcons products={[asset]} />
+                  </div>
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm truncate">
+                      {title}
+                    </div>
+                    {asset.serialNumber && (
+                      <div className="text-gray-600 text-xs">
+                        <span className="font-medium">SN:</span>{" "}
+                        {asset.serialNumber}
+                      </div>
+                    )}
+                    {assignment && (
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 text-xs">
+                        <span>
+                          <span className="font-medium">Location:</span>{" "}
+                          {assignment.location}
+                        </span>
+                        {countryCode ? (
+                          <span className="flex items-center gap-1">
+                            <CountryFlag countryName={countryCode} size={14} />
+                            <span className="truncate">
+                              {countryName}
+                              {assignedToLabel ? ` - ${assignedToLabel}` : ""}
+                            </span>
+                          </span>
+                        ) : (
+                          assignedToLabel && (
+                            <span className="truncate">{assignedToLabel}</span>
+                          )
+                        )}
+                      </div>
+                    )}
+                    {(storageDetail?.approximateSize ||
+                      storageDetail?.approximateWeight ||
+                      storageDetail?.approximateStorageDays ||
+                      storageDetail?.additionalComments) && (
+                      <div className="space-y-0.5 mt-1 text-gray-600 text-xs">
+                        {storageDetail.approximateSize && (
+                          <div>Size: {storageDetail.approximateSize}</div>
+                        )}
+                        {storageDetail.approximateWeight && (
+                          <div>Weight: {storageDetail.approximateWeight}</div>
+                        )}
+                        {storageDetail.approximateStorageDays && (
+                          <div>
+                            Duration: {storageDetail.approximateStorageDays}
+                          </div>
+                        )}
+                        {storageDetail.additionalComments && (
+                          <div className="italic">
+                            {storageDetail.additionalComments}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
       {/* Asset (for IT Support) */}
       {selectedAsset &&
         service.serviceType !== "enrollment" &&
         service.serviceType !== "donations" &&
-        service.serviceType !== "cleaning" && (
+        service.serviceType !== "cleaning" &&
+        service.serviceType !== "storage" && (
           <div className="mb-3 text-sm">
             <div className="mb-2 text-gray-700">
               <span className="font-medium">Asset: </span>

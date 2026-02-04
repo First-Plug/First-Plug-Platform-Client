@@ -8,6 +8,7 @@ import {
   Eraser,
   Sparkles,
   Gift,
+  Package,
 } from "lucide-react";
 import { cn } from "@/shared";
 
@@ -60,6 +61,13 @@ const serviceTypes: ServiceType[] = [
     name: "Donations",
     description: "Donate equipment to charitable organizations",
     icon: <Gift className="w-6 h-6" strokeWidth={2} />,
+    enabled: true,
+  },
+  {
+    id: "storage",
+    name: "Storage",
+    description: "Store equipment in our secure warehouse",
+    icon: <Package className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },
 ];

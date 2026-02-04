@@ -338,6 +338,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isDataWipe = serviceType === "data-wipe";
     const isCleaning = serviceType === "cleaning";
     const isDonations = serviceType === "donations";
+    const isStorage = serviceType === "storage";
 
     if (isITSupport) {
       const itSupportStepTitles: Record<number, string> = {
@@ -395,6 +396,15 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       return donationsStepTitles[step] || "";
     }
 
+    if (isStorage) {
+      const storageStepTitles: Record<number, string> = {
+        1: "Select Service Type",
+        2: "Select Assets",
+        3: "Storage Details",
+      };
+      return storageStepTitles[step] || "";
+    }
+
     const serviceStepTitles: Record<number, string> = {
       1: "Select Service Type",
       2: "Quote Details",
@@ -415,12 +425,14 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isDataWipe = serviceType === "data-wipe";
     const isCleaning = serviceType === "cleaning";
     const isDonations = serviceType === "donations";
+    const isStorage = serviceType === "storage";
     if (isITSupport) return 5;
     if (isEnrollment) return 3;
     if (isBuyback) return 3;
     if (isDataWipe) return 3;
     if (isCleaning) return 3;
     if (isDonations) return 3;
+    if (isStorage) return 3;
     return 2;
   };
 
@@ -456,12 +468,18 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isDataWipe = currentServiceType === "data-wipe";
     const isCleaning = currentServiceType === "cleaning";
     const isDonations = currentServiceType === "donations";
+    const isStorage = currentServiceType === "storage";
     const minStep = isEditing
       ? isITSupport
         ? 2
-        : isEnrollment || isBuyback || isDataWipe || isCleaning || isDonations
-          ? 2
-          : 3
+        : isEnrollment ||
+          isBuyback ||
+          isDataWipe ||
+          isCleaning ||
+          isDonations ||
+          isStorage
+        ? 2
+        : 3
       : 1;
 
     const shouldShowBackButton = onBack && currentStep > minStep;
