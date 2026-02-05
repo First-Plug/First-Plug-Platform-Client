@@ -277,6 +277,8 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
                 ? "You don't have any assets available for buyback yet."
                 : serviceType === "cleaning"
                 ? "You don't have any assets available for cleaning yet."
+                : serviceType === "destruction-recycling"
+                ? "You don't have any assets available for destruction yet."
                 : "No assets available."}
             </p>
             {!searchQuery && allProducts.length === 0 && (

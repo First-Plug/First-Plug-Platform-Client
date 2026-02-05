@@ -9,6 +9,7 @@ import {
   Sparkles,
   Gift,
   Package,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/shared";
 
@@ -68,6 +69,13 @@ const serviceTypes: ServiceType[] = [
     name: "Storage",
     description: "Store equipment in our secure warehouse",
     icon: <Package className="w-6 h-6" strokeWidth={2} />,
+    enabled: true,
+  },
+  {
+    id: "destruction-recycling",
+    name: "Destruction & Recycling",
+    description: "Secure destruction and recycling of equipment",
+    icon: <Trash2 className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },
 ];

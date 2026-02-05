@@ -247,7 +247,12 @@ export const Sidebar = () => {
 
             <SidebarSection
               isSmall={isSidebarSmall}
-              icon={<FileText size={20} />}
+              icon={
+                <FileText
+                  size={20}
+                  className="flex-shrink-0 w-[22px] h-[22px]"
+                />
+              }
               title="Quotes"
               defaultExpanded={pathArray.includes("quotes")}
               subSections={[

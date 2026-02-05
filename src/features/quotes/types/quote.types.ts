@@ -61,6 +61,10 @@ export interface QuoteService {
   donationDataWipe?: boolean; // Donations
   donationProfessionalCleaning?: boolean; // Donations
   storageDetails?: Record<string, StorageDetail>; // Detalles de Storage por assetId
+  /** Destruction & Recycling: solicitar certificado de destrucción */
+  requiresCertificate?: boolean;
+  /** Destruction & Recycling: comentarios/instrucciones (mapea a "comments" en payload) */
+  comments?: string;
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -304,6 +308,7 @@ export interface QuoteHistoryService {
   city?: string;
   deliveryDate?: string;
   comments?: string;
+  requiresCertificate?: boolean;
   enrolledDevices?: EnrolledDeviceSnapshot[];
   productSnapshot?: ITSupportProductSnapshot;
   products?:

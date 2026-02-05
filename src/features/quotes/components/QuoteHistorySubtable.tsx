@@ -107,6 +107,19 @@ type TableRow =
       additionalDetails?: string;
       index: number;
       total: number;
+    }
+  | {
+      type: "service";
+      serviceCategory: "Destruction and Recycling";
+      data: any; // productSnapshot
+      destructionProduct?: {
+        productId: string;
+        productSnapshot: any;
+      };
+      requiresCertificate?: boolean;
+      comments?: string;
+      index: number;
+      total: number;
     };
 
 const formatDate = (date?: string) => {
@@ -273,6 +286,24 @@ export const QuoteHistorySubtable = ({
           index: idx,
           total: storageProducts.length,
         })) as TableRow[];
+      } else if (
+        service.serviceCategory === "Destruction and Recycling" &&
+        service.products?.length
+      ) {
+        const destructionProducts = service.products as Array<{
+          productId: string;
+          productSnapshot: any;
+        }>;
+        return destructionProducts.map((product, idx) => ({
+          type: "service" as const,
+          serviceCategory: "Destruction and Recycling" as const,
+          data: product.productSnapshot,
+          destructionProduct: product,
+          requiresCertificate: service.requiresCertificate,
+          comments: service.comments,
+          index: idx,
+          total: destructionProducts.length,
+        })) as TableRow[];
       }
       return [];
     }),
@@ -328,6 +359,10 @@ export const QuoteHistorySubtable = ({
               !isProduct && "index" in row && row.serviceCategory === "Donate";
             const isStorage =
               !isProduct && "index" in row && row.serviceCategory === "Storage";
+            const isDestructionRecycling =
+              !isProduct &&
+              "index" in row &&
+              row.serviceCategory === "Destruction and Recycling";
 
             return (
               <TableRow key={index}>
@@ -882,6 +917,51 @@ export const QuoteHistorySubtable = ({
                               {(row as any).additionalDetails}
                             </span>
                           </div>
+                        )}
+                      </>
+                    ) : isDestructionRecycling ? (
+                      <>
+                        <span className="font-semibold">
+                          {(row as any).data.category}
+                        </span>
+                        {((row as any).data.brand ||
+                          (row as any).data.model) && (
+                          <span className="text-gray-700">
+                            {(row as any).data.brand}
+                            {(row as any).data.brand &&
+                              (row as any).data.model &&
+                              " - "}
+                            {(row as any).data.model}
+                          </span>
+                        )}
+                        {(row as any).data.name && (
+                          <span className="text-gray-600 italic">
+                            {(row as any).data.name}
+                          </span>
+                        )}
+                        {(row as any).data.serialNumber && (
+                          <span className="text-gray-600">
+                            SN: {(row as any).data.serialNumber}
+                          </span>
+                        )}
+                        <span className="text-gray-600">
+                          {(row as any).data.assignedTo} (
+                          {(row as any).data.location})
+                        </span>
+                        {(row as any).data.countryCode && (
+                          <QuoteLocationWithCountry
+                            country={(row as any).data.countryCode}
+                          />
+                        )}
+                        {(row as any).requiresCertificate && (
+                          <span className="font-semibold text-gray-600">
+                            ✓ Certificate Required
+                          </span>
+                        )}
+                        {(row as any).comments && (
+                          <span className="text-gray-500 text-xs italic">
+                            {(row as any).comments}
+                          </span>
                         )}
                       </>
                     ) : null}

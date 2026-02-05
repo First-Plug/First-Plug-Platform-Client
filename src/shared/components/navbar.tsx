@@ -339,6 +339,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isCleaning = serviceType === "cleaning";
     const isDonations = serviceType === "donations";
     const isStorage = serviceType === "storage";
+    const isDestructionRecycling = serviceType === "destruction-recycling";
 
     if (isITSupport) {
       const itSupportStepTitles: Record<number, string> = {
@@ -405,6 +406,15 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       return storageStepTitles[step] || "";
     }
 
+    if (isDestructionRecycling) {
+      const destructionStepTitles: Record<number, string> = {
+        1: "Select Service Type",
+        2: "Select Assets",
+        3: "Destruction Options",
+      };
+      return destructionStepTitles[step] || "";
+    }
+
     const serviceStepTitles: Record<number, string> = {
       1: "Select Service Type",
       2: "Quote Details",
@@ -426,6 +436,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isCleaning = serviceType === "cleaning";
     const isDonations = serviceType === "donations";
     const isStorage = serviceType === "storage";
+    const isDestructionRecycling = serviceType === "destruction-recycling";
     if (isITSupport) return 5;
     if (isEnrollment) return 3;
     if (isBuyback) return 3;
@@ -433,6 +444,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     if (isCleaning) return 3;
     if (isDonations) return 3;
     if (isStorage) return 3;
+    if (isDestructionRecycling) return 3;
     return 2;
   };
 
@@ -469,7 +481,12 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isCleaning = currentServiceType === "cleaning";
     const isDonations = currentServiceType === "donations";
     const isStorage = currentServiceType === "storage";
-    const minStep = isEditing
+    const isDestructionRecycling =
+      currentServiceType === "destruction-recycling";
+    // Para Destruction & Recycling no mostrar botón Back en ningún paso (minStep = 3)
+    const minStep = isDestructionRecycling
+      ? 3
+      : isEditing
       ? isITSupport
         ? 2
         : isEnrollment ||
