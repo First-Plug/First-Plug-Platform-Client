@@ -212,6 +212,7 @@ function mapServiceTypeToCategory(serviceType?: string): string {
     cleaning: "Cleaning",
     donations: "Donate",
     storage: "Storage",
+    "destruction-recycling": "Destruction and Recycling",
   };
   return serviceTypeMap[serviceType] || serviceType;
 }
@@ -609,6 +610,8 @@ export function transformServiceToBackendFormat(
   const isCleaning = service.serviceType === "cleaning";
   const isDonations = service.serviceType === "donations";
   const isStorage = service.serviceType === "storage";
+  const isDestructionRecycling =
+    service.serviceType === "destruction-recycling";
 
   // Para Enrollment, construir enrolledDevices y productIds
   let enrolledDevices: any[] | undefined = undefined;
@@ -624,6 +627,8 @@ export function transformServiceToBackendFormat(
   let donationProducts: any[] | undefined = undefined;
   // Para Storage, construir products array con productSnapshot y storage details
   let storageProducts: any[] | undefined = undefined;
+  // Para Destruction and Recycling, construir products array con productSnapshot
+  let destructionProducts: any[] | undefined = undefined;
 
   if (isBuyback) {
     if (!service.assetIds || service.assetIds.length === 0) {
@@ -1589,9 +1594,124 @@ export function transformServiceToBackendFormat(
     });
   }
 
+  if (isDestructionRecycling) {
+    if (!service.assetIds || service.assetIds.length === 0) {
+      throw new Error(
+        "Destruction and Recycling service requires at least one asset (assetIds)"
+      );
+    }
+    if (!assetsMap) {
+      throw new Error(
+        "Destruction and Recycling service requires assetsMap to build products"
+      );
+    }
+
+    const selectedDestructionAssets = service.assetIds
+      .map((assetId) => assetsMap.get(assetId))
+      .filter((a) => a !== undefined);
+
+    if (selectedDestructionAssets.length === 0) {
+      throw new Error(
+        "Destruction and Recycling service: no valid assets found in assetsMap"
+      );
+    }
+
+    validateAssetsCountryCode(selectedDestructionAssets, membersMap);
+
+    destructionProducts = selectedDestructionAssets.map((asset) => {
+      const brand =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Brand" ||
+            attr.key === "brand" ||
+            String(attr.key).toLowerCase() === "brand"
+        )?.value || "";
+      const model =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Model" ||
+            attr.key === "model" ||
+            String(attr.key).toLowerCase() === "model"
+        )?.value || "";
+
+      let location = "";
+      let assignedTo = "";
+      let rawCountryCode: string | null = null;
+
+      if (asset.assignedMember || asset.assignedEmail) {
+        location = asset.location || "Employee";
+        assignedTo = asset.assignedMember || asset.assignedEmail || "";
+        const memberEmail = asset.assignedEmail || asset.assignedMember;
+        if (memberEmail && membersMap) {
+          const member = membersMap.get(memberEmail.toLowerCase());
+          if (member?.country && member.country.trim() !== "") {
+            rawCountryCode = member.country;
+          }
+        }
+        if (!rawCountryCode) {
+          rawCountryCode = asset.countryCode || asset.country || null;
+        }
+      } else if (asset.location === "Our office") {
+        location = "Our office";
+        assignedTo = asset.office?.officeName || asset.officeName || "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location === "FP warehouse") {
+        location = "FP warehouse";
+        assignedTo = asset.officeName || asset.office?.officeName || "";
+        rawCountryCode =
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location) {
+        location = asset.location;
+        assignedTo = "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      }
+
+      const countryCode = normalizeCountryCode(rawCountryCode);
+      if (!countryCode || countryCode.trim() === "") {
+        throw new Error(
+          `Destruction asset countryCode is required but not found. Asset ID: ${asset._id}`
+        );
+      }
+
+      const productSnapshot: any = {
+        category: asset.category || "Computer",
+        name: asset.name || asset.category || "Asset",
+        brand: brand || "",
+        model: model || "",
+        serialNumber: asset.serialNumber || "",
+        location: location || "",
+        assignedTo: assignedTo || "",
+        countryCode: countryCode,
+      };
+
+      return {
+        productId: asset._id,
+        productSnapshot: removeUndefinedFields(productSnapshot),
+      };
+    });
+  }
+
   // Construir productSnapshot si hay asset (para IT Support)
   let productSnapshot: any = undefined;
-  if (asset && service.assetId && !isEnrollment && !isStorage) {
+  if (
+    asset &&
+    service.assetId &&
+    !isEnrollment &&
+    !isStorage &&
+    !isDestructionRecycling
+  ) {
     productSnapshot = buildEnrolledDeviceFromAsset(asset);
   }
 
@@ -1616,7 +1736,8 @@ export function transformServiceToBackendFormat(
     !isDataWipe &&
     !isCleaning &&
     !isDonations &&
-    !isStorage
+    !isStorage &&
+    !isDestructionRecycling
   ) {
     transformed.productId = service.assetId;
   }
@@ -1628,9 +1749,32 @@ export function transformServiceToBackendFormat(
     !isDataWipe &&
     !isCleaning &&
     !isDonations &&
-    !isStorage
+    !isStorage &&
+    !isDestructionRecycling
   ) {
     transformed.productSnapshot = productSnapshot;
+  }
+
+  // Para Destruction and Recycling - payload: serviceCategory, products[], requiresCertificate, comments
+  if (isDestructionRecycling) {
+    if (!destructionProducts || destructionProducts.length === 0) {
+      throw new Error(
+        "Destruction and Recycling service: products is required"
+      );
+    }
+
+    const destructionService: any = {
+      serviceCategory: serviceCategory,
+      products: destructionProducts,
+      requiresCertificate: service.requiresCertificate ?? true,
+    };
+    if (service.comments && service.comments.trim() !== "") {
+      destructionService.comments = service.comments;
+    }
+
+    return removeUndefinedFields(destructionService) as NonNullable<
+      QuoteRequestPayload["services"]
+    >[0];
   }
 
   // Para Storage - payload: serviceCategory "Storage", products[] con productSnapshot y storage details

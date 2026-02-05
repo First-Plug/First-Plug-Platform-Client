@@ -21,6 +21,7 @@ import { StepDataWipeDetails } from "../AddServiceModal/step-data-wipe-details";
 import { StepCleaningDetails } from "../AddServiceModal/step-cleaning-details";
 import { StepDonationDetails } from "../AddServiceModal/step-donation-details";
 import { StepStorageDetails } from "../AddServiceModal/step-storage-details";
+import { StepDestructionOptions } from "../AddServiceModal/step-destruction-options";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import type { QuoteService, QuoteProduct } from "../../types/quote.types";
 
@@ -104,7 +105,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           type === "data-wipe" ||
           type === "cleaning" ||
           type === "donations" ||
-          type === "storage"
+          type === "storage" ||
+          type === "destruction-recycling"
         ) {
           // Servicios multi-asset: si ya hay datos del paso 3, arrancar en step 3, si no en step 2
           const hasAssets =
@@ -141,6 +143,12 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               Object.keys(editingService.storageDetails).length > 0
                 ? 3
                 : 2;
+          } else if (type === "destruction-recycling") {
+            initialStep =
+              editingService.requiresCertificate !== undefined ||
+              (editingService.comments && editingService.comments.trim() !== "")
+                ? 3
+                : 2;
           }
         } else {
           // Otros servicios: default step 3 (quote details)
@@ -166,7 +174,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           serviceType === "data-wipe" ||
           serviceType === "cleaning" ||
           serviceType === "donations" ||
-          serviceType === "storage"
+          serviceType === "storage" ||
+          serviceType === "destruction-recycling"
           ? 2
           : 3
         : 1;
@@ -227,6 +236,12 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               storageDetails: undefined,
               additionalDetails: undefined,
             }));
+          } else if (serviceType === "destruction-recycling") {
+            setServiceData((prev) => ({
+              ...prev,
+              requiresCertificate: undefined,
+              comments: undefined,
+            }));
           }
         } else if (currentStepValue === 2) {
           // Resetear datos del step 2 (select asset)
@@ -236,7 +251,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             serviceType === "data-wipe" ||
             serviceType === "cleaning" ||
             serviceType === "donations" ||
-            serviceType === "storage"
+            serviceType === "storage" ||
+            serviceType === "destruction-recycling"
           ) {
             setServiceData((prev) => ({
               ...prev,
@@ -287,7 +303,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "data-wipe" ||
       serviceType === "cleaning" ||
       serviceType === "donations" ||
-      serviceType === "storage"
+      serviceType === "storage" ||
+      serviceType === "destruction-recycling"
     ) {
       setCurrentStep(2);
     } else {
@@ -303,9 +320,10 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "data-wipe" ||
       serviceType === "cleaning" ||
       serviceType === "donations" ||
-      serviceType === "storage"
+      serviceType === "storage" ||
+      serviceType === "destruction-recycling"
     ) {
-      // Para Enrollment, Buyback, Data Wipe, Cleaning, Donations y Storage, guardar múltiples assets
+      // Para Enrollment, Buyback, Data Wipe, Cleaning, Donations, Storage y Destruction & Recycling, guardar múltiples assets
       handleDataChange({ assetIds });
     } else {
       // Para IT Support, solo se permite un asset (single selection)
@@ -347,6 +365,12 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       setCurrentStep(3);
     } else if (serviceType === "storage") {
       if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+      setCurrentStep(3);
+    } else if (serviceType === "destruction-recycling") {
+      if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+      if (serviceData.requiresCertificate === undefined) {
+        handleDataChange({ requiresCertificate: true });
+      }
       setCurrentStep(3);
     } else {
       // Para IT Support, validar que hay un asset seleccionado
@@ -588,6 +612,35 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     onComplete();
   };
 
+  const handleContinueFromDestructionOptions = () => {
+    if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+
+    const completeService: QuoteService = {
+      id: serviceData.id!,
+      serviceType: serviceData.serviceType!,
+      assetIds: serviceData.assetIds || [],
+      requiresCertificate: serviceData.requiresCertificate ?? true,
+      comments: serviceData.comments,
+      country: serviceData.country || "",
+      city: serviceData.city,
+    };
+
+    if (editingServiceId) {
+      updateService(editingServiceId, completeService);
+      setEditingServiceId(undefined);
+    } else {
+      addService(completeService);
+    }
+
+    setServiceData({
+      id: generateId(),
+      impactLevel: "medium",
+    });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
+  };
+
   const handleNext = () => {
     const serviceType = serviceData.serviceType || currentServiceType;
 
@@ -648,6 +701,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     const isCleaning = serviceType === "cleaning";
     const isDonations = serviceType === "donations";
     const isStorage = serviceType === "storage";
+    const isDestructionRecycling = serviceType === "destruction-recycling";
 
     switch (currentStep) {
       case 1:
@@ -733,6 +787,16 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               allowMultiple={true}
               serviceType="storage"
               excludeFromWarehouse={true}
+            />
+          );
+        }
+        if (isDestructionRecycling) {
+          return (
+            <StepSelectAsset
+              selectedAssetIds={serviceData.assetIds || []}
+              onAssetSelect={handleAssetSelect}
+              allowMultiple={true}
+              serviceType="destruction-recycling"
             />
           );
         }
@@ -835,6 +899,19 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           );
         }
+        // Mostrar destruction options si es Destruction & Recycling
+        if (isDestructionRecycling) {
+          return (
+            <StepDestructionOptions
+              assetIds={serviceData.assetIds || []}
+              requiresCertificate={serviceData.requiresCertificate ?? true}
+              comments={serviceData.comments}
+              onDataChange={(updates) => {
+                handleDataChange(updates);
+              }}
+            />
+          );
+        }
         // Para otros servicios, mostrar Quote Details directamente
         const productDataForDetailsOther: Partial<QuoteProduct> = {
           country: serviceData.country,
@@ -909,6 +986,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     const isCleaning = serviceType === "cleaning";
     const isDonations = serviceType === "donations";
     const isStorage = serviceType === "storage";
+    const isDestructionRecycling = serviceType === "destruction-recycling";
 
     if (currentStep === 2 && isITSupport) {
       // En step 2 para IT Support, se necesita seleccionar un asset
@@ -935,6 +1013,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       return !!serviceData.assetIds && serviceData.assetIds.length > 0;
     }
     if (currentStep === 2 && isStorage) {
+      return !!serviceData.assetIds && serviceData.assetIds.length > 0;
+    }
+    if (currentStep === 2 && isDestructionRecycling) {
       return !!serviceData.assetIds && serviceData.assetIds.length > 0;
     }
     if (currentStep === 3 && isITSupport) {
@@ -978,6 +1059,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     if (currentStep === 3 && isStorage) {
       return true;
     }
+    if (currentStep === 3 && isDestructionRecycling) {
+      return true;
+    }
     if (
       currentStep === 3 &&
       !isITSupport &&
@@ -986,7 +1070,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       !isDataWipe &&
       !isCleaning &&
       !isDonations &&
-      !isStorage
+      !isStorage &&
+      !isDestructionRecycling
     ) {
       // Para otros servicios, step 3 es Quote Details
       return !!serviceData.country;
@@ -1010,6 +1095,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   const isCleaningForRender = serviceTypeForRender === "cleaning";
   const isDonationsForRender = serviceTypeForRender === "donations";
   const isStorageForRender = serviceTypeForRender === "storage";
+  const isDestructionRecyclingForRender =
+    serviceTypeForRender === "destruction-recycling";
 
   return (
     <div className="flex justify-center w-full">
@@ -1126,6 +1213,17 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           </div>
         )}
+        {currentStep === 3 && isDestructionRecyclingForRender && (
+          <div className="flex justify-end items-center pt-4 border-t">
+            <Button
+              onClick={handleContinueFromDestructionOptions}
+              disabled={!canProceed()}
+              variant="primary"
+              size="small"
+              body="Submit Request"
+            />
+          </div>
+        )}
         {currentStep === 4 && isITSupportForRender && (
           <div className="flex justify-end items-center pt-4 border-t">
             <Button
@@ -1155,7 +1253,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           !isDataWipeForRender &&
           !isCleaningForRender &&
           !isDonationsForRender &&
-          !isStorageForRender && (
+          !isStorageForRender &&
+          !isDestructionRecyclingForRender && (
             <div className="flex justify-end items-center pt-4 border-t">
               <Button
                 onClick={handleNext}
