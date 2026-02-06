@@ -213,6 +213,7 @@ function mapServiceTypeToCategory(serviceType?: string): string {
     donations: "Donate",
     storage: "Storage",
     "destruction-recycling": "Destruction and Recycling",
+    logistics: "Logistics",
   };
   return serviceTypeMap[serviceType] || serviceType;
 }
@@ -612,6 +613,7 @@ export function transformServiceToBackendFormat(
   const isStorage = service.serviceType === "storage";
   const isDestructionRecycling =
     service.serviceType === "destruction-recycling";
+  const isLogistics = service.serviceType === "logistics";
 
   // Para Enrollment, construir enrolledDevices y productIds
   let enrolledDevices: any[] | undefined = undefined;
@@ -619,6 +621,8 @@ export function transformServiceToBackendFormat(
 
   // Para Buyback, construir products array con productSnapshot y buybackDetails
   let buybackProducts: any[] | undefined = undefined;
+  // Para Logistics, construir products array con productSnapshot y destination
+  let logisticsProducts: any[] | undefined = undefined;
   // Para Data Wipe, construir assets array con productSnapshot, desirableDate, currentLocation, currentMember, y destination
   let dataWipeAssets: any[] | undefined = undefined;
   // Para Cleaning, construir products array con productSnapshot, desiredDate, cleaningType, additionalComments
@@ -1710,7 +1714,8 @@ export function transformServiceToBackendFormat(
     service.assetId &&
     !isEnrollment &&
     !isStorage &&
-    !isDestructionRecycling
+    !isDestructionRecycling &&
+    !isLogistics
   ) {
     productSnapshot = buildEnrolledDeviceFromAsset(asset);
   }
@@ -1737,7 +1742,8 @@ export function transformServiceToBackendFormat(
     !isCleaning &&
     !isDonations &&
     !isStorage &&
-    !isDestructionRecycling
+    !isDestructionRecycling &&
+    !isLogistics
   ) {
     transformed.productId = service.assetId;
   }
@@ -1750,9 +1756,183 @@ export function transformServiceToBackendFormat(
     !isCleaning &&
     !isDonations &&
     !isStorage &&
-    !isDestructionRecycling
+    !isDestructionRecycling &&
+    !isLogistics
   ) {
     transformed.productSnapshot = productSnapshot;
+  }
+
+  // Para Logistics - payload: serviceCategory "Logistics", desirablePickupDate, additionalDetails, products[] con productSnapshot y destination
+  if (isLogistics) {
+    if (!service.assetIds || service.assetIds.length === 0) {
+      throw new Error("Logistics service requires at least one asset (assetIds)");
+    }
+    if (!assetsMap) {
+      throw new Error("Logistics service requires assetsMap to build products");
+    }
+    if (!service.logisticsDestination) {
+      throw new Error("Logistics service requires logisticsDestination");
+    }
+    if (!service.desirablePickupDate) {
+      throw new Error("Logistics service requires desirablePickupDate");
+    }
+
+    const selectedLogisticsAssets = service.assetIds
+      .map((assetId) => assetsMap!.get(assetId))
+      .filter((a) => a !== undefined);
+
+    if (selectedLogisticsAssets.length === 0) {
+      throw new Error(
+        "Logistics service: no valid assets found in assetsMap"
+      );
+    }
+
+    validateAssetsCountryCode(selectedLogisticsAssets, membersMap);
+
+    const dest = service.logisticsDestination;
+    const isGenericFpWarehouse =
+      dest.type === "Warehouse" && !dest.warehouseId;
+
+    const destinationPayloadForAll =
+      dest.type === "Office"
+        ? {
+            type: "Office" as const,
+            officeName: dest.officeName || "",
+            countryCode: dest.countryCode || "",
+          }
+        : dest.type === "Member"
+        ? {
+            type: "Member" as const,
+            memberId: dest.memberId || "",
+            assignedMember: dest.assignedMember || "",
+            assignedEmail: dest.assignedEmail || "",
+            countryCode: dest.countryCode || "",
+          }
+        : dest.type === "Warehouse" && dest.warehouseId
+        ? {
+            type: "Warehouse" as const,
+            ...(dest.warehouseId && { warehouseId: dest.warehouseId }),
+            ...(dest.warehouseName && { warehouseName: dest.warehouseName }),
+            countryCode: dest.countryCode || "",
+          }
+        : undefined;
+
+    if (!isGenericFpWarehouse && !destinationPayloadForAll) {
+      throw new Error(
+        "Logistics service: invalid logisticsDestination type"
+      );
+    }
+
+    logisticsProducts = selectedLogisticsAssets.map((asset) => {
+      const brand =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Brand" ||
+            attr.key === "brand" ||
+            String(attr.key).toLowerCase() === "brand"
+        )?.value || "";
+      const model =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Model" ||
+            attr.key === "model" ||
+            String(attr.key).toLowerCase() === "model"
+        )?.value || "";
+
+      let location = "";
+      let assignedTo = "";
+      let rawCountryCode: string | null = null;
+
+      if (asset.assignedMember || asset.assignedEmail) {
+        location = asset.location || "Employee";
+        assignedTo = asset.assignedMember || asset.assignedEmail || "";
+        const memberEmail = asset.assignedEmail || asset.assignedMember;
+        if (memberEmail && membersMap) {
+          const member = membersMap.get(memberEmail.toLowerCase());
+          if (member?.country && member.country.trim() !== "") {
+            rawCountryCode = member.country;
+          }
+        }
+        if (!rawCountryCode) {
+          rawCountryCode = asset.countryCode || asset.country || null;
+        }
+      } else if (asset.location === "Our office") {
+        location = "Our office";
+        assignedTo = asset.office?.officeName || asset.officeName || "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location === "FP warehouse") {
+        location = "FP warehouse";
+        assignedTo = asset.officeName || asset.office?.officeName || "";
+        rawCountryCode =
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location) {
+        location = asset.location;
+        assignedTo = "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      }
+
+      const countryCode = normalizeCountryCode(rawCountryCode);
+      if (!countryCode || countryCode.trim() === "") {
+        throw new Error(
+          `Logistics asset countryCode is required but not found. Asset ID: ${asset._id}`
+        );
+      }
+
+      const productSnapshotLogistics: any = {
+        category: asset.category || "Computer",
+        name: asset.name || asset.category || "Asset",
+        brand: brand || "",
+        model: model || "",
+        serialNumber: asset.serialNumber || "",
+        location: location || "",
+        assignedTo: assignedTo || "",
+        countryCode: countryCode,
+      };
+      if (asset.assignedEmail) {
+        productSnapshotLogistics.assignedEmail = asset.assignedEmail;
+      }
+      if (asset.assignedMember && !asset.assignedEmail) {
+        productSnapshotLogistics.assignedEmail = asset.assignedMember;
+      }
+
+      const productDestination = isGenericFpWarehouse
+        ? { type: "Warehouse" as const, countryCode: countryCode }
+        : destinationPayloadForAll!;
+
+      return {
+        productId: asset._id,
+        productSnapshot: removeUndefinedFields(productSnapshotLogistics),
+        destination: productDestination,
+      };
+    });
+
+    const logisticsService: any = {
+      serviceCategory: serviceCategory,
+      desirablePickupDate: service.desirablePickupDate,
+      products: logisticsProducts,
+    };
+    if (service.additionalDetails && service.additionalDetails.trim() !== "") {
+      logisticsService.additionalDetails = service.additionalDetails;
+    }
+    if (service.desirableDeliveryDate) {
+      logisticsService.desirableDeliveryDate = service.desirableDeliveryDate;
+    }
+
+    return removeUndefinedFields(logisticsService) as NonNullable<
+      QuoteRequestPayload["services"]
+    >[0];
   }
 
   // Para Destruction and Recycling - payload: serviceCategory, products[], requiresCertificate, comments

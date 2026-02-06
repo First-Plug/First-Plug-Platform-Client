@@ -11,6 +11,7 @@ import {
   Sparkles,
   Gift,
   Package,
+  Truck,
 } from "lucide-react";
 import {
   Badge,
@@ -82,6 +83,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       donations: "Donations",
       storage: "Storage",
       "destruction-recycling": "Destruction & Recycling",
+      logistics: "Logistics",
     };
     return serviceTypeMap[serviceType] || serviceType;
   };
@@ -315,6 +317,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             <Package className="w-3 h-3" />
           ) : service.serviceType === "destruction-recycling" ? (
             <Trash2 className="w-3 h-3" />
+          ) : service.serviceType === "logistics" ? (
+            <Truck className="w-3 h-3" />
           ) : (
             <Wrench className="w-3 h-3" />
           )}
@@ -989,13 +993,110 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         </div>
       )}
 
+      {service.serviceType === "logistics" && selectedAssets.length > 0 && (
+        <div className="mb-3">
+          <div className="mb-2 font-medium text-sm">
+            {selectedAssets.length} asset
+            {selectedAssets.length !== 1 ? "s" : ""} to ship
+          </div>
+          <ul className="flex flex-col gap-3">
+            {selectedAssets.map((asset) => {
+              const title = getDonationAssetTitle(asset);
+              const assignment = getAssignmentInfo(asset);
+              const countryCode =
+                assignment && "country" in assignment ? assignment.country : "";
+              const countryName = countryCode
+                ? countriesByCode[countryCode] || countryCode
+                : "";
+              const assignedToLabel =
+                assignment?.type === "employee"
+                  ? assignment.member
+                  : assignment?.type === "office"
+                  ? assignment.officeName
+                  : assignment?.type === "warehouse"
+                  ? "FP warehouse"
+                  : "";
+              return (
+                <li
+                  key={asset._id}
+                  className="flex items-start gap-3 bg-gray-50 p-3 border border-gray-200 rounded-lg"
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    <CategoryIcons products={[asset]} />
+                  </div>
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm truncate">
+                      {title}
+                    </div>
+                    {asset.serialNumber && (
+                      <div className="text-gray-600 text-xs">
+                        <span className="font-medium">SN:</span>{" "}
+                        {asset.serialNumber}
+                      </div>
+                    )}
+                    {assignment && (
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 text-xs">
+                        <span>
+                          <span className="font-medium">Location:</span>{" "}
+                          {assignment.location}
+                        </span>
+                        {countryCode ? (
+                          <span className="flex items-center gap-1">
+                            <CountryFlag countryName={countryCode} size={14} />
+                            <span className="truncate">
+                              {countryName}
+                              {assignedToLabel ? ` - ${assignedToLabel}` : ""}
+                            </span>
+                          </span>
+                        ) : (
+                          assignedToLabel && (
+                            <span className="truncate">{assignedToLabel}</span>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          {service.logisticsDestination && (
+            <div className="mt-2 text-gray-700 text-sm">
+              <span className="font-medium">Destination: </span>
+              {service.logisticsDestination.type === "Office" && service.logisticsDestination.officeName}
+              {service.logisticsDestination.type === "Member" && (service.logisticsDestination.assignedMember || service.logisticsDestination.assignedEmail)}
+              {service.logisticsDestination.type === "Warehouse" && (service.logisticsDestination.warehouseName || "FP Warehouse")}
+            </div>
+          )}
+          {service.desirablePickupDate && (
+            <div className="mt-1 text-gray-700 text-sm">
+              <span className="font-medium">Pickup date: </span>
+              {new Date(service.desirablePickupDate + "T12:00:00").toLocaleDateString()}
+            </div>
+          )}
+          {service.desirableDeliveryDate && (
+            <div className="mt-1 text-gray-700 text-sm">
+              <span className="font-medium">Delivery date: </span>
+              {new Date(service.desirableDeliveryDate + "T12:00:00").toLocaleDateString()}
+            </div>
+          )}
+          {service.additionalDetails && service.additionalDetails.trim() !== "" && (
+            <div className="mt-1 text-gray-700 text-sm">
+              <span className="font-medium">Comments: </span>
+              {service.additionalDetails}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Asset (for IT Support) */}
       {selectedAsset &&
         service.serviceType !== "enrollment" &&
         service.serviceType !== "donations" &&
         service.serviceType !== "cleaning" &&
         service.serviceType !== "storage" &&
-        service.serviceType !== "destruction-recycling" && (
+        service.serviceType !== "destruction-recycling" &&
+        service.serviceType !== "logistics" && (
           <div className="mb-3 text-sm">
             <div className="mb-2 text-gray-700">
               <span className="font-medium">Asset: </span>

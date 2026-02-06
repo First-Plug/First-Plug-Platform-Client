@@ -120,6 +120,27 @@ type TableRow =
       comments?: string;
       index: number;
       total: number;
+    }
+  | {
+      type: "service";
+      serviceCategory: "Logistics";
+      data: any; // productSnapshot
+      logisticsProduct?: {
+        productId: string;
+        productSnapshot: any;
+        destination?: {
+          type: string;
+          officeName?: string;
+          assignedMember?: string;
+          assignedEmail?: string;
+          warehouseName?: string;
+          countryCode?: string;
+        };
+      };
+      desirablePickupDate?: string;
+      additionalDetails?: string;
+      index: number;
+      total: number;
     };
 
 const formatDate = (date?: string) => {
@@ -305,6 +326,26 @@ export const QuoteHistorySubtable = ({
           total: destructionProducts.length,
         })) as TableRow[];
       }
+      if (
+        service.serviceCategory === "Logistics" &&
+        service.products?.length
+      ) {
+        const logisticsProducts = service.products as Array<{
+          productId: string;
+          productSnapshot: any;
+          destination?: any;
+        }>;
+        return logisticsProducts.map((product, idx) => ({
+          type: "service" as const,
+          serviceCategory: "Logistics" as const,
+          data: product.productSnapshot,
+          logisticsProduct: product,
+          desirablePickupDate: service.desirablePickupDate,
+          additionalDetails: service.additionalDetails,
+          index: idx,
+          total: logisticsProducts.length,
+        })) as TableRow[];
+      }
       return [];
     }),
   ];
@@ -363,6 +404,10 @@ export const QuoteHistorySubtable = ({
               !isProduct &&
               "index" in row &&
               row.serviceCategory === "Destruction and Recycling";
+            const isLogistics =
+              !isProduct &&
+              "index" in row &&
+              row.serviceCategory === "Logistics";
 
             return (
               <TableRow key={index}>
@@ -964,6 +1009,79 @@ export const QuoteHistorySubtable = ({
                           </span>
                         )}
                       </>
+                    ) : isLogistics ? (
+                      <>
+                        <span className="font-semibold text-gray-700">
+                          {(row as any).data.category}
+                        </span>
+                        {((row as any).data.brand ||
+                          (row as any).data.model) && (
+                          <span className="text-gray-700">
+                            {(row as any).data.brand}
+                            {(row as any).data.brand &&
+                              (row as any).data.model &&
+                              " - "}
+                            {(row as any).data.model}
+                          </span>
+                        )}
+                        {(row as any).data.name && (
+                          <span className="text-gray-600 italic">
+                            {(row as any).data.name}
+                          </span>
+                        )}
+                        <span className="text-gray-600">
+                          SN:{" "}
+                          {(row as any).data.serialNumber}
+                        </span>
+                        <span className="text-gray-600">
+                          From:{" "}
+                          {(row as any).data.assignedTo} (
+                          {(row as any).data.location})
+                        </span>
+                        {(row as any).data.countryCode && (
+                          <QuoteLocationWithCountry
+                            country={(row as any).data.countryCode}
+                          />
+                        )}
+                        {(row as any).logisticsProduct?.destination && (
+                          <>
+                            <span className="font-semibold text-gray-700">
+                              To:{" "}
+                              {(row as any).logisticsProduct.destination
+                                .type === "Member"
+                                ? (row as any).logisticsProduct.destination
+                                    .assignedMember
+                                : (row as any).logisticsProduct.destination
+                                    .type === "Office"
+                                  ? (row as any).logisticsProduct.destination
+                                      .officeName
+                                  : (row as any).logisticsProduct.destination
+                                      .warehouseName || "FP Warehouse"}
+                            </span>
+                            <span className="text-gray-600 text-xs">
+                              {(row as any).logisticsProduct.destination.type}
+                              {(row as any).logisticsProduct.destination
+                                .countryCode && (
+                                <>
+                                  {" "}
+                                  <QuoteLocationWithCountry
+                                    country={
+                                      (row as any).logisticsProduct
+                                        .destination.countryCode
+                                    }
+                                  />
+                                </>
+                              )}
+                            </span>
+                          </>
+                        )}
+                        {(row as any).additionalDetails &&
+                          (row as any).index === 0 && (
+                            <span className="text-gray-500 text-xs italic">
+                              {(row as any).additionalDetails}
+                            </span>
+                          )}
+                      </>
                     ) : null}
                   </div>
                 </TableCell>
@@ -974,6 +1092,8 @@ export const QuoteHistorySubtable = ({
                     ? formatDate((row as any).dataWipeAsset.desirableDate)
                     : isCleaning && (row as any).cleaningProduct?.desiredDate
                     ? formatDate((row as any).cleaningProduct.desiredDate)
+                    : isLogistics && (row as any).desirablePickupDate
+                    ? formatDate((row as any).desirablePickupDate)
                     : "N/A"}
                 </TableCell>
               </TableRow>

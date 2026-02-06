@@ -10,6 +10,7 @@ import {
   Gift,
   Package,
   Trash2,
+  Truck,
 } from "lucide-react";
 import { cn } from "@/shared";
 
@@ -76,6 +77,13 @@ const serviceTypes: ServiceType[] = [
     name: "Destruction & Recycling",
     description: "Secure destruction and recycling of equipment",
     icon: <Trash2 className="w-6 h-6" strokeWidth={2} />,
+    enabled: true,
+  },
+  {
+    id: "logistics",
+    name: "Logistics",
+    description: "Shipping and logistics services",
+    icon: <Truck className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },
 ];

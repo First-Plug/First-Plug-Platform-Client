@@ -65,10 +65,29 @@ export interface QuoteService {
   requiresCertificate?: boolean;
   /** Destruction & Recycling: comentarios/instrucciones (mapea a "comments" en payload) */
   comments?: string;
+  /** Logistics: destino (FP warehouses, members, offices) - aplicado a todos los assets */
+  logisticsDestination?: LogisticsDestination;
+  /** Logistics: fecha de recogida deseada (YYYY-MM-DD) */
+  desirablePickupDate?: string;
+  /** Logistics: fecha de entrega deseada (YYYY-MM-DD) */
+  desirableDeliveryDate?: string;
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
   additionalComments?: string;
+}
+
+/** Destino para servicio Logistics (Office, Member o FP Warehouse) */
+export interface LogisticsDestination {
+  type: "Office" | "Member" | "Warehouse";
+  officeId?: string; // para UI / valor del dropdown
+  officeName?: string;
+  countryCode?: string;
+  memberId?: string;
+  assignedMember?: string;
+  assignedEmail?: string;
+  warehouseId?: string;
+  warehouseName?: string;
 }
 
 export interface QuoteRequestPayload {
@@ -309,6 +328,8 @@ export interface QuoteHistoryService {
   deliveryDate?: string;
   comments?: string;
   requiresCertificate?: boolean;
+  /** Logistics: fecha de recogida deseada */
+  desirablePickupDate?: string;
   enrolledDevices?: EnrolledDeviceSnapshot[];
   productSnapshot?: ITSupportProductSnapshot;
   products?:

@@ -22,6 +22,7 @@ import { StepCleaningDetails } from "../AddServiceModal/step-cleaning-details";
 import { StepDonationDetails } from "../AddServiceModal/step-donation-details";
 import { StepStorageDetails } from "../AddServiceModal/step-storage-details";
 import { StepDestructionOptions } from "../AddServiceModal/step-destruction-options";
+import { StepShippingDetails } from "../AddServiceModal/step-shipping-details";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import type { QuoteService, QuoteProduct } from "../../types/quote.types";
 
@@ -106,7 +107,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           type === "cleaning" ||
           type === "donations" ||
           type === "storage" ||
-          type === "destruction-recycling"
+          type === "destruction-recycling" ||
+          type === "logistics"
         ) {
           // Servicios multi-asset: si ya hay datos del paso 3, arrancar en step 3, si no en step 2
           const hasAssets =
@@ -149,6 +151,13 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               (editingService.comments && editingService.comments.trim() !== "")
                 ? 3
                 : 2;
+          } else if (type === "logistics") {
+            initialStep =
+              editingService.logisticsDestination &&
+              editingService.desirablePickupDate &&
+              editingService.desirableDeliveryDate
+                ? 3
+                : 2;
           }
         } else {
           // Otros servicios: default step 3 (quote details)
@@ -175,7 +184,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           serviceType === "cleaning" ||
           serviceType === "donations" ||
           serviceType === "storage" ||
-          serviceType === "destruction-recycling"
+          serviceType === "destruction-recycling" ||
+          serviceType === "logistics"
           ? 2
           : 3
         : 1;
@@ -242,6 +252,14 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               requiresCertificate: undefined,
               comments: undefined,
             }));
+          } else if (serviceType === "logistics") {
+            setServiceData((prev) => ({
+              ...prev,
+              logisticsDestination: undefined,
+              desirablePickupDate: undefined,
+              desirableDeliveryDate: undefined,
+              additionalDetails: undefined,
+            }));
           }
         } else if (currentStepValue === 2) {
           // Resetear datos del step 2 (select asset)
@@ -252,7 +270,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             serviceType === "cleaning" ||
             serviceType === "donations" ||
             serviceType === "storage" ||
-            serviceType === "destruction-recycling"
+            serviceType === "destruction-recycling" ||
+            serviceType === "logistics"
           ) {
             setServiceData((prev) => ({
               ...prev,
@@ -304,7 +323,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "cleaning" ||
       serviceType === "donations" ||
       serviceType === "storage" ||
-      serviceType === "destruction-recycling"
+      serviceType === "destruction-recycling" ||
+      serviceType === "logistics"
     ) {
       setCurrentStep(2);
     } else {
@@ -321,9 +341,10 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "cleaning" ||
       serviceType === "donations" ||
       serviceType === "storage" ||
-      serviceType === "destruction-recycling"
+      serviceType === "destruction-recycling" ||
+      serviceType === "logistics"
     ) {
-      // Para Enrollment, Buyback, Data Wipe, Cleaning, Donations, Storage y Destruction & Recycling, guardar múltiples assets
+      // Para Enrollment, Buyback, Data Wipe, Cleaning, Donations, Storage, Destruction & Recycling y Logistics, guardar múltiples assets
       handleDataChange({ assetIds });
     } else {
       // Para IT Support, solo se permite un asset (single selection)
@@ -371,6 +392,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       if (serviceData.requiresCertificate === undefined) {
         handleDataChange({ requiresCertificate: true });
       }
+      setCurrentStep(3);
+    } else if (serviceType === "logistics") {
+      if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
       setCurrentStep(3);
     } else {
       // Para IT Support, validar que hay un asset seleccionado
@@ -641,6 +665,40 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     onComplete();
   };
 
+  const handleContinueFromShippingDetails = () => {
+    if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+    if (!serviceData.logisticsDestination) return;
+    if (!serviceData.desirablePickupDate) return;
+    if (!serviceData.desirableDeliveryDate) return;
+
+    const completeService: QuoteService = {
+      id: serviceData.id!,
+      serviceType: serviceData.serviceType!,
+      assetIds: serviceData.assetIds || [],
+      logisticsDestination: serviceData.logisticsDestination,
+      desirablePickupDate: serviceData.desirablePickupDate,
+      desirableDeliveryDate: serviceData.desirableDeliveryDate,
+      additionalDetails: serviceData.additionalDetails,
+      country: serviceData.country || "",
+      city: serviceData.city,
+    };
+
+    if (editingServiceId) {
+      updateService(editingServiceId, completeService);
+      setEditingServiceId(undefined);
+    } else {
+      addService(completeService);
+    }
+
+    setServiceData({
+      id: generateId(),
+      impactLevel: "medium",
+    });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
+  };
+
   const handleNext = () => {
     const serviceType = serviceData.serviceType || currentServiceType;
 
@@ -800,6 +858,16 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           );
         }
+        if (serviceType === "logistics") {
+          return (
+            <StepSelectAsset
+              selectedAssetIds={serviceData.assetIds || []}
+              onAssetSelect={handleAssetSelect}
+              allowMultiple={true}
+              serviceType="logistics"
+            />
+          );
+        }
         return null;
       case 3:
         // Mostrar issue type si es IT Support
@@ -912,6 +980,21 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           );
         }
+        // Mostrar shipping details si es Logistics
+        if (serviceType === "logistics") {
+          return (
+            <StepShippingDetails
+              assetIds={serviceData.assetIds || []}
+              logisticsDestination={serviceData.logisticsDestination}
+              desirablePickupDate={serviceData.desirablePickupDate}
+              desirableDeliveryDate={serviceData.desirableDeliveryDate}
+              additionalDetails={serviceData.additionalDetails}
+              onDataChange={(updates) => {
+                handleDataChange(updates);
+              }}
+            />
+          );
+        }
         // Para otros servicios, mostrar Quote Details directamente
         const productDataForDetailsOther: Partial<QuoteProduct> = {
           country: serviceData.country,
@@ -1018,6 +1101,16 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     if (currentStep === 2 && isDestructionRecycling) {
       return !!serviceData.assetIds && serviceData.assetIds.length > 0;
     }
+    if (currentStep === 2 && serviceType === "logistics") {
+      return !!serviceData.assetIds && serviceData.assetIds.length > 0;
+    }
+    if (currentStep === 3 && serviceType === "logistics") {
+      return !!(
+        serviceData.logisticsDestination &&
+        serviceData.desirablePickupDate &&
+        serviceData.desirableDeliveryDate
+      );
+    }
     if (currentStep === 3 && isITSupport) {
       // En step 3 para IT Support, se necesita seleccionar al menos un issue type
       return !!serviceData.issueTypes && serviceData.issueTypes.length > 0;
@@ -1071,7 +1164,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       !isCleaning &&
       !isDonations &&
       !isStorage &&
-      !isDestructionRecycling
+      !isDestructionRecycling &&
+      serviceType !== "logistics"
     ) {
       // Para otros servicios, step 3 es Quote Details
       return !!serviceData.country;
@@ -1224,6 +1318,23 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           </div>
         )}
+        {currentStep === 3 && serviceTypeForRender === "logistics" && (
+          <div className="flex justify-between items-center pt-4 border-t">
+            <Button
+              onClick={onBack}
+              variant="secondary"
+              size="small"
+              body="Back"
+            />
+            <Button
+              onClick={handleContinueFromShippingDetails}
+              disabled={!canProceed()}
+              variant="primary"
+              size="small"
+              body="Add to Quote"
+            />
+          </div>
+        )}
         {currentStep === 4 && isITSupportForRender && (
           <div className="flex justify-end items-center pt-4 border-t">
             <Button
@@ -1254,7 +1365,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           !isCleaningForRender &&
           !isDonationsForRender &&
           !isStorageForRender &&
-          !isDestructionRecyclingForRender && (
+          !isDestructionRecyclingForRender &&
+          serviceTypeForRender !== "logistics" && (
             <div className="flex justify-end items-center pt-4 border-t">
               <Button
                 onClick={handleNext}
