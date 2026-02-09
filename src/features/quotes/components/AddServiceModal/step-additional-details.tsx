@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { Label } from "@/shared/components/ui/label";
-import { Laptop } from "lucide-react";
 import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
+import { CountryFlag } from "@/shared";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface StepAdditionalDetailsProps {
   assetIds?: string[];
@@ -35,6 +36,7 @@ export const StepAdditionalDetails: React.FC<StepAdditionalDetailsProps> = ({
   }, [assetIds, assetsData]);
 
   // Obtener información de display del asset
+  // Formato estandarizado: Brand Model (Name)
   const getAssetDisplayInfo = (product: Product) => {
     const brand =
       product.attributes?.find(
@@ -46,8 +48,15 @@ export const StepAdditionalDetails: React.FC<StepAdditionalDetailsProps> = ({
       )?.value || "";
 
     let displayName = "";
-    if (brand && model) {
-      displayName = model === "Other" ? `${brand} Other` : `${brand} ${model}`;
+    const parts: string[] = [];
+    if (brand) parts.push(brand);
+    if (model && model !== "Other") parts.push(model);
+    else if (model === "Other") parts.push("Other");
+
+    if (parts.length > 0) {
+      displayName = product.name
+        ? `${parts.join(" ")} ${product.name}`.trim()
+        : parts.join(" ");
     } else {
       displayName = product.name || "No name";
     }
@@ -55,113 +64,91 @@ export const StepAdditionalDetails: React.FC<StepAdditionalDetailsProps> = ({
     return { displayName };
   };
 
-  // Obtener información de asignación
+  // Obtener información de asignación estandarizada
   const getAssignmentInfo = (product: Product) => {
+    const country =
+      product.office?.officeCountryCode ||
+      product.country ||
+      product.countryCode ||
+      "";
+
     if (product.assignedMember || product.assignedEmail) {
-      return product.assignedMember || product.assignedEmail || "";
+      return {
+        country,
+        assignedTo: product.assignedMember || product.assignedEmail || "",
+      };
     }
     if (product.location === "Our office") {
-      return product.office?.officeName || product.officeName || "Our office";
+      const officeName =
+        product.office?.officeName || product.officeName || "Our office";
+      return {
+        country,
+        assignedTo: `Office ${officeName}`,
+      };
+    }
+    if (product.location === "FP warehouse") {
+      return {
+        country,
+        assignedTo: "FP Warehouse",
+      };
     }
     return null;
   };
-
-  // Función para determinar el OS de un dispositivo
-  const getDeviceOS = (asset: Product): "Mac" | "Windows" | "Ubuntu" => {
-    const brand =
-      asset.attributes?.find(
-        (attr) => String(attr.key).toLowerCase() === "brand"
-      )?.value?.toLowerCase() || "";
-    const model =
-      asset.attributes?.find(
-        (attr) => String(attr.key).toLowerCase() === "model"
-      )?.value?.toLowerCase() || "";
-    const name = (asset.name || "").toLowerCase();
-
-    // Detectar Mac
-    if (
-      brand.includes("apple") ||
-      brand.includes("mac") ||
-      model.includes("macbook") ||
-      model.includes("imac") ||
-      name.includes("mac")
-    ) {
-      return "Mac";
-    }
-
-    // Detectar Ubuntu/Linux
-    if (
-      brand.includes("ubuntu") ||
-      model.includes("ubuntu") ||
-      name.includes("ubuntu") ||
-      name.includes("linux")
-    ) {
-      return "Ubuntu";
-    }
-
-    // Por defecto, Windows
-    return "Windows";
-  };
-
-  // Contar dispositivos por tipo (Mac/Windows/Ubuntu)
-  const deviceCounts = React.useMemo(() => {
-    if (selectedAssets.length === 0)
-      return { mac: 0, windows: 0, ubuntu: 0 };
-    let mac = 0;
-    let windows = 0;
-    let ubuntu = 0;
-    selectedAssets.forEach((asset) => {
-      const os = getDeviceOS(asset);
-      if (os === "Mac") mac++;
-      else if (os === "Ubuntu") ubuntu++;
-      else windows++;
-    });
-    return { mac, windows, ubuntu };
-  }, [selectedAssets]);
 
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* Device Summary */}
       {selectedAssets.length > 0 && (
         <div className="mb-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Laptop className="w-5 h-5 text-gray-600" />
+          <div className="mb-4">
             <h3 className="font-semibold text-lg">
               {selectedAssets.length} device{selectedAssets.length !== 1 ? "s" : ""} to enroll
             </h3>
-          </div>
-          <div className="flex gap-4 mb-4">
-            {deviceCounts.mac > 0 && (
-              <div className="flex flex-col items-center justify-center bg-white p-4 border border-gray-200 rounded-lg min-w-[100px]">
-                <span className="text-3xl font-bold">{deviceCounts.mac}</span>
-                <span className="text-sm text-gray-700">Mac</span>
-              </div>
-            )}
-            {deviceCounts.windows > 0 && (
-              <div className="flex flex-col items-center justify-center bg-white p-4 border border-gray-200 rounded-lg min-w-[100px]">
-                <span className="text-3xl font-bold">{deviceCounts.windows}</span>
-                <span className="text-sm text-gray-700">Windows</span>
-              </div>
-            )}
-            {deviceCounts.ubuntu > 0 && (
-              <div className="flex flex-col items-center justify-center bg-white p-4 border border-gray-200 rounded-lg min-w-[100px]">
-                <span className="text-3xl font-bold">{deviceCounts.ubuntu}</span>
-                <span className="text-sm text-gray-700">Ubuntu</span>
-              </div>
-            )}
           </div>
 
           {/* Selected Devices List */}
           <div className="mb-4">
             <div className="font-medium text-sm mb-2">Selected devices:</div>
-            <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+            <ul className="flex flex-col gap-2 text-sm text-gray-700">
               {selectedAssets.map((asset) => {
                 const displayInfo = getAssetDisplayInfo(asset);
                 const assignment = getAssignmentInfo(asset);
                 return (
-                  <li key={asset._id}>
-                    {displayInfo.displayName}
-                    {assignment && ` - ${assignment}`}
+                  <li
+                    key={asset._id}
+                    className="flex flex-col gap-0.5 bg-gray-50 p-2 rounded-md border border-gray-200"
+                  >
+                    <span className="font-semibold text-gray-900 text-sm">
+                      {displayInfo.displayName}
+                    </span>
+                    {asset.serialNumber && (
+                      <span className="text-gray-600 text-xs">
+                        <span className="font-medium">SN:</span>{" "}
+                        {asset.serialNumber}
+                      </span>
+                    )}
+                    {assignment && (
+                      <div className="flex items-center gap-1 text-gray-600 text-xs">
+                        <span className="font-medium">Location:</span>
+                        {assignment.country && (
+                          <CountryFlag
+                            countryName={assignment.country}
+                            size={14}
+                          />
+                        )}
+                        <span>
+                          {assignment.country
+                            ? countriesByCode[assignment.country] ||
+                              assignment.country
+                            : ""}
+                        </span>
+                        <span>
+                          {assignment.assignedTo
+                            ? `Assigned to ${assignment.assignedTo}`
+                            : ""}
+                        </span>
+                      </div>
+                    )}
                   </li>
                 );
               })}

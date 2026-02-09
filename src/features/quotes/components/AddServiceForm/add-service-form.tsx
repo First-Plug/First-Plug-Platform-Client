@@ -1230,7 +1230,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1245,7 +1245,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
                       disabled={!canProceed()}
                       variant="primary"
                       size="small"
-                      body="Submit Request"
+                      body="Save Service"
                     />
                   </div>
                 </TooltipTrigger>
@@ -1270,7 +1270,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1281,7 +1281,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Cleaning Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1292,7 +1292,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1303,7 +1303,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Add Storage Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1314,7 +1314,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1353,7 +1353,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1373,7 +1373,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
                 disabled={!canProceed()}
                 variant="primary"
                 size="small"
-                body="Submit Request"
+                body="Save Service"
               />
             </div>
           )}

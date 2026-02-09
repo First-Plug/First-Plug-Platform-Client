@@ -69,91 +69,77 @@ export const StepReviewAndSubmit: React.FC<StepReviewAndSubmitProps> = ({
     return null;
   }, [serviceData.assetId, assetsData]);
 
-  // Obtener información de asignación
+  // Obtener información de asignación estandarizada
   const getAssignmentInfo = (product: Product) => {
-    // Si está asignado a un empleado
-    if (product.assignedMember || product.assignedEmail) {
-      const member =
-        product.assignedMember || product.assignedEmail || "Unassigned";
-      const location = product.location || product.officeName || "";
-      const country =
-        product.country ||
-        product.countryCode ||
-        product.office?.officeCountryCode ||
-        "";
+    const country =
+      product.office?.officeCountryCode ||
+      product.country ||
+      product.countryCode ||
+      "";
 
+    if (product.assignedMember || product.assignedEmail) {
+      const assignedTo =
+        product.assignedMember || product.assignedEmail || "Unassigned";
       return {
         type: "employee" as const,
-        member,
-        location: location ? `${location}` : "",
         country,
+        assignedTo,
       };
     }
 
-    // Si está en una oficina
     if (product.location === "Our office") {
       const officeName =
         product.office?.officeName || product.officeName || "Our office";
-      const country =
-        product.office?.officeCountryCode ||
-        product.country ||
-        product.countryCode ||
-        "";
-
       return {
         type: "office" as const,
-        officeName,
         country,
+        assignedTo: `Office ${officeName}`,
       };
     }
 
-    // Si está en FP warehouse
     if (product.location === "FP warehouse") {
-      const country =
-        product.country ||
-        product.countryCode ||
-        product.office?.officeCountryCode ||
-        "";
-
       return {
         type: "warehouse" as const,
         country,
+        assignedTo: "FP Warehouse",
       };
     }
 
-    // Si tiene location pero no coincide con los casos anteriores
     if (product.location) {
       return {
         type: "other" as const,
-        location: product.location,
+        country,
+        assignedTo: product.location,
       };
     }
 
     return null;
   };
 
-  // Obtener nombre y especificaciones del asset
+  // Obtener nombre estandarizado: Brand Model (Name)
   const getAssetDisplayInfo = (product: Product) => {
     const brand = product.attributes?.find(
       (attr) => String(attr.key).toLowerCase() === "brand"
-    )?.value;
+    )?.value || "";
     const model = product.attributes?.find(
       (attr) => String(attr.key).toLowerCase() === "model"
-    )?.value;
+    )?.value || "";
 
-    let displayName = product.name || "";
-    let specifications = "";
+    const parts: string[] = [];
+    if (brand) parts.push(brand);
+    if (model && model !== "Other") parts.push(model);
+    else if (model === "Other") parts.push("Other");
 
-    if (brand || model) {
-      const parts: string[] = [];
-      if (brand) parts.push(brand);
-      if (model) parts.push(model);
-      specifications = parts.join(" • ");
+    let displayName = "";
+    if (parts.length > 0) {
+      displayName = product.name
+        ? `${parts.join(" ")} ${product.name}`.trim()
+        : parts.join(" ");
     } else {
-      specifications = product.name || "";
+      displayName = product.name || "Asset";
     }
 
-    return { displayName, specifications };
+    return { displayName };
   };
 
   // Obtener los labels de los issue types seleccionados
@@ -200,82 +186,40 @@ export const StepReviewAndSubmit: React.FC<StepReviewAndSubmitProps> = ({
             <div className="flex-shrink-0">
               <CategoryIcons products={[selectedAsset]} />
             </div>
-            <div className="flex flex-col flex-1 gap-2">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-base">
-                  {assetDisplayInfo?.displayName ||
-                    selectedAsset.name ||
-                    "Asset"}
-                </span>
-                <Badge variant="secondary" className="text-xs">
-                  {selectedAsset.category}
-                </Badge>
-              </div>
-              {assetDisplayInfo?.specifications && (
-                <p className="text-muted-foreground text-sm">
-                  {assetDisplayInfo.specifications}
-                </p>
-              )}
+            <div className="flex flex-col flex-1 gap-1">
+              {/* Line 1: Brand Model (Name) */}
+              <span className="font-semibold text-sm">
+                {assetDisplayInfo?.displayName ||
+                  selectedAsset.name ||
+                  "Asset"}
+              </span>
+
+              {/* Line 2: SN */}
               {selectedAsset.serialNumber && (
-                <p className="text-muted-foreground text-sm">
-                  SN: {selectedAsset.serialNumber}
-                </p>
+                <div className="text-gray-600 text-xs">
+                  <span className="font-medium">SN:</span>{" "}
+                  {selectedAsset.serialNumber}
+                </div>
               )}
+
+              {/* Line 3: Location: Flag Country Assigned to */}
               {assignmentInfo && (
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  {assignmentInfo.type === "office" && (
-                    <>
-                      <span>Location: office {assignmentInfo.officeName}</span>
-                      {assignmentInfo.country && (
-                        <div className="flex items-center gap-1">
-                          <CountryFlag
-                            countryName={assignmentInfo.country}
-                            size={15}
-                          />
-                          <span>
-                            {countriesByCode[assignmentInfo.country] ||
-                              assignmentInfo.country}
-                          </span>
-                        </div>
-                      )}
-                    </>
+                <div className="flex items-center gap-1 text-gray-600 text-xs">
+                  <span className="font-medium">Location:</span>
+                  {assignmentInfo.country && (
+                    <CountryFlag
+                      countryName={assignmentInfo.country}
+                      size={14}
+                    />
                   )}
-                  {assignmentInfo.type === "employee" && (
-                    <>
-                      <span>Assigned to: {assignmentInfo.member}</span>
-                      {assignmentInfo.location && (
-                        <span>• {assignmentInfo.location}</span>
-                      )}
-                      {assignmentInfo.country && (
-                        <div className="flex items-center gap-1">
-                          <CountryFlag
-                            countryName={assignmentInfo.country}
-                            size={15}
-                          />
-                          <span>
-                            {countriesByCode[assignmentInfo.country] ||
-                              assignmentInfo.country}
-                          </span>
-                        </div>
-                      )}
-                    </>
-                  )}
-                  {assignmentInfo.type === "warehouse" && (
-                    <>
-                      <span>FP Warehouse</span>
-                      {assignmentInfo.country && (
-                        <div className="flex items-center gap-1">
-                          <CountryFlag
-                            countryName={assignmentInfo.country}
-                            size={15}
-                          />
-                          <span>
-                            {countriesByCode[assignmentInfo.country] ||
-                              assignmentInfo.country}
-                          </span>
-                        </div>
-                      )}
-                    </>
+                  <span>
+                    {assignmentInfo.country
+                      ? countriesByCode[assignmentInfo.country] ||
+                        assignmentInfo.country
+                      : ""}
+                  </span>
+                  {assignmentInfo.assignedTo && (
+                    <span>Assigned to {assignmentInfo.assignedTo}</span>
                   )}
                 </div>
               )}

@@ -27,6 +27,7 @@ interface StepDonationDetailsProps {
   }) => void;
 }
 
+// Formato estandarizado: Brand Model (Name)
 const getAssetDisplayInfo = (product: Product) => {
   const brand =
     product.attributes?.find(
@@ -38,25 +39,20 @@ const getAssetDisplayInfo = (product: Product) => {
     )?.value || "";
 
   const name = (product.name || "").trim();
-  const hasName = name.length > 0;
 
-  const base = [brand, model].filter(Boolean).join(" ").trim();
+  const parts: string[] = [];
+  if (brand) parts.push(brand);
+  if (model && model !== "Other") parts.push(model);
+  else if (model === "Other") parts.push("Other");
 
-  // Si hay name, concatenarlo sin paréntesis
-  const displayName = base
-    ? hasName
-      ? `${base} ${name}`.trim()
-      : base
-    : hasName
-    ? name
-    : product.category || "Asset";
+  let displayName = "";
+  if (parts.length > 0) {
+    displayName = name ? `${parts.join(" ")} ${name}`.trim() : parts.join(" ");
+  } else {
+    displayName = name || product.category || "Asset";
+  }
 
-  const specificationsParts: string[] = [];
-  if (brand) specificationsParts.push(brand);
-  if (model) specificationsParts.push(model);
-  const specifications = specificationsParts.join(" ");
-
-  return { displayName, specifications, brand, model, name };
+  return { displayName, brand, model, name };
 };
 
 type AssignmentInfo =
@@ -87,42 +83,32 @@ type AssignmentInfo =
   | null;
 
 const getAssignmentInfo = (product: Product): AssignmentInfo => {
+  const country =
+    product.office?.officeCountryCode ||
+    product.country ||
+    product.countryCode ||
+    "";
+
   // Assigned to employee
   if (product.assignedMember || product.assignedEmail) {
     const assignedTo =
       product.assignedMember || product.assignedEmail || "Unassigned";
-    const location = product.location || "Employee";
-    const country =
-      product.country ||
-      product.countryCode ||
-      product.office?.officeCountryCode ||
-      "";
-    return { type: "employee", location, assignedTo, country };
+    return { type: "employee", location: product.location || "Employee", assignedTo, country };
   }
 
   // Our office
   if (product.location === "Our office") {
-    const assignedTo =
+    const officeName =
       product.office?.officeName || product.officeName || "Our office";
-    const country =
-      product.office?.officeCountryCode ||
-      product.country ||
-      product.countryCode ||
-      "";
-    return { type: "office", location: "Our office", assignedTo, country };
+    return { type: "office", location: "Our office", assignedTo: `Office ${officeName}`, country };
   }
 
   // FP warehouse
   if (product.location === "FP warehouse") {
-    const country =
-      product.country ||
-      product.countryCode ||
-      product.office?.officeCountryCode ||
-      "";
     return {
       type: "warehouse",
       location: "FP warehouse",
-      assignedTo: "FP warehouse",
+      assignedTo: "FP Warehouse",
       country,
     };
   }
@@ -190,14 +176,9 @@ export const StepDonationDetails: React.FC<StepDonationDetailsProps> = ({
                     normalizedCountryCode
                   : "";
 
-                const specificLocation = (() => {
+                const assignedTo = (() => {
                   if (!assignment) return "";
-                  if (assignment.type === "warehouse") return "FP warehouse";
-                  if (assignment.type === "office")
-                    return assignment.assignedTo || "";
-                  if (assignment.type === "employee")
-                    return assignment.assignedTo || "";
-                  return assignment.location || "";
+                  return assignment.assignedTo || "";
                 })();
                 return (
                   <li
@@ -221,20 +202,20 @@ export const StepDonationDetails: React.FC<StepDonationDetailsProps> = ({
                       )}
 
                       {assignment && (
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 text-xs">
-                          <span className="flex flex-wrap items-center gap-1 min-w-0">
-                            <span className="font-medium">Location:</span>
-                            {normalizedCountryCode && (
-                              <CountryFlag
-                                countryName={normalizedCountryCode}
-                                size={14}
-                              />
-                            )}
-                            <span className="truncate">
-                              {countryName || "N/A"}
-                              {specificLocation ? ` - ${specificLocation}` : ""}
-                            </span>
+                        <div className="flex items-center gap-1 text-gray-600 text-xs">
+                          <span className="font-medium">Location:</span>
+                          {normalizedCountryCode && (
+                            <CountryFlag
+                              countryName={normalizedCountryCode}
+                              size={14}
+                            />
+                          )}
+                          <span>
+                            {countryName || "N/A"}
                           </span>
+                          {assignedTo && (
+                            <span>Assigned to {assignedTo}</span>
+                          )}
                         </div>
                       )}
                     </div>

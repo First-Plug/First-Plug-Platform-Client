@@ -20,6 +20,7 @@ import { CountryFlag, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger }
 import { countriesByCode } from "@/shared/constants/country-codes";
 import type { LogisticsDestination } from "@/features/quotes/types/quote.types";
 
+// Formato estandarizado: Brand Model (Name)
 const getAssetDisplayInfo = (product: Product) => {
   const brand =
     product.attributes?.find(
@@ -30,9 +31,16 @@ const getAssetDisplayInfo = (product: Product) => {
       (attr) => String(attr.key).toLowerCase() === "model"
     )?.value || "";
 
+  const parts: string[] = [];
+  if (brand) parts.push(brand);
+  if (model && model !== "Other") parts.push(model);
+  else if (model === "Other") parts.push("Other");
+
   let displayName = "";
-  if (brand && model) {
-    displayName = model === "Other" ? `${brand} Other` : `${brand} ${model}`;
+  if (parts.length > 0) {
+    displayName = product.name
+      ? `${parts.join(" ")} ${product.name}`.trim()
+      : parts.join(" ");
   } else {
     displayName = product.name || "No name";
   }

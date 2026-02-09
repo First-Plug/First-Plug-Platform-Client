@@ -39,9 +39,9 @@ export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
         multiple options for each field.
       </p>
 
-      <div className="gap-4 grid grid-cols-2 w-full">
-        {/* Quantity */}
-        <div className="flex flex-col gap-2">
+      {/* Quantity - Full width row */}
+      <div className="w-full">
+        <div className="flex flex-col gap-2 max-w-[calc(50%-0.5rem)]">
           <label htmlFor="quantity" className="font-medium text-sm">
             Quantity<span className="ml-1 text-red-500">*</span>
           </label>
@@ -58,7 +58,9 @@ export const StepAudioSpecs: React.FC<StepAudioSpecsProps> = ({
             required
           />
         </div>
+      </div>
 
+      <div className="gap-4 grid grid-cols-2 w-full">
         {/* Brand - Multi-select */}
         {formFields.find((f) => f.name === "brand") && (
           <div className="flex flex-col gap-2">

@@ -28,6 +28,7 @@ interface StepCleaningDetailsProps {
   }) => void;
 }
 
+// Formato estandarizado: Brand Model (Name)
 const getAssetDisplayInfo = (product: Product) => {
   const brand =
     product.attributes?.find(
@@ -38,12 +39,16 @@ const getAssetDisplayInfo = (product: Product) => {
       (attr) => String(attr.key).toLowerCase() === "model"
     )?.value || "";
 
+  const parts: string[] = [];
+  if (brand) parts.push(brand);
+  if (model && model !== "Other") parts.push(model);
+  else if (model === "Other") parts.push("Other");
+
   let displayName = "";
-  if (brand && model) {
-    displayName =
-      model === "Other"
-        ? `${brand} Other ${product.name || ""}`.trim()
-        : `${brand} ${model}`;
+  if (parts.length > 0) {
+    displayName = product.name
+      ? `${parts.join(" ")} ${product.name}`.trim()
+      : parts.join(" ");
   } else {
     displayName = product.name || "No name";
   }

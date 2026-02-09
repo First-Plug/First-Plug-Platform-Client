@@ -66,7 +66,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
     }
   }, [selectedAssets]);
 
-  // Obtener información de display del asset
+  // Formato estandarizado: Brand Model (Name)
   const getAssetDisplayInfo = (product: Product) => {
     const brand =
       product.attributes?.find(
@@ -77,20 +77,21 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
         (attr) => String(attr.key).toLowerCase() === "model"
       )?.value || "";
 
+    const parts: string[] = [];
+    if (brand) parts.push(brand);
+    if (model && model !== "Other") parts.push(model);
+    else if (model === "Other") parts.push("Other");
+
     let displayName = "";
-    if (brand && model) {
-      displayName = model === "Other" ? `${brand} Other` : `${brand} ${model}`;
+    if (parts.length > 0) {
+      displayName = product.name
+        ? `${parts.join(" ")} ${product.name}`.trim()
+        : parts.join(" ");
     } else {
       displayName = product.name || "No name";
     }
 
-    let specifications = "";
-    const parts: string[] = [];
-    if (brand) parts.push(brand);
-    if (model) parts.push(model);
-    specifications = parts.join(" • ");
-
-    return { displayName, specifications };
+    return { displayName };
   };
 
   const updateBuybackDetail = (assetId: string, field: keyof BuybackDetail, value: any) => {
@@ -131,7 +132,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
 
       <div className="flex flex-col gap-4 pr-2">
         {selectedAssets.map((asset) => {
-          const { displayName, specifications } = getAssetDisplayInfo(asset);
+          const { displayName } = getAssetDisplayInfo(asset);
           const detail = buybackDetails[asset._id] || { assetId: asset._id };
           const isExpanded = expandedAssets.has(asset._id);
 
@@ -152,10 +153,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                 className="flex justify-between items-center w-full text-left"
               >
                 <div className="flex flex-col gap-1">
-                  <span className="font-semibold text-base">{displayName}</span>
-                  {specifications && (
-                    <span className="text-sm text-gray-600">{specifications}</span>
-                  )}
+                  <span className="font-semibold text-sm">{displayName}</span>
                   {asset.serialNumber && (
                     <span className="text-xs text-gray-500">
                       SN: {asset.serialNumber}
