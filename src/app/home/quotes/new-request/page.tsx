@@ -89,11 +89,15 @@ export default function NewQuoteRequestPage() {
 
       // Crear un mapa de miembros (email -> member) para obtener countryCode de empleados
       const membersMap = new Map();
+      // Mapa por memberId para Offboarding (originMember)
+      const membersMapById = new Map();
       if (membersData && membersData.length > 0) {
-        membersData.forEach((member) => {
+        membersData.forEach((member: any) => {
           if (member.email) {
-            // Normalizar el email a lowercase para evitar problemas de case sensitivity
             membersMap.set(member.email.toLowerCase(), member);
+          }
+          if (member._id) {
+            membersMapById.set(member._id, member);
           }
         });
       }
@@ -102,7 +106,8 @@ export default function NewQuoteRequestPage() {
         products,
         services,
         assetsMap,
-        membersMap
+        membersMap,
+        membersMapById
       );
 
       // Invalidar la query de quotes history

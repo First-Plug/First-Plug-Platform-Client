@@ -75,6 +75,18 @@ export interface QuoteService {
   desirableDeliveryDate?: string;
   /** Logistics: detalles por asset cuando sameDetailsForAllAssets es false; clave = assetId */
   logisticsDetailsPerAsset?: Record<string, LogisticsDetailPerAsset>;
+  /** Offboarding: miembro seleccionado */
+  memberId?: string;
+  /** Offboarding: fecha de recogida (YYYY-MM-DD) */
+  offboardingPickupDate?: string;
+  /** Offboarding: mismo destino/fecha para todos los assets */
+  offboardingSameDetailsForAllAssets?: boolean;
+  /** Offboarding: destino y fecha de entrega por asset; clave = assetId */
+  offboardingDetailsPerAsset?: Record<string, OffboardingDetailPerAsset>;
+  /** Offboarding: situación sensible (terminación, temas legales, etc.) */
+  offboardingSensitiveSituation?: boolean;
+  /** Offboarding: si el empleado está al tanto del offboarding */
+  offboardingEmployeeAware?: boolean;
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -98,6 +110,12 @@ export interface LogisticsDestination {
 export interface LogisticsDetailPerAsset {
   logisticsDestination?: LogisticsDestination;
   desirablePickupDate?: string;
+  desirableDeliveryDate?: string;
+}
+
+/** Detalles de offboarding por asset (destino y fecha de entrega) */
+export interface OffboardingDetailPerAsset {
+  logisticsDestination?: LogisticsDestination;
   desirableDeliveryDate?: string;
 }
 

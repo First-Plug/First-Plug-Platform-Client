@@ -12,6 +12,7 @@ import {
   Gift,
   Package,
   Truck,
+  UserMinus,
 } from "lucide-react";
 import {
   Badge,
@@ -32,6 +33,7 @@ import {
   ProductTable,
   CategoryIcons,
 } from "@/features/assets";
+import { useFetchMembers } from "@/features/members";
 import { cn } from "@/shared";
 
 const issueTypesMap: Record<string, string> = {
@@ -65,6 +67,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
 }) => {
   const { removeService } = useQuoteStore();
   const { data: assetsData } = useGetTableAssets();
+  const { data: membersData } = useFetchMembers();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
 
   const handleDelete = () => {
@@ -84,6 +87,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       storage: "Storage",
       "destruction-recycling": "Destruction & Recycling",
       logistics: "Logistics",
+      offboarding: "Offboarding",
     };
     return serviceTypeMap[serviceType] || serviceType;
   };
@@ -255,6 +259,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             <Trash2 className="w-3 h-3" />
           ) : service.serviceType === "logistics" ? (
             <Truck className="w-3 h-3" />
+          ) : service.serviceType === "offboarding" ? (
+            <UserMinus className="w-3 h-3" />
           ) : (
             <Wrench className="w-3 h-3" />
           )}
@@ -696,6 +702,92 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         </div>
       )}
 
+      {/* Offboarding: Summary and assets */}
+      {service.serviceType === "offboarding" && service.memberId && selectedAssets.length > 0 && (
+        <div className="mb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <UserMinus className="w-4 h-4 text-gray-600" />
+            <span className="font-medium text-sm">
+              Offboarding{" "}
+              {(() => {
+                const members = Array.isArray(membersData) ? membersData : [];
+                const member = members.find((m: any) => m._id === service.memberId);
+                return member
+                  ? `${(member as any).firstName || ""} ${(member as any).lastName || ""}`.trim() ||
+                      (member as any).email
+                  : "—";
+              })()}{" "}
+              · {selectedAssets.length} asset
+              {selectedAssets.length !== 1 ? "s" : ""} to recover
+            </span>
+          </div>
+          {service.offboardingPickupDate && (
+            <div className="text-gray-700 text-sm mb-2">
+              <span className="font-medium">Pickup date: </span>
+              {new Date(service.offboardingPickupDate + "T12:00:00").toLocaleDateString()}
+            </div>
+          )}
+          <ul className="flex flex-col gap-3 list-none pl-0">
+            {selectedAssets.map((asset) => {
+              const perAsset = service.offboardingDetailsPerAsset?.[asset._id];
+              const dest = perAsset?.logisticsDestination;
+              const deliveryDate = perAsset?.desirableDeliveryDate;
+              const destLabel = dest
+                ? dest.type === "Office"
+                  ? dest.officeName
+                  : dest.type === "Member"
+                  ? dest.assignedMember || dest.assignedEmail
+                  : dest.type === "Warehouse"
+                  ? "FP Warehouse"
+                  : "—"
+                : null;
+              return renderUnifiedAssetCard(
+                asset,
+                (destLabel || deliveryDate) && (
+                  <div className="mt-2 pt-2 border-t border-gray-200 flex flex-col gap-0.5 text-gray-700 text-xs">
+                    {destLabel && (
+                      <div>
+                        <span className="font-medium">Destination: </span>
+                        {destLabel}
+                      </div>
+                    )}
+                    {deliveryDate && (
+                      <div>
+                        <span className="font-medium">Delivery: </span>
+                        {new Date(deliveryDate + "T12:00:00").toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                )
+              );
+            })}
+          </ul>
+          {(service.offboardingSensitiveSituation !== undefined ||
+            service.offboardingEmployeeAware !== undefined) && (
+            <div className="mt-2 text-gray-700 text-sm space-y-0.5">
+              {service.offboardingSensitiveSituation !== undefined && (
+                <div>
+                  <span className="font-medium">Sensitive situation: </span>
+                  {service.offboardingSensitiveSituation ? "Yes" : "No"}
+                </div>
+              )}
+              {service.offboardingEmployeeAware !== undefined && (
+                <div>
+                  <span className="font-medium">Employee aware: </span>
+                  {service.offboardingEmployeeAware ? "Yes" : "No"}
+                </div>
+              )}
+            </div>
+          )}
+          {service.additionalComments && service.additionalComments.trim() !== "" && (
+            <div className="mt-2 text-gray-700 text-sm">
+              <span className="font-medium">Comments: </span>
+              {service.additionalComments}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Asset (for IT Support) - card unificada */}
       {selectedAsset &&
         service.serviceType !== "enrollment" &&
@@ -703,7 +795,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         service.serviceType !== "cleaning" &&
         service.serviceType !== "storage" &&
         service.serviceType !== "destruction-recycling" &&
-        service.serviceType !== "logistics" && (
+        service.serviceType !== "logistics" &&
+        service.serviceType !== "offboarding" && (
           <div className="mb-3">
             <ul className="flex flex-col gap-3 list-none pl-0">
               {renderUnifiedAssetCard(selectedAsset)}

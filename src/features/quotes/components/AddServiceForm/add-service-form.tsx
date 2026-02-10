@@ -23,7 +23,10 @@ import { StepDonationDetails } from "../AddServiceModal/step-donation-details";
 import { StepStorageDetails } from "../AddServiceModal/step-storage-details";
 import { StepDestructionOptions } from "../AddServiceModal/step-destruction-options";
 import { StepShippingDetails } from "../AddServiceModal/step-shipping-details";
+import { StepSelectMember } from "../AddServiceModal/step-select-member";
+import { StepOffboardingDetails } from "../AddServiceModal/step-offboarding-details";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
+import { useFetchMembers } from "@/features/members";
 import type { QuoteService, QuoteProduct } from "../../types/quote.types";
 
 interface AddServiceFormProps {
@@ -50,6 +53,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     setOnBack,
     setOnCancel,
   } = useQuoteStore();
+  const { data: membersData } = useFetchMembers();
 
   const onCancelRef = useRef(onCancel);
   useEffect(() => {
@@ -167,6 +171,25 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
                   perAsset[id]?.desirableDeliveryDate
               );
             initialStep = hasSameForAll || hasPerAsset ? 3 : 2;
+          } else if (type === "offboarding") {
+            const hasMember = !!editingService.memberId;
+            const hasAssets = !!editingService.assetIds && editingService.assetIds.length > 0;
+            const hasOffboardingDetails =
+              !!editingService.offboardingPickupDate &&
+              (editingService.offboardingSameDetailsForAllAssets
+                ? (editingService.offboardingDetailsPerAsset &&
+                    Object.keys(editingService.offboardingDetailsPerAsset).length > 0)
+                : (editingService.offboardingDetailsPerAsset &&
+                    editingService.assetIds?.every(
+                      (id) =>
+                        editingService.offboardingDetailsPerAsset?.[id]
+                          ?.logisticsDestination &&
+                        editingService.offboardingDetailsPerAsset?.[id]
+                          ?.desirableDeliveryDate
+                    )));
+            if (!hasMember) initialStep = 2;
+            else if (!hasAssets || !hasOffboardingDetails) initialStep = 3;
+            else initialStep = 3;
           }
         } else {
           // Otros servicios: default step 3 (quote details)
@@ -194,7 +217,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           serviceType === "donations" ||
           serviceType === "storage" ||
           serviceType === "destruction-recycling" ||
-          serviceType === "logistics"
+          serviceType === "logistics" ||
+          serviceType === "offboarding"
           ? 2
           : 3
         : 1;
@@ -273,8 +297,14 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             }));
           }
         } else if (currentStepValue === 2) {
-          // Resetear datos del step 2 (select asset)
-          if (
+          // Resetear datos del step 2 (select asset o select member)
+          if (serviceType === "offboarding") {
+            setServiceData((prev) => ({
+              ...prev,
+              memberId: undefined,
+              assetIds: undefined,
+            }));
+          } else if (
             serviceType === "enrollment" ||
             serviceType === "buyback" ||
             serviceType === "data-wipe" ||
@@ -335,12 +365,17 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "donations" ||
       serviceType === "storage" ||
       serviceType === "destruction-recycling" ||
-      serviceType === "logistics"
+      serviceType === "logistics" ||
+      serviceType === "offboarding"
     ) {
       setCurrentStep(2);
     } else {
       setCurrentStep(3);
     }
+  };
+
+  const handleMemberSelect = (memberId: string | null) => {
+    handleDataChange({ memberId: memberId || undefined });
   };
 
   const handleAssetSelect = (assetIds: string[]) => {
@@ -406,6 +441,20 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       setCurrentStep(3);
     } else if (serviceType === "logistics") {
       if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+      setCurrentStep(3);
+    } else if (serviceType === "offboarding") {
+      if (!serviceData.memberId) return;
+      const members = Array.isArray(membersData) ? membersData : [];
+      const member = members.find((m: any) => m._id === serviceData.memberId);
+      if (!member?.products) {
+        setCurrentStep(3);
+        return;
+      }
+      const recoverableIds = (member.products as any[])
+        .filter((p: any) => p.recoverable === true)
+        .map((p: any) => p._id)
+        .filter(Boolean);
+      handleDataChange({ assetIds: recoverableIds });
       setCurrentStep(3);
     } else {
       // Para IT Support, validar que hay un asset seleccionado
@@ -710,6 +759,53 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     onComplete();
   };
 
+  const handleContinueFromOffboardingDetails = () => {
+    if (!serviceData.memberId) return;
+    if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+    if (!serviceData.offboardingPickupDate) return;
+
+    const assetIds = serviceData.assetIds;
+    const perAsset = serviceData.offboardingDetailsPerAsset || {};
+    const allHaveDestinationAndDelivery = assetIds.every(
+      (id) =>
+        perAsset[id]?.logisticsDestination &&
+        perAsset[id]?.desirableDeliveryDate
+    );
+    if (!allHaveDestinationAndDelivery) return;
+
+    const completeService: QuoteService = {
+      id: serviceData.id!,
+      serviceType: "offboarding",
+      memberId: serviceData.memberId,
+      assetIds,
+      offboardingPickupDate: serviceData.offboardingPickupDate,
+      offboardingSameDetailsForAllAssets:
+        serviceData.offboardingSameDetailsForAllAssets ?? false,
+      offboardingDetailsPerAsset: serviceData.offboardingDetailsPerAsset || {},
+      offboardingSensitiveSituation:
+        serviceData.offboardingSensitiveSituation ?? false,
+      offboardingEmployeeAware: serviceData.offboardingEmployeeAware ?? true,
+      additionalComments: serviceData.additionalComments,
+      country: serviceData.country || "",
+      city: serviceData.city,
+    };
+
+    if (editingServiceId) {
+      updateService(editingServiceId, completeService);
+      setEditingServiceId(undefined);
+    } else {
+      addService(completeService);
+    }
+
+    setServiceData({
+      id: generateId(),
+      impactLevel: "medium",
+    });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
+  };
+
   const handleNext = () => {
     const serviceType = serviceData.serviceType || currentServiceType;
 
@@ -879,6 +975,14 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           );
         }
+        if (serviceType === "offboarding") {
+          return (
+            <StepSelectMember
+              selectedMemberId={serviceData.memberId || null}
+              onMemberSelect={handleMemberSelect}
+            />
+          );
+        }
         return null;
       case 3:
         // Mostrar issue type si es IT Support
@@ -1008,6 +1112,30 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           );
         }
+        // Mostrar offboarding details si es Offboarding
+        if (serviceType === "offboarding") {
+          return (
+            <StepOffboardingDetails
+              memberId={serviceData.memberId!}
+              assetIds={serviceData.assetIds || []}
+              offboardingPickupDate={serviceData.offboardingPickupDate}
+              offboardingSameDetailsForAllAssets={
+                serviceData.offboardingSameDetailsForAllAssets ?? false
+              }
+              offboardingDetailsPerAsset={serviceData.offboardingDetailsPerAsset}
+              offboardingSensitiveSituation={
+                serviceData.offboardingSensitiveSituation ?? false
+              }
+              offboardingEmployeeAware={
+                serviceData.offboardingEmployeeAware ?? true
+              }
+              additionalComments={serviceData.additionalComments}
+              onDataChange={(updates) => {
+                handleDataChange(updates);
+              }}
+            />
+          );
+        }
         // Para otros servicios, mostrar Quote Details directamente
         const productDataForDetailsOther: Partial<QuoteProduct> = {
           country: serviceData.country,
@@ -1117,6 +1245,20 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     if (currentStep === 2 && serviceType === "logistics") {
       return !!serviceData.assetIds && serviceData.assetIds.length > 0;
     }
+    if (currentStep === 2 && serviceType === "offboarding") {
+      return !!serviceData.memberId;
+    }
+    if (currentStep === 3 && serviceType === "offboarding") {
+      if (!serviceData.offboardingPickupDate) return false;
+      const assetIds = serviceData.assetIds || [];
+      if (assetIds.length === 0) return false;
+      const perAsset = serviceData.offboardingDetailsPerAsset || {};
+      return assetIds.every(
+        (id) =>
+          perAsset[id]?.logisticsDestination &&
+          perAsset[id]?.desirableDeliveryDate
+      );
+    }
     if (currentStep === 3 && serviceType === "logistics") {
       const assetIds = serviceData.assetIds || [];
       if (assetIds.length === 0) return false;
@@ -1215,6 +1357,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   const isStorageForRender = serviceTypeForRender === "storage";
   const isDestructionRecyclingForRender =
     serviceTypeForRender === "destruction-recycling";
+  const isOffboardingForRender = serviceTypeForRender === "offboarding";
 
   return (
     <div className="flex justify-center w-full">
@@ -1353,6 +1496,17 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           </div>
         )}
+        {currentStep === 3 && isOffboardingForRender && (
+          <div className="flex justify-end items-center pt-4 border-t">
+            <Button
+              onClick={handleContinueFromOffboardingDetails}
+              disabled={!canProceed()}
+              variant="primary"
+              size="small"
+              body="Save Service"
+            />
+          </div>
+        )}
         {currentStep === 4 && isITSupportForRender && (
           <div className="flex justify-end items-center pt-4 border-t">
             <Button
@@ -1384,7 +1538,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           !isDonationsForRender &&
           !isStorageForRender &&
           !isDestructionRecyclingForRender &&
-          serviceTypeForRender !== "logistics" && (
+          serviceTypeForRender !== "logistics" &&
+          !isOffboardingForRender && (
             <div className="flex justify-end items-center pt-4 border-t">
               <Button
                 onClick={handleNext}

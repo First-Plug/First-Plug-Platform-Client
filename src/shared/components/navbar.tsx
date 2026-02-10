@@ -341,6 +341,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isStorage = serviceType === "storage";
     const isDestructionRecycling = serviceType === "destruction-recycling";
     const isLogistics = serviceType === "logistics";
+    const isOffboarding = serviceType === "offboarding";
 
     if (isITSupport) {
       const itSupportStepTitles: Record<number, string> = {
@@ -425,6 +426,15 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       return logisticsStepTitles[step] || "";
     }
 
+    if (isOffboarding) {
+      const offboardingStepTitles: Record<number, string> = {
+        1: "Select Service Type",
+        2: "Select Member",
+        3: "Offboarding Details",
+      };
+      return offboardingStepTitles[step] || "";
+    }
+
     const serviceStepTitles: Record<number, string> = {
       1: "Select Service Type",
       2: "Quote Details",
@@ -448,6 +458,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isStorage = serviceType === "storage";
     const isDestructionRecycling = serviceType === "destruction-recycling";
     const isLogistics = serviceType === "logistics";
+    const isOffboarding = serviceType === "offboarding";
     if (isITSupport) return 5;
     if (isEnrollment) return 3;
     if (isBuyback) return 3;
@@ -457,6 +468,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     if (isStorage) return 3;
     if (isDestructionRecycling) return 3;
     if (isLogistics) return 3;
+    if (isOffboarding) return 3;
     return 2;
   };
 
@@ -496,6 +508,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isDestructionRecycling =
       currentServiceType === "destruction-recycling";
     const isLogistics = currentServiceType === "logistics";
+    const isOffboarding = currentServiceType === "offboarding";
     // Para Destruction & Recycling no mostrar botón Back en ningún paso (minStep = 3)
     const minStep = isDestructionRecycling
       ? 3
@@ -508,7 +521,8 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
           isCleaning ||
           isDonations ||
           isStorage ||
-          isLogistics
+          isLogistics ||
+          isOffboarding
         ? 2
         : 3
       : 1;
