@@ -1307,13 +1307,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     if (currentStep === 3 && serviceType === "logistics") {
       const assetIds = serviceData.assetIds || [];
       if (assetIds.length === 0) return false;
-      if (serviceData.sameDetailsForAllAssets !== false) {
-        return !!(
-          serviceData.logisticsDestination &&
-          serviceData.desirablePickupDate &&
-          serviceData.desirableDeliveryDate
-        );
-      }
+      // Same details no es requerido: solo validar que cada asset tenga destino y fechas (por card o por haber usado Same details)
       const perAsset = serviceData.logisticsDetailsPerAsset || {};
       return assetIds.every(
         (id) =>

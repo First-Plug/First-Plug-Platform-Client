@@ -389,7 +389,10 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
     setPickupOpen: (v: boolean) => void;
     setDeliveryOpen: (v: boolean) => void;
     disabled?: boolean;
+    /** false en el bloque "Same details" (solo sirve para cargar las cards, no es requerido) */
+    showRequired?: boolean;
   }) => {
+    const showRequired = opts.showRequired !== false;
     const pickupVal = parseDateOnly(opts.pickupDate);
     const deliveryVal = parseDateOnly(opts.deliveryDate);
 
@@ -416,7 +419,7 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
             onChange={opts.onDestinationChange}
             options={directDestinationOptions}
             optionGroups={destinationOptionGroups}
-            required
+            required={showRequired}
             compact={true}
             quotesFormStyle
             disabled={opts.disabled}
@@ -425,7 +428,7 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
         <div className="gap-4 grid grid-cols-2">
           <div className="flex flex-col gap-2">
             <Label className="text-sm font-medium">
-              Pickup Date <span className="text-destructive">*</span>
+              Pickup Date {showRequired && <span className="text-destructive">*</span>}
             </Label>
             <Popover open={opts.pickupOpen} onOpenChange={opts.setPickupOpen}>
               <PopoverTrigger asChild>
@@ -464,7 +467,7 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
           </div>
           <div className="flex flex-col gap-2">
             <Label className="text-sm font-medium">
-              Delivery Date <span className="text-destructive">*</span>
+              Delivery Date {showRequired && <span className="text-destructive">*</span>}
             </Label>
             <Popover open={opts.deliveryOpen} onOpenChange={opts.setDeliveryOpen}>
               <PopoverTrigger asChild>
@@ -528,41 +531,30 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
         </div>
         <Switch.Root
           checked={sameDetailsForAllAssets}
-          onCheckedChange={(checked) =>
-            onDataChange({
-              sameDetailsForAllAssets: checked,
-              ...(checked && logisticsDestination && desirablePickupDate && desirableDeliveryDate
-                ? {
-                    logisticsDetailsPerAsset: assetIds.reduce(
-                      (acc, id) => ({
-                        ...acc,
-                        [id]: {
-                          logisticsDestination,
-                          desirablePickupDate,
-                          desirableDeliveryDate,
-                        },
-                      }),
-                      {} as Record<string, LogisticsDetailPerAsset>
-                    ),
-                  }
-                : !checked
-                ? {
-                    logisticsDetailsPerAsset: assetIds.reduce(
-                      (acc, id) => ({
-                        ...acc,
-                        [id]: {
-                          ...getPerAssetDetail(id),
-                          logisticsDestination: logisticsDestination,
-                          desirablePickupDate: desirablePickupDate,
-                          desirableDeliveryDate: desirableDeliveryDate,
-                        },
-                      }),
-                      {} as Record<string, LogisticsDetailPerAsset>
-                    ),
-                  }
-                : {}),
-            })
-          }
+          onCheckedChange={(checked) => {
+            if (checked && assetIds.length > 0) {
+              // Al activar "Same details": copiar primer asset a todos (solo sirve para cargar las cards, no es requerido)
+              const first = getPerAssetDetail(assetIds[0]);
+              const next: Record<string, LogisticsDetailPerAsset> = {};
+              assetIds.forEach((id) => {
+                next[id] = {
+                  ...getPerAssetDetail(id),
+                  logisticsDestination: first.logisticsDestination,
+                  desirablePickupDate: first.desirablePickupDate,
+                  desirableDeliveryDate: first.desirableDeliveryDate,
+                };
+              });
+              onDataChange({
+                sameDetailsForAllAssets: true,
+                logisticsDetailsPerAsset: next,
+                logisticsDestination: first.logisticsDestination,
+                desirablePickupDate: first.desirablePickupDate,
+                desirableDeliveryDate: first.desirableDeliveryDate,
+              });
+            } else {
+              onDataChange({ sameDetailsForAllAssets: checked });
+            }
+          }}
           className={cn(
             "relative flex-shrink-0 rounded-full w-10 h-6 transition-colors duration-200",
             sameDetailsForAllAssets ? "bg-blue" : "bg-gray-300"
@@ -590,6 +582,7 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
             deliveryOpen: deliveryCalendarOpen,
             setPickupOpen: setPickupCalendarOpen,
             setDeliveryOpen: setDeliveryCalendarOpen,
+            showRequired: false,
           })}
         </div>
       )}
@@ -638,28 +631,34 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
               </button>
               {isExpanded && (
                 <div className="px-4 pt-4 pb-4 flex flex-col gap-4 border-t border-gray-100">
-                  {renderDestinationAndDates({
-                    destinationValue: assetDestValue,
-                    onDestinationChange: (v) =>
-                      handleDestinationChangeForAsset(asset._id, v),
-                    pickupDate: detail.desirablePickupDate,
-                    deliveryDate: detail.desirableDeliveryDate,
-                    onPickupDate: (s) => handlePickupDateForAsset(asset._id, s),
-                    onDeliveryDate: (s) =>
-                      handleDeliveryDateForAsset(asset._id, s),
-                    pickupOpen: perAssetPickupOpen[asset._id] ?? false,
-                    deliveryOpen: perAssetDeliveryOpen[asset._id] ?? false,
-                    setPickupOpen: (v) =>
-                      setPerAssetPickupOpen((prev) => ({
-                        ...prev,
-                        [asset._id]: v,
-                      })),
-                    setDeliveryOpen: (v) =>
-                      setPerAssetDeliveryOpen((prev) => ({
-                        ...prev,
-                        [asset._id]: v,
-                      })),
-                  })}
+                  {sameDetailsForAllAssets ? (
+                    <p className="text-muted-foreground text-sm">
+                      Using same destination and dates for all assets. Edit in &quot;Same details for all assets&quot; above.
+                    </p>
+                  ) : (
+                    renderDestinationAndDates({
+                      destinationValue: assetDestValue,
+                      onDestinationChange: (v) =>
+                        handleDestinationChangeForAsset(asset._id, v),
+                      pickupDate: detail.desirablePickupDate,
+                      deliveryDate: detail.desirableDeliveryDate,
+                      onPickupDate: (s) => handlePickupDateForAsset(asset._id, s),
+                      onDeliveryDate: (s) =>
+                        handleDeliveryDateForAsset(asset._id, s),
+                      pickupOpen: perAssetPickupOpen[asset._id] ?? false,
+                      deliveryOpen: perAssetDeliveryOpen[asset._id] ?? false,
+                      setPickupOpen: (v) =>
+                        setPerAssetPickupOpen((prev) => ({
+                          ...prev,
+                          [asset._id]: v,
+                        })),
+                      setDeliveryOpen: (v) =>
+                        setPerAssetDeliveryOpen((prev) => ({
+                          ...prev,
+                          [asset._id]: v,
+                        })),
+                    })
+                  )}
                 </div>
               )}
             </div>
