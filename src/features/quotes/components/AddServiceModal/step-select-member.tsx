@@ -143,10 +143,8 @@ export const StepSelectMember: React.FC<StepSelectMemberProps> = ({
                   )}
                 </div>
 
-                <div className="flex-shrink-0 text-right">
-                  <span className="font-semibold text-base text-gray-900">
-                    {recoverableCount} {recoverableCount === 1 ? "asset" : "assets"}
-                  </span>
+                <div className="flex-shrink-0 text-right text-gray-600 text-xs">
+                  {recoverableCount} {recoverableCount === 1 ? "asset" : "assets"}
                 </div>
               </button>
             );
