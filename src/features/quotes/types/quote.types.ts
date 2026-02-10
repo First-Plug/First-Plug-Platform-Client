@@ -209,6 +209,13 @@ export interface QuoteRequestPayload {
   }>;
 }
 
+/** Preset para abrir Add Service desde My Assets directamente en step 3 con asset(s) pre-seleccionados */
+export interface PresetServiceOpen {
+  serviceType: string;
+  assetIds?: string[];
+  assetId?: string;
+}
+
 export interface QuoteStore {
   products: QuoteProduct[];
   services: QuoteService[];
@@ -219,6 +226,8 @@ export interface QuoteStore {
   currentServiceType?: string; // Tipo de servicio seleccionado en el flujo actual
   editingProductId?: string;
   editingServiceId?: string;
+  /** Preset para abrir el flujo de servicio en step 3 desde My Assets */
+  presetServiceOpen: PresetServiceOpen | null;
   onBack?: (() => void) | undefined;
   onCancel?: (() => void) | undefined;
   // Guardar producto completo (al finalizar todos los steps)
@@ -251,6 +260,7 @@ export interface QuoteStore {
   setOnCancel: (callback: (() => void) | undefined) => void;
   setEditingProductId: (id: string | undefined) => void;
   setEditingServiceId: (id: string | undefined) => void;
+  setPresetServiceOpen: (preset: PresetServiceOpen | null) => void;
 }
 
 export interface QuoteHistoryProduct {

@@ -11,6 +11,7 @@ import { DeleteAction } from "@/shared";
 import { ProductConditionCard } from "@/features/assets";
 import { ColumnDef } from "@tanstack/react-table";
 import { ActionButton } from "@/shared/components/Tables/Product";
+import { AssetActionsDropdown } from "@/features/assets/components/asset-actions-dropdown";
 import { countriesByCode } from "@/shared";
 
 export function useProductsInnerTableColumns({
@@ -220,23 +221,34 @@ export function useProductsInnerTableColumns({
       },
       {
         id: "actions",
-        size: 80,
-        minSize: 80,
-        maxSize: 80,
+        size: 140,
+        minSize: 120,
+        maxSize: 160,
         header: "",
         cell: ({ row }) => {
+          const product = row.original;
+          const canRequestService =
+            product._id &&
+            product.status &&
+            product.status !== "Deprecated";
           return (
-            <div className="flex justify-end gap-1">
+            <div className="flex justify-end items-center gap-1">
+              {canRequestService && (
+                <AssetActionsDropdown
+                  category={product.category}
+                  productIds={[product._id]}
+                />
+              )}
               <EditProduct
-                product={row.original}
-                disabled={row.original.shipmentStatus === "On The Way"}
+                product={product}
+                disabled={product.shipmentStatus === "On The Way"}
               />
               <DeleteAction
                 type="product"
-                id={row.original._id}
+                id={product._id}
                 disabled={
-                  row.original.status === "In Transit" ||
-                  row.original.status === "In Transit - Missing Data"
+                  product.status === "In Transit" ||
+                  product.status === "In Transit - Missing Data"
                 }
               />
             </div>

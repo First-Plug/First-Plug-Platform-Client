@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { PageLayout, Button, useToast, useAlertStore } from "@/shared";
@@ -27,7 +27,15 @@ export default function NewQuoteRequestPage() {
     setIsAddingService,
     clearProducts,
     clearServices,
+    presetServiceOpen,
   } = useQuoteStore();
+
+  // Si llegamos desde My Assets con un preset, abrir el formulario de Add Service
+  useEffect(() => {
+    if (presetServiceOpen) {
+      setIsAddingService(true);
+    }
+  }, [presetServiceOpen, setIsAddingService]);
   const { toast } = useToast();
   const { setAlert } = useAlertStore();
   const [isSubmitting, setIsSubmitting] = useState(false);

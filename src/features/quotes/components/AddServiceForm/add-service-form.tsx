@@ -52,6 +52,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     setEditingServiceId,
     setOnBack,
     setOnCancel,
+    setPresetServiceOpen,
   } = useQuoteStore();
   const { data: membersData } = useFetchMembers();
 
@@ -66,9 +67,27 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       .substr(2, 9)}`;
   };
 
-  const [serviceData, setServiceData] = useState<Partial<QuoteService>>({
-    id: generateId(),
-    impactLevel: "medium", // Preseleccionar "medium" por defecto
+  const [serviceData, setServiceData] = useState<Partial<QuoteService>>(() => {
+    const preset = useQuoteStore.getState().presetServiceOpen;
+    if (preset) {
+      const id = generateId();
+      const base: Partial<QuoteService> = {
+        id,
+        impactLevel: "medium",
+        serviceType: preset.serviceType,
+      };
+      if (preset.serviceType === "it-support" && preset.assetId) {
+        return { ...base, assetId: preset.assetId };
+      }
+      if (preset.assetIds && preset.assetIds.length > 0) {
+        const data: Partial<QuoteService> = { ...base, assetIds: preset.assetIds };
+        if (preset.serviceType === "cleaning") data.cleaningType = "Deep";
+        if (preset.serviceType === "destruction-recycling")
+          data.requiresCertificate = true;
+        return data;
+      }
+    }
+    return { id: generateId(), impactLevel: "medium" };
   });
 
   const handleDataChange = (updates: Partial<QuoteService>) => {
@@ -77,6 +96,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
 
   useEffect(() => {
     setIsAddingService(true);
+
+    // Leer preset una sola vez (no poner presetServiceOpen en deps para no re-ejecutar al limpiarlo y caer en else → step 1)
+    const presetFromStore = useQuoteStore.getState().presetServiceOpen;
 
     // Si hay un servicio en edición, cargar datos y determinar el step inicial
     if (editingServiceId) {
@@ -197,6 +219,29 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
         }
         setCurrentStep(initialStep);
       }
+    } else if (presetFromStore) {
+      // Abrir directamente en step 3 con asset(s) pre-seleccionados desde My Assets
+      const preset = presetFromStore;
+      const updates: Partial<QuoteService> = {
+        id: generateId(),
+        impactLevel: "medium",
+        serviceType: preset.serviceType,
+      };
+      if (preset.serviceType === "it-support" && preset.assetId) {
+        updates.assetId = preset.assetId;
+      } else if (preset.assetIds && preset.assetIds.length > 0) {
+        updates.assetIds = preset.assetIds;
+        if (preset.serviceType === "cleaning") {
+          updates.cleaningType = "Deep";
+        }
+        if (preset.serviceType === "destruction-recycling") {
+          updates.requiresCertificate = true;
+        }
+      }
+      setServiceData((prev) => ({ ...prev, ...updates }));
+      setCurrentServiceType(preset.serviceType);
+      setCurrentStep(3);
+      setPresetServiceOpen(null);
     } else {
       setCurrentStep(1);
       setCurrentServiceType(undefined); // Limpiar tipo de servicio cuando no hay edición
@@ -349,7 +394,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       setOnCancel(undefined);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingServiceId, setServiceData, setCurrentServiceType]);
+  }, [editingServiceId]);
 
   const handleServiceTypeSelect = (serviceType: string) => {
     handleDataChange({ serviceType });
