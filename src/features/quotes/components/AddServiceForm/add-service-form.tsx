@@ -84,6 +84,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
         if (preset.serviceType === "cleaning") data.cleaningType = "Deep";
         if (preset.serviceType === "destruction-recycling")
           data.requiresCertificate = true;
+        if (preset.serviceType === "logistics") data.sameDetailsForAllAssets = false;
         return data;
       }
     }
@@ -237,6 +238,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
         if (preset.serviceType === "destruction-recycling") {
           updates.requiresCertificate = true;
         }
+      }
+      if (preset.serviceType === "logistics") {
+        updates.sameDetailsForAllAssets = false;
       }
       setServiceData((prev) => ({ ...prev, ...updates }));
       setCurrentServiceType(preset.serviceType);
@@ -486,6 +490,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       setCurrentStep(3);
     } else if (serviceType === "logistics") {
       if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+      // Inicializar sameDetailsForAllAssets en false para que se muestren las cards por asset y no se exija tocar el toggle
+      handleDataChange({ sameDetailsForAllAssets: false });
       setCurrentStep(3);
     } else if (serviceType === "offboarding") {
       if (!serviceData.memberId) return;
@@ -771,18 +777,33 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   };
 
   const handleContinueFromShippingDetails = () => {
-    if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
-    if (!serviceData.logisticsDestination) return;
-    if (!serviceData.desirablePickupDate) return;
-    if (!serviceData.desirableDeliveryDate) return;
+    const assetIds = serviceData.assetIds || [];
+    if (assetIds.length === 0) return;
+    const perAsset = serviceData.logisticsDetailsPerAsset || {};
+    const allHaveData = assetIds.every(
+      (id) =>
+        perAsset[id]?.logisticsDestination &&
+        perAsset[id]?.desirablePickupDate &&
+        perAsset[id]?.desirableDeliveryDate
+    );
+    if (!allHaveData) return;
+
+    const sameDetails = serviceData.sameDetailsForAllAssets ?? false;
+    const firstId = assetIds[0];
+    const firstDetail = firstId ? perAsset[firstId] : undefined;
 
     const completeService: QuoteService = {
       id: serviceData.id!,
       serviceType: serviceData.serviceType!,
-      assetIds: serviceData.assetIds || [],
-      logisticsDestination: serviceData.logisticsDestination,
-      desirablePickupDate: serviceData.desirablePickupDate,
-      desirableDeliveryDate: serviceData.desirableDeliveryDate,
+      assetIds,
+      sameDetailsForAllAssets: sameDetails,
+      logisticsDestination:
+        serviceData.logisticsDestination ?? firstDetail?.logisticsDestination,
+      desirablePickupDate:
+        serviceData.desirablePickupDate ?? firstDetail?.desirablePickupDate,
+      desirableDeliveryDate:
+        serviceData.desirableDeliveryDate ?? firstDetail?.desirableDeliveryDate,
+      logisticsDetailsPerAsset: perAsset,
       additionalDetails: serviceData.additionalDetails,
       country: serviceData.country || "",
       city: serviceData.city,
