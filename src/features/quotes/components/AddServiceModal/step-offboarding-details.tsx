@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { format, startOfToday } from "date-fns";
-import { CalendarIcon, Package, ChevronDown, ChevronUp, UserMinus, AlertTriangle } from "lucide-react";
+import { CalendarIcon, ChevronDown, ChevronUp, UserMinus, AlertTriangle } from "lucide-react";
 import * as Switch from "@radix-ui/react-switch";
 import { Label } from "@/shared/components/ui/label";
 import { Button } from "@/shared/components/ui/button";
@@ -13,7 +13,7 @@ import {
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
 import { cn } from "@/shared";
-import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
+import { useGetTableAssets, Product, ProductTable, CategoryIcons } from "@/features/assets";
 import { useFetchMembers } from "@/features/members";
 import { useOffices } from "@/features/settings";
 import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
@@ -281,47 +281,59 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
     });
   };
 
-  // Intercountry: count assets where origin country !== destination country
+  // País del miembro que estamos haciendo offboarding (para validar vs destino de cada asset)
+  const memberCountryCode = React.useMemo(() => {
+    if (!selectedMember) return "";
+    const m = selectedMember as any;
+    const code = m.countryCode || m.country || "";
+    return typeof code === "string" ? code.trim().toUpperCase() : "";
+  }, [selectedMember]);
+
+  // Destino efectivo para un asset: si "Same details for all" está on, usa el del primer asset; si no, el de ese asset
+  const getEffectiveDestinationForAsset = React.useCallback(
+    (assetId: string): LogisticsDestination | undefined => {
+      const detail = offboardingDetailsPerAsset?.[assetId] || {};
+      if (offboardingSameDetailsForAllAssets && selectedAssets[0]) {
+        const firstDetail = offboardingDetailsPerAsset?.[selectedAssets[0]._id] || {};
+        return firstDetail.logisticsDestination;
+      }
+      return detail.logisticsDestination;
+    },
+    [offboardingSameDetailsForAllAssets, offboardingDetailsPerAsset, selectedAssets]
+  );
+
+  // Intercountry: para cada asset recuperable, validar país del MIEMBRO vs destino de ESE asset
   const intercountryAssets = React.useMemo(() => {
     return selectedAssets.filter((asset) => {
-      const origin = getOriginCountryCode(asset);
-      const detail = getPerAssetDetail(asset._id);
-      const dest = offboardingSameDetailsForAllAssets
-        ? getPerAssetDetail(selectedAssets[0]?._id)?.logisticsDestination
-        : detail.logisticsDestination;
+      const dest = getEffectiveDestinationForAsset(asset._id);
       const destCountry = getDestinationCountryCode(dest);
-      return origin && destCountry && origin !== destCountry;
+      return !!(
+        memberCountryCode &&
+        destCountry &&
+        memberCountryCode !== destCountry.trim().toUpperCase()
+      );
     });
-  }, [
-    selectedAssets,
-    offboardingSameDetailsForAllAssets,
-    offboardingDetailsPerAsset,
-  ]);
+  }, [selectedAssets, memberCountryCode, getEffectiveDestinationForAsset]);
 
   const isAssetIntercountry = (asset: Product): boolean => {
-    const origin = getOriginCountryCode(asset);
-    const detail = getPerAssetDetail(asset._id);
-    const dest = offboardingSameDetailsForAllAssets
-      ? selectedAssets[0]
-        ? getPerAssetDetail(selectedAssets[0]._id).logisticsDestination
-        : undefined
-      : detail.logisticsDestination;
+    const dest = getEffectiveDestinationForAsset(asset._id);
     const destCountry = getDestinationCountryCode(dest);
-    return !!(origin && destCountry && origin !== destCountry);
+    return !!(
+      memberCountryCode &&
+      destCountry &&
+      memberCountryCode !== destCountry.trim().toUpperCase()
+    );
   };
 
   const getIntercountryLabel = (asset: Product): string => {
-    const origin = getOriginCountryCode(asset);
-    const detail = getPerAssetDetail(asset._id);
-    const dest = offboardingSameDetailsForAllAssets
-      ? selectedAssets[0]
-        ? getPerAssetDetail(selectedAssets[0]._id).logisticsDestination
-        : undefined
-      : detail.logisticsDestination;
+    const dest = getEffectiveDestinationForAsset(asset._id);
     const destCountry = getDestinationCountryCode(dest);
-    const originName = origin ? countriesByCode[origin] || origin : "";
-    const destName = destCountry ? countriesByCode[destCountry] || destCountry : "";
-    return `${originName} → ${destName}`;
+    const memberName = memberCountryCode
+      ? countriesByCode[memberCountryCode] || memberCountryCode
+      : "";
+    const destCode = destCountry ? destCountry.trim().toUpperCase() : "";
+    const destName = destCode ? countriesByCode[destCode] || destCountry : "";
+    return `${memberName} → ${destName}`;
   };
 
   const handleDestinationForAsset = (assetId: string, selectedValue: string) => {
@@ -413,8 +425,8 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
             disabled={opts.disabled}
           />
           {opts.showIntercountryAlert && opts.intercountryLabel && (
-            <div className="flex items-start gap-2 text-destructive text-sm mt-1">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 text-amber-700 text-sm mt-1 bg-amber-50/50 border border-amber-500/50 rounded-md px-2 py-1.5">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
               <span>
                 This is an intercountry shipment ({opts.intercountryLabel})
               </span>
@@ -525,17 +537,23 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
         <Switch.Root
           checked={offboardingSameDetailsForAllAssets}
           onCheckedChange={(checked) => {
-            onDataChange({ offboardingSameDetailsForAllAssets: checked });
             if (checked && assetIds.length > 0) {
+              // Al activar "Same details": copiar destino y fecha del BLOQUE GLOBAL (primer asset) a todos
               const first = getPerAssetDetail(assetIds[0]);
               const next: Record<string, OffboardingDetailPerAsset> = {};
               assetIds.forEach((id) => {
                 next[id] = {
+                  ...getPerAssetDetail(id),
                   logisticsDestination: first.logisticsDestination,
                   desirableDeliveryDate: first.desirableDeliveryDate,
                 };
               });
-              onDataChange({ offboardingDetailsPerAsset: next });
+              onDataChange({
+                offboardingSameDetailsForAllAssets: true,
+                offboardingDetailsPerAsset: next,
+              });
+            } else {
+              onDataChange({ offboardingSameDetailsForAllAssets: checked });
             }
           }}
           className={cn(
@@ -563,15 +581,21 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
               deliveryOpen: perAssetDeliveryOpen["_global"] ?? false,
               setDeliveryOpen: (v) =>
                 setPerAssetDeliveryOpen((prev) => ({ ...prev, _global: v })),
+              showIntercountryAlert:
+                intercountryAssets.length > 0 && selectedAssets[0] != null,
+              intercountryLabel:
+                selectedAssets[0] != null
+                  ? getIntercountryLabel(selectedAssets[0])
+                  : undefined,
             })}
           </div>
         </div>
       )}
 
-      {/* Intercountry banner */}
+      {/* Intercountry banner - mismo amarillo que Sensitive Situation */}
       {intercountryAssets.length > 0 && (
-        <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
-          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50/30 border border-amber-500/50 text-amber-800">
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
           <p className="text-sm">
             Intercountry shipping detected. {intercountryAssets.length} asset
             {intercountryAssets.length !== 1 ? "s" : ""} require
@@ -606,7 +630,7 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
               key={asset._id}
               className={cn(
                 "border rounded-lg bg-white overflow-hidden",
-                intercountry ? "border-destructive" : "border-gray-200"
+                intercountry ? "border-amber-500" : "border-gray-200"
               )}
             >
               <button
@@ -615,8 +639,8 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
                 className="flex justify-between items-center gap-3 w-full p-4 text-left hover:bg-gray-50/50 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="flex justify-center items-center w-10 h-10 rounded-lg bg-gray-100 shrink-0">
-                    <Package className="w-5 h-5 text-gray-500" />
+                  <div className="flex justify-center items-center w-10 h-10 rounded-lg bg-gray-100 shrink-0 [&_svg]:w-5 [&_svg]:h-5 [&_svg]:text-gray-500">
+                    <CategoryIcons products={[asset]} />
                   </div>
                   <div className="flex flex-col gap-0.5 min-w-0">
                     <span className="font-semibold text-sm text-gray-900">
@@ -628,7 +652,7 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
                     </span>
                   </div>
                   {intercountry && (
-                    <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                   )}
                 </div>
                 {isExpanded ? (
@@ -639,24 +663,30 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
               </button>
               {isExpanded && (
                 <div className="px-4 pt-4 pb-4 flex flex-col gap-4 border-t border-gray-100">
-                  <div className="gap-4 grid grid-cols-2">
-                    {renderDestinationAndDelivery({
-                      destinationValue: assetDestValue,
-                      onDestinationChange: (v) =>
-                        handleDestinationForAsset(asset._id, v),
-                      deliveryDate: detail.desirableDeliveryDate,
-                      onDeliveryDate: (s) =>
-                        handleDeliveryDateForAsset(asset._id, s),
-                      deliveryOpen: perAssetDeliveryOpen[asset._id] ?? false,
-                      setDeliveryOpen: (v) =>
-                        setPerAssetDeliveryOpen((prev) => ({
-                          ...prev,
-                          [asset._id]: v,
-                        })),
-                      showIntercountryAlert: intercountry,
-                      intercountryLabel: intercountryLabel,
-                    })}
-                  </div>
+                  {offboardingSameDetailsForAllAssets ? (
+                    <p className="text-muted-foreground text-sm">
+                      Using same destination for all assets. Edit in &quot;Same details for all assets&quot; above.
+                    </p>
+                  ) : (
+                    <div className="gap-4 grid grid-cols-2">
+                      {renderDestinationAndDelivery({
+                        destinationValue: assetDestValue,
+                        onDestinationChange: (v) =>
+                          handleDestinationForAsset(asset._id, v),
+                        deliveryDate: detail.desirableDeliveryDate,
+                        onDeliveryDate: (s) =>
+                          handleDeliveryDateForAsset(asset._id, s),
+                        deliveryOpen: perAssetDeliveryOpen[asset._id] ?? false,
+                        setDeliveryOpen: (v) =>
+                          setPerAssetDeliveryOpen((prev) => ({
+                            ...prev,
+                            [asset._id]: v,
+                          })),
+                        showIntercountryAlert: intercountry,
+                        intercountryLabel: intercountryLabel,
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -665,7 +695,7 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
       </div>
 
       {/* Sensitive Situation */}
-      <div className="flex flex-col gap-4 p-4 border border-gray-200 rounded-lg bg-amber-50/30">
+      <div className="flex flex-col gap-4 p-4 border border-gray-200 rounded-lg bg-white">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-amber-600" />
           <p className="font-medium text-sm">Sensitive Situation</p>
