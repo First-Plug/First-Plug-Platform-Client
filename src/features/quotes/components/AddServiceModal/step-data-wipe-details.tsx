@@ -198,6 +198,7 @@ const AssetItem: React.FC<AssetItemProps> = ({
               onChange={handleDestinationChange}
               searchable={true}
               compact={true}
+              quotesFormStyle
             />
           </div>
         </div>

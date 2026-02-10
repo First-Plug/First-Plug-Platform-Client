@@ -65,12 +65,16 @@ export interface QuoteService {
   requiresCertificate?: boolean;
   /** Destruction & Recycling: comentarios/instrucciones (mapea a "comments" en payload) */
   comments?: string;
-  /** Logistics: destino (FP warehouses, members, offices) - aplicado a todos los assets */
+  /** Logistics: si true, un solo destino/fechas para todos los assets; si false, logisticsDetailsPerAsset */
+  sameDetailsForAllAssets?: boolean;
+  /** Logistics: destino (FP warehouses, members, offices) - aplicado a todos cuando sameDetailsForAllAssets es true */
   logisticsDestination?: LogisticsDestination;
   /** Logistics: fecha de recogida deseada (YYYY-MM-DD) */
   desirablePickupDate?: string;
   /** Logistics: fecha de entrega deseada (YYYY-MM-DD) */
   desirableDeliveryDate?: string;
+  /** Logistics: detalles por asset cuando sameDetailsForAllAssets es false; clave = assetId */
+  logisticsDetailsPerAsset?: Record<string, LogisticsDetailPerAsset>;
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
@@ -88,6 +92,13 @@ export interface LogisticsDestination {
   assignedEmail?: string;
   warehouseId?: string;
   warehouseName?: string;
+}
+
+/** Detalles de envío por asset (cuando sameDetailsForAllAssets es false) */
+export interface LogisticsDetailPerAsset {
+  logisticsDestination?: LogisticsDestination;
+  desirablePickupDate?: string;
+  desirableDeliveryDate?: string;
 }
 
 export interface QuoteRequestPayload {

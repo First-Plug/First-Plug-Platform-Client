@@ -1770,13 +1770,6 @@ export function transformServiceToBackendFormat(
     if (!assetsMap) {
       throw new Error("Logistics service requires assetsMap to build products");
     }
-    if (!service.logisticsDestination) {
-      throw new Error("Logistics service requires logisticsDestination");
-    }
-    if (!service.desirablePickupDate) {
-      throw new Error("Logistics service requires desirablePickupDate");
-    }
-
     const selectedLogisticsAssets = service.assetIds
       .map((assetId) => assetsMap!.get(assetId))
       .filter((a) => a !== undefined);
@@ -1789,38 +1782,61 @@ export function transformServiceToBackendFormat(
 
     validateAssetsCountryCode(selectedLogisticsAssets, membersMap);
 
-    const dest = service.logisticsDestination;
-    const isGenericFpWarehouse =
-      dest.type === "Warehouse" && !dest.warehouseId;
+    const usePerAsset =
+      service.sameDetailsForAllAssets === false &&
+      service.logisticsDetailsPerAsset &&
+      Object.keys(service.logisticsDetailsPerAsset).length > 0;
 
-    const destinationPayloadForAll =
-      dest.type === "Office"
-        ? {
-            type: "Office" as const,
-            officeName: dest.officeName || "",
-            countryCode: dest.countryCode || "",
-          }
-        : dest.type === "Member"
-        ? {
-            type: "Member" as const,
-            memberId: dest.memberId || "",
-            assignedMember: dest.assignedMember || "",
-            assignedEmail: dest.assignedEmail || "",
-            countryCode: dest.countryCode || "",
-          }
-        : dest.type === "Warehouse" && dest.warehouseId
-        ? {
-            type: "Warehouse" as const,
-            ...(dest.warehouseId && { warehouseId: dest.warehouseId }),
-            ...(dest.warehouseName && { warehouseName: dest.warehouseName }),
-            countryCode: dest.countryCode || "",
-          }
-        : undefined;
+    const buildDestinationPayload = (
+      dest: NonNullable<typeof service.logisticsDestination>,
+      countryCode: string
+    ) => {
+      const isGenericFpWarehouse = dest.type === "Warehouse" && !dest.warehouseId;
+      const payload =
+        dest.type === "Office"
+          ? {
+              type: "Office" as const,
+              officeName: dest.officeName || "",
+              countryCode: dest.countryCode || "",
+            }
+          : dest.type === "Member"
+          ? {
+              type: "Member" as const,
+              memberId: dest.memberId || "",
+              assignedMember: dest.assignedMember || "",
+              assignedEmail: dest.assignedEmail || "",
+              countryCode: dest.countryCode || "",
+            }
+          : dest.type === "Warehouse" && dest.warehouseId
+          ? {
+              type: "Warehouse" as const,
+              ...(dest.warehouseId && { warehouseId: dest.warehouseId }),
+              ...(dest.warehouseName && { warehouseName: dest.warehouseName }),
+              countryCode: dest.countryCode || "",
+            }
+          : undefined;
+      if (isGenericFpWarehouse) return { type: "Warehouse" as const, countryCode };
+      if (!payload) throw new Error("Logistics service: invalid logisticsDestination type");
+      return payload;
+    };
 
-    if (!isGenericFpWarehouse && !destinationPayloadForAll) {
-      throw new Error(
-        "Logistics service: invalid logisticsDestination type"
-      );
+    if (usePerAsset) {
+      const perAsset = service.logisticsDetailsPerAsset!;
+      for (const assetId of service.assetIds!) {
+        const d = perAsset[assetId];
+        if (!d?.logisticsDestination || !d.desirablePickupDate || !d.desirableDeliveryDate) {
+          throw new Error(
+            `Logistics service: each asset must have destination, pickup date and delivery date when using per-asset details. Missing for asset ${assetId}`
+          );
+        }
+      }
+    } else {
+      if (!service.logisticsDestination) {
+        throw new Error("Logistics service requires logisticsDestination");
+      }
+      if (!service.desirablePickupDate) {
+        throw new Error("Logistics service requires desirablePickupDate");
+      }
     }
 
     logisticsProducts = selectedLogisticsAssets.map((asset) => {
@@ -1907,27 +1923,48 @@ export function transformServiceToBackendFormat(
         productSnapshotLogistics.assignedEmail = asset.assignedMember;
       }
 
-      const productDestination = isGenericFpWarehouse
-        ? { type: "Warehouse" as const, countryCode: countryCode }
-        : destinationPayloadForAll!;
+      let productDestination: any;
+      let desirablePickupDate: string | undefined;
+      let desirableDeliveryDate: string | undefined;
 
-      return {
+      if (usePerAsset && service.logisticsDetailsPerAsset?.[asset._id]) {
+        const d = service.logisticsDetailsPerAsset[asset._id];
+        productDestination = buildDestinationPayload(d.logisticsDestination!, countryCode);
+        desirablePickupDate = d.desirablePickupDate;
+        desirableDeliveryDate = d.desirableDeliveryDate;
+      } else {
+        const dest = service.logisticsDestination!;
+        productDestination = buildDestinationPayload(dest, countryCode);
+      }
+
+      const product: any = {
         productId: asset._id,
         productSnapshot: removeUndefinedFields(productSnapshotLogistics),
         destination: productDestination,
       };
+      if (desirablePickupDate) product.desirablePickupDate = desirablePickupDate;
+      if (desirableDeliveryDate) product.desirableDeliveryDate = desirableDeliveryDate;
+      return product;
     });
 
+    const firstProduct = logisticsProducts[0] as any;
     const logisticsService: any = {
       serviceCategory: serviceCategory,
-      desirablePickupDate: service.desirablePickupDate,
+      desirablePickupDate:
+        usePerAsset && firstProduct?.desirablePickupDate
+          ? firstProduct.desirablePickupDate
+          : service.desirablePickupDate,
       products: logisticsProducts,
     };
     if (service.additionalDetails && service.additionalDetails.trim() !== "") {
       logisticsService.additionalDetails = service.additionalDetails;
     }
-    if (service.desirableDeliveryDate) {
-      logisticsService.desirableDeliveryDate = service.desirableDeliveryDate;
+    const serviceDeliveryDate =
+      usePerAsset && firstProduct?.desirableDeliveryDate
+        ? firstProduct.desirableDeliveryDate
+        : service.desirableDeliveryDate;
+    if (serviceDeliveryDate) {
+      logisticsService.desirableDeliveryDate = serviceDeliveryDate;
     }
 
     return removeUndefinedFields(logisticsService) as NonNullable<

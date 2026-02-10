@@ -654,30 +654,41 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length !== 1 ? "s" : ""} to ship
           </div>
           <ul className="flex flex-col gap-3 list-none pl-0">
-            {selectedAssets.map((asset) => renderUnifiedAssetCard(asset))}
+            {selectedAssets.map((asset) => {
+              const perAsset = service.logisticsDetailsPerAsset?.[asset._id];
+              const dest = perAsset?.logisticsDestination ?? service.logisticsDestination;
+              const pickupDate = perAsset?.desirablePickupDate ?? service.desirablePickupDate;
+              const deliveryDate = perAsset?.desirableDeliveryDate ?? service.desirableDeliveryDate;
+              const shippingDetails =
+                dest || pickupDate || deliveryDate ? (
+                  <div className="mt-2 pt-2 border-t border-gray-200 flex flex-col gap-0.5 text-gray-700 text-xs">
+                    {dest && (
+                      <div>
+                        <span className="font-medium">Destination: </span>
+                        {dest.type === "Office" && dest.officeName}
+                        {dest.type === "Member" && (dest.assignedMember || dest.assignedEmail)}
+                        {dest.type === "Warehouse" && (dest.warehouseName || "FP Warehouse")}
+                      </div>
+                    )}
+                    {pickupDate && (
+                      <div>
+                        <span className="font-medium">Pickup: </span>
+                        {new Date(pickupDate + "T12:00:00").toLocaleDateString()}
+                      </div>
+                    )}
+                    {deliveryDate && (
+                      <div>
+                        <span className="font-medium">Delivery: </span>
+                        {new Date(deliveryDate + "T12:00:00").toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                ) : null;
+              return renderUnifiedAssetCard(asset, shippingDetails);
+            })}
           </ul>
-          {service.logisticsDestination && (
-            <div className="mt-2 text-gray-700 text-sm">
-              <span className="font-medium">Destination: </span>
-              {service.logisticsDestination.type === "Office" && service.logisticsDestination.officeName}
-              {service.logisticsDestination.type === "Member" && (service.logisticsDestination.assignedMember || service.logisticsDestination.assignedEmail)}
-              {service.logisticsDestination.type === "Warehouse" && (service.logisticsDestination.warehouseName || "FP Warehouse")}
-            </div>
-          )}
-          {service.desirablePickupDate && (
-            <div className="mt-1 text-gray-700 text-sm">
-              <span className="font-medium">Pickup date: </span>
-              {new Date(service.desirablePickupDate + "T12:00:00").toLocaleDateString()}
-            </div>
-          )}
-          {service.desirableDeliveryDate && (
-            <div className="mt-1 text-gray-700 text-sm">
-              <span className="font-medium">Delivery date: </span>
-              {new Date(service.desirableDeliveryDate + "T12:00:00").toLocaleDateString()}
-            </div>
-          )}
           {service.additionalDetails && service.additionalDetails.trim() !== "" && (
-            <div className="mt-1 text-gray-700 text-sm">
+            <div className="mt-2 text-gray-700 text-sm">
               <span className="font-medium">Comments: </span>
               {service.additionalDetails}
             </div>

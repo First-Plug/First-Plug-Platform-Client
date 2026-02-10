@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { format, startOfToday } from "date-fns";
-import { CalendarIcon, Package } from "lucide-react";
+import { CalendarIcon, Package, ChevronDown, ChevronUp } from "lucide-react";
+import * as Switch from "@radix-ui/react-switch";
 import { Label } from "@/shared/components/ui/label";
 import { Button } from "@/shared/components/ui/button";
 import { Calendar } from "@/shared/components/ui/calendar";
@@ -18,7 +19,21 @@ import { useOffices } from "@/features/settings";
 import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
 import { CountryFlag, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
-import type { LogisticsDestination } from "@/features/quotes/types/quote.types";
+import type { LogisticsDestination, LogisticsDetailPerAsset } from "@/features/quotes/types/quote.types";
+
+/** Parsea YYYY-MM-DD a Date a mediodía local (solo fecha, sin depender de hora) */
+function parseDateOnly(str: string | undefined): Date | undefined {
+  if (!str) return undefined;
+  const m = str.match(/^(\d{4})[-\/](\d{2})[-\/](\d{2})/);
+  if (!m) return undefined;
+  const [, y, mo, d] = m;
+  return new Date(parseInt(y), parseInt(mo) - 1, parseInt(d), 12, 0, 0);
+}
+
+/** Comparación solo por día (sin tiempo) */
+function toDateOnlyTimestamp(d: Date): number {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+}
 
 // Formato estandarizado: Brand Model (Name)
 const getAssetDisplayInfo = (product: Product) => {
@@ -65,16 +80,36 @@ const getLocationLabel = (product: Product): string => {
   return product.location || "";
 };
 
+/** "Origin: Buenos Aires Office • Argentina" */
+const getOriginLabel = (product: Product): string => {
+  const location = getLocationLabel(product);
+  const countryCode =
+    (product as any).office?.country ||
+    (product as any).officeCountryCode ||
+    product.countryCode ||
+    (product as any).country ||
+    "";
+  const countryName = countryCode
+    ? countriesByCode[countryCode] || countryCode
+    : "";
+  if (!countryName) return `Origin: ${location}`;
+  return `Origin: ${location} • ${countryName}`;
+};
+
 interface StepShippingDetailsProps {
   assetIds: string[];
+  sameDetailsForAllAssets?: boolean;
   logisticsDestination?: LogisticsDestination;
   desirablePickupDate?: string;
   desirableDeliveryDate?: string;
+  logisticsDetailsPerAsset?: Record<string, LogisticsDetailPerAsset>;
   additionalDetails?: string;
   onDataChange: (updates: {
+    sameDetailsForAllAssets?: boolean;
     logisticsDestination?: LogisticsDestination;
     desirablePickupDate?: string;
     desirableDeliveryDate?: string;
+    logisticsDetailsPerAsset?: Record<string, LogisticsDetailPerAsset>;
     additionalDetails?: string;
   }) => void;
 }
@@ -89,9 +124,11 @@ function getDestinationValue(dest: LogisticsDestination | undefined): string {
 
 export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
   assetIds,
+  sameDetailsForAllAssets = false,
   logisticsDestination,
   desirablePickupDate,
   desirableDeliveryDate,
+  logisticsDetailsPerAsset,
   additionalDetails,
   onDataChange,
 }) => {
@@ -102,6 +139,20 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
   const today = startOfToday();
   const [pickupCalendarOpen, setPickupCalendarOpen] = React.useState(false);
   const [deliveryCalendarOpen, setDeliveryCalendarOpen] = React.useState(false);
+  const [expandedAssetIds, setExpandedAssetIds] = React.useState<Set<string>>(
+    () => (assetIds?.length ? new Set([assetIds[0]]) : new Set())
+  );
+  const [perAssetPickupOpen, setPerAssetPickupOpen] = React.useState<Record<string, boolean>>({});
+  const [perAssetDeliveryOpen, setPerAssetDeliveryOpen] = React.useState<Record<string, boolean>>({});
+
+  const toggleAssetExpanded = (assetId: string) => {
+    setExpandedAssetIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(assetId)) next.delete(assetId);
+      else next.add(assetId);
+      return next;
+    });
+  };
 
   const members = React.useMemo(() => {
     if (!membersData || !Array.isArray(membersData)) return [];
@@ -199,68 +250,124 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
 
   const destinationValue = getDestinationValue(logisticsDestination);
 
-  const handleDestinationChange = (selectedValue: string) => {
-    if (!selectedValue) {
-      onDataChange({ logisticsDestination: undefined });
-      return;
-    }
-
-    if (selectedValue === "FP warehouse") {
-      onDataChange({
-        logisticsDestination: {
-          type: "Warehouse",
-          // Sin warehouseId = destino genérico "FP warehouse" (countryCode por producto en el payload)
-        },
-      });
-      return;
-    }
-
+  const parseDestinationFromValue = (selectedValue: string): LogisticsDestination | undefined => {
+    if (!selectedValue) return undefined;
+    if (selectedValue === "FP warehouse") return { type: "Warehouse" };
     const [type, id] = selectedValue.split("_");
-
     if (type === "member") {
       const member = members.find((m) => (m as any)._id === id);
-      if (member) {
-        const m = member as any;
-        onDataChange({
-          logisticsDestination: {
-            type: "Member",
-            memberId: m._id || "",
-            assignedMember: `${m.firstName || ""} ${m.lastName || ""}`.trim() || m.email,
-            assignedEmail: m.email || "",
-            countryCode: m.countryCode || m.country || "",
-          },
-        });
-      }
-    } else if (type === "office") {
-      const office = offices.find((o) => o._id === id);
-      if (office) {
-        onDataChange({
-          logisticsDestination: {
-            type: "Office",
-            officeId: office._id,
-            officeName: office.name,
-            countryCode: office.country || "",
-          },
-        });
-      }
+      if (!member) return undefined;
+      const m = member as any;
+      return {
+        type: "Member",
+        memberId: m._id || "",
+        assignedMember: `${m.firstName || ""} ${m.lastName || ""}`.trim() || m.email,
+        assignedEmail: m.email || "",
+        countryCode: m.countryCode || m.country || "",
+      };
     }
+    if (type === "office") {
+      const office = offices.find((o) => o._id === id);
+      if (!office) return undefined;
+      return {
+        type: "Office",
+        officeId: office._id,
+        officeName: office.name,
+        countryCode: office.country || "",
+      };
+    }
+    return undefined;
   };
 
-  const pickupDateValue = React.useMemo(() => {
-    if (!desirablePickupDate) return undefined;
-    const m = desirablePickupDate.match(/^(\d{4})[-\/](\d{2})[-\/](\d{2})/);
-    if (!m) return undefined;
-    const [, y, mo, d] = m;
-    return new Date(parseInt(y), parseInt(mo) - 1, parseInt(d));
-  }, [desirablePickupDate]);
+  const getPerAssetDetail = (assetId: string): LogisticsDetailPerAsset =>
+    logisticsDetailsPerAsset?.[assetId] || {};
 
-  const deliveryDateValue = React.useMemo(() => {
-    if (!desirableDeliveryDate) return undefined;
-    const m = desirableDeliveryDate.match(/^(\d{4})[-\/](\d{2})[-\/](\d{2})/);
-    if (!m) return undefined;
-    const [, y, mo, d] = m;
-    return new Date(parseInt(y), parseInt(mo) - 1, parseInt(d));
-  }, [desirableDeliveryDate]);
+  const handleDestinationChangeForAsset = (assetId: string, selectedValue: string) => {
+    const dest = parseDestinationFromValue(selectedValue);
+    onDataChange({
+      logisticsDetailsPerAsset: {
+        ...logisticsDetailsPerAsset,
+        [assetId]: { ...getPerAssetDetail(assetId), logisticsDestination: dest },
+      },
+    });
+  };
+
+  const handlePickupDateForAsset = (assetId: string, dateStr: string | undefined) => {
+    onDataChange({
+      logisticsDetailsPerAsset: {
+        ...logisticsDetailsPerAsset,
+        [assetId]: { ...getPerAssetDetail(assetId), desirablePickupDate: dateStr },
+      },
+    });
+  };
+
+  const handleDeliveryDateForAsset = (assetId: string, dateStr: string | undefined) => {
+    onDataChange({
+      logisticsDetailsPerAsset: {
+        ...logisticsDetailsPerAsset,
+        [assetId]: { ...getPerAssetDetail(assetId), desirableDeliveryDate: dateStr },
+      },
+    });
+  };
+
+  const handleDestinationChange = (selectedValue: string) => {
+    const dest = parseDestinationFromValue(selectedValue);
+    onDataChange({
+      logisticsDestination: dest,
+      ...(sameDetailsForAllAssets &&
+        assetIds.length > 0 && {
+          logisticsDetailsPerAsset: assetIds.reduce(
+            (acc, id) => ({
+              ...acc,
+              [id]: { ...getPerAssetDetail(id), logisticsDestination: dest },
+            }),
+            {} as Record<string, LogisticsDetailPerAsset>
+          ),
+        }),
+    });
+  };
+
+  const handleGlobalPickupDate = (dateStr: string) => {
+    onDataChange({
+      desirablePickupDate: dateStr,
+      ...(sameDetailsForAllAssets &&
+        assetIds.length > 0 && {
+          logisticsDetailsPerAsset: assetIds.reduce(
+            (acc, id) => ({
+              ...acc,
+              [id]: { ...getPerAssetDetail(id), desirablePickupDate: dateStr },
+            }),
+            {} as Record<string, LogisticsDetailPerAsset>
+          ),
+        }),
+    });
+  };
+
+  const handleGlobalDeliveryDate = (dateStr: string) => {
+    onDataChange({
+      desirableDeliveryDate: dateStr,
+      ...(sameDetailsForAllAssets &&
+        assetIds.length > 0 && {
+          logisticsDetailsPerAsset: assetIds.reduce(
+            (acc, id) => ({
+              ...acc,
+              [id]: { ...getPerAssetDetail(id), desirableDeliveryDate: dateStr },
+            }),
+            {} as Record<string, LogisticsDetailPerAsset>
+          ),
+        }),
+    });
+  };
+
+  const pickupDateValue = React.useMemo(
+    () => parseDateOnly(desirablePickupDate),
+    [desirablePickupDate]
+  );
+
+  const deliveryDateValue = React.useMemo(
+    () => parseDateOnly(desirableDeliveryDate),
+    [desirableDeliveryDate]
+  );
 
   if (selectedAssets.length === 0) {
     return (
@@ -269,6 +376,132 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
       </div>
     );
   }
+
+  const renderDestinationAndDates = (opts: {
+    destinationValue: string;
+    onDestinationChange: (v: string) => void;
+    pickupDate?: string;
+    deliveryDate?: string;
+    onPickupDate: (dateStr: string) => void;
+    onDeliveryDate: (dateStr: string) => void;
+    pickupOpen: boolean;
+    deliveryOpen: boolean;
+    setPickupOpen: (v: boolean) => void;
+    setDeliveryOpen: (v: boolean) => void;
+    disabled?: boolean;
+  }) => {
+    const pickupVal = parseDateOnly(opts.pickupDate);
+    const deliveryVal = parseDateOnly(opts.deliveryDate);
+
+    const pickupDisabled = (date: Date) => {
+      const d = toDateOnlyTimestamp(date);
+      if (d < toDateOnlyTimestamp(today)) return true;
+      if (deliveryVal && d >= toDateOnlyTimestamp(deliveryVal)) return true;
+      return false;
+    };
+    const deliveryDisabled = (date: Date) => {
+      const d = toDateOnlyTimestamp(date);
+      if (d < toDateOnlyTimestamp(today)) return true;
+      if (pickupVal && d <= toDateOnlyTimestamp(pickupVal)) return true;
+      return false;
+    };
+
+    return (
+      <>
+        <div className="flex flex-col gap-2">
+          <SelectDropdownOptions
+            label="Destination"
+            placeholder="Select destination"
+            value={opts.destinationValue}
+            onChange={opts.onDestinationChange}
+            options={directDestinationOptions}
+            optionGroups={destinationOptionGroups}
+            required
+            compact={true}
+            quotesFormStyle
+            disabled={opts.disabled}
+          />
+        </div>
+        <div className="gap-4 grid grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <Label className="text-sm font-medium">
+              Pickup Date <span className="text-destructive">*</span>
+            </Label>
+            <Popover open={opts.pickupOpen} onOpenChange={opts.setPickupOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  disabled={opts.disabled}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !opts.pickupDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {opts.pickupDate
+                    ? format(pickupVal!, "PPP")
+                    : "Select pickup date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={pickupVal}
+                  onSelect={(date) => {
+                    if (date) {
+                      opts.onPickupDate(format(date, "yyyy-MM-dd"));
+                      if (deliveryVal && toDateOnlyTimestamp(date) >= toDateOnlyTimestamp(deliveryVal)) {
+                        opts.onDeliveryDate("");
+                      }
+                      opts.setPickupOpen(false);
+                    }
+                  }}
+                  disabled={pickupDisabled}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label className="text-sm font-medium">
+              Delivery Date <span className="text-destructive">*</span>
+            </Label>
+            <Popover open={opts.deliveryOpen} onOpenChange={opts.setDeliveryOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  disabled={opts.disabled}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !opts.deliveryDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {opts.deliveryDate
+                    ? format(deliveryVal!, "PPP")
+                    : "Select delivery date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={deliveryVal}
+                  onSelect={(date) => {
+                    if (date) {
+                      opts.onDeliveryDate(format(date, "yyyy-MM-dd"));
+                      opts.setDeliveryOpen(false);
+                    }
+                  }}
+                  disabled={deliveryDisabled}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+      </>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -285,116 +518,153 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
         </div>
       </div>
 
-      {/* Assets to Ship */}
-      <div className="flex flex-col gap-2">
-        <Label className="font-medium text-sm">Assets to Ship</Label>
-        <ul className="flex flex-col gap-1.5 list-none">
-          {selectedAssets.map((asset) => {
-            const { displayName } = getAssetDisplayInfo(asset);
-            const location = getLocationLabel(asset);
-            return (
-              <li
-                key={asset._id}
-                className="flex justify-between items-center py-2 px-3 rounded-md bg-gray-50 border border-gray-100 text-sm"
-              >
-                <span className="font-medium text-black">{displayName}</span>
-                <span className="text-muted-foreground">{location}</span>
-              </li>
-            );
+      {/* Same details for all assets */}
+      <div className="flex justify-between items-start gap-4 bg-white p-4 border border-gray-200 rounded-lg">
+        <div>
+          <p className="font-medium text-sm">Same details for all assets</p>
+          <p className="text-muted-foreground text-sm">
+            Apply the same destination and dates to all selected assets
+          </p>
+        </div>
+        <Switch.Root
+          checked={sameDetailsForAllAssets}
+          onCheckedChange={(checked) =>
+            onDataChange({
+              sameDetailsForAllAssets: checked,
+              ...(checked && logisticsDestination && desirablePickupDate && desirableDeliveryDate
+                ? {
+                    logisticsDetailsPerAsset: assetIds.reduce(
+                      (acc, id) => ({
+                        ...acc,
+                        [id]: {
+                          logisticsDestination,
+                          desirablePickupDate,
+                          desirableDeliveryDate,
+                        },
+                      }),
+                      {} as Record<string, LogisticsDetailPerAsset>
+                    ),
+                  }
+                : !checked
+                ? {
+                    logisticsDetailsPerAsset: assetIds.reduce(
+                      (acc, id) => ({
+                        ...acc,
+                        [id]: {
+                          ...getPerAssetDetail(id),
+                          logisticsDestination: logisticsDestination,
+                          desirablePickupDate: desirablePickupDate,
+                          desirableDeliveryDate: desirableDeliveryDate,
+                        },
+                      }),
+                      {} as Record<string, LogisticsDetailPerAsset>
+                    ),
+                  }
+                : {}),
+            })
+          }
+          className={cn(
+            "relative flex-shrink-0 rounded-full w-10 h-6 transition-colors duration-200",
+            sameDetailsForAllAssets ? "bg-blue" : "bg-gray-300"
+          )}
+        >
+          <Switch.Thumb
+            className={cn(
+              "block bg-white shadow-md rounded-full w-4 h-4 transform-gpu transition-transform duration-200",
+              sameDetailsForAllAssets ? "translate-x-5" : "translate-x-1"
+            )}
+          />
+        </Switch.Root>
+      </div>
+
+      {sameDetailsForAllAssets && (
+        <div className="flex flex-col gap-4 p-4 border border-gray-200 rounded-lg bg-white">
+          {renderDestinationAndDates({
+            destinationValue,
+            onDestinationChange: handleDestinationChange,
+            pickupDate: desirablePickupDate,
+            deliveryDate: desirableDeliveryDate,
+            onPickupDate: handleGlobalPickupDate,
+            onDeliveryDate: handleGlobalDeliveryDate,
+            pickupOpen: pickupCalendarOpen,
+            deliveryOpen: deliveryCalendarOpen,
+            setPickupOpen: setPickupCalendarOpen,
+            setDeliveryOpen: setDeliveryCalendarOpen,
           })}
-        </ul>
-      </div>
+        </div>
+      )}
 
-      {/* Destination * */}
-      <div className="flex flex-col gap-2">
-        <SelectDropdownOptions
-          label="Destination"
-          placeholder="Select destination"
-          value={destinationValue}
-          onChange={handleDestinationChange}
-          options={directDestinationOptions}
-          optionGroups={destinationOptionGroups}
-          required
-          compact={true}
-        />
-      </div>
-
-      {/* Pickup Date * */}
-      <div className="flex flex-col gap-2">
-        <Label className="text-sm font-medium">
-          Pickup Date <span className="text-destructive">*</span>
-        </Label>
-        <Popover open={pickupCalendarOpen} onOpenChange={setPickupCalendarOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !desirablePickupDate && "text-muted-foreground"
-              )}
+      {/* Per-asset cards (collapsible) */}
+      <div className="flex flex-col gap-3">
+        {selectedAssets.map((asset) => {
+          const { displayName } = getAssetDisplayInfo(asset);
+          const category = asset.category || "Computer";
+          const origin = getOriginLabel(asset);
+          const isExpanded = expandedAssetIds.has(asset._id);
+          const detail = getPerAssetDetail(asset._id);
+          const assetDestValue = getDestinationValue(detail.logisticsDestination);
+          const isConfigured =
+            !!detail.logisticsDestination &&
+            !!detail.desirablePickupDate &&
+            !!detail.desirableDeliveryDate;
+          return (
+            <div
+              key={asset._id}
+              className="border border-gray-200 rounded-lg bg-white overflow-hidden"
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {desirablePickupDate
-                ? format(pickupDateValue!, "PPP")
-                : "Select pickup date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={pickupDateValue}
-              onSelect={(date) => {
-                if (date) {
-                  onDataChange({
-                    desirablePickupDate: format(date, "yyyy-MM-dd"),
-                  });
-                  setPickupCalendarOpen(false);
-                }
-              }}
-              disabled={(date) => date < today}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      {/* Delivery Date * */}
-      <div className="flex flex-col gap-2">
-        <Label className="text-sm font-medium">
-          Delivery Date <span className="text-destructive">*</span>
-        </Label>
-        <Popover open={deliveryCalendarOpen} onOpenChange={setDeliveryCalendarOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !desirableDeliveryDate && "text-muted-foreground"
+              <button
+                type="button"
+                onClick={() => toggleAssetExpanded(asset._id)}
+                className="flex justify-between items-center w-full p-4 text-left hover:bg-gray-50/50 transition-colors"
+              >
+                <div>
+                  <p className="font-semibold text-sm flex items-center gap-2 flex-wrap">
+                    <span>
+                      {displayName} ({category})
+                    </span>
+                    {isConfigured && (
+                      <span className="text-blue text-xs font-medium">
+                        Configured
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-muted-foreground text-sm mt-0.5">{origin}</p>
+                </div>
+                {isExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-gray-500 shrink-0" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-500 shrink-0" />
+                )}
+              </button>
+              {isExpanded && (
+                <div className="px-4 pt-4 pb-4 flex flex-col gap-4 border-t border-gray-100">
+                  {renderDestinationAndDates({
+                    destinationValue: assetDestValue,
+                    onDestinationChange: (v) =>
+                      handleDestinationChangeForAsset(asset._id, v),
+                    pickupDate: detail.desirablePickupDate,
+                    deliveryDate: detail.desirableDeliveryDate,
+                    onPickupDate: (s) => handlePickupDateForAsset(asset._id, s),
+                    onDeliveryDate: (s) =>
+                      handleDeliveryDateForAsset(asset._id, s),
+                    pickupOpen: perAssetPickupOpen[asset._id] ?? false,
+                    deliveryOpen: perAssetDeliveryOpen[asset._id] ?? false,
+                    setPickupOpen: (v) =>
+                      setPerAssetPickupOpen((prev) => ({
+                        ...prev,
+                        [asset._id]: v,
+                      })),
+                    setDeliveryOpen: (v) =>
+                      setPerAssetDeliveryOpen((prev) => ({
+                        ...prev,
+                        [asset._id]: v,
+                      })),
+                  })}
+                </div>
               )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {desirableDeliveryDate
-                ? format(deliveryDateValue!, "PPP")
-                : "Select delivery date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={deliveryDateValue}
-              onSelect={(date) => {
-                if (date) {
-                  onDataChange({
-                    desirableDeliveryDate: format(date, "yyyy-MM-dd"),
-                  });
-                  setDeliveryCalendarOpen(false);
-                }
-              }}
-              disabled={(date) => date < today}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
+            </div>
+          );
+        })}
       </div>
 
       {/* Additional Comments (optional) */}

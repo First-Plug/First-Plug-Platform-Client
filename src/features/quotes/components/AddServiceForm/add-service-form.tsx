@@ -152,12 +152,21 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
                 ? 3
                 : 2;
           } else if (type === "logistics") {
-            initialStep =
+            const hasSameForAll =
               editingService.logisticsDestination &&
               editingService.desirablePickupDate &&
-              editingService.desirableDeliveryDate
-                ? 3
-                : 2;
+              editingService.desirableDeliveryDate;
+            const perAsset = editingService.logisticsDetailsPerAsset || {};
+            const assetIds = editingService.assetIds || [];
+            const hasPerAsset =
+              assetIds.length > 0 &&
+              assetIds.every(
+                (id) =>
+                  perAsset[id]?.logisticsDestination &&
+                  perAsset[id]?.desirablePickupDate &&
+                  perAsset[id]?.desirableDeliveryDate
+              );
+            initialStep = hasSameForAll || hasPerAsset ? 3 : 2;
           }
         } else {
           // Otros servicios: default step 3 (quote details)
@@ -255,9 +264,11 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           } else if (serviceType === "logistics") {
             setServiceData((prev) => ({
               ...prev,
+              sameDetailsForAllAssets: false,
               logisticsDestination: undefined,
               desirablePickupDate: undefined,
               desirableDeliveryDate: undefined,
+              logisticsDetailsPerAsset: undefined,
               additionalDetails: undefined,
             }));
           }
@@ -985,9 +996,11 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           return (
             <StepShippingDetails
               assetIds={serviceData.assetIds || []}
+              sameDetailsForAllAssets={serviceData.sameDetailsForAllAssets ?? false}
               logisticsDestination={serviceData.logisticsDestination}
               desirablePickupDate={serviceData.desirablePickupDate}
               desirableDeliveryDate={serviceData.desirableDeliveryDate}
+              logisticsDetailsPerAsset={serviceData.logisticsDetailsPerAsset}
               additionalDetails={serviceData.additionalDetails}
               onDataChange={(updates) => {
                 handleDataChange(updates);
@@ -1105,10 +1118,21 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       return !!serviceData.assetIds && serviceData.assetIds.length > 0;
     }
     if (currentStep === 3 && serviceType === "logistics") {
-      return !!(
-        serviceData.logisticsDestination &&
-        serviceData.desirablePickupDate &&
-        serviceData.desirableDeliveryDate
+      const assetIds = serviceData.assetIds || [];
+      if (assetIds.length === 0) return false;
+      if (serviceData.sameDetailsForAllAssets !== false) {
+        return !!(
+          serviceData.logisticsDestination &&
+          serviceData.desirablePickupDate &&
+          serviceData.desirableDeliveryDate
+        );
+      }
+      const perAsset = serviceData.logisticsDetailsPerAsset || {};
+      return assetIds.every(
+        (id) =>
+          perAsset[id]?.logisticsDestination &&
+          perAsset[id]?.desirablePickupDate &&
+          perAsset[id]?.desirableDeliveryDate
       );
     }
     if (currentStep === 3 && isITSupport) {
@@ -1319,19 +1343,13 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           </div>
         )}
         {currentStep === 3 && serviceTypeForRender === "logistics" && (
-          <div className="flex justify-between items-center pt-4 border-t">
-            <Button
-              onClick={onBack}
-              variant="secondary"
-              size="small"
-              body="Back"
-            />
+          <div className="flex justify-end items-center pt-4 border-t">
             <Button
               onClick={handleContinueFromShippingDetails}
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Add to Quote"
+              body="Save Service"
             />
           </div>
         )}

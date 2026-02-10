@@ -79,14 +79,13 @@ const serviceTypes: ServiceType[] = [
     icon: <Trash2 className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },
-  // Logistics - no subir a producción aún; descomentar para habilitar
-  // {
-  //   id: "logistics",
-  //   name: "Logistics",
-  //   description: "Shipping and logistics services",
-  //   icon: <Truck className="w-6 h-6" strokeWidth={2} />,
-  //   enabled: true,
-  // },
+  {
+    id: "logistics",
+    name: "Logistics",
+    description: "Shipping and logistics services",
+    icon: <Truck className="w-6 h-6" strokeWidth={2} />,
+    enabled: true,
+  },
 ];
 
 interface StepServiceTypeSelectionProps {
