@@ -1788,10 +1788,9 @@ export function transformServiceToBackendFormat(
 
     validateAssetsCountryCode(selectedLogisticsAssets, membersMap);
 
-    const usePerAsset =
-      service.sameDetailsForAllAssets === false &&
-      service.logisticsDetailsPerAsset &&
-      Object.keys(service.logisticsDetailsPerAsset).length > 0;
+    const sameDetailsForAllAssets = service.sameDetailsForAllAssets === true;
+    const perAssetData = service.logisticsDetailsPerAsset && Object.keys(service.logisticsDetailsPerAsset).length > 0;
+    const usePerAssetDates = !sameDetailsForAllAssets && perAssetData;
 
     const buildDestinationPayload = (
       dest: NonNullable<typeof service.logisticsDestination>,
@@ -1826,22 +1825,23 @@ export function transformServiceToBackendFormat(
       return payload;
     };
 
-    if (usePerAsset) {
-      const perAsset = service.logisticsDetailsPerAsset!;
-      for (const assetId of service.assetIds!) {
-        const d = perAsset[assetId];
-        if (!d?.logisticsDestination || !d.desirablePickupDate || !d.desirableDeliveryDate) {
-          throw new Error(
-            `Logistics service: each asset must have destination, pickup date and delivery date when using per-asset details. Missing for asset ${assetId}`
-          );
-        }
+    const perAsset = service.logisticsDetailsPerAsset || {};
+    for (const assetId of service.assetIds!) {
+      const d = perAsset[assetId];
+      if (!d?.logisticsDestination) {
+        throw new Error(
+          `Logistics service: each asset must have a destination. Missing for asset ${assetId}`
+        );
       }
-    } else {
-      if (!service.logisticsDestination) {
-        throw new Error("Logistics service requires logisticsDestination");
+      if (usePerAssetDates && (!d.desirablePickupDate || !d.desirableDeliveryDate)) {
+        throw new Error(
+          `Logistics service: each asset must have pickup and delivery date when not using same details. Missing for asset ${assetId}`
+        );
       }
-      if (!service.desirablePickupDate) {
-        throw new Error("Logistics service requires desirablePickupDate");
+    }
+    if (sameDetailsForAllAssets) {
+      if (!service.desirablePickupDate || !service.desirableDeliveryDate) {
+        throw new Error("Logistics service requires desirablePickupDate and desirableDeliveryDate when using same details for all assets");
       }
     }
 
@@ -1929,19 +1929,10 @@ export function transformServiceToBackendFormat(
         productSnapshotLogistics.assignedEmail = asset.assignedMember;
       }
 
-      let productDestination: any;
-      let desirablePickupDate: string | undefined;
-      let desirableDeliveryDate: string | undefined;
-
-      if (usePerAsset && service.logisticsDetailsPerAsset?.[asset._id]) {
-        const d = service.logisticsDetailsPerAsset[asset._id];
-        productDestination = buildDestinationPayload(d.logisticsDestination!, countryCode);
-        desirablePickupDate = d.desirablePickupDate;
-        desirableDeliveryDate = d.desirableDeliveryDate;
-      } else {
-        const dest = service.logisticsDestination!;
-        productDestination = buildDestinationPayload(dest, countryCode);
-      }
+      const d = perAsset[asset._id];
+      const productDestination = buildDestinationPayload(d!.logisticsDestination!, countryCode);
+      const desirablePickupDate = usePerAssetDates ? d!.desirablePickupDate : service.desirablePickupDate;
+      const desirableDeliveryDate = usePerAssetDates ? d!.desirableDeliveryDate : service.desirableDeliveryDate;
 
       const product: any = {
         productId: asset._id,
@@ -1956,19 +1947,17 @@ export function transformServiceToBackendFormat(
     const firstProduct = logisticsProducts[0] as any;
     const logisticsService: any = {
       serviceCategory: serviceCategory,
-      desirablePickupDate:
-        usePerAsset && firstProduct?.desirablePickupDate
-          ? firstProduct.desirablePickupDate
-          : service.desirablePickupDate,
+      desirablePickupDate: usePerAssetDates
+        ? firstProduct?.desirablePickupDate
+        : service.desirablePickupDate,
       products: logisticsProducts,
     };
     if (service.additionalDetails && service.additionalDetails.trim() !== "") {
       logisticsService.additionalDetails = service.additionalDetails;
     }
-    const serviceDeliveryDate =
-      usePerAsset && firstProduct?.desirableDeliveryDate
-        ? firstProduct.desirableDeliveryDate
-        : service.desirableDeliveryDate;
+    const serviceDeliveryDate = usePerAssetDates
+      ? firstProduct?.desirableDeliveryDate
+      : service.desirableDeliveryDate;
     if (serviceDeliveryDate) {
       logisticsService.desirableDeliveryDate = serviceDeliveryDate;
     }

@@ -179,21 +179,16 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
                 ? 3
                 : 2;
           } else if (type === "logistics") {
-            const hasSameForAll =
-              editingService.logisticsDestination &&
-              editingService.desirablePickupDate &&
-              editingService.desirableDeliveryDate;
+            const sameDetails = editingService.sameDetailsForAllAssets ?? false;
             const perAsset = editingService.logisticsDetailsPerAsset || {};
             const assetIds = editingService.assetIds || [];
-            const hasPerAsset =
-              assetIds.length > 0 &&
-              assetIds.every(
-                (id) =>
-                  perAsset[id]?.logisticsDestination &&
-                  perAsset[id]?.desirablePickupDate &&
-                  perAsset[id]?.desirableDeliveryDate
-              );
-            initialStep = hasSameForAll || hasPerAsset ? 3 : 2;
+            const allHaveDestination = assetIds.every((id) => perAsset[id]?.logisticsDestination);
+            const hasDates = sameDetails
+              ? !!editingService.desirablePickupDate && !!editingService.desirableDeliveryDate
+              : assetIds.every(
+                  (id) => perAsset[id]?.desirablePickupDate && perAsset[id]?.desirableDeliveryDate
+                );
+            initialStep = allHaveDestination && hasDates ? 3 : 2;
           } else if (type === "offboarding") {
             const hasMember = !!editingService.memberId;
             const hasAssets = !!editingService.assetIds && editingService.assetIds.length > 0;
@@ -780,15 +775,20 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     const assetIds = serviceData.assetIds || [];
     if (assetIds.length === 0) return;
     const perAsset = serviceData.logisticsDetailsPerAsset || {};
-    const allHaveData = assetIds.every(
-      (id) =>
-        perAsset[id]?.logisticsDestination &&
-        perAsset[id]?.desirablePickupDate &&
-        perAsset[id]?.desirableDeliveryDate
-    );
+    const sameDetails = serviceData.sameDetailsForAllAssets ?? false;
+    const allHaveDestination = assetIds.every((id) => perAsset[id]?.logisticsDestination);
+    const allHaveData = sameDetails
+      ? allHaveDestination &&
+        !!serviceData.desirablePickupDate &&
+        !!serviceData.desirableDeliveryDate
+      : assetIds.every(
+          (id) =>
+            perAsset[id]?.logisticsDestination &&
+            perAsset[id]?.desirablePickupDate &&
+            perAsset[id]?.desirableDeliveryDate
+        );
     if (!allHaveData) return;
 
-    const sameDetails = serviceData.sameDetailsForAllAssets ?? false;
     const firstId = assetIds[0];
     const firstDetail = firstId ? perAsset[firstId] : undefined;
 
@@ -1328,13 +1328,15 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     if (currentStep === 3 && serviceType === "logistics") {
       const assetIds = serviceData.assetIds || [];
       if (assetIds.length === 0) return false;
-      // Same details no es requerido: solo validar que cada asset tenga destino y fechas (por card o por haber usado Same details)
       const perAsset = serviceData.logisticsDetailsPerAsset || {};
+      const sameDetails = serviceData.sameDetailsForAllAssets ?? false;
+      const allHaveDestination = assetIds.every((id) => perAsset[id]?.logisticsDestination);
+      if (!allHaveDestination) return false;
+      if (sameDetails) {
+        return !!serviceData.desirablePickupDate && !!serviceData.desirableDeliveryDate;
+      }
       return assetIds.every(
-        (id) =>
-          perAsset[id]?.logisticsDestination &&
-          perAsset[id]?.desirablePickupDate &&
-          perAsset[id]?.desirableDeliveryDate
+        (id) => perAsset[id]?.desirablePickupDate && perAsset[id]?.desirableDeliveryDate
       );
     }
     if (currentStep === 3 && isITSupport) {

@@ -177,7 +177,7 @@ export default function SelectDropdownOptions({
         >
           {label}
           {quotesFormStyle && required && (
-            <span className="text-destructive ml-0.5">*</span>
+            <span className="text-red-500 ml-0.5">*</span>
           )}
         </label>
       )}

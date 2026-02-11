@@ -200,7 +200,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         <div className="flex-shrink-0 mt-0.5">
           <CategoryIcons products={[asset]} />
         </div>
-        <div className="flex flex-col gap-1 min-w-0 flex-1">
+        <div className="flex flex-col flex-1 gap-1 min-w-0">
           <div className="font-semibold text-gray-900 text-sm truncate">
             {displayInfo.displayName}
           </div>
@@ -210,7 +210,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             </div>
           )}
           {assignment && (
-            <div className="flex items-center gap-1 text-gray-600 text-xs flex-wrap">
+            <div className="flex flex-wrap items-center gap-1 text-gray-600 text-xs">
               <span className="font-medium">Location:</span>
               {assignment.country && (
                 <CountryFlag countryName={assignment.country} size={14} />
@@ -323,7 +323,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
               {selectedAssets.length !== 1 ? "s" : ""} to enroll
             </span>
           </div>
-          <ul className="flex flex-col gap-3 list-none pl-0">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => renderUnifiedAssetCard(asset))}
           </ul>
         </div>
@@ -346,7 +346,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} to sell
           </div>
-          <ul className="flex flex-col gap-3 list-none pl-0">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => {
               const buybackDetail = service.buybackDetails?.[asset._id];
               return renderUnifiedAssetCard(
@@ -355,9 +355,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                   <div className="space-y-1 mt-1 text-gray-600 text-xs">
                     {buybackDetail.generalFunctionality && (
                       <div>
-                        <span className="font-medium">
-                          Overall condition:{" "}
-                        </span>
+                        <span className="font-medium">Overall condition: </span>
                         {buybackDetail.generalFunctionality}
                       </div>
                     )}
@@ -423,13 +421,15 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} to wipe
           </div>
-          <ul className="flex flex-col gap-3 list-none pl-0">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => {
               const dataWipeDetail = service.dataWipeDetails?.[asset._id];
               const formatDate = (dateString?: string) => {
                 if (!dateString) return null;
                 try {
-                  const dateMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                  const dateMatch = dateString.match(
+                    /^(\d{4})-(\d{2})-(\d{2})/
+                  );
                   if (!dateMatch) return dateString;
                   const [, year, month, day] = dateMatch;
                   return `${day}/${month}/${year}`;
@@ -456,11 +456,9 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                           "Member" &&
                           dataWipeDetail.destination.member && (
                             <span>
-                              {
-                                dataWipeDetail.destination.member
-                                  .assignedMember
-                              }
-                              {dataWipeDetail.destination.member.assignedEmail &&
+                              {dataWipeDetail.destination.member.assignedMember}
+                              {dataWipeDetail.destination.member
+                                .assignedEmail &&
                                 ` (${dataWipeDetail.destination.member.assignedEmail})`}
                             </span>
                           )}
@@ -468,9 +466,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                           "Office" &&
                           dataWipeDetail.destination.office && (
                             <span>
-                              {
-                                dataWipeDetail.destination.office.officeName
-                              }
+                              {dataWipeDetail.destination.office.officeName}
                             </span>
                           )}
                         {dataWipeDetail.destination.destinationType ===
@@ -502,7 +498,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} to clean
           </div>
-          <ul className="flex flex-col gap-3 list-none pl-0">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => renderUnifiedAssetCard(asset))}
           </ul>
         </div>
@@ -548,7 +544,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} to donate
           </div>
-          <ul className="flex flex-col gap-3 list-none pl-0">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => renderUnifiedAssetCard(asset))}
           </ul>
         </div>
@@ -593,7 +589,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
               {selectedAssets.length} asset
               {selectedAssets.length !== 1 ? "s" : ""} for destruction
             </div>
-            <ul className="flex flex-col gap-3 list-none pl-0">
+            <ul className="flex flex-col gap-3 pl-0 list-none">
               {selectedAssets.map((asset) => renderUnifiedAssetCard(asset))}
             </ul>
             {service.requiresCertificate !== undefined && (
@@ -619,7 +615,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} for storage
           </div>
-          <ul className="flex flex-col gap-3 list-none pl-0">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => {
               const storageDetail = service.storageDetails?.[asset._id];
               return renderUnifiedAssetCard(
@@ -659,33 +655,47 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} to ship
           </div>
-          <ul className="flex flex-col gap-3 list-none pl-0">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => {
               const perAsset = service.logisticsDetailsPerAsset?.[asset._id];
-              const dest = perAsset?.logisticsDestination ?? service.logisticsDestination;
-              const pickupDate = perAsset?.desirablePickupDate ?? service.desirablePickupDate;
-              const deliveryDate = perAsset?.desirableDeliveryDate ?? service.desirableDeliveryDate;
+              const dest =
+                perAsset?.logisticsDestination ?? service.logisticsDestination;
+              const pickupDate =
+                perAsset?.desirablePickupDate ?? service.desirablePickupDate;
+              const deliveryDate =
+                perAsset?.desirableDeliveryDate ??
+                service.desirableDeliveryDate;
               const shippingDetails =
                 dest || pickupDate || deliveryDate ? (
-                  <div className="mt-2 pt-2 border-t border-gray-200 flex flex-col gap-0.5 text-gray-700 text-xs">
+                  <div className="flex flex-col gap-0.5 mt-2 pt-2 border-gray-200 border-t text-gray-700 text-xs">
+                    {pickupDate && (
+                      <div>
+                        <span className="font-medium">Pickup: </span>
+                        {pickupDate === "ASAP"
+                          ? "ASAP"
+                          : new Date(
+                              pickupDate + "T12:00:00"
+                            ).toLocaleDateString()}
+                      </div>
+                    )}
                     {dest && (
                       <div>
                         <span className="font-medium">Destination: </span>
                         {dest.type === "Office" && dest.officeName}
-                        {dest.type === "Member" && (dest.assignedMember || dest.assignedEmail)}
-                        {dest.type === "Warehouse" && (dest.warehouseName || "FP Warehouse")}
-                      </div>
-                    )}
-                    {pickupDate && (
-                      <div>
-                        <span className="font-medium">Pickup: </span>
-                        {new Date(pickupDate + "T12:00:00").toLocaleDateString()}
+                        {dest.type === "Member" &&
+                          (dest.assignedMember || dest.assignedEmail)}
+                        {dest.type === "Warehouse" &&
+                          (dest.warehouseName || "FP Warehouse")}
                       </div>
                     )}
                     {deliveryDate && (
                       <div>
                         <span className="font-medium">Delivery: </span>
-                        {new Date(deliveryDate + "T12:00:00").toLocaleDateString()}
+                        {deliveryDate === "ASAP"
+                          ? "ASAP"
+                          : new Date(
+                              deliveryDate + "T12:00:00"
+                            ).toLocaleDateString()}
                       </div>
                     )}
                   </div>
@@ -693,100 +703,111 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
               return renderUnifiedAssetCard(asset, shippingDetails);
             })}
           </ul>
-          {service.additionalDetails && service.additionalDetails.trim() !== "" && (
-            <div className="mt-2 text-gray-700 text-sm">
-              <span className="font-medium">Comments: </span>
-              {service.additionalDetails}
-            </div>
-          )}
+          {service.additionalDetails &&
+            service.additionalDetails.trim() !== "" && (
+              <div className="mt-2 text-gray-700 text-sm">
+                <span className="font-medium">Comments: </span>
+                {service.additionalDetails}
+              </div>
+            )}
         </div>
       )}
 
       {/* Offboarding: Summary and assets */}
-      {service.serviceType === "offboarding" && service.memberId && selectedAssets.length > 0 && (
-        <div className="mb-3">
-          <div className="flex items-center gap-2 mb-2">
-            <UserMinus className="w-4 h-4 text-gray-600" />
-            <span className="font-medium text-sm">
-              Offboarding{" "}
-              {(() => {
-                const members = Array.isArray(membersData) ? membersData : [];
-                const member = members.find((m: any) => m._id === service.memberId);
-                return member
-                  ? `${(member as any).firstName || ""} ${(member as any).lastName || ""}`.trim() ||
-                      (member as any).email
-                  : "—";
-              })()}{" "}
-              · {selectedAssets.length} asset
-              {selectedAssets.length !== 1 ? "s" : ""} to recover
-            </span>
-          </div>
-          {service.offboardingPickupDate && (
-            <div className="text-gray-700 text-sm mb-2">
-              <span className="font-medium">Pickup date: </span>
-              {new Date(service.offboardingPickupDate + "T12:00:00").toLocaleDateString()}
+      {service.serviceType === "offboarding" &&
+        service.memberId &&
+        selectedAssets.length > 0 && (
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <UserMinus className="w-4 h-4 text-gray-600" />
+              <span className="font-medium text-sm">
+                Offboarding{" "}
+                {(() => {
+                  const members = Array.isArray(membersData) ? membersData : [];
+                  const member = members.find(
+                    (m: any) => m._id === service.memberId
+                  );
+                  return member
+                    ? `${(member as any).firstName || ""} ${(member as any).lastName || ""}`.trim() ||
+                        (member as any).email
+                    : "—";
+                })()}{" "}
+                · {selectedAssets.length} asset
+                {selectedAssets.length !== 1 ? "s" : ""} to recover
+              </span>
             </div>
-          )}
-          <ul className="flex flex-col gap-3 list-none pl-0">
-            {selectedAssets.map((asset) => {
-              const perAsset = service.offboardingDetailsPerAsset?.[asset._id];
-              const dest = perAsset?.logisticsDestination;
-              const deliveryDate = perAsset?.desirableDeliveryDate;
-              const destLabel = dest
-                ? dest.type === "Office"
-                  ? dest.officeName
-                  : dest.type === "Member"
-                  ? dest.assignedMember || dest.assignedEmail
-                  : dest.type === "Warehouse"
-                  ? "FP Warehouse"
-                  : "—"
-                : null;
-              return renderUnifiedAssetCard(
-                asset,
-                (destLabel || deliveryDate) && (
-                  <div className="mt-2 pt-2 border-t border-gray-200 flex flex-col gap-0.5 text-gray-700 text-xs">
-                    {destLabel && (
-                      <div>
-                        <span className="font-medium">Destination: </span>
-                        {destLabel}
-                      </div>
-                    )}
-                    {deliveryDate && (
-                      <div>
-                        <span className="font-medium">Delivery: </span>
-                        {new Date(deliveryDate + "T12:00:00").toLocaleDateString()}
-                      </div>
-                    )}
+            {service.offboardingPickupDate && (
+              <div className="mb-2 text-gray-700 text-sm">
+                <span className="font-medium">Pickup date: </span>
+                {new Date(
+                  service.offboardingPickupDate + "T12:00:00"
+                ).toLocaleDateString()}
+              </div>
+            )}
+            <ul className="flex flex-col gap-3 pl-0 list-none">
+              {selectedAssets.map((asset) => {
+                const perAsset =
+                  service.offboardingDetailsPerAsset?.[asset._id];
+                const dest = perAsset?.logisticsDestination;
+                const deliveryDate = perAsset?.desirableDeliveryDate;
+                const destLabel = dest
+                  ? dest.type === "Office"
+                    ? dest.officeName
+                    : dest.type === "Member"
+                      ? dest.assignedMember || dest.assignedEmail
+                      : dest.type === "Warehouse"
+                        ? "FP Warehouse"
+                        : "—"
+                  : null;
+                return renderUnifiedAssetCard(
+                  asset,
+                  (destLabel || deliveryDate) && (
+                    <div className="flex flex-col gap-0.5 mt-2 pt-2 border-gray-200 border-t text-gray-700 text-xs">
+                      {destLabel && (
+                        <div>
+                          <span className="font-medium">Destination: </span>
+                          {destLabel}
+                        </div>
+                      )}
+                      {deliveryDate && (
+                        <div>
+                          <span className="font-medium">Delivery: </span>
+                          {new Date(
+                            deliveryDate + "T12:00:00"
+                          ).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  )
+                );
+              })}
+            </ul>
+            {(service.offboardingSensitiveSituation !== undefined ||
+              service.offboardingEmployeeAware !== undefined) && (
+              <div className="space-y-0.5 mt-2 text-gray-700 text-sm">
+                {service.offboardingSensitiveSituation !== undefined && (
+                  <div>
+                    <span className="font-medium">Sensitive situation: </span>
+                    {service.offboardingSensitiveSituation ? "Yes" : "No"}
                   </div>
-                )
-              );
-            })}
-          </ul>
-          {(service.offboardingSensitiveSituation !== undefined ||
-            service.offboardingEmployeeAware !== undefined) && (
-            <div className="mt-2 text-gray-700 text-sm space-y-0.5">
-              {service.offboardingSensitiveSituation !== undefined && (
-                <div>
-                  <span className="font-medium">Sensitive situation: </span>
-                  {service.offboardingSensitiveSituation ? "Yes" : "No"}
+                )}
+                {service.offboardingEmployeeAware !== undefined && (
+                  <div>
+                    <span className="font-medium">Employee aware: </span>
+                    {service.offboardingEmployeeAware ? "Yes" : "No"}
+                  </div>
+                )}
+              </div>
+            )}
+            {service.additionalComments &&
+              service.additionalComments.trim() !== "" && (
+                <div className="mt-2 text-gray-700 text-sm">
+                  <span className="font-medium">Comments: </span>
+                  {service.additionalComments}
                 </div>
               )}
-              {service.offboardingEmployeeAware !== undefined && (
-                <div>
-                  <span className="font-medium">Employee aware: </span>
-                  {service.offboardingEmployeeAware ? "Yes" : "No"}
-                </div>
-              )}
-            </div>
-          )}
-          {service.additionalComments && service.additionalComments.trim() !== "" && (
-            <div className="mt-2 text-gray-700 text-sm">
-              <span className="font-medium">Comments: </span>
-              {service.additionalComments}
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
 
       {/* Asset (for IT Support) - card unificada */}
       {selectedAsset &&
@@ -798,7 +819,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         service.serviceType !== "logistics" &&
         service.serviceType !== "offboarding" && (
           <div className="mb-3">
-            <ul className="flex flex-col gap-3 list-none pl-0">
+            <ul className="flex flex-col gap-3 pl-0 list-none">
               {renderUnifiedAssetCard(selectedAsset)}
             </ul>
           </div>
