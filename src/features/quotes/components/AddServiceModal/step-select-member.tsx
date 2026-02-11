@@ -5,7 +5,7 @@ import { SearchInput, CountryFlag } from "@/shared";
 import { useFetchMembers } from "@/features/members";
 import type { Member } from "@/features/members";
 import { cn } from "@/shared";
-import { Check, MapPin, Building2 } from "lucide-react";
+import { Check } from "lucide-react";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
 /** Cuenta solo productos recuperables (recoverable === true) para offboarding */
@@ -54,6 +54,9 @@ export const StepSelectMember: React.FC<StepSelectMemberProps> = ({
     return country || "—";
   };
 
+  const getRecoverableAssetLabel = (count: number): string =>
+    count === 1 ? "1 recoverable asset" : `${count} recoverable assets`;
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -89,9 +92,6 @@ export const StepSelectMember: React.FC<StepSelectMemberProps> = ({
                 ? member.team
                 : member.team?.name || "";
             const locationLabel = getLocationLabel(member);
-            const countryName = member.country
-              ? countriesByCode[member.country] || member.country
-              : "";
 
             return (
               <button
@@ -126,15 +126,15 @@ export const StepSelectMember: React.FC<StepSelectMemberProps> = ({
                     {member.firstName} {member.lastName}
                     {department ? ` (${department})` : ""}
                   </span>
-                  <div className="flex items-center gap-1 text-gray-600 text-xs">
-                    <MapPin className="w-3.5 h-3.5 shrink-0" />
-                    <span>{locationLabel}</span>
-                    {countryName && (
-                      <>
-                        <Building2 className="w-3.5 h-3.5 shrink-0 ml-1" />
-                        <span>{countryName}</span>
-                      </>
+                  <div className="flex items-center gap-1.5 text-gray-600 text-xs">
+                    {member.country && (
+                      <CountryFlag
+                        countryName={member.country}
+                        size={14}
+                        className="rounded-sm shrink-0"
+                      />
                     )}
+                    <span>{locationLabel}</span>
                   </div>
                   {member.email && (
                     <div className="text-gray-600 text-xs truncate">
@@ -144,7 +144,7 @@ export const StepSelectMember: React.FC<StepSelectMemberProps> = ({
                 </div>
 
                 <div className="flex-shrink-0 text-right text-gray-600 text-xs">
-                  {recoverableCount} {recoverableCount === 1 ? "asset" : "assets"}
+                  {getRecoverableAssetLabel(recoverableCount)}
                 </div>
               </button>
             );

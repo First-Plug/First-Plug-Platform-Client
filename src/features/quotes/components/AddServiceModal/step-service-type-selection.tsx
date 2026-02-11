@@ -90,7 +90,7 @@ const serviceTypes: ServiceType[] = [
   {
     id: "offboarding",
     name: "Offboarding",
-    description: "Recover equipment from departing employees.",
+    description: "Recover equipment from departing employees",
     icon: <UserMinus className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },

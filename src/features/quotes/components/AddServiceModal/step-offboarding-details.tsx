@@ -96,6 +96,30 @@ function getOriginCountryCode(product: Product): string {
   );
 }
 
+/** Mismo formato que step-shipping / quote-service-card: Location + Assigned to */
+function getAssignmentInfo(product: Product): { country: string; assignedTo: string } | null {
+  const country =
+    (product as any).office?.country ||
+    (product as any).officeCountryCode ||
+    product.countryCode ||
+    (product as any).country ||
+    "";
+  if (product.assignedMember || product.assignedEmail) {
+    return {
+      country,
+      assignedTo: String(product.assignedMember || product.assignedEmail || "Unassigned").trim(),
+    };
+  }
+  if (product.location === "Our office") {
+    const officeName =
+      (product as any).office?.officeName || (product as any).officeName || "Our office";
+    return { country, assignedTo: `Office ${officeName}` };
+  }
+  if (product.location === "FP warehouse") return { country, assignedTo: "FP Warehouse" };
+  if (product.location) return { country, assignedTo: product.location };
+  return null;
+}
+
 function getDestinationCountryCode(dest: LogisticsDestination | undefined): string {
   if (!dest) return "";
   return dest.countryCode || "";
@@ -191,10 +215,11 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
 
   const destinationOptionGroups = React.useMemo(() => {
     const groups: { label: string; options: { display: React.ReactNode; value: string }[] }[] = [];
-    if (members.length > 0) {
+    const membersExcludingOffboarded = members.filter((m: any) => m._id !== memberId);
+    if (membersExcludingOffboarded.length > 0) {
       groups.push({
         label: "Members",
-        options: members.map((m: any) => ({
+        options: membersExcludingOffboarded.map((m: any) => ({
           display: `${m.firstName || ""} ${m.lastName || ""}`.trim() || m.email,
           value: `member_${m._id}`,
         })),
@@ -238,7 +263,7 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
       });
     }
     return groups;
-  }, [members, offices]);
+  }, [members, offices, memberId]);
 
   const parseDestinationFromValue = (selectedValue: string): LogisticsDestination | undefined => {
     if (!selectedValue) return undefined;
@@ -398,6 +423,7 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
     deliveryOpen: boolean;
     setDeliveryOpen: (v: boolean) => void;
     disabled?: boolean;
+    pickupDate?: string;
     originCountryCode?: string;
     showIntercountryAlert?: boolean;
     intercountryLabel?: string;
@@ -406,6 +432,10 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
     const deliveryDisabled = (date: Date) => {
       const d = toDateOnlyTimestamp(date);
       if (d < toDateOnlyTimestamp(today)) return true;
+      if (opts.pickupDate) {
+        const pickupTs = toDateOnlyTimestamp(parseDateOnly(opts.pickupDate)!);
+        if (d < pickupTs) return true;
+      }
       return false;
     };
 
@@ -435,7 +465,7 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
         </div>
         <div className="flex flex-col gap-2">
           <Label className="text-sm font-medium">
-            Delivery Date <span className="text-destructive">*</span>
+            Delivery Date <span className="text-red-500">*</span>
           </Label>
           <Popover open={opts.deliveryOpen} onOpenChange={opts.setDeliveryOpen}>
             <PopoverTrigger asChild>
@@ -492,7 +522,7 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
       {/* Pickup Date */}
       <div className="flex flex-col gap-2">
         <Label className="text-sm font-medium">
-          Pickup Date <span className="text-destructive">*</span>
+          Pickup Date <span className="text-red-500">*</span>
         </Label>
         <Popover open={pickupCalendarOpen} onOpenChange={setPickupCalendarOpen}>
           <PopoverTrigger asChild>
@@ -515,7 +545,24 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
               selected={parseDateOnly(offboardingPickupDate)}
               onSelect={(date) => {
                 if (date) {
-                  onDataChange({ offboardingPickupDate: format(date, "yyyy-MM-dd") });
+                  const newPickup = format(date, "yyyy-MM-dd");
+                  const pickupTs = toDateOnlyTimestamp(date);
+                  const nextDetails = { ...offboardingDetailsPerAsset };
+                  let changed = false;
+                  assetIds.forEach((id) => {
+                    const current = nextDetails[id]?.desirableDeliveryDate;
+                    if (current) {
+                      const deliveryTs = toDateOnlyTimestamp(parseDateOnly(current)!);
+                      if (deliveryTs < pickupTs) {
+                        nextDetails[id] = { ...(nextDetails[id] || {}), desirableDeliveryDate: undefined };
+                        changed = true;
+                      }
+                    }
+                  });
+                  onDataChange({
+                    offboardingPickupDate: newPickup,
+                    ...(changed ? { offboardingDetailsPerAsset: nextDetails } : {}),
+                  });
                   setPickupCalendarOpen(false);
                 }
               }}
@@ -581,6 +628,7 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
               deliveryOpen: perAssetDeliveryOpen["_global"] ?? false,
               setDeliveryOpen: (v) =>
                 setPerAssetDeliveryOpen((prev) => ({ ...prev, _global: v })),
+              pickupDate: offboardingPickupDate,
               showIntercountryAlert:
                 intercountryAssets.length > 0 && selectedAssets[0] != null,
               intercountryLabel:
@@ -609,7 +657,7 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
       <div className="flex flex-col gap-3">
         <div>
           <p className="font-medium text-sm">
-            Asset Destinations <span className="text-destructive">*</span>
+            Asset Destinations <span className="text-red-500">*</span>
           </p>
           <p className="text-muted-foreground text-sm">
             Choose where to send each asset and delivery date
@@ -618,38 +666,65 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
         {selectedAssets.map((asset) => {
           const { displayName } = getAssetDisplayInfo(asset);
           const category = asset.category || "Computer";
-          const origin = getOriginLabel(asset);
+          const assignment = getAssignmentInfo(asset);
           const isExpanded = expandedAssetIds.has(asset._id);
           const detail = getPerAssetDetail(asset._id);
           const assetDestValue = getDestinationValue(detail.logisticsDestination);
           const intercountry = isAssetIntercountry(asset);
           const intercountryLabel = getIntercountryLabel(asset);
+          const hasDelivery = !!detail.desirableDeliveryDate;
+          const isConfigured = !!detail.logisticsDestination && hasDelivery;
 
           return (
             <div
               key={asset._id}
               className={cn(
-                "border rounded-lg bg-white overflow-hidden",
-                intercountry ? "border-amber-500" : "border-gray-200"
+                "border rounded-lg bg-white overflow-hidden border-gray-200",
+                intercountry && "border-amber-500"
               )}
             >
               <button
                 type="button"
                 onClick={() => toggleAssetExpanded(asset._id)}
-                className="flex justify-between items-center gap-3 w-full p-4 text-left hover:bg-gray-50/50 transition-colors"
+                className="flex justify-between items-center gap-3 w-full p-4 text-left transition-colors hover:bg-gray-50/50"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="flex justify-center items-center w-10 h-10 rounded-lg bg-gray-100 shrink-0 [&_svg]:w-5 [&_svg]:h-5 [&_svg]:text-gray-500">
                     <CategoryIcons products={[asset]} />
                   </div>
-                  <div className="flex flex-col gap-0.5 min-w-0">
+                  <div className="flex flex-col gap-1 min-w-0">
                     <span className="font-semibold text-sm text-gray-900">
                       {displayName} ({category})
+                      {isConfigured && (
+                        <span className="ml-2 font-medium text-blue text-xs">
+                          Configured
+                        </span>
+                      )}
                     </span>
-                    <span className="text-muted-foreground text-xs">
-                      {asset.serialNumber && `${asset.serialNumber} • `}
-                      {origin}
-                    </span>
+                    {asset.serialNumber && (
+                      <div className="text-gray-600 text-xs">
+                        <span className="font-medium">SN:</span> {asset.serialNumber}
+                      </div>
+                    )}
+                    {assignment && (
+                      <div className="flex items-center gap-1 text-gray-600 text-xs">
+                        <span className="font-medium">Location:</span>
+                        {assignment.country && (
+                          <CountryFlag
+                            countryName={assignment.country}
+                            size={14}
+                          />
+                        )}
+                        <span>
+                          {assignment.country
+                            ? countriesByCode[assignment.country] || assignment.country
+                            : ""}
+                        </span>
+                        {assignment.assignedTo && (
+                          <span>Assigned to {assignment.assignedTo}</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   {intercountry && (
                     <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
@@ -682,6 +757,7 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
                             ...prev,
                             [asset._id]: v,
                           })),
+                        pickupDate: offboardingPickupDate,
                         showIntercountryAlert: intercountry,
                         intercountryLabel: intercountryLabel,
                       })}
