@@ -884,15 +884,14 @@ export function transformServiceToBackendFormat(
         ) {
           buybackDetailsObj.aestheticDetails = buybackDetail.aestheticDetails;
         }
-        if (buybackDetail.hasCharger !== undefined) {
-          buybackDetailsObj.hasCharger = buybackDetail.hasCharger;
-          // Si hasCharger es true, chargerWorks también debe ser true (según el ejemplo del payload)
-          if (buybackDetail.hasCharger) {
-            buybackDetailsObj.chargerWorks =
-              buybackDetail.chargerWorks !== undefined
-                ? buybackDetail.chargerWorks
-                : true;
-          }
+        // hasCharger por defecto true (incluye cargador)
+        const hasCharger = buybackDetail.hasCharger ?? true;
+        buybackDetailsObj.hasCharger = hasCharger;
+        if (hasCharger) {
+          buybackDetailsObj.chargerWorks =
+            buybackDetail.chargerWorks !== undefined
+              ? buybackDetail.chargerWorks
+              : true;
         }
         if (
           buybackDetail.additionalComments &&

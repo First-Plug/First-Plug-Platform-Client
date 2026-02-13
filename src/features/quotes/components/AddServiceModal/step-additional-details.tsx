@@ -3,7 +3,13 @@
 import * as React from "react";
 import { Label } from "@/shared/components/ui/label";
 import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
-import { CountryFlag } from "@/shared";
+import {
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface StepAdditionalDetailsProps {
@@ -131,22 +137,29 @@ export const StepAdditionalDetails: React.FC<StepAdditionalDetailsProps> = ({
                       <div className="flex items-center gap-1 text-gray-600 text-xs">
                         <span className="font-medium">Location:</span>
                         {assignment.country && (
-                          <CountryFlag
-                            countryName={assignment.country}
-                            size={14}
-                          />
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={assignment.country}
+                                    size={18}
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {countriesByCode[assignment.country] ||
+                                  assignment.country}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
-                        <span>
-                          {assignment.country
-                            ? countriesByCode[assignment.country] ||
-                              assignment.country
-                            : ""}
-                        </span>
-                        <span>
-                          {assignment.assignedTo
-                            ? `Assigned to ${assignment.assignedTo}`
-                            : ""}
-                        </span>
+                        {assignment.country && assignment.assignedTo && (
+                          <span className="text-muted-foreground"> - </span>
+                        )}
+                        {assignment.assignedTo && (
+                          <span>{assignment.assignedTo}</span>
+                        )}
                       </div>
                     )}
                   </li>
@@ -159,7 +172,7 @@ export const StepAdditionalDetails: React.FC<StepAdditionalDetailsProps> = ({
 
       {/* Additional Details */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="additional-details">Additional details (optional)</Label>
+        <Label htmlFor="additional-details">Additional details</Label>
         <textarea
           id="additional-details"
           placeholder="Describe any specific enrollment requirements, timeline preferences, or additional context..."

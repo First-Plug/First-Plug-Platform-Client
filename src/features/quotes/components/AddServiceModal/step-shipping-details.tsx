@@ -550,11 +550,25 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
     const showRequired = opts.showRequired !== false;
     const pickupAsap = stringToAsap(opts.pickupDate);
     const deliveryAsap = stringToAsap(opts.deliveryDate);
+    const pickupVal = parseDateOnly(
+      opts.pickupDate && opts.pickupDate !== "ASAP"
+        ? opts.pickupDate
+        : undefined
+    );
     const deliveryVal = parseDateOnly(
       opts.deliveryDate && opts.deliveryDate !== "ASAP"
         ? opts.deliveryDate
         : undefined
     );
+
+    /** Pickup ≤ Delivery: deshabilitar en calendario Pickup las fechas después de delivery */
+    const pickupDisabledDate = (date: Date) =>
+      !!deliveryVal &&
+      toDateOnlyTimestamp(date) > toDateOnlyTimestamp(deliveryVal);
+    /** Delivery ≥ Pickup: deshabilitar en calendario Delivery las fechas antes de pickup */
+    const deliveryDisabledDate = (date: Date) =>
+      !!pickupVal &&
+      toDateOnlyTimestamp(date) < toDateOnlyTimestamp(pickupVal);
 
     const { options: destOptions, optionGroups: destOptionGroups } =
       getFilteredDestinationOptions(opts.excludedOriginValue || "");
@@ -586,6 +600,7 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
               label="Pickup Date"
               required={showRequired}
               value={pickupAsap}
+              disabledDate={pickupDisabledDate}
               onFilled={opts.onPickupFilled}
               onChange={(v) => {
                 opts.onPickupDate(asapToString(v));
@@ -610,6 +625,7 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
               required={showRequired}
               inputRef={opts.deliveryInputRef}
               value={deliveryAsap}
+              disabledDate={deliveryDisabledDate}
               open={opts.deliveryPopoverOpen}
               onOpenChange={opts.onDeliveryPopoverOpenChange}
               onChange={(v) => opts.onDeliveryDate(asapToString(v))}
@@ -696,8 +712,12 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
             onDeliveryDate: handleGlobalDeliveryDate,
             showRequired: true,
             onPickupFilled: () => {
-              setOpenDeliveryForScope("same-details");
-              setTimeout(() => refSameDetailsDelivery.current?.focus(), 0);
+              // Retrasar apertura del popover de Delivery para evitar que Radix lo cierre
+              // al detectar "focus outside" cuando aún se está cerrando el popover de Pickup.
+              setTimeout(() => {
+                setOpenDeliveryForScope("same-details");
+                setTimeout(() => refSameDetailsDelivery.current?.focus(), 0);
+              }, 150);
             },
             deliveryInputRef: refSameDetailsDelivery,
             deliveryPopoverOpen: openDeliveryForScope === "same-details",
@@ -757,19 +777,28 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
                       <div className="flex items-center gap-1 text-gray-600 text-xs">
                         <span className="font-medium">Location:</span>
                         {assignment.country && (
-                          <CountryFlag
-                            countryName={assignment.country}
-                            size={14}
-                          />
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={assignment.country}
+                                    size={18}
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {countriesByCode[assignment.country] ||
+                                  assignment.country}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
-                        <span>
-                          {assignment.country
-                            ? countriesByCode[assignment.country] ||
-                              assignment.country
-                            : ""}
-                        </span>
+                        {assignment.country && assignment.assignedTo && (
+                          <span className="text-muted-foreground"> - </span>
+                        )}
                         {assignment.assignedTo && (
-                          <span>Assigned to {assignment.assignedTo}</span>
+                          <span>{assignment.assignedTo}</span>
                         )}
                       </div>
                     )}
@@ -826,11 +855,14 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
                         handleDeliveryDateForAsset(asset._id, s),
                       showRequired: true,
                       onPickupFilled: () => {
-                        setOpenDeliveryForScope(asset._id);
-                        setTimeout(
-                          () => refCardDelivery.current[asset._id]?.focus(),
-                          0
-                        );
+                        // Retrasar apertura del popover de Delivery para evitar que se cierre solo.
+                        setTimeout(() => {
+                          setOpenDeliveryForScope(asset._id);
+                          setTimeout(
+                            () => refCardDelivery.current[asset._id]?.focus(),
+                            0
+                          );
+                        }, 150);
                       },
                       deliveryInputRef: (el) => {
                         if (refCardDelivery.current)
@@ -849,13 +881,13 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
         })}
       </div>
 
-      {/* Additional Comments (optional) */}
+      {/* Additional details */}
       <div className="flex flex-col gap-2">
         <Label
           htmlFor="shipping-additional-comments"
           className="font-medium text-sm"
         >
-          Additional Comments
+          Additional details
         </Label>
         <textarea
           id="shipping-additional-comments"

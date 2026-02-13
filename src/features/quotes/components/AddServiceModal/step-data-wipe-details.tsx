@@ -477,7 +477,7 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
   return (
     <div className="flex flex-col gap-6 w-full">
       <p className="text-muted-foreground text-center">
-        Expand each asset to provide additional information (optional)
+        Expand each asset to provide additional information
       </p>
 
       <div className="flex flex-col gap-4 pr-2">

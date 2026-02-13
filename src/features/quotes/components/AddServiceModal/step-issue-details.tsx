@@ -66,7 +66,7 @@ export const StepIssueDetails: React.FC<StepIssueDetailsProps> = ({
           Provide more details about the issue
         </p>
         <Label htmlFor="description">
-          Description<span className="ml-1 text-red-500">*</span>
+          Description <span className="text-red-500">*</span>
         </Label>
         <textarea
           id="description"
@@ -82,7 +82,7 @@ export const StepIssueDetails: React.FC<StepIssueDetailsProps> = ({
       {/* When did the issue start? */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="issue-start-date">
-          When did the issue start? (Optional)
+          When did the issue start?
         </Label>
         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
           <PopoverTrigger asChild>
@@ -159,10 +159,10 @@ export const StepIssueDetails: React.FC<StepIssueDetailsProps> = ({
         </RadioGroup>
       </div>
 
-      {/* Attachments (Optional) - Placeholder para futuro */}
+      {/* Attachments - Placeholder para futuro */}
       {/* TODO: Implementar funcionalidad de attachments más adelante
       <div className="flex flex-col gap-2">
-        <Label>Attachments (Optional)</Label>
+        <Label>Attachments</Label>
         <p className="text-muted-foreground text-sm">
           Upload photos or videos to help us understand the issue
         </p>

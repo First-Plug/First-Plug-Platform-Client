@@ -14,7 +14,6 @@ import { StepServiceTypeSelection } from "../AddServiceModal/step-service-type-s
 import { StepSelectAsset } from "../AddServiceModal/step-select-asset";
 import { StepIssueTypeSelection } from "../AddServiceModal/step-issue-type-selection";
 import { StepIssueDetails } from "../AddServiceModal/step-issue-details";
-import { StepReviewAndSubmit } from "../AddServiceModal/step-review-and-submit";
 import { StepAdditionalDetails } from "../AddServiceModal/step-additional-details";
 import { StepBuybackDetails } from "../AddServiceModal/step-buyback-details";
 import { StepDataWipeDetails } from "../AddServiceModal/step-data-wipe-details";
@@ -120,7 +119,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               editingService.issueTypes &&
               editingService.issueTypes.length > 0
             ) {
-              initialStep = editingService.description ? 5 : 4;
+              initialStep = editingService.description ? 4 : 4;
             } else {
               initialStep = 3;
             }
@@ -277,9 +276,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
 
       if (currentStepValue > 1) {
         // Resetear datos del step actual antes de retroceder
-        if (currentStepValue === 5) {
-          // No resetear nada en step 5 (review), solo retroceder
-        } else if (currentStepValue === 4) {
+        if (currentStepValue === 4) {
           // Resetear datos del step 4 (issue details para IT Support)
           setServiceData((prev) => ({
             ...prev,
@@ -526,10 +523,44 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   };
 
   const handleContinueFromIssueDetails = () => {
-    // Validar que hay description (requerido)
-    if (!serviceData.description) return;
-    // Ir al step 5 (review & submit)
-    setCurrentStep(5);
+    // Validar que hay description (requerido) y guardar servicio (step 4 es el último para IT Support)
+    if (!serviceData.description || !serviceData.assetId) return;
+
+    if (editingServiceId) {
+      const updateData: Partial<QuoteService> = {
+        serviceType: serviceData.serviceType!,
+        assetId: serviceData.assetId,
+        issueTypes: serviceData.issueTypes,
+        description: serviceData.description,
+        issueStartDate: serviceData.issueStartDate,
+        impactLevel: serviceData.impactLevel,
+        country: serviceData.country || "",
+        city: serviceData.city,
+        requiredDeliveryDate: serviceData.requiredDeliveryDate,
+        additionalComments: serviceData.additionalComments,
+      };
+      updateService(editingServiceId, updateData);
+      setEditingServiceId(undefined);
+    } else {
+      const completeService: QuoteService = {
+        id: serviceData.id!,
+        serviceType: serviceData.serviceType!,
+        assetId: serviceData.assetId,
+        issueTypes: serviceData.issueTypes,
+        description: serviceData.description,
+        issueStartDate: serviceData.issueStartDate,
+        impactLevel: serviceData.impactLevel,
+        country: serviceData.country || "",
+        city: serviceData.city,
+        requiredDeliveryDate: serviceData.requiredDeliveryDate,
+        additionalComments: serviceData.additionalComments,
+      };
+      addService(completeService);
+    }
+    setServiceData({ id: generateId(), impactLevel: "medium" });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
   };
 
   const handleContinueFromAdditionalDetails = () => {
@@ -872,56 +903,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     onComplete();
   };
 
-  const handleNext = () => {
-    const serviceType = serviceData.serviceType || currentServiceType;
-
-    if (currentStep === 5) {
-      // Validar campos requeridos del step 5 (review & submit) para IT Support
-      if (!serviceData.description || !serviceData.assetId) return;
-
-      // Si estamos editando, actualizar el servicio existente
-      if (editingServiceId) {
-        const updateData: Partial<QuoteService> = {
-          serviceType: serviceData.serviceType!,
-          assetId: serviceData.assetId,
-          issueTypes: serviceData.issueTypes,
-          description: serviceData.description,
-          issueStartDate: serviceData.issueStartDate,
-          impactLevel: serviceData.impactLevel,
-          country: serviceData.country || "",
-          city: serviceData.city,
-          requiredDeliveryDate: serviceData.requiredDeliveryDate,
-          additionalComments: serviceData.additionalComments,
-        };
-        updateService(editingServiceId, updateData);
-        setEditingServiceId(undefined);
-      } else {
-        // Si es nuevo servicio, agregarlo
-        const completeService: QuoteService = {
-          id: serviceData.id!,
-          serviceType: serviceData.serviceType!,
-          assetId: serviceData.assetId,
-          issueTypes: serviceData.issueTypes,
-          description: serviceData.description,
-          issueStartDate: serviceData.issueStartDate,
-          impactLevel: serviceData.impactLevel,
-          country: serviceData.country || "",
-          city: serviceData.city,
-          requiredDeliveryDate: serviceData.requiredDeliveryDate,
-          additionalComments: serviceData.additionalComments,
-        };
-        addService(completeService);
-      }
-      // Limpiar tipo de servicio, step y serviceData al completar
-      setServiceData({
-        id: generateId(),
-        impactLevel: "medium", // Preseleccionar "medium" por defecto
-      });
-      setCurrentServiceType(undefined);
-      setCurrentStep(1);
-      onComplete();
-    }
-  };
+  const handleNext = () => {};
 
   const renderStep = () => {
     const serviceType = serviceData.serviceType || currentServiceType;
@@ -1237,31 +1219,6 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           );
         }
         return null;
-      case 5:
-        // Solo mostrar review & submit si es IT Support
-        if (isITSupport) {
-          // Convertir serviceData a QuoteService completo para el review
-          const reviewServiceData: QuoteService = {
-            id: serviceData.id!,
-            serviceType: serviceData.serviceType!,
-            assetId: serviceData.assetId,
-            issueTypes: serviceData.issueTypes,
-            description: serviceData.description,
-            issueStartDate: serviceData.issueStartDate,
-            impactLevel: serviceData.impactLevel,
-            country: serviceData.country || "",
-            city: serviceData.city,
-            requiredDeliveryDate: serviceData.requiredDeliveryDate,
-            additionalComments: serviceData.additionalComments,
-          };
-          return (
-            <StepReviewAndSubmit
-              serviceData={reviewServiceData}
-              onSubmit={handleNext}
-            />
-          );
-        }
-        return null;
       default:
         return null;
     }
@@ -1402,10 +1359,6 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       // En step 4 para IT Support (Issue Details), se necesita description
       return !!serviceData.description;
     }
-    if (currentStep === 5 && isITSupport) {
-      // En step 5 para IT Support (Review & Submit), siempre se puede proceder
-      return true;
-    }
     return true;
   };
 
@@ -1484,7 +1437,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
                     align="end"
                     className="z-50 bg-blue/80 p-2 rounded-md font-normal text-white text-xs"
                   >
-                    Overall condition is required for all assets to continue.
+                    Overall condition is required for all assets. See which products are missing it in the list above.
                     <TooltipArrow className="fill-blue/80" />
                   </TooltipContent>
                 )}
@@ -1573,17 +1526,6 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           <div className="flex justify-end items-center pt-4 border-t">
             <Button
               onClick={handleContinueFromIssueDetails}
-              disabled={!canProceed()}
-              variant="primary"
-              size="small"
-              body="Continue to Review"
-            />
-          </div>
-        )}
-        {currentStep === 5 && isITSupportForRender && (
-          <div className="flex justify-end items-center pt-4 border-t">
-            <Button
-              onClick={handleNext}
               disabled={!canProceed()}
               variant="primary"
               size="small"

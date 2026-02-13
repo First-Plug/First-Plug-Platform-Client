@@ -5,7 +5,14 @@ import { ChevronDown, ChevronUp, Package } from "lucide-react";
 import { Label } from "@/shared/components/ui/label";
 import { Input } from "@/shared/components/ui/input";
 import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
-import { cn, CountryFlag } from "@/shared";
+import {
+  cn,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import type { StorageDetail } from "../../types/quote.types";
 
@@ -190,7 +197,7 @@ export const StepStorageDetails: React.FC<StepStorageDetailsProps> = ({
             Storage Details per Asset
           </Label>
           <span className="text-muted-foreground text-xs">
-            All fields are optional
+            All fields can be left blank
           </span>
         </div>
 
@@ -229,15 +236,34 @@ export const StepStorageDetails: React.FC<StepStorageDetailsProps> = ({
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="font-semibold text-base">{title}</span>
+                      {asset.serialNumber && (
+                        <div className="text-gray-600 text-xs">
+                          <span className="font-medium">SN:</span>{" "}
+                          {asset.serialNumber}
+                        </div>
+                      )}
                       <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-gray-600 text-sm">
                         <span>Location: </span>
                         {countryCode ? (
-                          <span className="flex items-center gap-1">
-                            <CountryFlag countryName={countryCode} size={14} />
-                            <span className="truncate">{countryName}</span>
-                            {locationLabel ? " " : ""}
-                          </span>
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={countryCode}
+                                    size={18}
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {countryName}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         ) : null}
+                        {countryCode && locationLabel && (
+                          <span className="text-muted-foreground"> - </span>
+                        )}
                         {locationLabel ? (
                           <span className="truncate">{locationLabel}</span>
                         ) : null}
@@ -320,7 +346,7 @@ export const StepStorageDetails: React.FC<StepStorageDetailsProps> = ({
 
                     <div className="flex flex-col gap-2">
                       <Label htmlFor={`additionalComments-${asset._id}`}>
-                        Additional Comments
+                        Additional details
                       </Label>
                       <textarea
                         id={`additionalComments-${asset._id}`}

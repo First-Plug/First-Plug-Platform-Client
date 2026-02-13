@@ -63,7 +63,7 @@ export const StepMerchandisingSpecs: React.FC<StepMerchandisingSpecsProps> = ({
       {/* Additional Requirements */}
       <div className="flex flex-col gap-2 w-full">
         <Label htmlFor="additionalRequirements">
-          Additional Requirements (optional)
+          Additional Requirements
         </Label>
         <textarea
           id="additionalRequirements"

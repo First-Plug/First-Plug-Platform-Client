@@ -77,7 +77,10 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
     <div className="relative p-4 border border-grey rounded-lg">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge
+          variant="outline"
+          className="flex items-center gap-1 bg-blue/10 text-blue border border-blue/30"
+        >
           <Package className="w-3 h-3" />
           Product
         </Badge>
@@ -146,8 +149,12 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
         )}
       </div>
 
-      {/* Specifications Grid */}
+      {/* Specifications Grid - Quantity siempre primero */}
       <div className="gap-3 grid grid-cols-2 mb-4 text-sm">
+        <div>
+          <span className="font-medium">Quantity: </span>
+          <span className="text-gray-700">{product.quantity}</span>
+        </div>
         {product.brands && product.brands.length > 0 && (
           <div>
             <span className="font-medium">Brands: </span>
@@ -188,10 +195,39 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
             </span>
           </div>
         )}
-        <div>
-          <span className="font-medium">Quantity: </span>
-          <span className="text-gray-700">{product.quantity}</span>
-        </div>
+        {product.category?.toLowerCase() === "tablet" &&
+          product.screenSize &&
+          product.screenSize.length > 0 && (
+            <div>
+              <span className="font-medium">Screen size: </span>
+              <span className="text-gray-700">
+                {product.screenSize.join(", ")}
+              </span>
+            </div>
+          )}
+        {product.category?.toLowerCase() === "monitor" &&
+          (product.screenSize?.length || product.screenTechnology?.length) >
+            0 && (
+            <>
+              {product.screenSize && product.screenSize.length > 0 && (
+                <div>
+                  <span className="font-medium">Screen size: </span>
+                  <span className="text-gray-700">
+                    {product.screenSize.join(", ")}
+                  </span>
+                </div>
+              )}
+              {product.screenTechnology &&
+                product.screenTechnology.length > 0 && (
+                  <div>
+                    <span className="font-medium">Screen tech: </span>
+                    <span className="text-gray-700">
+                      {product.screenTechnology.join(", ")}
+                    </span>
+                  </div>
+                )}
+            </>
+          )}
       </div>
 
       {/* Description for Merchandising */}

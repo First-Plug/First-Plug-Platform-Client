@@ -23,6 +23,10 @@ import {
   DialogTitle,
   Button,
   CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { useQuoteStore } from "../../store/quote.store";
@@ -181,7 +185,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
     return null;
   };
 
-  // Card unificada: Brand Model Name, SN:, Location: Flag País Assigned to
+  // Card unificada: Brand Model Name, SN:, Location: Flag País + office/member/FP Warehouse
   const renderUnifiedAssetCard = (
     asset: Product,
     extraContent?: React.ReactNode
@@ -213,11 +217,27 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             <div className="flex flex-wrap items-center gap-1 text-gray-600 text-xs">
               <span className="font-medium">Location:</span>
               {assignment.country && (
-                <CountryFlag countryName={assignment.country} size={14} />
+                <TooltipProvider>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex">
+                        <CountryFlag
+                          countryName={assignment.country}
+                          size={18}
+                        />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-blue/80 text-white text-xs">
+                      {countryName}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
-              <span>{countryName}</span>
+              {assignment.country && assignment.assignedTo && (
+                <span className="text-muted-foreground"> - </span>
+              )}
               {assignment.assignedTo && (
-                <span>Assigned to {assignment.assignedTo}</span>
+                <span>{assignment.assignedTo}</span>
               )}
             </div>
           )}
@@ -242,7 +262,10 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
     <div className="relative p-4 border border-grey rounded-lg">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge
+          variant="outline"
+          className="flex items-center gap-1 bg-emerald-100 text-emerald-700 border border-emerald-300"
+        >
           {service.serviceType === "enrollment" ? (
             <Shield className="w-3 h-3" />
           ) : service.serviceType === "buyback" ? (
@@ -373,27 +396,25 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                         {buybackDetail.aestheticDetails}
                       </div>
                     )}
-                    {buybackDetail.hasCharger !== undefined && (
-                      <div>
-                        <span className="font-medium">Has charger: </span>
-                        {buybackDetail.hasCharger ? "Yes" : "No"}
-                        {buybackDetail.hasCharger &&
-                          buybackDetail.chargerWorks !== undefined && (
-                            <span>
-                              {" "}
-                              (
-                              {buybackDetail.chargerWorks
-                                ? "Works"
-                                : "Doesn't work"}
-                              )
-                            </span>
-                          )}
-                      </div>
-                    )}
+                    <div>
+                      <span className="font-medium">Has charger: </span>
+                      {buybackDetail.hasCharger !== false ? "Yes" : "No"}
+                      {buybackDetail.hasCharger !== false &&
+                        buybackDetail.chargerWorks !== undefined && (
+                          <span>
+                            {" "}
+                            (
+                            {buybackDetail.chargerWorks
+                              ? "Works"
+                              : "Doesn't work"}
+                            )
+                          </span>
+                        )}
+                    </div>
                     {buybackDetail.additionalComments && (
                       <div>
                         <span className="font-medium">
-                          Additional comments:{" "}
+                          Additional details:{" "}
                         </span>
                         {buybackDetail.additionalComments}
                       </div>
@@ -437,40 +458,49 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                   return dateString;
                 }
               };
+              const dest = dataWipeDetail?.destination;
+              const destCountry =
+                dest?.member?.countryCode ||
+                dest?.office?.countryCode ||
+                dest?.warehouse?.countryCode;
+              const destLabel = dest
+                ? dest.destinationType === "Member" && dest.member
+                  ? dest.member.assignedMember ||
+                    dest.member.assignedEmail ||
+                    ""
+                  : dest.destinationType === "Office" && dest.office
+                    ? dest.office.officeName || ""
+                    : dest.destinationType === "FP warehouse"
+                      ? "FP Warehouse"
+                      : ""
+                : "";
               return renderUnifiedAssetCard(
                 asset,
                 dataWipeDetail && (
                   <div className="space-y-1 mt-2 text-gray-600 text-xs">
-                    {dataWipeDetail.desirableDate && (
-                      <div>
-                        <span className="font-medium">Desirable date: </span>
-                        {formatDate(dataWipeDetail.desirableDate)}
-                      </div>
-                    )}
                     {dataWipeDetail.destination && (
-                      <div>
+                      <div className="flex flex-wrap items-center gap-1">
                         <span className="font-medium">
                           Return destination:{" "}
                         </span>
-                        {dataWipeDetail.destination.destinationType ===
-                          "Member" &&
-                          dataWipeDetail.destination.member && (
-                            <span>
-                              {dataWipeDetail.destination.member.assignedMember}
-                              {dataWipeDetail.destination.member
-                                .assignedEmail &&
-                                ` (${dataWipeDetail.destination.member.assignedEmail})`}
-                            </span>
-                          )}
-                        {dataWipeDetail.destination.destinationType ===
-                          "Office" &&
-                          dataWipeDetail.destination.office && (
-                            <span>
-                              {dataWipeDetail.destination.office.officeName}
-                            </span>
-                          )}
-                        {dataWipeDetail.destination.destinationType ===
-                          "FP warehouse" && <span>FP warehouse</span>}
+                        {destCountry && (
+                          <CountryFlag
+                            countryName={destCountry}
+                            size={18}
+                          />
+                        )}
+                        {destCountry && destLabel && (
+                          <span className="text-muted-foreground"> - </span>
+                        )}
+                        <span>{destLabel}</span>
+                      </div>
+                    )}
+                    {dataWipeDetail.desirableDate && (
+                      <div>
+                        <span className="font-medium">
+                          Desirable delivery date:{" "}
+                        </span>
+                        {formatDate(dataWipeDetail.desirableDate)}
                       </div>
                     )}
                   </div>
@@ -550,27 +580,6 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         </div>
       )}
 
-      {/* Donations: Preparation options */}
-      {service.serviceType === "donations" && (
-        <div className="mb-3 text-sm">
-          <div className="mb-1 font-medium text-sm">Preparation options:</div>
-          <ul className="space-y-1 text-gray-700 text-sm list-disc list-inside">
-            <li>
-              Data wipe:{" "}
-              <span className="font-medium">
-                {service.donationDataWipe ? "Yes" : "No"}
-              </span>
-            </li>
-            <li>
-              Professional cleaning:{" "}
-              <span className="font-medium">
-                {service.donationProfessionalCleaning ? "Yes" : "No"}
-              </span>
-            </li>
-          </ul>
-        </div>
-      )}
-
       {/* Donations: Additional details */}
       {service.serviceType === "donations" && service.additionalDetails && (
         <div className="mb-3">
@@ -637,7 +646,10 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                       </div>
                     )}
                     {storageDetail?.additionalComments && (
-                      <div className="italic">
+                      <div>
+                        <span className="font-medium">
+                          Additional details:{" "}
+                        </span>
                         {storageDetail.additionalComments}
                       </div>
                     )}
@@ -842,7 +854,10 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
 
       {/* Description */}
       {service.description && (
-        <div className="mb-3 text-gray-700 text-sm">{service.description}</div>
+        <div className="mb-3 text-gray-700 text-sm">
+          <span className="font-medium">Description: </span>
+          {service.description}
+        </div>
       )}
 
       {/* Impact Level */}

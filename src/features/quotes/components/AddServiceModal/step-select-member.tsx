@@ -130,9 +130,12 @@ export const StepSelectMember: React.FC<StepSelectMemberProps> = ({
                     {member.country && (
                       <CountryFlag
                         countryName={member.country}
-                        size={14}
+                        size={18}
                         className="rounded-sm shrink-0"
                       />
+                    )}
+                    {member.country && locationLabel && (
+                      <span className="text-muted-foreground"> - </span>
                     )}
                     <span>{locationLabel}</span>
                   </div>

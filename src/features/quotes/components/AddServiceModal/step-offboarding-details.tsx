@@ -710,18 +710,28 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
                       <div className="flex items-center gap-1 text-gray-600 text-xs">
                         <span className="font-medium">Location:</span>
                         {assignment.country && (
-                          <CountryFlag
-                            countryName={assignment.country}
-                            size={14}
-                          />
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={assignment.country}
+                                    size={18}
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {countriesByCode[assignment.country] ||
+                                  assignment.country}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
-                        <span>
-                          {assignment.country
-                            ? countriesByCode[assignment.country] || assignment.country
-                            : ""}
-                        </span>
+                        {assignment.country && assignment.assignedTo && (
+                          <span className="text-muted-foreground"> - </span>
+                        )}
                         {assignment.assignedTo && (
-                          <span>Assigned to {assignment.assignedTo}</span>
+                          <span>{assignment.assignedTo}</span>
                         )}
                       </div>
                     )}
@@ -833,10 +843,10 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
         </div>
       </div>
 
-      {/* Additional Comments */}
+      {/* Additional details */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="offboarding-additional-comments" className="text-sm font-medium">
-          Additional Comments
+          Additional details
         </Label>
         <textarea
           id="offboarding-additional-comments"

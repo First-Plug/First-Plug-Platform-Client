@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Badge, CountryFlag } from "@/shared";
+import {
+  Badge,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import {
   useGetTableAssets,
   Product,
@@ -202,24 +209,33 @@ export const StepReviewAndSubmit: React.FC<StepReviewAndSubmitProps> = ({
                 </div>
               )}
 
-              {/* Line 3: Location: Flag Country Assigned to */}
+              {/* Line 3: Location: Flag (tooltip país) + office/member/FP Warehouse */}
               {assignmentInfo && (
                 <div className="flex items-center gap-1 text-gray-600 text-xs">
                   <span className="font-medium">Location:</span>
                   {assignmentInfo.country && (
-                    <CountryFlag
-                      countryName={assignmentInfo.country}
-                      size={14}
-                    />
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex">
+                            <CountryFlag
+                              countryName={assignmentInfo.country}
+                              size={18}
+                            />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-blue/80 text-white text-xs">
+                          {countriesByCode[assignmentInfo.country] ||
+                            assignmentInfo.country}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
-                  <span>
-                    {assignmentInfo.country
-                      ? countriesByCode[assignmentInfo.country] ||
-                        assignmentInfo.country
-                      : ""}
-                  </span>
+                  {assignmentInfo.country && assignmentInfo.assignedTo && (
+                    <span className="text-muted-foreground"> - </span>
+                  )}
                   {assignmentInfo.assignedTo && (
-                    <span>Assigned to {assignmentInfo.assignedTo}</span>
+                    <span>{assignmentInfo.assignedTo}</span>
                   )}
                 </div>
               )}

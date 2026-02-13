@@ -2,7 +2,16 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { SearchInput, Badge, CountryFlag, Button } from "@/shared";
+import {
+  SearchInput,
+  Badge,
+  CountryFlag,
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import {
   useGetTableAssets,
   Product,
@@ -222,7 +231,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
       {/* Search Input */}
       <div className="w-full">
         <SearchInput
-          placeholder="Buscar por nombre, marca, modelo o número de serie..."
+          placeholder="Search by name, brand, model, or serial number"
           onSearch={setSearchQuery}
         />
       </div>
@@ -353,27 +362,34 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
                       </div>
                     )}
 
-                    {/* Line 3: Location: Flag Country Assigned to */}
+                    {/* Line 3: Location: Flag (tooltip país) + office/member/FP Warehouse */}
                     {assignment && (
                       <div className="flex items-center gap-1 text-gray-600 text-xs">
                         <span className="font-medium">Location:</span>
                         {assignment.country && (
-                          <CountryFlag
-                            countryName={assignment.country}
-                            size={14}
-                          />
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={assignment.country}
+                                    size={18}
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {countriesByCode[assignment.country] ||
+                                  assignment.country}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
-                        <span>
-                          {assignment.country
-                            ? countriesByCode[assignment.country] ||
-                              assignment.country
-                            : ""}
-                        </span>
-                        <span>
-                          {assignment.assignedTo
-                            ? `Assigned to ${assignment.assignedTo}`
-                            : ""}
-                        </span>
+                        {assignment.country && assignment.assignedTo && (
+                          <span className="text-muted-foreground"> - </span>
+                        )}
+                        {assignment.assignedTo && (
+                          <span>{assignment.assignedTo}</span>
+                        )}
                       </div>
                     )}
                   </div>

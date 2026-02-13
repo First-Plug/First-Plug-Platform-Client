@@ -11,7 +11,13 @@ import {
   ProductTable,
   CategoryIcons,
 } from "@/features/assets";
-import { CountryFlag } from "@/shared";
+import {
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 
@@ -208,16 +214,27 @@ export const StepDestructionOptions: React.FC<StepDestructionOptionsProps> = ({
                         <div className="flex items-center gap-1 text-gray-600 text-xs">
                           <span className="font-medium">Location:</span>
                           {normalizedCountryCode && (
-                            <CountryFlag
-                              countryName={normalizedCountryCode}
-                              size={14}
-                            />
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <CountryFlag
+                                      countryName={normalizedCountryCode}
+                                      size={18}
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {countryName || "N/A"}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           )}
-                          <span>
-                            {countryName || "N/A"}
-                          </span>
+                          {normalizedCountryCode && assignedTo && (
+                            <span className="text-muted-foreground"> - </span>
+                          )}
                           {assignedTo && (
-                            <span>Assigned to {assignedTo}</span>
+                            <span>{assignedTo}</span>
                           )}
                         </div>
                       )}
@@ -267,10 +284,10 @@ export const StepDestructionOptions: React.FC<StepDestructionOptionsProps> = ({
         </div>
       </div>
 
-      {/* Additional Comments */}
+      {/* Additional details */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="destruction-comments" className="font-medium text-sm">
-          Additional Comments
+          Additional details
         </Label>
         <textarea
           id="destruction-comments"

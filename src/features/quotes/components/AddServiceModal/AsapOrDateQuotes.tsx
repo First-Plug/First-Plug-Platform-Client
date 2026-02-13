@@ -30,6 +30,8 @@ interface AsapOrDateQuotesProps {
   /** Control externo del popover (para abrir el calendario de Delivery al completar Pickup) */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Fechas adicionales a deshabilitar en el calendario (ej. delivery antes de pickup, pickup después de delivery) */
+  disabledDate?: (date: Date) => boolean;
 }
 
 function toDateOnlyTimestamp(d: Date): number {
@@ -51,6 +53,7 @@ export function AsapOrDateQuotes({
   onFilled,
   open: openProp,
   onOpenChange: onOpenChangeProp,
+  disabledDate,
 }: AsapOrDateQuotesProps) {
   const isAsap = value === "ASAP";
   const selectedDate = value instanceof Date ? value : null;
@@ -88,6 +91,9 @@ export function AsapOrDateQuotes({
 
   const disabledBeforeToday = (date: Date) =>
     toDateOnlyTimestamp(date) < toDateOnlyTimestamp(today);
+
+  const isDateDisabled = (date: Date) =>
+    disabledBeforeToday(date) || (disabledDate?.(date) ?? false);
 
   return (
     <div className="flex flex-col gap-2">
@@ -133,7 +139,7 @@ export function AsapOrDateQuotes({
                   mode="single"
                   selected={selectedDate ?? undefined}
                   onSelect={handleCalendarSelect}
-                  disabled={disabledBeforeToday}
+                  disabled={isDateDisabled}
                   initialFocus
                 />
               </PopoverContent>
