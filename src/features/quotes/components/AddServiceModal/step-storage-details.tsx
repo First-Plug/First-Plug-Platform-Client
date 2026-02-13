@@ -261,9 +261,6 @@ export const StepStorageDetails: React.FC<StepStorageDetailsProps> = ({
                             </Tooltip>
                           </TooltipProvider>
                         ) : null}
-                        {countryCode && locationLabel && (
-                          <span className="text-muted-foreground"> - </span>
-                        )}
                         {locationLabel ? (
                           <span className="truncate">{locationLabel}</span>
                         ) : null}

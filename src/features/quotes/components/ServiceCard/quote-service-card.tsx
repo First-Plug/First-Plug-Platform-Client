@@ -233,9 +233,6 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                   </Tooltip>
                 </TooltipProvider>
               )}
-              {assignment.country && assignment.assignedTo && (
-                <span className="text-muted-foreground"> - </span>
-              )}
               {assignment.assignedTo && (
                 <span>{assignment.assignedTo}</span>
               )}
@@ -488,9 +485,6 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                             countryName={destCountry}
                             size={18}
                           />
-                        )}
-                        {destCountry && destLabel && (
-                          <span className="text-muted-foreground"> - </span>
                         )}
                         <span>{destLabel}</span>
                       </div>
@@ -771,14 +765,34 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                         ? "FP Warehouse"
                         : "—"
                   : null;
+                const destCountryName = dest?.countryCode
+                  ? (countriesByCode as Record<string, string>)[dest.countryCode] || dest.countryCode
+                  : "";
                 return renderUnifiedAssetCard(
                   asset,
                   (destLabel || deliveryDate) && (
                     <div className="flex flex-col gap-0.5 mt-2 pt-2 border-gray-200 border-t text-gray-700 text-xs">
                       {destLabel && (
-                        <div>
+                        <div className="flex items-center gap-1">
                           <span className="font-medium">Destination: </span>
-                          {destLabel}
+                          {dest?.countryCode && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <CountryFlag
+                                      countryName={dest.countryCode}
+                                      size={18}
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {destCountryName}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <span>{destLabel}</span>
                         </div>
                       )}
                       {deliveryDate && (

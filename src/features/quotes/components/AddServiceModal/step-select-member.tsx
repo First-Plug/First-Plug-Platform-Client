@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { SearchInput, CountryFlag } from "@/shared";
+import { SearchInput, CountryFlag, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared";
 import { useFetchMembers } from "@/features/members";
 import type { Member } from "@/features/members";
 import { cn } from "@/shared";
@@ -48,10 +48,9 @@ export const StepSelectMember: React.FC<StepSelectMemberProps> = ({
     });
   }, [members, searchQuery]);
 
+  /** Solo ciudad si existe; el país se muestra en el tooltip de la bandera */
   const getLocationLabel = (member: Member): string => {
-    if (member.city) return `Remote - ${member.city}`;
-    const country = member.country ? countriesByCode[member.country] || member.country : "";
-    return country || "—";
+    return member.city ? member.city : "";
   };
 
   const getRecoverableAssetLabel = (count: number): string =>
@@ -128,16 +127,24 @@ export const StepSelectMember: React.FC<StepSelectMemberProps> = ({
                   </span>
                   <div className="flex items-center gap-1.5 text-gray-600 text-xs">
                     {member.country && (
-                      <CountryFlag
-                        countryName={member.country}
-                        size={18}
-                        className="rounded-sm shrink-0"
-                      />
+                      <TooltipProvider>
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                              <CountryFlag
+                                countryName={member.country}
+                                size={18}
+                                className="rounded-sm shrink-0"
+                              />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-blue/80 text-white text-xs">
+                            {countriesByCode[member.country] || member.country}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
-                    {member.country && locationLabel && (
-                      <span className="text-muted-foreground"> - </span>
-                    )}
-                    <span>{locationLabel}</span>
+                    {locationLabel ? <span>{locationLabel}</span> : null}
                   </div>
                   {member.email && (
                     <div className="text-gray-600 text-xs truncate">

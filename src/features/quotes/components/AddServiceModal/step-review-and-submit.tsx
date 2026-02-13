@@ -231,9 +231,6 @@ export const StepReviewAndSubmit: React.FC<StepReviewAndSubmitProps> = ({
                       </Tooltip>
                     </TooltipProvider>
                   )}
-                  {assignmentInfo.country && assignmentInfo.assignedTo && (
-                    <span className="text-muted-foreground"> - </span>
-                  )}
                   {assignmentInfo.assignedTo && (
                     <span>{assignmentInfo.assignedTo}</span>
                   )}

@@ -689,15 +689,28 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
                 className="flex justify-between items-center gap-3 w-full p-4 text-left transition-colors hover:bg-gray-50/50"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="flex justify-center items-center w-10 h-10 rounded-lg bg-gray-100 shrink-0 [&_svg]:w-5 [&_svg]:h-5 [&_svg]:text-gray-500">
-                    <CategoryIcons products={[asset]} />
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-center items-center w-10 h-10 rounded-lg bg-gray-100 shrink-0 [&_svg]:w-5 [&_svg]:h-5 [&_svg]:text-gray-500">
+                          <CategoryIcons products={[asset]} />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-blue/80 text-white text-xs">
+                        {category}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <div className="flex flex-col gap-1 min-w-0">
                     <span className="font-semibold text-sm text-gray-900">
-                      {displayName} ({category})
-                      {isConfigured && (
+                      {displayName}
+                      {isConfigured ? (
                         <span className="ml-2 font-medium text-blue text-xs">
                           Configured
+                        </span>
+                      ) : (
+                        <span className="ml-2 font-medium text-red-500 text-xs">
+                          Required
                         </span>
                       )}
                     </span>
@@ -726,9 +739,6 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
-                        )}
-                        {assignment.country && assignment.assignedTo && (
-                          <span className="text-muted-foreground"> - </span>
                         )}
                         {assignment.assignedTo && (
                           <span>{assignment.assignedTo}</span>

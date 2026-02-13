@@ -154,9 +154,6 @@ export const StepAdditionalDetails: React.FC<StepAdditionalDetailsProps> = ({
                             </Tooltip>
                           </TooltipProvider>
                         )}
-                        {assignment.country && assignment.assignedTo && (
-                          <span className="text-muted-foreground"> - </span>
-                        )}
                         {assignment.assignedTo && (
                           <span>{assignment.assignedTo}</span>
                         )}

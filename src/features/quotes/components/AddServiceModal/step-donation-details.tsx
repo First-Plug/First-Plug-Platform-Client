@@ -227,9 +227,6 @@ export const StepDonationDetails: React.FC<StepDonationDetailsProps> = ({
                               </Tooltip>
                             </TooltipProvider>
                           )}
-                          {normalizedCountryCode && assignedTo && (
-                            <span className="text-muted-foreground"> - </span>
-                          )}
                           {assignedTo && (
                             <span>{assignedTo}</span>
                           )}

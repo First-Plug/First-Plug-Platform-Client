@@ -230,9 +230,6 @@ export const StepDestructionOptions: React.FC<StepDestructionOptionsProps> = ({
                               </Tooltip>
                             </TooltipProvider>
                           )}
-                          {normalizedCountryCode && assignedTo && (
-                            <span className="text-muted-foreground"> - </span>
-                          )}
                           {assignedTo && (
                             <span>{assignedTo}</span>
                           )}
