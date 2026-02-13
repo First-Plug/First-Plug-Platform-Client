@@ -345,7 +345,18 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
                         <Check className="w-6 h-6 text-white" strokeWidth={3} />
                       </div>
                     ) : (
-                      getCategoryIcon(product)
+                      <TooltipProvider>
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                              {getCategoryIcon(product)}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-blue/80 text-white text-xs">
+                            {product.category || "Asset"}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </div>
 

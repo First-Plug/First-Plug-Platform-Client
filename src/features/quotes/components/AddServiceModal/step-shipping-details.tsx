@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { format, isValid, parseISO } from "date-fns";
-import { Package, ChevronDown, ChevronUp } from "lucide-react";
+import { Package, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import * as Switch from "@radix-ui/react-switch";
 import { Label } from "@/shared/components/ui/label";
 import {
@@ -429,6 +429,42 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
   const getPerAssetDetail = (assetId: string): LogisticsDetailPerAsset =>
     logisticsDetailsPerAsset?.[assetId] || {};
 
+  function getDestinationCountryCode(dest: LogisticsDestination | undefined): string {
+    if (!dest) return "";
+    return (dest.countryCode || "").trim().toUpperCase();
+  }
+
+  const getEffectiveDestinationForAsset = (assetId: string): LogisticsDestination | undefined =>
+    getPerAssetDetail(assetId).logisticsDestination;
+
+  const intercountryAssets = React.useMemo(() => {
+    return selectedAssets.filter((asset) => {
+      const assignment = getAssignmentInfo(asset);
+      const originCountry = (assignment?.country || "").trim().toUpperCase();
+      const dest = getEffectiveDestinationForAsset(asset._id);
+      const destCountry = getDestinationCountryCode(dest);
+      return !!(originCountry && destCountry && originCountry !== destCountry);
+    });
+  }, [selectedAssets, logisticsDetailsPerAsset]);
+
+  const isAssetIntercountry = (asset: Product): boolean => {
+    const assignment = getAssignmentInfo(asset);
+    const originCountry = (assignment?.country || "").trim().toUpperCase();
+    const dest = getEffectiveDestinationForAsset(asset._id);
+    const destCountry = getDestinationCountryCode(dest);
+    return !!(originCountry && destCountry && originCountry !== destCountry);
+  };
+
+  const getIntercountryLabel = (asset: Product): string => {
+    const assignment = getAssignmentInfo(asset);
+    const originCode = (assignment?.country || "").trim().toUpperCase();
+    const dest = getEffectiveDestinationForAsset(asset._id);
+    const destCountry = getDestinationCountryCode(dest);
+    const originName = originCode ? countriesByCode[originCode] || assignment?.country : "";
+    const destName = destCountry ? countriesByCode[destCountry] || dest?.countryCode : "";
+    return `${originName} → ${destName}`;
+  };
+
   const handleDestinationChangeForAsset = (
     assetId: string,
     selectedValue: string
@@ -699,6 +735,19 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
         </Switch.Root>
       </div>
 
+      {/* Intercountry warning - arriba de todo */}
+      {intercountryAssets.length > 0 && (
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50/30 border border-amber-500/50 text-amber-800">
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
+          <p className="text-sm">
+            Intercountry shipping detected. {intercountryAssets.length} asset
+            {intercountryAssets.length !== 1 ? "s" : ""} require
+            international shipping, which is usually significantly more expensive
+            and takes longer to deliver.
+          </p>
+        </div>
+      )}
+
       {sameDetailsForAllAssets && (
         <div className="flex flex-col gap-4 bg-white p-4 border border-gray-200 rounded-lg">
           {renderDestinationAndDates({
@@ -729,7 +778,7 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
       )}
 
       {/* Per-asset cards (collapsible) */}
-      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
         {selectedAssets.map((asset) => {
           const { displayName } = getAssetDisplayInfo(asset);
           const category = asset.category || "Computer";
@@ -744,10 +793,15 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
             ? !!(desirablePickupDate && desirableDeliveryDate)
             : !!(detail.desirablePickupDate && detail.desirableDeliveryDate);
           const isConfigured = !!detail.logisticsDestination && hasDates;
+          const intercountry = isAssetIntercountry(asset);
+          const intercountryLabel = getIntercountryLabel(asset);
           return (
             <div
               key={asset._id}
-              className="border rounded-lg bg-white overflow-hidden border-gray-200"
+              className={cn(
+                "border rounded-lg bg-white overflow-hidden border-gray-200",
+                intercountry && "border-amber-500"
+              )}
             >
               <button
                 type="button"
@@ -755,15 +809,28 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
                 className="flex justify-between items-center gap-3 w-full p-4 text-left transition-colors hover:bg-gray-50/50"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="flex justify-center items-center w-10 h-10 rounded-lg bg-gray-100 shrink-0 [&_svg]:w-5 [&_svg]:h-5 [&_svg]:text-gray-500">
-                    <CategoryIcons products={[asset]} />
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-center items-center w-10 h-10 rounded-lg bg-gray-100 shrink-0 [&_svg]:w-5 [&_svg]:h-5 [&_svg]:text-gray-500">
+                          <CategoryIcons products={[asset]} />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-blue/80 text-white text-xs">
+                        {category}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <div className="flex flex-col gap-1 min-w-0">
                     <span className="font-semibold text-sm text-gray-900">
-                      {displayName} ({category})
-                      {isConfigured && (
+                      {displayName}
+                      {isConfigured ? (
                         <span className="ml-2 font-medium text-blue text-xs">
                           Configured
+                        </span>
+                      ) : (
+                        <span className="ml-2 font-medium text-red-500 text-xs">
+                          Required
                         </span>
                       )}
                     </span>
@@ -800,6 +867,9 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
                       </div>
                     )}
                   </div>
+                  {intercountry && (
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  )}
                 </div>
                 {isExpanded ? (
                   <ChevronUp className="w-5 h-5 text-gray-400 shrink-0" />
@@ -809,6 +879,14 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
               </button>
               {isExpanded && (
                 <div className="flex flex-col gap-4 px-4 pt-4 pb-4 border-gray-100 border-t">
+                  {intercountry && intercountryLabel && (
+                    <div className="flex items-start gap-2 text-amber-700 text-sm bg-amber-50/50 border border-amber-500/50 rounded-md px-2 py-1.5">
+                      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
+                      <span>
+                        This is an intercountry shipment ({intercountryLabel})
+                      </span>
+                    </div>
+                  )}
                   {sameDetailsForAllAssets ? (
                     <>
                       <div className="flex flex-col gap-2">

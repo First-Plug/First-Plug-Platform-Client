@@ -685,13 +685,32 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                       </div>
                     )}
                     {dest && (
-                      <div>
+                      <div className="flex items-center gap-1">
                         <span className="font-medium">Destination: </span>
-                        {dest.type === "Office" && dest.officeName}
-                        {dest.type === "Member" &&
-                          (dest.assignedMember || dest.assignedEmail)}
-                        {dest.type === "Warehouse" &&
-                          (dest.warehouseName || "FP Warehouse")}
+                        {dest.countryCode && (
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={dest.countryCode}
+                                    size={18}
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {(countriesByCode as Record<string, string>)[dest.countryCode] || dest.countryCode}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        <span>
+                          {dest.type === "Office" && dest.officeName}
+                          {dest.type === "Member" &&
+                            (dest.assignedMember || dest.assignedEmail)}
+                          {dest.type === "Warehouse" &&
+                            (dest.warehouseName || "FP Warehouse")}
+                        </span>
                       </div>
                     )}
                     {deliveryDate && (
