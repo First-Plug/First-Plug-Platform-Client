@@ -466,7 +466,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                     dest.member.assignedEmail ||
                     ""
                   : dest.destinationType === "Office" && dest.office
-                    ? dest.office.officeName || ""
+                    ? `Office ${dest.office.officeName || ""}`.trim()
                     : dest.destinationType === "FP warehouse"
                       ? "FP Warehouse"
                       : ""
@@ -481,10 +481,22 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                           Return destination:{" "}
                         </span>
                         {destCountry && (
-                          <CountryFlag
-                            countryName={destCountry}
-                            size={18}
-                          />
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={destCountry}
+                                    size={18}
+                                    className="rounded-sm"
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {(countriesByCode as Record<string, string>)[destCountry] || destCountry}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                         <span>{destLabel}</span>
                       </div>
