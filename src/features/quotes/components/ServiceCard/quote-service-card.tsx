@@ -687,25 +687,36 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                     {dest && (
                       <div className="flex items-center gap-1">
                         <span className="font-medium">Destination: </span>
-                        {dest.countryCode && (
-                          <TooltipProvider>
-                            <Tooltip delayDuration={300}>
-                              <TooltipTrigger asChild>
-                                <span className="inline-flex">
-                                  <CountryFlag
-                                    countryName={dest.countryCode}
-                                    size={18}
-                                  />
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-blue/80 text-white text-xs">
-                                {(countriesByCode as Record<string, string>)[dest.countryCode] || dest.countryCode}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
+                        {(() => {
+                          // FP Warehouse no trae countryCode en dest; usar el del origen (asset)
+                          const originAssignment = getAssignmentInfo(asset);
+                          const destCountryCode =
+                            dest.type === "Warehouse"
+                              ? originAssignment?.country || dest.countryCode
+                              : dest.countryCode;
+                          const destCountryName = destCountryCode
+                            ? (countriesByCode as Record<string, string>)[destCountryCode] || destCountryCode
+                            : "";
+                          return destCountryCode ? (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <CountryFlag
+                                      countryName={destCountryCode}
+                                      size={18}
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {destCountryName}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : null;
+                        })()}
                         <span>
-                          {dest.type === "Office" && dest.officeName}
+                          {dest.type === "Office" && `Office ${dest.officeName || ""}`.trim()}
                           {dest.type === "Member" &&
                             (dest.assignedMember || dest.assignedEmail)}
                           {dest.type === "Warehouse" &&
