@@ -326,8 +326,8 @@ export const StepDonationDetails: React.FC<StepDonationDetailsProps> = ({
           onChange={(e) =>
             onDataChange({ additionalDetails: e.target.value || undefined })
           }
-          rows={6}
-          className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[120px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
+          rows={4}
+          className="flex bg-background disabled:opacity-50 px-3 py-2 border border-input rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ring-offset-background focus-visible:ring-offset-2 w-full min-h-[80px] placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
         />
       </div>
     </div>
