@@ -681,8 +681,15 @@ export const AddProductForm: React.FC<AddProductFormProps> = ({
     const isTablet = category === "tablet";
 
     if (currentStep === 2) {
-      if (isAudio || isPeripherals || isOther || isPhone || isTablet) {
-        // Step 2 para Audio, Peripherals, Other, Phone o Tablet: quantity es requerido
+      if (isPeripherals || isOther) {
+        // Step 2 para Peripherals y Other: quantity y otherSpecifications son requeridos
+        return (
+          !!productData.quantity &&
+          productData.quantity >= 1 &&
+          !!productData.otherSpecifications?.trim()
+        );
+      } else if (isAudio || isPhone || isTablet) {
+        // Step 2 para Audio, Phone o Tablet: quantity es requerido
         return !!productData.quantity && productData.quantity >= 1;
       } else if (isMerchandising) {
         // Step 2 para Merchandising: quantity y description son requeridos
