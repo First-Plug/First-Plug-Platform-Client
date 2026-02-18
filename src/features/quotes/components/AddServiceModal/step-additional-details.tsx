@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Label } from "@/shared/components/ui/label";
-import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
+import { useGetTableAssets, Product, ProductTable, CategoryIcons } from "@/features/assets";
 import {
   CountryFlag,
   Tooltip,
@@ -115,50 +115,55 @@ export const StepAdditionalDetails: React.FC<StepAdditionalDetailsProps> = ({
           {/* Selected Devices List */}
           <div className="mb-4">
             <div className="font-medium text-sm mb-2">Selected devices:</div>
-            <ul className="flex flex-col gap-2 text-sm text-gray-700">
+            <ul className="flex flex-col gap-3 pl-0 list-none text-sm text-gray-700">
               {selectedAssets.map((asset) => {
                 const displayInfo = getAssetDisplayInfo(asset);
                 const assignment = getAssignmentInfo(asset);
                 return (
                   <li
                     key={asset._id}
-                    className="flex flex-col gap-0.5 bg-gray-50 p-2 rounded-md border border-gray-200"
+                    className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200"
                   >
-                    <span className="font-semibold text-gray-900 text-sm">
-                      {displayInfo.displayName}
-                    </span>
-                    {asset.serialNumber && (
-                      <span className="text-gray-600 text-xs">
-                        <span className="font-medium">SN:</span>{" "}
-                        {asset.serialNumber}
+                    <div className="flex-shrink-0 mt-0.5">
+                      <CategoryIcons products={[asset]} />
+                    </div>
+                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                      <span className="font-semibold text-gray-900 text-sm">
+                        {displayInfo.displayName}
                       </span>
-                    )}
-                    {assignment && (
-                      <div className="flex items-center gap-1 text-gray-600 text-xs">
-                        <span className="font-medium">Location:</span>
-                        {assignment.country && (
-                          <TooltipProvider>
-                            <Tooltip delayDuration={300}>
-                              <TooltipTrigger asChild>
-                                <span className="inline-flex">
-                                  <CountryFlag
-                                    countryName={assignment.country}
-                                    size={18}
-                                  />
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-blue/80 text-white text-xs">
-                                {countriesByCode[assignment.country] ||
-                                  assignment.country}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                        {assignment.assignedTo && (
-                          <span>{assignment.assignedTo}</span>
-                        )}
-                      </div>
-                    )}
+                      {asset.serialNumber && (
+                        <span className="text-gray-600 text-xs">
+                          <span className="font-medium">SN:</span>{" "}
+                          {asset.serialNumber}
+                        </span>
+                      )}
+                      {assignment && (
+                        <div className="flex items-center gap-1 text-gray-600 text-xs">
+                          <span className="font-medium">Location:</span>
+                          {assignment.country && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <CountryFlag
+                                      countryName={assignment.country}
+                                      size={18}
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {countriesByCode[assignment.country] ||
+                                    assignment.country}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          {assignment.assignedTo && (
+                            <span>{assignment.assignedTo}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </li>
                 );
               })}

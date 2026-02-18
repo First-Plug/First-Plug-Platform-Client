@@ -4,7 +4,7 @@ import * as React from "react";
 import { ChevronDown, ChevronUp, Package } from "lucide-react";
 import { Label } from "@/shared/components/ui/label";
 import { Input } from "@/shared/components/ui/input";
-import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
+import { useGetTableAssets, Product, ProductTable, CategoryIcons } from "@/features/assets";
 import {
   cn,
   CountryFlag,
@@ -72,7 +72,7 @@ const getCountryCode = (product: Product): string => {
   return product.country || product.countryCode || "";
 };
 
-/** Debajo del título: "Location: " + employee (nombre y apellido) u office (nombre) o FP warehouse */
+/** Debajo del título: "Location: " + employee, Office X, o FP Warehouse (estandarizado) */
 const getLocationLabel = (product: Product): string => {
   if (product.assignedMember || product.assignedEmail) {
     return String(
@@ -80,12 +80,12 @@ const getLocationLabel = (product: Product): string => {
     );
   }
   if (product.location === "Our office") {
-    return String(
-      product.office?.officeName || product.officeName || "Our office"
-    );
+    const officeName =
+      product.office?.officeName || product.officeName || "Our office";
+    return `Office ${officeName}`;
   }
   if (product.location === "FP warehouse") {
-    return "FP warehouse";
+    return "FP Warehouse";
   }
   if (product.location) {
     return String(product.location);
@@ -228,11 +228,8 @@ export const StepStorageDetails: React.FC<StepStorageDetailsProps> = ({
                   className="flex justify-between items-center w-full text-left"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex flex-shrink-0 justify-center items-center bg-gray-100 border border-gray-200 rounded-lg w-10 h-10">
-                      <Package
-                        className="w-5 h-5 text-gray-600"
-                        strokeWidth={2}
-                      />
+                    <div className="flex flex-shrink-0 mt-0.5">
+                      <CategoryIcons products={[asset]} />
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="font-semibold text-base">{title}</span>

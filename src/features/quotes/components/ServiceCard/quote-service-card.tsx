@@ -202,18 +202,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         className="flex items-start gap-3 bg-gray-50 p-3 border border-gray-200 rounded-lg"
       >
         <div className="flex-shrink-0 mt-0.5">
-          <TooltipProvider>
-            <Tooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <span className="inline-flex cursor-default">
-                  <CategoryIcons products={[asset]} />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent className="bg-blue/80 text-white text-xs">
-                {asset.category || "Asset"}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <CategoryIcons products={[asset]} />
         </div>
         <div className="flex flex-col flex-1 gap-1 min-w-0">
           <div className="font-semibold text-gray-900 text-sm truncate">

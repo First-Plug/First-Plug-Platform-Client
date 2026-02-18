@@ -5,8 +5,16 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { Label } from "@/shared/components/ui/label";
 import { Input } from "@/shared/components/ui/input";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
-import { cn } from "@/shared";
+import { useGetTableAssets, Product, ProductTable, CategoryIcons } from "@/features/assets";
+import {
+  cn,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface BuybackDetail {
   assetId: string;
@@ -94,6 +102,33 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
     return { displayName };
   };
 
+  const getAssignmentInfo = (product: Product) => {
+    const country =
+      product.office?.officeCountryCode ||
+      product.country ||
+      product.countryCode ||
+      "";
+
+    if (product.assignedMember || product.assignedEmail) {
+      return {
+        country,
+        assignedTo: product.assignedMember || product.assignedEmail || "Unassigned",
+      };
+    }
+    if (product.location === "Our office") {
+      const officeName =
+        product.office?.officeName || product.officeName || "Our office";
+      return { country, assignedTo: `Office ${officeName}` };
+    }
+    if (product.location === "FP warehouse") {
+      return { country, assignedTo: "FP Warehouse" };
+    }
+    if (product.location) {
+      return { country, assignedTo: product.location };
+    }
+    return null;
+  };
+
   const updateBuybackDetail = (assetId: string, field: keyof BuybackDetail, value: any) => {
     const currentDetail = buybackDetails[assetId] || { assetId };
     const updatedDetails = {
@@ -151,6 +186,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
       <div className="flex flex-col gap-4 pr-2">
         {selectedAssets.map((asset) => {
           const { displayName } = getAssetDisplayInfo(asset);
+          const assignment = getAssignmentInfo(asset);
           const detail = buybackDetails[asset._id] || { assetId: asset._id };
           const isExpanded = expandedAssets.has(asset._id);
           const missingCondition =
@@ -167,18 +203,47 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                 missingCondition && "border-l-4 border-l-red-500"
               )}
             >
-              {/* Asset Header - Clickable */}
+              {/* Asset Header - Clickable (estandarizado: icono categoría, nombre, SN, Location) */}
               <button
                 type="button"
                 onClick={() => toggleExpanded(asset._id)}
-                className="flex justify-between items-center w-full text-left"
+                className="flex items-start gap-3 w-full text-left"
               >
-                <div className="flex flex-col gap-1">
+                <div className="flex-shrink-0 mt-0.5">
+                  <CategoryIcons products={[asset]} />
+                </div>
+                <div className="flex flex-col gap-1 flex-1 min-w-0">
                   <span className="font-semibold text-sm">{displayName}</span>
                   {asset.serialNumber && (
                     <span className="text-xs text-gray-500">
-                      SN: {asset.serialNumber}
+                      <span className="font-medium">SN:</span> {asset.serialNumber}
                     </span>
+                  )}
+                  {assignment && (
+                    <div className="flex flex-wrap items-center gap-1 text-gray-600 text-xs">
+                      <span className="font-medium">Location:</span>
+                      {assignment.country && (
+                        <TooltipProvider>
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex">
+                                <CountryFlag
+                                  countryName={assignment.country}
+                                  size={18}
+                                />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-blue/80 text-white text-xs">
+                              {countriesByCode[assignment.country] ||
+                                assignment.country}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      {assignment.assignedTo && (
+                        <span>{assignment.assignedTo}</span>
+                      )}
+                    </div>
                   )}
                   {missingCondition && (
                     <span className="text-xs text-red-600 font-medium">
@@ -189,12 +254,12 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                 {isExpanded ? (
                   <ChevronDown
                     size={20}
-                    className="text-blue transition-all duration-200"
+                    className="text-blue transition-all duration-200 flex-shrink-0 mt-0.5"
                   />
                 ) : (
                   <ChevronRight
                     size={20}
-                    className="text-gray-500 transition-all duration-200"
+                    className="text-gray-500 transition-all duration-200 flex-shrink-0 mt-0.5"
                   />
                 )}
               </button>

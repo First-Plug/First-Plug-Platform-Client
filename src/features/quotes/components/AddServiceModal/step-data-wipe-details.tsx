@@ -12,7 +12,7 @@ import {
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
 import { cn } from "@/shared";
-import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
+import { useGetTableAssets, Product, ProductTable, CategoryIcons } from "@/features/assets";
 import { useFetchMembers } from "@/features/members";
 import { useOffices } from "@/features/settings";
 import SelectDropdownOptions from "@/shared/components/select-dropdown-options";
@@ -55,6 +55,33 @@ const getAssetDisplayInfo = (product: Product) => {
   }
 
   return { displayName };
+};
+
+const getAssignmentInfo = (product: Product) => {
+  const country =
+    product.office?.officeCountryCode ||
+    product.country ||
+    product.countryCode ||
+    "";
+
+  if (product.assignedMember || product.assignedEmail) {
+    return {
+      country,
+      assignedTo: product.assignedMember || product.assignedEmail || "Unassigned",
+    };
+  }
+  if (product.location === "Our office") {
+    const officeName =
+      product.office?.officeName || product.officeName || "Our office";
+    return { country, assignedTo: `Office ${officeName}` };
+  }
+  if (product.location === "FP warehouse") {
+    return { country, assignedTo: "FP Warehouse" };
+  }
+  if (product.location) {
+    return { country, assignedTo: product.location };
+  }
+  return null;
 };
 
 interface StepDataWipeDetailsProps {
@@ -114,6 +141,11 @@ const AssetItem: React.FC<AssetItemProps> = ({
     }
   };
 
+  const assignment = getAssignmentInfo(asset);
+  const countryName = assignment?.country
+    ? countriesByCode[assignment.country] || assignment.country
+    : "";
+
   return (
     <div
       className={cn(
@@ -123,29 +155,57 @@ const AssetItem: React.FC<AssetItemProps> = ({
           : "border-gray-200 hover:border-blue/50 cursor-pointer"
       )}
     >
-      {/* Asset Header - Clickable */}
+      {/* Asset Header - Clickable (estandarizado: icono categoría, nombre, SN, Location) */}
       <button
         type="button"
         onClick={onToggleExpanded}
-        className="flex justify-between items-center w-full text-left"
+        className="flex items-start gap-3 w-full text-left"
       >
-        <div className="flex flex-col gap-1">
+        <div className="flex-shrink-0 mt-0.5">
+          <CategoryIcons products={[asset]} />
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
           <span className="font-semibold text-sm">{displayName}</span>
           {asset.serialNumber && (
             <span className="text-gray-500 text-xs">
-              SN: {asset.serialNumber}
+              <span className="font-medium">SN:</span> {asset.serialNumber}
             </span>
+          )}
+          {assignment && (
+            <div className="flex flex-wrap items-center gap-1 text-gray-600 text-xs">
+              <span className="font-medium">Location:</span>
+              {assignment.country && (
+                <TooltipProvider>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex">
+                        <CountryFlag
+                          countryName={assignment.country}
+                          size={18}
+                        />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-blue/80 text-white text-xs">
+                      {countryName}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {assignment.assignedTo && (
+                <span>{assignment.assignedTo}</span>
+              )}
+            </div>
           )}
         </div>
         {isExpanded ? (
           <ChevronDown
             size={20}
-            className="text-blue transition-all duration-200"
+            className="text-blue transition-all duration-200 flex-shrink-0 mt-0.5"
           />
         ) : (
           <ChevronRight
             size={20}
-            className="text-gray-500 transition-all duration-200"
+            className="text-gray-500 transition-all duration-200 flex-shrink-0 mt-0.5"
           />
         )}
       </button>
