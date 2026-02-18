@@ -777,15 +777,21 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                 const deliveryDate = perAsset?.desirableDeliveryDate;
                 const destLabel = dest
                   ? dest.type === "Office"
-                    ? dest.officeName
+                    ? `Office ${dest.officeName || ""}`.trim()
                     : dest.type === "Member"
                       ? dest.assignedMember || dest.assignedEmail
                       : dest.type === "Warehouse"
                         ? "FP Warehouse"
                         : "—"
                   : null;
-                const destCountryName = dest?.countryCode
-                  ? (countriesByCode as Record<string, string>)[dest.countryCode] || dest.countryCode
+                // FP Warehouse no trae countryCode en dest; usar el del origen (asset)
+                const originAssignment = getAssignmentInfo(asset);
+                const destCountryCode =
+                  dest?.type === "Warehouse"
+                    ? originAssignment?.country || dest?.countryCode
+                    : dest?.countryCode;
+                const destCountryName = destCountryCode
+                  ? (countriesByCode as Record<string, string>)[destCountryCode] || destCountryCode
                   : "";
                 return renderUnifiedAssetCard(
                   asset,
@@ -794,13 +800,13 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
                       {destLabel && (
                         <div className="flex items-center gap-1">
                           <span className="font-medium">Destination: </span>
-                          {dest?.countryCode && (
+                          {destCountryCode && (
                             <TooltipProvider>
                               <Tooltip delayDuration={300}>
                                 <TooltipTrigger asChild>
                                   <span className="inline-flex">
                                     <CountryFlag
-                                      countryName={dest.countryCode}
+                                      countryName={destCountryCode}
                                       size={18}
                                     />
                                   </span>
