@@ -701,21 +701,21 @@ export const StepShippingDetails: React.FC<StepShippingDetailsProps> = ({
           checked={sameDetailsForAllAssets}
           onCheckedChange={(checked) => {
             if (checked && assetIds.length > 0) {
-              // Same details solo para fechas: copiar solo pickup/delivery del primer asset; destino sigue siendo por asset
-              const first = getPerAssetDetail(assetIds[0]);
+              // Al activar "Same details": limpiar fechas de todas las cards; el bloque "all" queda vacío hasta que el usuario seleccione
               const next: Record<string, LogisticsDetailPerAsset> = {};
               assetIds.forEach((id) => {
+                const current = getPerAssetDetail(id);
                 next[id] = {
-                  ...getPerAssetDetail(id),
-                  desirablePickupDate: first.desirablePickupDate,
-                  desirableDeliveryDate: first.desirableDeliveryDate,
+                  ...current,
+                  desirablePickupDate: undefined,
+                  desirableDeliveryDate: undefined,
                 };
               });
               onDataChange({
                 sameDetailsForAllAssets: true,
                 logisticsDetailsPerAsset: next,
-                desirablePickupDate: first.desirablePickupDate,
-                desirableDeliveryDate: first.desirableDeliveryDate,
+                desirablePickupDate: undefined,
+                desirableDeliveryDate: undefined,
               });
             } else {
               onDataChange({ sameDetailsForAllAssets: checked });

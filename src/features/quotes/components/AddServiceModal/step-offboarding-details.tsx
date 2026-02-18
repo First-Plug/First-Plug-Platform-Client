@@ -585,14 +585,12 @@ export const StepOffboardingDetails: React.FC<StepOffboardingDetailsProps> = ({
           checked={offboardingSameDetailsForAllAssets}
           onCheckedChange={(checked) => {
             if (checked && assetIds.length > 0) {
-              // Al activar "Same details": copiar destino y fecha del BLOQUE GLOBAL (primer asset) a todos
-              const first = getPerAssetDetail(assetIds[0]);
+              // Al activar "Same details": limpiar todas las cards; el bloque "all" queda vacío hasta que el usuario seleccione
               const next: Record<string, OffboardingDetailPerAsset> = {};
               assetIds.forEach((id) => {
                 next[id] = {
-                  ...getPerAssetDetail(id),
-                  logisticsDestination: first.logisticsDestination,
-                  desirableDeliveryDate: first.desirableDeliveryDate,
+                  logisticsDestination: undefined,
+                  desirableDeliveryDate: undefined,
                 };
               });
               onDataChange({
