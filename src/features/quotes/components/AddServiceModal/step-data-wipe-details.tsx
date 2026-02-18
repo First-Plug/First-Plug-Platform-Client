@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { format, startOfToday } from "date-fns";
-import { CalendarIcon, ChevronDown, ChevronRight } from "lucide-react";
+import { CalendarIcon, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 import { Label } from "@/shared/components/ui/label";
 import { Button } from "@/shared/components/ui/button";
 import { Calendar } from "@/shared/components/ui/calendar";
@@ -92,6 +92,18 @@ interface StepDataWipeDetailsProps {
   onAdditionalDetailsChange?: (additionalDetails: string) => void;
 }
 
+// País del destino de return (Data Wipe)
+function getDataWipeDestinationCountryCode(dest: DataWipeDestination | undefined): string {
+  if (!dest) return "";
+  if (dest.destinationType === "Member" && dest.member?.countryCode)
+    return (dest.member.countryCode || "").trim().toUpperCase();
+  if (dest.destinationType === "Office" && dest.office?.countryCode)
+    return (dest.office.countryCode || "").trim().toUpperCase();
+  if (dest.destinationType === "FP warehouse" && dest.warehouse?.countryCode)
+    return (dest.warehouse.countryCode || "").trim().toUpperCase();
+  return "";
+}
+
 // Componente para cada asset item (para evitar hooks dentro del map)
 interface AssetItemProps {
   asset: Product;
@@ -103,6 +115,8 @@ interface AssetItemProps {
   directOptions: any[];
   getDestinationDisplayValue: (detail: DataWipeDetail) => string;
   handleDestinationChange: (selectedValue: string) => void;
+  isIntercountry?: boolean;
+  intercountryLabel?: string;
 }
 
 const AssetItem: React.FC<AssetItemProps> = ({
@@ -115,6 +129,8 @@ const AssetItem: React.FC<AssetItemProps> = ({
   directOptions,
   getDestinationDisplayValue,
   handleDestinationChange,
+  isIntercountry,
+  intercountryLabel,
 }) => {
   const { displayName } = getAssetDisplayInfo(asset);
   const today = startOfToday();
@@ -152,7 +168,8 @@ const AssetItem: React.FC<AssetItemProps> = ({
         "bg-white p-4 border-2 rounded-lg transition-all",
         isExpanded
           ? "border-blue shadow-sm"
-          : "border-gray-200 hover:border-blue/50 cursor-pointer"
+          : "border-gray-200 hover:border-blue/50 cursor-pointer",
+        isIntercountry && "border-amber-500"
       )}
     >
       {/* Asset Header - Clickable (estandarizado: icono categoría, nombre, SN, Location) */}
@@ -197,17 +214,22 @@ const AssetItem: React.FC<AssetItemProps> = ({
             </div>
           )}
         </div>
-        {isExpanded ? (
-          <ChevronDown
-            size={20}
-            className="text-blue transition-all duration-200 flex-shrink-0 mt-0.5"
-          />
-        ) : (
-          <ChevronRight
-            size={20}
-            className="text-gray-500 transition-all duration-200 flex-shrink-0 mt-0.5"
-          />
-        )}
+        <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
+          {isIntercountry && (
+            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+          )}
+          {isExpanded ? (
+            <ChevronDown
+              size={20}
+              className="text-blue transition-all duration-200"
+            />
+          ) : (
+            <ChevronRight
+              size={20}
+              className="text-gray-500 transition-all duration-200"
+            />
+          )}
+        </div>
       </button>
 
       {/* Form Fields - Show when expanded */}
@@ -260,6 +282,14 @@ const AssetItem: React.FC<AssetItemProps> = ({
               compact={true}
               quotesFormStyle
             />
+            {isIntercountry && intercountryLabel && (
+              <div className="flex items-start gap-2 text-amber-700 text-sm bg-amber-50/50 border border-amber-500/50 rounded-md px-2 py-1.5">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
+                <span>
+                  This is an intercountry return ({intercountryLabel})
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -442,6 +472,36 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
     ];
   }, []);
 
+  // Intercountry: return destination en otro país que el origen del asset
+  const intercountryAssets = React.useMemo(() => {
+    return selectedAssets.filter((asset) => {
+      const assignment = getAssignmentInfo(asset);
+      const originCountry = (assignment?.country || "").trim().toUpperCase();
+      const detail = dataWipeDetails[asset._id] || { assetId: asset._id };
+      const destCountry = getDataWipeDestinationCountryCode(detail.destination);
+      return !!(originCountry && destCountry && originCountry !== destCountry);
+    });
+  }, [selectedAssets, dataWipeDetails]);
+
+  const isAssetIntercountry = (asset: Product): boolean => {
+    const assignment = getAssignmentInfo(asset);
+    const originCountry = (assignment?.country || "").trim().toUpperCase();
+    const detail = dataWipeDetails[asset._id] || { assetId: asset._id };
+    const destCountry = getDataWipeDestinationCountryCode(detail.destination);
+    return !!(originCountry && destCountry && originCountry !== destCountry);
+  };
+
+  const getIntercountryLabel = (asset: Product): string => {
+    const assignment = getAssignmentInfo(asset);
+    const originCode = (assignment?.country || "").trim().toUpperCase();
+    const detail = dataWipeDetails[asset._id] || { assetId: asset._id };
+    const destCountry = getDataWipeDestinationCountryCode(detail.destination);
+    const originName = originCode ? countriesByCode[originCode] || assignment?.country : "";
+    const destCode = destCountry || "";
+    const destName = destCode ? countriesByCode[destCode] || destCountry : "";
+    return `${originName} → ${destName}`;
+  };
+
   if (selectedAssets.length === 0) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -540,10 +600,25 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
         Expand each asset to provide additional information
       </p>
 
+      {/* Intercountry warning - mismo estilo que Logistics y Offboarding */}
+      {intercountryAssets.length > 0 && (
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50/30 border border-amber-500/50 text-amber-800">
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
+          <p className="text-sm">
+            Intercountry return detected. {intercountryAssets.length} asset
+            {intercountryAssets.length !== 1 ? "s" : ""} will be returned to a
+            different country, which is usually significantly more expensive and
+            takes longer.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 pr-2">
         {selectedAssets.map((asset) => {
           const detail = dataWipeDetails[asset._id] || { assetId: asset._id };
           const isExpanded = expandedAssets.has(asset._id);
+          const intercountry = isAssetIntercountry(asset);
+          const intercountryLabel = getIntercountryLabel(asset);
 
           return (
             <AssetItem
@@ -561,6 +636,8 @@ export const StepDataWipeDetails: React.FC<StepDataWipeDetailsProps> = ({
               handleDestinationChange={(value) =>
                 handleDestinationChange(asset._id, value, asset)
               }
+              isIntercountry={intercountry}
+              intercountryLabel={intercountryLabel}
             />
           );
         })}
