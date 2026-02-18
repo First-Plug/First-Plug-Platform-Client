@@ -4,7 +4,6 @@ import * as React from "react";
 import {
   Package,
   Trash2,
-  MapPin,
   Calendar,
   Shield,
   Settings,
@@ -18,7 +17,14 @@ import {
   DialogHeader,
   DialogTitle,
   Button,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/shared";
+import { countriesByCode } from "@/shared/constants/country-codes";
+import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
 import { useQuoteStore } from "../../store/quote.store";
 import type { QuoteProduct } from "../../types/quote.types";
 
@@ -266,11 +272,45 @@ export const QuoteProductCard: React.FC<QuoteProductCardProps> = ({
       {/* Delivery Details */}
       <div className="flex items-center gap-2 pt-3 border-t text-gray-600 text-sm">
         <div className="flex justify-center items-center gap-2">
-          <MapPin className="w-4 h-4" />
-          <span>
-            {product.country}
-            {product.city && `, ${product.city}`}
-          </span>
+          {(() => {
+            const normalizedCountry = normalizeCountryCode(product.country);
+            const countryDisplay =
+              normalizedCountry && countriesByCode[normalizedCountry]
+                ? countriesByCode[normalizedCountry]
+                : product.country;
+            if (!normalizedCountry) {
+              return (
+                <span>
+                  {product.country}
+                  {product.city && `, ${product.city}`}
+                </span>
+              );
+            }
+            return (
+              <>
+                <TooltipProvider>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <CountryFlag
+                          countryName={normalizedCountry}
+                          size={18}
+                          className="rounded-sm"
+                        />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-blue/80 text-white text-xs">
+                      {countryDisplay}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <span>
+                  {countryDisplay}
+                  {product.city && `, ${product.city}`}
+                </span>
+              </>
+            );
+          })()}
         </div>
         {product.requiredDeliveryDate && (
           <div className="flex justify-center items-center gap-2">
