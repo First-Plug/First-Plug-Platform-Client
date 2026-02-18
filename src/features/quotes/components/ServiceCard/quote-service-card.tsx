@@ -605,7 +605,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             )}
             {service.comments && service.comments.trim() !== "" && (
               <div className="mt-2 text-gray-700 text-sm">
-                <span className="font-medium">Comments: </span>
+                <span className="font-medium">Additional details: </span>
                 {service.comments}
               </div>
             )}
@@ -742,7 +742,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
           {service.additionalDetails &&
             service.additionalDetails.trim() !== "" && (
               <div className="mt-2 text-gray-700 text-sm">
-                <span className="font-medium">Comments: </span>
+                <span className="font-medium">Additional details: </span>
                 {service.additionalDetails}
               </div>
             )}
@@ -864,7 +864,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {service.additionalComments &&
               service.additionalComments.trim() !== "" && (
                 <div className="mt-2 text-gray-700 text-sm">
-                  <span className="font-medium">Comments: </span>
+                  <span className="font-medium">Additional details: </span>
                   {service.additionalComments}
                 </div>
               )}
