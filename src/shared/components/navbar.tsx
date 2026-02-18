@@ -459,7 +459,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
     const isDestructionRecycling = serviceType === "destruction-recycling";
     const isLogistics = serviceType === "logistics";
     const isOffboarding = serviceType === "offboarding";
-    if (isITSupport) return 5;
+    if (isITSupport) return 4;
     if (isEnrollment) return 3;
     if (isBuyback) return 3;
     if (isDataWipe) return 3;
@@ -509,10 +509,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
       currentServiceType === "destruction-recycling";
     const isLogistics = currentServiceType === "logistics";
     const isOffboarding = currentServiceType === "offboarding";
-    // Para Destruction & Recycling no mostrar botón Back en ningún paso (minStep = 3)
-    const minStep = isDestructionRecycling
-      ? 3
-      : isEditing
+    const minStep = isEditing
       ? isITSupport
         ? 2
         : isEnrollment ||
@@ -521,6 +518,7 @@ export const Navbar = ({ title, searchInput, placeholder }: NavbarProps) => {
           isCleaning ||
           isDonations ||
           isStorage ||
+          isDestructionRecycling ||
           isLogistics ||
           isOffboarding
         ? 2
