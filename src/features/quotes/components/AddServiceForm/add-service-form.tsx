@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TooltipArrow } from "@radix-ui/react-tooltip";
 import { Button } from "@/shared";
 import {
@@ -26,6 +26,9 @@ import { StepSelectMember } from "../AddServiceModal/step-select-member";
 import { StepOffboardingDetails } from "../AddServiceModal/step-offboarding-details";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
 import { useFetchMembers } from "@/features/members";
+import { useGetTableAssets, Product, CategoryIcons } from "@/features/assets";
+import { CountryFlag } from "@/shared";
+import { countriesByCode } from "@/shared/constants/country-codes";
 import type { QuoteService, QuoteProduct } from "../../types/quote.types";
 
 interface AddServiceFormProps {
@@ -92,6 +95,47 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
 
   const handleDataChange = (updates: Partial<QuoteService>) => {
     setServiceData((prev) => ({ ...prev, ...updates }));
+  };
+
+  const { data: assetsData } = useGetTableAssets();
+
+  // Asset seleccionado para IT Support (steps 3 y 4)
+  const itSupportSelectedAsset = React.useMemo(() => {
+    const assetId = serviceData.assetId;
+    if (!assetId || !assetsData) return null;
+    for (const categoryGroup of assetsData) {
+      if (categoryGroup.products) {
+        const asset = categoryGroup.products.find((p) => p._id === assetId);
+        if (asset) return asset;
+      }
+    }
+    return null;
+  }, [serviceData.assetId, assetsData]);
+
+  const getAssetDisplayInfoForIT = (product: Product) => {
+    const brand = product.attributes?.find((a) => String(a.key).toLowerCase() === "brand")?.value || "";
+    const model = product.attributes?.find((a) => String(a.key).toLowerCase() === "model")?.value || "";
+    const parts: string[] = [];
+    if (brand) parts.push(brand);
+    if (model && model !== "Other") parts.push(model);
+    else if (model === "Other") parts.push("Other");
+    const displayName = parts.length > 0
+      ? (product.name ? `${parts.join(" ")} ${product.name}`.trim() : parts.join(" "))
+      : (product.name || "Asset");
+    return { displayName };
+  };
+
+  const getAssignmentInfoForIT = (product: Product) => {
+    const country = product.office?.officeCountryCode || product.country || product.countryCode || "";
+    if (product.assignedMember || product.assignedEmail)
+      return { country, assignedTo: product.assignedMember || product.assignedEmail || "Unassigned" };
+    if (product.location === "Our office") {
+      const officeName = product.office?.officeName || product.officeName || "Our office";
+      return { country, assignedTo: `Office ${officeName}` };
+    }
+    if (product.location === "FP warehouse") return { country, assignedTo: "FP Warehouse" };
+    if (product.location) return { country, assignedTo: product.location };
+    return null;
   };
 
   useEffect(() => {
@@ -1033,13 +1077,65 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
         }
         return null;
       case 3:
-        // Mostrar issue type si es IT Support
+        // Mostrar asset card + issue type si es IT Support
         if (isITSupport) {
+          const asset = itSupportSelectedAsset;
+          const assignment = asset ? getAssignmentInfoForIT(asset) : null;
+          const displayInfo = asset ? getAssetDisplayInfoForIT(asset) : null;
           return (
-            <StepIssueTypeSelection
-              selectedIssueTypes={serviceData.issueTypes || []}
-              onIssueTypeToggle={handleIssueTypeToggle}
-            />
+            <div className="flex flex-col gap-4">
+              {asset && (
+                <div>
+                  <div className="font-medium text-sm mb-2">Selected asset:</div>
+                  <div className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <CategoryIcons products={[asset]} />
+                    </div>
+                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                      <span className="font-semibold text-gray-900 text-sm">
+                        {displayInfo?.displayName}
+                      </span>
+                      {asset.serialNumber && (
+                        <span className="text-gray-600 text-xs">
+                          <span className="font-medium">SN:</span> {asset.serialNumber}
+                        </span>
+                      )}
+                      {assignment && (
+                        <div className="flex items-center gap-1 text-gray-600 text-xs">
+                          <span className="font-medium">Location:</span>
+                          {assignment.country && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <CountryFlag
+                                      countryName={assignment.country}
+                                      size={18}
+                                      className="rounded-sm"
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {(countriesByCode as Record<string, string>)[assignment.country] ||
+                                    assignment.country}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          {assignment.assignedTo && (
+                            <span>{assignment.assignedTo}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <StepIssueTypeSelection
+                selectedIssueTypes={serviceData.issueTypes || []}
+                onIssueTypeToggle={handleIssueTypeToggle}
+              />
+            </div>
           );
         }
         // Mostrar additional details si es Enrollment
@@ -1205,17 +1301,69 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           />
         );
       case 4:
-        // Solo mostrar issue details si es IT Support
+        // Mostrar asset card + issue details si es IT Support
         if (isITSupport) {
+          const asset = itSupportSelectedAsset;
+          const assignment = asset ? getAssignmentInfoForIT(asset) : null;
+          const displayInfo = asset ? getAssetDisplayInfoForIT(asset) : null;
           return (
-            <StepIssueDetails
-              description={serviceData.description || ""}
-              issueStartDate={serviceData.issueStartDate}
-              impactLevel={serviceData.impactLevel || "medium"}
-              onDataChange={(updates) => {
-                handleDataChange(updates);
-              }}
-            />
+            <div className="flex flex-col gap-4">
+              {asset && (
+                <div>
+                  <div className="font-medium text-sm mb-2">Selected asset:</div>
+                  <div className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <CategoryIcons products={[asset]} />
+                    </div>
+                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                      <span className="font-semibold text-gray-900 text-sm">
+                        {displayInfo?.displayName}
+                      </span>
+                      {asset.serialNumber && (
+                        <span className="text-gray-600 text-xs">
+                          <span className="font-medium">SN:</span> {asset.serialNumber}
+                        </span>
+                      )}
+                      {assignment && (
+                        <div className="flex items-center gap-1 text-gray-600 text-xs">
+                          <span className="font-medium">Location:</span>
+                          {assignment.country && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <CountryFlag
+                                      countryName={assignment.country}
+                                      size={18}
+                                      className="rounded-sm"
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {(countriesByCode as Record<string, string>)[assignment.country] ||
+                                    assignment.country}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          {assignment.assignedTo && (
+                            <span>{assignment.assignedTo}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <StepIssueDetails
+                description={serviceData.description || ""}
+                issueStartDate={serviceData.issueStartDate}
+                impactLevel={serviceData.impactLevel || "medium"}
+                onDataChange={(updates) => {
+                  handleDataChange(updates);
+                }}
+              />
+            </div>
           );
         }
         return null;
