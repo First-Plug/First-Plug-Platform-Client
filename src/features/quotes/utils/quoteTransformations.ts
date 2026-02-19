@@ -1795,7 +1795,6 @@ export function transformServiceToBackendFormat(
       dest: NonNullable<typeof service.logisticsDestination>,
       countryCode: string
     ) => {
-      const isGenericFpWarehouse = dest.type === "Warehouse" && !dest.warehouseId;
       const payload =
         dest.type === "Office"
           ? {
@@ -1811,15 +1810,14 @@ export function transformServiceToBackendFormat(
               assignedEmail: dest.assignedEmail || "",
               countryCode: dest.countryCode || "",
             }
-          : dest.type === "Warehouse" && dest.warehouseId
+          : dest.type === "Warehouse"
           ? {
               type: "Warehouse" as const,
-              ...(dest.warehouseId && { warehouseId: dest.warehouseId }),
-              ...(dest.warehouseName && { warehouseName: dest.warehouseName }),
-              countryCode: dest.countryCode || "",
+              warehouseId: dest.warehouseId || "fp-warehouse",
+              warehouseName: dest.warehouseName || "FP warehouse",
+              countryCode: dest.countryCode || countryCode || "",
             }
           : undefined;
-      if (isGenericFpWarehouse) return { type: "Warehouse" as const, countryCode };
       if (!payload) throw new Error("Logistics service: invalid logisticsDestination type");
       return payload;
     };
@@ -1930,8 +1928,15 @@ export function transformServiceToBackendFormat(
 
       const d = perAsset[asset._id];
       const productDestination = buildDestinationPayload(d!.logisticsDestination!, countryCode);
-      const desirablePickupDate = usePerAssetDates ? d!.desirablePickupDate : service.desirablePickupDate;
-      const desirableDeliveryDate = usePerAssetDates ? d!.desirableDeliveryDate : service.desirableDeliveryDate;
+      let desirablePickupDate = usePerAssetDates ? d!.desirablePickupDate : service.desirablePickupDate;
+      let desirableDeliveryDate = usePerAssetDates ? d!.desirableDeliveryDate : service.desirableDeliveryDate;
+      // Formato YYYY-MM-DD requerido por el schema
+      if (desirablePickupDate?.includes("T")) {
+        desirablePickupDate = desirablePickupDate.split("T")[0];
+      }
+      if (desirableDeliveryDate?.includes("T")) {
+        desirableDeliveryDate = desirableDeliveryDate.split("T")[0];
+      }
 
       const product: any = {
         productId: asset._id,
@@ -1943,22 +1948,12 @@ export function transformServiceToBackendFormat(
       return product;
     });
 
-    const firstProduct = logisticsProducts[0] as any;
     const logisticsService: any = {
       serviceCategory: serviceCategory,
-      desirablePickupDate: usePerAssetDates
-        ? firstProduct?.desirablePickupDate
-        : service.desirablePickupDate,
       products: logisticsProducts,
     };
     if (service.additionalDetails && service.additionalDetails.trim() !== "") {
       logisticsService.additionalDetails = service.additionalDetails;
-    }
-    const serviceDeliveryDate = usePerAssetDates
-      ? firstProduct?.desirableDeliveryDate
-      : service.desirableDeliveryDate;
-    if (serviceDeliveryDate) {
-      logisticsService.desirableDeliveryDate = serviceDeliveryDate;
     }
 
     return removeUndefinedFields(logisticsService) as NonNullable<
@@ -2032,7 +2027,7 @@ export function transformServiceToBackendFormat(
         assignedTo = asset.officeName || asset.office?.officeName || "";
       } else if (asset.location === "FP warehouse") {
         location = "FP warehouse";
-        assignedTo = "FP Warehouse";
+        assignedTo = "FP warehouse";
       } else if (asset.location) {
         location = asset.location;
         assignedTo = "";
@@ -2083,9 +2078,9 @@ export function transformServiceToBackendFormat(
           : dest.type === "Warehouse"
           ? {
               type: "Warehouse" as const,
-              ...(dest.warehouseId && { warehouseId: dest.warehouseId }),
-              ...(dest.warehouseName && { warehouseName: dest.warehouseName }),
-              countryCode: dest.countryCode || "",
+              warehouseId: dest.warehouseId || "fp-warehouse",
+              warehouseName: dest.warehouseName || "FP warehouse",
+              countryCode: dest.countryCode || countryCode || originMember.countryCode || "",
             }
           : undefined;
 
