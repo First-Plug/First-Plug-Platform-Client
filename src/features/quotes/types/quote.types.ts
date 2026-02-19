@@ -440,6 +440,18 @@ export interface QuoteHistoryService {
   issueStartDate?: string;
   additionalDetails?: string;
   additionalInfo?: string;
+  /** Offboarding: miembro de origen */
+  originMember?: {
+    memberId?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    countryCode?: string;
+  };
+  /** Offboarding: situación sensible */
+  isSensitiveSituation?: boolean;
+  /** Offboarding: empleado al tanto */
+  employeeKnows?: boolean;
 }
 
 export interface QuoteTableWithDetailsDto {
