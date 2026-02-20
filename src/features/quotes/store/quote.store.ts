@@ -18,8 +18,13 @@ export const useQuoteStore = create<QuoteStore>()(
       currentServiceType: undefined,
       editingProductId: undefined,
       editingServiceId: undefined,
+      presetServiceOpen: null,
       onBack: undefined,
       onCancel: undefined,
+
+      setPresetServiceOpen: (preset) => {
+        set({ presetServiceOpen: preset });
+      },
 
       addProduct: (product: QuoteProduct) => {
         set((state) => ({
@@ -136,6 +141,7 @@ export const useQuoteStore = create<QuoteStore>()(
           currentServiceType: undefined,
           editingProductId: undefined,
           editingServiceId: undefined,
+          presetServiceOpen: null,
           onBack: undefined,
           onCancel: undefined,
         };

@@ -4,8 +4,15 @@ import * as React from "react";
 import { ChevronDown, ChevronUp, Package } from "lucide-react";
 import { Label } from "@/shared/components/ui/label";
 import { Input } from "@/shared/components/ui/input";
-import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
-import { cn, CountryFlag } from "@/shared";
+import { useGetTableAssets, Product, ProductTable, CategoryIcons } from "@/features/assets";
+import {
+  cn,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import type { StorageDetail } from "../../types/quote.types";
 
@@ -65,7 +72,7 @@ const getCountryCode = (product: Product): string => {
   return product.country || product.countryCode || "";
 };
 
-/** Debajo del título: "Location: " + employee (nombre y apellido) u office (nombre) o FP warehouse */
+/** Debajo del título: "Location: " + employee, Office X, o FP Warehouse (estandarizado) */
 const getLocationLabel = (product: Product): string => {
   if (product.assignedMember || product.assignedEmail) {
     return String(
@@ -73,12 +80,12 @@ const getLocationLabel = (product: Product): string => {
     );
   }
   if (product.location === "Our office") {
-    return String(
-      product.office?.officeName || product.officeName || "Our office"
-    );
+    const officeName =
+      product.office?.officeName || product.officeName || "Our office";
+    return `Office ${officeName}`;
   }
   if (product.location === "FP warehouse") {
-    return "FP warehouse";
+    return "FP Warehouse";
   }
   if (product.location) {
     return String(product.location);
@@ -190,7 +197,7 @@ export const StepStorageDetails: React.FC<StepStorageDetailsProps> = ({
             Storage Details per Asset
           </Label>
           <span className="text-muted-foreground text-xs">
-            All fields are optional
+            All fields can be left blank
           </span>
         </div>
 
@@ -221,22 +228,35 @@ export const StepStorageDetails: React.FC<StepStorageDetailsProps> = ({
                   className="flex justify-between items-center w-full text-left"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex flex-shrink-0 justify-center items-center bg-gray-100 border border-gray-200 rounded-lg w-10 h-10">
-                      <Package
-                        className="w-5 h-5 text-gray-600"
-                        strokeWidth={2}
-                      />
+                    <div className="flex flex-shrink-0 mt-0.5">
+                      <CategoryIcons products={[asset]} />
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <span className="font-semibold text-base">{title}</span>
+                      {asset.serialNumber && (
+                        <div className="text-gray-600 text-xs">
+                          <span className="font-medium">SN:</span>{" "}
+                          {asset.serialNumber}
+                        </div>
+                      )}
                       <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-gray-600 text-sm">
                         <span>Location: </span>
                         {countryCode ? (
-                          <span className="flex items-center gap-1">
-                            <CountryFlag countryName={countryCode} size={14} />
-                            <span className="truncate">{countryName}</span>
-                            {locationLabel ? " " : ""}
-                          </span>
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={countryCode}
+                                    size={18}
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {countryName}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         ) : null}
                         {locationLabel ? (
                           <span className="truncate">{locationLabel}</span>
@@ -320,7 +340,7 @@ export const StepStorageDetails: React.FC<StepStorageDetailsProps> = ({
 
                     <div className="flex flex-col gap-2">
                       <Label htmlFor={`additionalComments-${asset._id}`}>
-                        Additional Comments
+                        Additional details
                       </Label>
                       <textarea
                         id={`additionalComments-${asset._id}`}

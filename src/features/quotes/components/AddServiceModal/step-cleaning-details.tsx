@@ -12,9 +12,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
-import { cn } from "@/shared";
-import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
-import { Badge } from "@/shared";
+import { cn, CountryFlag, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared";
+import { useGetTableAssets, Product, ProductTable, CategoryIcons } from "@/features/assets";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface StepCleaningDetailsProps {
   assetIds: string[];
@@ -28,6 +28,7 @@ interface StepCleaningDetailsProps {
   }) => void;
 }
 
+// Formato estandarizado: Brand Model (Name)
 const getAssetDisplayInfo = (product: Product) => {
   const brand =
     product.attributes?.find(
@@ -38,17 +39,48 @@ const getAssetDisplayInfo = (product: Product) => {
       (attr) => String(attr.key).toLowerCase() === "model"
     )?.value || "";
 
+  const parts: string[] = [];
+  if (brand) parts.push(brand);
+  if (model && model !== "Other") parts.push(model);
+  else if (model === "Other") parts.push("Other");
+
   let displayName = "";
-  if (brand && model) {
-    displayName =
-      model === "Other"
-        ? `${brand} Other ${product.name || ""}`.trim()
-        : `${brand} ${model}`;
+  if (parts.length > 0) {
+    displayName = product.name
+      ? `${parts.join(" ")} ${product.name}`.trim()
+      : parts.join(" ");
   } else {
     displayName = product.name || "No name";
   }
 
   return { displayName };
+};
+
+const getAssignmentInfo = (product: Product) => {
+  const country =
+    product.office?.officeCountryCode ||
+    product.country ||
+    product.countryCode ||
+    "";
+
+  if (product.assignedMember || product.assignedEmail) {
+    return {
+      country,
+      assignedTo: product.assignedMember || product.assignedEmail || "Unassigned",
+    };
+  }
+  if (product.location === "Our office") {
+    const officeName =
+      product.office?.officeName || product.officeName || "Our office";
+    return { country, assignedTo: `Office ${officeName}` };
+  }
+  if (product.location === "FP warehouse") {
+    return { country, assignedTo: "FP Warehouse" };
+  }
+  if (product.location) {
+    return { country, assignedTo: product.location };
+  }
+  return null;
 };
 
 export const StepCleaningDetails: React.FC<StepCleaningDetailsProps> = ({
@@ -107,26 +139,66 @@ export const StepCleaningDetails: React.FC<StepCleaningDetailsProps> = ({
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Assets to clean */}
+      {/* Assets to clean (estandarizado: icono categoría, nombre, SN, Location) */}
       {selectedAssets.length > 0 && (
         <div className="flex flex-col gap-2">
           <Label className="font-medium text-sm">
             Assets to clean ({selectedAssets.length})
           </Label>
-          <div className="flex flex-wrap gap-2">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => {
               const { displayName } = getAssetDisplayInfo(asset);
+              const assignment = getAssignmentInfo(asset);
+              const countryName = assignment?.country
+                ? countriesByCode[assignment.country] || assignment.country
+                : "";
               return (
-                <Badge
+                <li
                   key={asset._id}
-                  variant="secondary"
-                  className="bg-gray-100 px-3 py-1.5 border border-gray-200 text-gray-800 text-sm"
+                  className="flex items-start gap-3 bg-gray-50 p-3 border border-gray-200 rounded-lg"
                 >
-                  {displayName} ({asset.category})
-                </Badge>
+                  <div className="flex-shrink-0 mt-0.5">
+                    <CategoryIcons products={[asset]} />
+                  </div>
+                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm truncate">
+                      {displayName}
+                    </div>
+                    {asset.serialNumber && (
+                      <div className="text-gray-600 text-xs">
+                        <span className="font-medium">SN:</span> {asset.serialNumber}
+                      </div>
+                    )}
+                    {assignment && (
+                      <div className="flex flex-wrap items-center gap-1 text-gray-600 text-xs">
+                        <span className="font-medium">Location:</span>
+                        {assignment.country && (
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={assignment.country}
+                                    size={18}
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {countryName}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        {assignment.assignedTo && (
+                          <span>{assignment.assignedTo}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </div>
       )}
 

@@ -5,8 +5,16 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { Label } from "@/shared/components/ui/label";
 import { Input } from "@/shared/components/ui/input";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import { useGetTableAssets, Product, ProductTable } from "@/features/assets";
-import { cn } from "@/shared";
+import { useGetTableAssets, Product, ProductTable, CategoryIcons } from "@/features/assets";
+import {
+  cn,
+  CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
+import { countriesByCode } from "@/shared/constants/country-codes";
 
 interface BuybackDetail {
   assetId: string;
@@ -66,7 +74,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
     }
   }, [selectedAssets]);
 
-  // Obtener información de display del asset
+  // Formato estandarizado: Brand Model (Name)
   const getAssetDisplayInfo = (product: Product) => {
     const brand =
       product.attributes?.find(
@@ -77,20 +85,48 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
         (attr) => String(attr.key).toLowerCase() === "model"
       )?.value || "";
 
+    const parts: string[] = [];
+    if (brand) parts.push(brand);
+    if (model && model !== "Other") parts.push(model);
+    else if (model === "Other") parts.push("Other");
+
     let displayName = "";
-    if (brand && model) {
-      displayName = model === "Other" ? `${brand} Other` : `${brand} ${model}`;
+    if (parts.length > 0) {
+      displayName = product.name
+        ? `${parts.join(" ")} ${product.name}`.trim()
+        : parts.join(" ");
     } else {
       displayName = product.name || "No name";
     }
 
-    let specifications = "";
-    const parts: string[] = [];
-    if (brand) parts.push(brand);
-    if (model) parts.push(model);
-    specifications = parts.join(" • ");
+    return { displayName };
+  };
 
-    return { displayName, specifications };
+  const getAssignmentInfo = (product: Product) => {
+    const country =
+      product.office?.officeCountryCode ||
+      product.country ||
+      product.countryCode ||
+      "";
+
+    if (product.assignedMember || product.assignedEmail) {
+      return {
+        country,
+        assignedTo: product.assignedMember || product.assignedEmail || "Unassigned",
+      };
+    }
+    if (product.location === "Our office") {
+      const officeName =
+        product.office?.officeName || product.officeName || "Our office";
+      return { country, assignedTo: `Office ${officeName}` };
+    }
+    if (product.location === "FP warehouse") {
+      return { country, assignedTo: "FP Warehouse" };
+    }
+    if (product.location) {
+      return { country, assignedTo: product.location };
+    }
+    return null;
   };
 
   const updateBuybackDetail = (assetId: string, field: keyof BuybackDetail, value: any) => {
@@ -115,6 +151,15 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
     setExpandedAssets(newExpanded);
   };
 
+  // Productos a los que les falta Overall condition (hook antes de cualquier return)
+  const assetsMissingCondition = React.useMemo(() => {
+    return selectedAssets.filter((asset) => {
+      const detail = buybackDetails[asset._id];
+      const value = detail?.generalFunctionality?.trim();
+      return !value;
+    });
+  }, [selectedAssets, buybackDetails]);
+
   if (selectedAssets.length === 0) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -129,11 +174,23 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
         Expand each asset to provide additional details for a more accurate quote. Overall condition is required.
       </p>
 
+      {assetsMissingCondition.length > 0 && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          <span className="font-medium">Overall condition</span> is still required for:{" "}
+          {assetsMissingCondition
+            .map((a) => getAssetDisplayInfo(a).displayName)
+            .join(", ")}
+        </p>
+      )}
+
       <div className="flex flex-col gap-4 pr-2">
         {selectedAssets.map((asset) => {
-          const { displayName, specifications } = getAssetDisplayInfo(asset);
+          const { displayName } = getAssetDisplayInfo(asset);
+          const assignment = getAssignmentInfo(asset);
           const detail = buybackDetails[asset._id] || { assetId: asset._id };
           const isExpanded = expandedAssets.has(asset._id);
+          const missingCondition =
+            !detail.generalFunctionality?.trim();
 
           return (
             <div
@@ -142,35 +199,67 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                 "border-2 rounded-lg p-4 bg-white transition-all",
                 isExpanded
                   ? "border-blue shadow-sm"
-                  : "border-gray-200 hover:border-blue/50 cursor-pointer"
+                  : "border-gray-200 hover:border-blue/50 cursor-pointer",
+                missingCondition && "border-l-4 border-l-red-500"
               )}
             >
-              {/* Asset Header - Clickable */}
+              {/* Asset Header - Clickable (estandarizado: icono categoría, nombre, SN, Location) */}
               <button
                 type="button"
                 onClick={() => toggleExpanded(asset._id)}
-                className="flex justify-between items-center w-full text-left"
+                className="flex items-start gap-3 w-full text-left"
               >
-                <div className="flex flex-col gap-1">
-                  <span className="font-semibold text-base">{displayName}</span>
-                  {specifications && (
-                    <span className="text-sm text-gray-600">{specifications}</span>
-                  )}
+                <div className="flex-shrink-0 mt-0.5">
+                  <CategoryIcons products={[asset]} />
+                </div>
+                <div className="flex flex-col gap-1 flex-1 min-w-0">
+                  <span className="font-semibold text-sm">{displayName}</span>
                   {asset.serialNumber && (
                     <span className="text-xs text-gray-500">
-                      SN: {asset.serialNumber}
+                      <span className="font-medium">SN:</span> {asset.serialNumber}
+                    </span>
+                  )}
+                  {assignment && (
+                    <div className="flex flex-wrap items-center gap-1 text-gray-600 text-xs">
+                      <span className="font-medium">Location:</span>
+                      {assignment.country && (
+                        <TooltipProvider>
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex">
+                                <CountryFlag
+                                  countryName={assignment.country}
+                                  size={18}
+                                />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-blue/80 text-white text-xs">
+                              {countriesByCode[assignment.country] ||
+                                assignment.country}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      {assignment.assignedTo && (
+                        <span>{assignment.assignedTo}</span>
+                      )}
+                    </div>
+                  )}
+                  {missingCondition && (
+                    <span className="text-xs text-red-600 font-medium">
+                      Overall condition required
                     </span>
                   )}
                 </div>
                 {isExpanded ? (
                   <ChevronDown
                     size={20}
-                    className="text-blue transition-all duration-200"
+                    className="text-blue transition-all duration-200 flex-shrink-0 mt-0.5"
                   />
                 ) : (
                   <ChevronRight
                     size={20}
-                    className="text-gray-500 transition-all duration-200"
+                    className="text-gray-500 transition-all duration-200 flex-shrink-0 mt-0.5"
                   />
                 )}
               </button>
@@ -242,11 +331,11 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                     />
                   </div>
 
-                  {/* Includes a working charger? */}
+                  {/* Includes a working charger? (default: yes) */}
                   <div className="flex items-center gap-2">
                     <Checkbox
                       id={`hasCharger-${asset._id}`}
-                      checked={detail.hasCharger || false}
+                      checked={detail.hasCharger !== false}
                       onCheckedChange={(checked) =>
                         updateBuybackDetail(
                           asset._id,
@@ -263,10 +352,10 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
                     </Label>
                   </div>
 
-                  {/* Additional Comments */}
+                  {/* Additional details */}
                   <div className="flex flex-col gap-2">
                     <Label htmlFor={`comments-${asset._id}`}>
-                      Additional comments
+                      Additional details
                     </Label>
                     <textarea
                       id={`comments-${asset._id}`}
@@ -292,7 +381,7 @@ export const StepBuybackDetails: React.FC<StepBuybackDetailsProps> = ({
 
       {/* Additional Info (for the whole service) */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="additional-info">Additional info (optional)</Label>
+        <Label htmlFor="additional-info">Additional info</Label>
         <textarea
           id="additional-info"
           placeholder="General information about the buyback request..."

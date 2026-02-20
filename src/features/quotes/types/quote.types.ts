@@ -65,10 +65,58 @@ export interface QuoteService {
   requiresCertificate?: boolean;
   /** Destruction & Recycling: comentarios/instrucciones (mapea a "comments" en payload) */
   comments?: string;
+  /** Logistics: si true, un solo destino/fechas para todos los assets; si false, logisticsDetailsPerAsset */
+  sameDetailsForAllAssets?: boolean;
+  /** Logistics: destino (FP warehouses, members, offices) - aplicado a todos cuando sameDetailsForAllAssets es true */
+  logisticsDestination?: LogisticsDestination;
+  /** Logistics: fecha de recogida deseada (YYYY-MM-DD) */
+  desirablePickupDate?: string;
+  /** Logistics: fecha de entrega deseada (YYYY-MM-DD) */
+  desirableDeliveryDate?: string;
+  /** Logistics: detalles por asset cuando sameDetailsForAllAssets es false; clave = assetId */
+  logisticsDetailsPerAsset?: Record<string, LogisticsDetailPerAsset>;
+  /** Offboarding: miembro seleccionado */
+  memberId?: string;
+  /** Offboarding: fecha de recogida (YYYY-MM-DD) */
+  offboardingPickupDate?: string;
+  /** Offboarding: mismo destino/fecha para todos los assets */
+  offboardingSameDetailsForAllAssets?: boolean;
+  /** Offboarding: destino y fecha de entrega por asset; clave = assetId */
+  offboardingDetailsPerAsset?: Record<string, OffboardingDetailPerAsset>;
+  /** Offboarding: situación sensible (terminación, temas legales, etc.) */
+  offboardingSensitiveSituation?: boolean;
+  /** Offboarding: si el empleado está al tanto del offboarding */
+  offboardingEmployeeAware?: boolean;
   country: string;
   city?: string;
   requiredDeliveryDate?: string; // Formato ISO string
   additionalComments?: string;
+}
+
+/** Destino para servicio Logistics (Office, Member o FP Warehouse) */
+export interface LogisticsDestination {
+  type: "Office" | "Member" | "Warehouse";
+  officeId?: string; // para UI / valor del dropdown
+  officeName?: string;
+  countryCode?: string;
+  memberId?: string;
+  assignedMember?: string;
+  assignedEmail?: string;
+  warehouseId?: string;
+  warehouseName?: string;
+}
+
+/** Detalles de envío por asset (cuando sameDetailsForAllAssets es false) */
+export interface LogisticsDetailPerAsset {
+  logisticsDestination?: LogisticsDestination;
+  desirablePickupDate?: string;
+  desirableDeliveryDate?: string;
+}
+
+/** Detalles de offboarding por asset (destino y fecha de entrega) */
+export interface OffboardingDetailPerAsset {
+  logisticsDestination?: LogisticsDestination;
+  desirableDeliveryDate?: string;
 }
 
 export interface QuoteRequestPayload {
@@ -161,6 +209,13 @@ export interface QuoteRequestPayload {
   }>;
 }
 
+/** Preset para abrir Add Service desde My Assets directamente en step 3 con asset(s) pre-seleccionados */
+export interface PresetServiceOpen {
+  serviceType: string;
+  assetIds?: string[];
+  assetId?: string;
+}
+
 export interface QuoteStore {
   products: QuoteProduct[];
   services: QuoteService[];
@@ -171,6 +226,8 @@ export interface QuoteStore {
   currentServiceType?: string; // Tipo de servicio seleccionado en el flujo actual
   editingProductId?: string;
   editingServiceId?: string;
+  /** Preset para abrir el flujo de servicio en step 3 desde My Assets */
+  presetServiceOpen: PresetServiceOpen | null;
   onBack?: (() => void) | undefined;
   onCancel?: (() => void) | undefined;
   // Guardar producto completo (al finalizar todos los steps)
@@ -203,6 +260,7 @@ export interface QuoteStore {
   setOnCancel: (callback: (() => void) | undefined) => void;
   setEditingProductId: (id: string | undefined) => void;
   setEditingServiceId: (id: string | undefined) => void;
+  setPresetServiceOpen: (preset: PresetServiceOpen | null) => void;
 }
 
 export interface QuoteHistoryProduct {
@@ -309,6 +367,8 @@ export interface QuoteHistoryService {
   deliveryDate?: string;
   comments?: string;
   requiresCertificate?: boolean;
+  /** Logistics: fecha de recogida deseada */
+  desirablePickupDate?: string;
   enrolledDevices?: EnrolledDeviceSnapshot[];
   productSnapshot?: ITSupportProductSnapshot;
   products?:
@@ -380,6 +440,18 @@ export interface QuoteHistoryService {
   issueStartDate?: string;
   additionalDetails?: string;
   additionalInfo?: string;
+  /** Offboarding: miembro de origen */
+  originMember?: {
+    memberId?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    countryCode?: string;
+  };
+  /** Offboarding: situación sensible */
+  isSensitiveSituation?: boolean;
+  /** Offboarding: empleado al tanto */
+  employeeKnows?: boolean;
 }
 
 export interface QuoteTableWithDetailsDto {

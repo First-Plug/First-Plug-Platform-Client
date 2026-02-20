@@ -15,7 +15,8 @@ export class QuoteServices {
     products: QuoteProduct[],
     services?: QuoteService[],
     assetsMap?: Map<string, any>, // Map of assetId -> asset
-    membersMap?: Map<string, any> // Map of email -> member
+    membersMap?: Map<string, any>, // Map of email -> member
+    membersMapById?: Map<string, any> // Map of memberId -> member (for Offboarding originMember)
   ): Promise<{ message: string }> {
     try {
       if ((!products || products.length === 0) && (!services || services.length === 0)) {
@@ -62,8 +63,9 @@ export class QuoteServices {
               const transformed = transformServiceToBackendFormat(
                 service,
                 asset,
-                assetsMap, // Pasar assetsMap para Enrollment
-                membersMap // Pasar membersMap para obtener countryCode de empleados
+                assetsMap,
+                membersMap,
+                membersMapById
               );
 
               if (!transformed.serviceCategory) {

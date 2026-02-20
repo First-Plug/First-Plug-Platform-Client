@@ -213,6 +213,8 @@ function mapServiceTypeToCategory(serviceType?: string): string {
     donations: "Donate",
     storage: "Storage",
     "destruction-recycling": "Destruction and Recycling",
+    logistics: "Logistics",
+    offboarding: "Offboarding",
   };
   return serviceTypeMap[serviceType] || serviceType;
 }
@@ -581,6 +583,7 @@ function buildEnrolledDeviceFromAsset(
  * @param asset - Asset opcional con la información del producto (para IT Support)
  * @param assetsMap - Map opcional de assetId -> asset (para Enrollment)
  * @param membersMap - Map opcional de email -> member (para obtener countryCode de empleados)
+ * @param membersMapById - Map opcional de memberId -> member (para Offboarding originMember)
  * @returns Servicio transformado en formato del backend
  * @throws Error si hay problemas con la fecha o datos requeridos
  */
@@ -588,7 +591,8 @@ export function transformServiceToBackendFormat(
   service: QuoteService,
   asset?: any, // Product type from assets (para IT Support)
   assetsMap?: Map<string, any>, // Map de assetId -> asset (para Enrollment)
-  membersMap?: Map<string, any> // Map de email -> member (para obtener countryCode)
+  membersMap?: Map<string, any>, // Map de email -> member (para obtener countryCode)
+  membersMapById?: Map<string, any> // Map de memberId -> member (para Offboarding)
 ): NonNullable<QuoteRequestPayload["services"]>[0] {
   let issueStartDate: string | undefined;
   if (service.issueStartDate) {
@@ -612,6 +616,8 @@ export function transformServiceToBackendFormat(
   const isStorage = service.serviceType === "storage";
   const isDestructionRecycling =
     service.serviceType === "destruction-recycling";
+  const isLogistics = service.serviceType === "logistics";
+  const isOffboarding = service.serviceType === "offboarding";
 
   // Para Enrollment, construir enrolledDevices y productIds
   let enrolledDevices: any[] | undefined = undefined;
@@ -619,6 +625,8 @@ export function transformServiceToBackendFormat(
 
   // Para Buyback, construir products array con productSnapshot y buybackDetails
   let buybackProducts: any[] | undefined = undefined;
+  // Para Logistics, construir products array con productSnapshot y destination
+  let logisticsProducts: any[] | undefined = undefined;
   // Para Data Wipe, construir assets array con productSnapshot, desirableDate, currentLocation, currentMember, y destination
   let dataWipeAssets: any[] | undefined = undefined;
   // Para Cleaning, construir products array con productSnapshot, desiredDate, cleaningType, additionalComments
@@ -629,6 +637,8 @@ export function transformServiceToBackendFormat(
   let storageProducts: any[] | undefined = undefined;
   // Para Destruction and Recycling, construir products array con productSnapshot
   let destructionProducts: any[] | undefined = undefined;
+  // Para Offboarding, construir payload con originMember, products[] con productSnapshot y destination
+  let offboardingPayload: any = undefined;
 
   if (isBuyback) {
     if (!service.assetIds || service.assetIds.length === 0) {
@@ -874,15 +884,14 @@ export function transformServiceToBackendFormat(
         ) {
           buybackDetailsObj.aestheticDetails = buybackDetail.aestheticDetails;
         }
-        if (buybackDetail.hasCharger !== undefined) {
-          buybackDetailsObj.hasCharger = buybackDetail.hasCharger;
-          // Si hasCharger es true, chargerWorks también debe ser true (según el ejemplo del payload)
-          if (buybackDetail.hasCharger) {
-            buybackDetailsObj.chargerWorks =
-              buybackDetail.chargerWorks !== undefined
-                ? buybackDetail.chargerWorks
-                : true;
-          }
+        // hasCharger por defecto true (incluye cargador)
+        const hasCharger = buybackDetail.hasCharger ?? true;
+        buybackDetailsObj.hasCharger = hasCharger;
+        if (hasCharger) {
+          buybackDetailsObj.chargerWorks =
+            buybackDetail.chargerWorks !== undefined
+              ? buybackDetail.chargerWorks
+              : true;
         }
         if (
           buybackDetail.additionalComments &&
@@ -1710,7 +1719,8 @@ export function transformServiceToBackendFormat(
     service.assetId &&
     !isEnrollment &&
     !isStorage &&
-    !isDestructionRecycling
+    !isDestructionRecycling &&
+    !isLogistics
   ) {
     productSnapshot = buildEnrolledDeviceFromAsset(asset);
   }
@@ -1737,7 +1747,8 @@ export function transformServiceToBackendFormat(
     !isCleaning &&
     !isDonations &&
     !isStorage &&
-    !isDestructionRecycling
+    !isDestructionRecycling &&
+    !isLogistics
   ) {
     transformed.productId = service.assetId;
   }
@@ -1750,9 +1761,374 @@ export function transformServiceToBackendFormat(
     !isCleaning &&
     !isDonations &&
     !isStorage &&
-    !isDestructionRecycling
+    !isDestructionRecycling &&
+    !isLogistics
   ) {
     transformed.productSnapshot = productSnapshot;
+  }
+
+  // Para Logistics - payload: serviceCategory "Logistics", desirablePickupDate, additionalDetails, products[] con productSnapshot y destination
+  if (isLogistics) {
+    if (!service.assetIds || service.assetIds.length === 0) {
+      throw new Error("Logistics service requires at least one asset (assetIds)");
+    }
+    if (!assetsMap) {
+      throw new Error("Logistics service requires assetsMap to build products");
+    }
+    const selectedLogisticsAssets = service.assetIds
+      .map((assetId) => assetsMap!.get(assetId))
+      .filter((a) => a !== undefined);
+
+    if (selectedLogisticsAssets.length === 0) {
+      throw new Error(
+        "Logistics service: no valid assets found in assetsMap"
+      );
+    }
+
+    validateAssetsCountryCode(selectedLogisticsAssets, membersMap);
+
+    const sameDetailsForAllAssets = service.sameDetailsForAllAssets === true;
+    const perAssetData = service.logisticsDetailsPerAsset && Object.keys(service.logisticsDetailsPerAsset).length > 0;
+    const usePerAssetDates = !sameDetailsForAllAssets && perAssetData;
+
+    const buildDestinationPayload = (
+      dest: NonNullable<typeof service.logisticsDestination>,
+      countryCode: string
+    ) => {
+      const payload =
+        dest.type === "Office"
+          ? {
+              type: "Office" as const,
+              officeName: dest.officeName || "",
+              countryCode: dest.countryCode || "",
+            }
+          : dest.type === "Member"
+          ? {
+              type: "Member" as const,
+              memberId: dest.memberId || "",
+              assignedMember: dest.assignedMember || "",
+              assignedEmail: dest.assignedEmail || "",
+              countryCode: dest.countryCode || "",
+            }
+          : dest.type === "Warehouse"
+          ? {
+              type: "Warehouse" as const,
+              warehouseId: dest.warehouseId || "fp-warehouse",
+              warehouseName: dest.warehouseName || "FP warehouse",
+              countryCode: dest.countryCode || countryCode || "",
+            }
+          : undefined;
+      if (!payload) throw new Error("Logistics service: invalid logisticsDestination type");
+      return payload;
+    };
+
+    const perAsset = service.logisticsDetailsPerAsset || {};
+    for (const assetId of service.assetIds!) {
+      const d = perAsset[assetId];
+      if (!d?.logisticsDestination) {
+        throw new Error(
+          `Logistics service: each asset must have a destination. Missing for asset ${assetId}`
+        );
+      }
+      if (usePerAssetDates && (!d.desirablePickupDate || !d.desirableDeliveryDate)) {
+        throw new Error(
+          `Logistics service: each asset must have pickup and delivery date when not using same details. Missing for asset ${assetId}`
+        );
+      }
+    }
+    if (sameDetailsForAllAssets) {
+      if (!service.desirablePickupDate || !service.desirableDeliveryDate) {
+        throw new Error("Logistics service requires desirablePickupDate and desirableDeliveryDate when using same details for all assets");
+      }
+    }
+
+    logisticsProducts = selectedLogisticsAssets.map((asset) => {
+      const brand =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Brand" ||
+            attr.key === "brand" ||
+            String(attr.key).toLowerCase() === "brand"
+        )?.value || "";
+      const model =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Model" ||
+            attr.key === "model" ||
+            String(attr.key).toLowerCase() === "model"
+        )?.value || "";
+
+      let location = "";
+      let assignedTo = "";
+      let rawCountryCode: string | null = null;
+
+      if (asset.assignedMember || asset.assignedEmail) {
+        location = asset.location || "Employee";
+        assignedTo = asset.assignedMember || asset.assignedEmail || "";
+        const memberEmail = asset.assignedEmail || asset.assignedMember;
+        if (memberEmail && membersMap) {
+          const member = membersMap.get(memberEmail.toLowerCase());
+          if (member?.country && member.country.trim() !== "") {
+            rawCountryCode = member.country;
+          }
+        }
+        if (!rawCountryCode) {
+          rawCountryCode = asset.countryCode || asset.country || null;
+        }
+      } else if (asset.location === "Our office") {
+        location = "Our office";
+        assignedTo = asset.office?.officeName || asset.officeName || "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location === "FP warehouse") {
+        location = "FP warehouse";
+        assignedTo = asset.officeName || asset.office?.officeName || "";
+        rawCountryCode =
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      } else if (asset.location) {
+        location = asset.location;
+        assignedTo = "";
+        rawCountryCode =
+          asset.office?.officeCountryCode ||
+          asset.fpWarehouse?.warehouseCountryCode ||
+          asset.countryCode ||
+          asset.country ||
+          null;
+      }
+
+      const countryCode = normalizeCountryCode(rawCountryCode);
+      if (!countryCode || countryCode.trim() === "") {
+        throw new Error(
+          `Logistics asset countryCode is required but not found. Asset ID: ${asset._id}`
+        );
+      }
+
+      const productSnapshotLogistics: any = {
+        category: asset.category || "Computer",
+        name: asset.name || asset.category || "Asset",
+        brand: brand || "",
+        model: model || "",
+        serialNumber: asset.serialNumber || "",
+        location: location || "",
+        assignedTo: assignedTo || "",
+        countryCode: countryCode,
+      };
+      if (asset.assignedEmail) {
+        productSnapshotLogistics.assignedEmail = asset.assignedEmail;
+      }
+      if (asset.assignedMember && !asset.assignedEmail) {
+        productSnapshotLogistics.assignedEmail = asset.assignedMember;
+      }
+
+      const d = perAsset[asset._id];
+      const productDestination = buildDestinationPayload(d!.logisticsDestination!, countryCode);
+      let desirablePickupDate = usePerAssetDates ? d!.desirablePickupDate : service.desirablePickupDate;
+      let desirableDeliveryDate = usePerAssetDates ? d!.desirableDeliveryDate : service.desirableDeliveryDate;
+      // Formato YYYY-MM-DD requerido por el schema
+      if (desirablePickupDate?.includes("T")) {
+        desirablePickupDate = desirablePickupDate.split("T")[0];
+      }
+      if (desirableDeliveryDate?.includes("T")) {
+        desirableDeliveryDate = desirableDeliveryDate.split("T")[0];
+      }
+
+      const product: any = {
+        productId: asset._id,
+        productSnapshot: removeUndefinedFields(productSnapshotLogistics),
+        destination: productDestination,
+      };
+      if (desirablePickupDate) product.desirablePickupDate = desirablePickupDate;
+      if (desirableDeliveryDate) product.desirableDeliveryDate = desirableDeliveryDate;
+      return product;
+    });
+
+    const logisticsService: any = {
+      serviceCategory: serviceCategory,
+      products: logisticsProducts,
+    };
+    if (service.additionalDetails && service.additionalDetails.trim() !== "") {
+      logisticsService.additionalDetails = service.additionalDetails;
+    }
+
+    return removeUndefinedFields(logisticsService) as NonNullable<
+      QuoteRequestPayload["services"]
+    >[0];
+  }
+
+  // Para Offboarding - payload: serviceCategory "Offboarding", originMember, isSensitiveSituation, employeeKnows, desirablePickupDate, products[], additionalDetails
+  if (isOffboarding) {
+    if (!service.memberId) {
+      throw new Error("Offboarding service requires memberId (origin member)");
+    }
+    if (!service.assetIds || service.assetIds.length === 0) {
+      throw new Error("Offboarding service requires at least one asset (assetIds)");
+    }
+    if (!assetsMap) {
+      throw new Error("Offboarding service requires assetsMap to build products");
+    }
+    const originMemberFromMap = membersMapById?.get(service.memberId);
+    if (!originMemberFromMap) {
+      throw new Error(
+        "Offboarding service: origin member not found in membersMapById. Ensure members are loaded and passed by id."
+      );
+    }
+    const countryCodeOrigin = normalizeCountryCode(
+      originMemberFromMap.countryCode || originMemberFromMap.country || ""
+    );
+    const originMember = {
+      memberId: service.memberId,
+      firstName: originMemberFromMap.firstName || "",
+      lastName: originMemberFromMap.lastName || "",
+      email: originMemberFromMap.email || "",
+      countryCode: countryCodeOrigin || "",
+    };
+
+    const selectedOffboardingAssets = service.assetIds
+      .map((assetId) => assetsMap!.get(assetId))
+      .filter((a) => a !== undefined);
+
+    if (selectedOffboardingAssets.length === 0) {
+      throw new Error(
+        "Offboarding service: no valid assets found in assetsMap"
+      );
+    }
+
+    validateAssetsCountryCode(selectedOffboardingAssets, membersMap);
+
+    const perAsset = service.offboardingDetailsPerAsset || {};
+    const offboardingProducts = selectedOffboardingAssets.map((asset) => {
+      const brand =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Brand" ||
+            attr.key === "brand" ||
+            String(attr.key).toLowerCase() === "brand"
+        )?.value || "";
+      const model =
+        asset.attributes?.find(
+          (attr: any) =>
+            attr.key === "Model" ||
+            attr.key === "model" ||
+            String(attr.key).toLowerCase() === "model"
+        )?.value || "";
+      let location = "";
+      let assignedTo = "";
+      if (asset.assignedMember || asset.assignedEmail) {
+        location = asset.location || "Employee";
+        assignedTo = asset.assignedMember || asset.assignedEmail || "";
+      } else if (asset.location === "Our office") {
+        location = "Our office";
+        assignedTo = asset.officeName || asset.office?.officeName || "";
+      } else if (asset.location === "FP warehouse") {
+        location = "FP warehouse";
+        assignedTo = "FP warehouse";
+      } else if (asset.location) {
+        location = asset.location;
+        assignedTo = "";
+      }
+      const rawCountryCode =
+        asset.office?.officeCountryCode ||
+        asset.countryCode ||
+        asset.country ||
+        (assignedTo && membersMap
+          ? (membersMap.get((asset.assignedEmail || asset.assignedMember || "").toLowerCase()) as any)?.country
+          : null);
+      const countryCode = normalizeCountryCode(rawCountryCode) || "";
+
+      const productSnapshot: any = {
+        category: asset.category || "Other",
+        brand: brand || "",
+        model: model || "",
+        serialNumber: asset.serialNumber || "",
+        location: location || "Employee",
+        assignedTo: assignedTo || "",
+        assignedEmail: asset.assignedEmail || assignedTo || "",
+        countryCode: countryCode,
+      };
+
+      const dest = perAsset[asset._id]?.logisticsDestination;
+      if (!dest) {
+        throw new Error(
+          `Offboarding service: destination is required for asset ${asset._id}`
+        );
+      }
+
+      const destination =
+        dest.type === "Office"
+          ? {
+              type: "Office" as const,
+              officeId: dest.officeId || "",
+              officeName: dest.officeName || "",
+              countryCode: dest.countryCode || "",
+            }
+          : dest.type === "Member"
+          ? {
+              type: "Member" as const,
+              memberId: dest.memberId || "",
+              assignedMember: dest.assignedMember || "",
+              assignedEmail: dest.assignedEmail || "",
+              countryCode: dest.countryCode || "",
+            }
+          : dest.type === "Warehouse"
+          ? {
+              type: "Warehouse" as const,
+              warehouseId: dest.warehouseId || "fp-warehouse",
+              warehouseName: dest.warehouseName || "FP warehouse",
+              countryCode: dest.countryCode || countryCode || originMember.countryCode || "",
+            }
+          : undefined;
+
+      if (!destination) {
+        throw new Error(
+          `Offboarding service: invalid destination type for asset ${asset._id}`
+        );
+      }
+
+      const detail = perAsset[asset._id];
+      let desirableDeliveryDate = detail?.desirableDeliveryDate;
+      if (desirableDeliveryDate?.includes("T")) {
+        desirableDeliveryDate = desirableDeliveryDate.split("T")[0];
+      }
+
+      const product: any = {
+        productId: asset._id,
+        productSnapshot: removeUndefinedFields(productSnapshot),
+        destination,
+      };
+      if (desirableDeliveryDate) {
+        product.desirableDeliveryDate = desirableDeliveryDate;
+      }
+
+      return product;
+    });
+
+    offboardingPayload = {
+      serviceCategory: "Offboarding",
+      originMember,
+      isSensitiveSituation: service.offboardingSensitiveSituation ?? false,
+      employeeKnows: service.offboardingEmployeeAware ?? true,
+      desirablePickupDate: service.offboardingPickupDate
+        ? (service.offboardingPickupDate.includes("T")
+            ? service.offboardingPickupDate.split("T")[0]
+            : service.offboardingPickupDate)
+        : undefined,
+      products: offboardingProducts,
+    };
+    if (service.additionalComments && service.additionalComments.trim() !== "") {
+      offboardingPayload.additionalDetails = service.additionalComments;
+    }
+    if (!offboardingPayload.desirablePickupDate) {
+      throw new Error("Offboarding service requires offboardingPickupDate");
+    }
+    return removeUndefinedFields(offboardingPayload) as NonNullable<
+      QuoteRequestPayload["services"]
+    >[0];
   }
 
   // Para Destruction and Recycling - payload: serviceCategory, products[], requiresCertificate, comments

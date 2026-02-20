@@ -11,6 +11,8 @@ import {
   Sparkles,
   Gift,
   Package,
+  Truck,
+  UserMinus,
 } from "lucide-react";
 import {
   Badge,
@@ -21,6 +23,10 @@ import {
   DialogTitle,
   Button,
   CountryFlag,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/shared";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { useQuoteStore } from "../../store/quote.store";
@@ -31,6 +37,7 @@ import {
   ProductTable,
   CategoryIcons,
 } from "@/features/assets";
+import { useFetchMembers } from "@/features/members";
 import { cn } from "@/shared";
 
 const issueTypesMap: Record<string, string> = {
@@ -64,6 +71,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
 }) => {
   const { removeService } = useQuoteStore();
   const { data: assetsData } = useGetTableAssets();
+  const { data: membersData } = useFetchMembers();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
 
   const handleDelete = () => {
@@ -82,6 +90,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       donations: "Donations",
       storage: "Storage",
       "destruction-recycling": "Destruction & Recycling",
+      logistics: "Logistics",
+      offboarding: "Offboarding",
     };
     return serviceTypeMap[serviceType] || serviceType;
   };
@@ -118,83 +128,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
     return assets;
   }, [service.assetIds, assetsData]);
 
-  // Función para determinar el OS de un dispositivo
-  const getDeviceOS = (asset: Product): "Mac" | "Windows" | "Ubuntu" => {
-    const brand =
-      asset.attributes
-        ?.find((attr) => String(attr.key).toLowerCase() === "brand")
-        ?.value?.toLowerCase() || "";
-    const model =
-      asset.attributes
-        ?.find((attr) => String(attr.key).toLowerCase() === "model")
-        ?.value?.toLowerCase() || "";
-    const name = (asset.name || "").toLowerCase();
-
-    // Detectar Mac
-    if (
-      brand.includes("apple") ||
-      brand.includes("mac") ||
-      model.includes("macbook") ||
-      model.includes("imac") ||
-      name.includes("mac")
-    ) {
-      return "Mac";
-    }
-
-    // Detectar Ubuntu/Linux
-    if (
-      brand.includes("ubuntu") ||
-      model.includes("ubuntu") ||
-      name.includes("ubuntu") ||
-      name.includes("linux")
-    ) {
-      return "Ubuntu";
-    }
-
-    // Por defecto, Windows
-    return "Windows";
-  };
-
-  // Contar dispositivos por tipo (Mac/Windows/Ubuntu) para Enrollment
-  const deviceCounts = React.useMemo(() => {
-    if (selectedAssets.length === 0) return { mac: 0, windows: 0, ubuntu: 0 };
-    let mac = 0;
-    let windows = 0;
-    let ubuntu = 0;
-    selectedAssets.forEach((asset) => {
-      const os = getDeviceOS(asset);
-      if (os === "Mac") mac++;
-      else if (os === "Ubuntu") ubuntu++;
-      else windows++;
-    });
-    return { mac, windows, ubuntu };
-  }, [selectedAssets]);
-
-  // Obtener nombre y especificaciones del asset
+  // Formato unificado: Brand Model Name
   const getAssetDisplayInfo = (product: Product) => {
-    const brand = product.attributes?.find(
-      (attr) => String(attr.key).toLowerCase() === "brand"
-    )?.value;
-    const model = product.attributes?.find(
-      (attr) => String(attr.key).toLowerCase() === "model"
-    )?.value;
-
-    // DisplayName es el brand (o el nombre del producto si no hay brand)
-    let displayName = brand || product.name || "";
-
-    // Specifications solo incluyen el model (sin el brand)
-    let specifications = "";
-    if (model) {
-      specifications = model;
-    } else if (!brand) {
-      // Si no hay brand ni model, usar el nombre del producto
-      specifications = product.name || "";
-    }
-
-    return { displayName, specifications };
-  };
-
-  const getDonationAssetTitle = (product: Product) => {
     const brand =
       product.attributes?.find(
         (attr) => String(attr.key).toLowerCase() === "brand"
@@ -203,87 +138,111 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
       product.attributes?.find(
         (attr) => String(attr.key).toLowerCase() === "model"
       )?.value || "";
-    const name = (product.name || "").trim();
-    const hasName = name.length > 0;
-    const base = [brand, model].filter(Boolean).join(" ").trim();
 
-    if (base) return hasName ? `${base} ${name}`.trim() : base;
-    if (hasName) return name;
-    return product.category || "Asset";
+    const parts: string[] = [];
+    if (brand) parts.push(brand);
+    if (model && model !== "Other") parts.push(model);
+    else if (model === "Other") parts.push("Other");
+
+    let displayName = "";
+    if (parts.length > 0) {
+      displayName = product.name
+        ? `${parts.join(" ")} ${product.name}`.trim()
+        : parts.join(" ");
+    } else {
+      displayName = product.name || product.category || "Asset";
+    }
+
+    return { displayName };
   };
 
-  // Obtener información de asignación
+  // Asignación unificada: country + assignedTo (Location: Flag País Assigned to X)
   const getAssignmentInfo = (product: Product) => {
-    // Si está asignado a un empleado
+    const country =
+      product.office?.officeCountryCode ||
+      product.country ||
+      product.countryCode ||
+      "";
+
     if (product.assignedMember || product.assignedEmail) {
-      const member = String(
-        product.assignedMember || product.assignedEmail || "Unassigned"
-      );
-      const location = String(product.location || product.officeName || "");
-      const country =
-        product.country ||
-        product.countryCode ||
-        product.office?.officeCountryCode ||
-        "";
-
       return {
-        type: "employee" as const,
-        member: member,
-        location: location ? `${location}` : "",
         country,
+        assignedTo:
+          product.assignedMember || product.assignedEmail || "Unassigned",
       };
     }
-
-    // Si está en una oficina
     if (product.location === "Our office") {
-      const officeName = String(
-        product.office?.officeName || product.officeName || "Our office"
-      );
-      const country =
-        product.office?.officeCountryCode ||
-        product.country ||
-        product.countryCode ||
-        "";
-
-      return {
-        type: "office" as const,
-        officeName,
-        country,
-      };
+      const officeName =
+        product.office?.officeName || product.officeName || "Our office";
+      return { country, assignedTo: `Office ${officeName}` };
     }
-
-    // Si está en FP warehouse
     if (product.location === "FP warehouse") {
-      const country =
-        product.country ||
-        product.countryCode ||
-        product.office?.officeCountryCode ||
-        "";
-
-      return {
-        type: "warehouse" as const,
-        country,
-      };
+      return { country, assignedTo: "FP Warehouse" };
     }
-
-    // Si tiene location pero no coincide con los casos anteriores
     if (product.location) {
-      return {
-        type: "other" as const,
-        location: String(product.location),
-      };
+      return { country, assignedTo: product.location };
     }
-
     return null;
   };
 
-  const assetDisplayInfo = selectedAsset
-    ? getAssetDisplayInfo(selectedAsset)
-    : null;
+  // Card unificada: Brand Model Name, SN:, Location: Flag País + office/member/FP Warehouse
+  const renderUnifiedAssetCard = (
+    asset: Product,
+    extraContent?: React.ReactNode
+  ) => {
+    const displayInfo = getAssetDisplayInfo(asset);
+    const assignment = getAssignmentInfo(asset);
+    const countryName = assignment?.country
+      ? countriesByCode[assignment.country] || assignment.country
+      : "";
 
-  const assignmentInfo = selectedAsset
-    ? getAssignmentInfo(selectedAsset)
-    : null;
+    return (
+      <li
+        key={asset._id}
+        className="flex items-start gap-3 bg-gray-50 p-3 border border-gray-200 rounded-lg"
+      >
+        <div className="flex-shrink-0 mt-0.5">
+          <CategoryIcons products={[asset]} />
+        </div>
+        <div className="flex flex-col flex-1 gap-1 min-w-0">
+          <div className="font-semibold text-gray-900 text-sm truncate">
+            {displayInfo.displayName}
+          </div>
+          {asset.serialNumber && (
+            <div className="text-gray-600 text-xs">
+              <span className="font-medium">SN:</span> {asset.serialNumber}
+            </div>
+          )}
+          {assignment && (
+            <div className="flex flex-wrap items-center gap-1 text-gray-600 text-xs">
+              <span className="font-medium">Location:</span>
+              {assignment.country && (
+                <TooltipProvider>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex">
+                        <CountryFlag
+                          countryName={assignment.country}
+                          size={18}
+                        />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-blue/80 text-white text-xs">
+                      {countryName}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {assignment.assignedTo && (
+                <span>{assignment.assignedTo}</span>
+              )}
+            </div>
+          )}
+          {extraContent}
+        </div>
+      </li>
+    );
+  };
 
   // Obtener los labels de los issue types seleccionados
   const selectedIssueTypeLabels = React.useMemo(() => {
@@ -300,7 +259,10 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
     <div className="relative p-4 border border-grey rounded-lg">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge
+          variant="outline"
+          className="flex items-center gap-1 bg-emerald-100 text-emerald-700 border border-emerald-300"
+        >
           {service.serviceType === "enrollment" ? (
             <Shield className="w-3 h-3" />
           ) : service.serviceType === "buyback" ? (
@@ -315,6 +277,10 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             <Package className="w-3 h-3" />
           ) : service.serviceType === "destruction-recycling" ? (
             <Trash2 className="w-3 h-3" />
+          ) : service.serviceType === "logistics" ? (
+            <Truck className="w-3 h-3" />
+          ) : service.serviceType === "offboarding" ? (
+            <UserMinus className="w-3 h-3" />
           ) : (
             <Wrench className="w-3 h-3" />
           )}
@@ -367,7 +333,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         </span>
       </div>
 
-      {/* Enrollment: Device Counts */}
+      {/* Enrollment: Summary and Selected Devices List */}
       {service.serviceType === "enrollment" && selectedAssets.length > 0 && (
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
@@ -377,56 +343,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
               {selectedAssets.length !== 1 ? "s" : ""} to enroll
             </span>
           </div>
-          <div className="flex gap-4">
-            {deviceCounts.mac > 0 && (
-              <div className="flex items-center gap-2 bg-white p-3 border border-gray-200 rounded-lg">
-                <span className="font-bold text-2xl">{deviceCounts.mac}</span>
-                <span className="text-gray-700 text-sm">Mac</span>
-              </div>
-            )}
-            {deviceCounts.windows > 0 && (
-              <div className="flex items-center gap-2 bg-white p-3 border border-gray-200 rounded-lg">
-                <span className="font-bold text-2xl">
-                  {deviceCounts.windows}
-                </span>
-                <span className="text-gray-700 text-sm">Windows</span>
-              </div>
-            )}
-            {deviceCounts.ubuntu > 0 && (
-              <div className="flex items-center gap-2 bg-white p-3 border border-gray-200 rounded-lg">
-                <span className="font-bold text-2xl">
-                  {deviceCounts.ubuntu}
-                </span>
-                <span className="text-gray-700 text-sm">Ubuntu</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Enrollment: Selected Devices List */}
-      {service.serviceType === "enrollment" && selectedAssets.length > 0 && (
-        <div className="mb-3">
-          <div className="mb-2 font-medium text-sm">Selected devices:</div>
-          <ul className="space-y-1 text-gray-700 text-sm list-disc list-inside">
-            {selectedAssets.map((asset) => {
-              const displayInfo = getAssetDisplayInfo(asset);
-              const assignment = getAssignmentInfo(asset);
-              const memberName =
-                assignment?.type === "employee"
-                  ? assignment.member
-                  : assignment?.type === "office"
-                  ? assignment.officeName
-                  : "";
-              return (
-                <li key={asset._id}>
-                  {displayInfo?.displayName || asset.name || "Device"}
-                  {displayInfo?.specifications &&
-                    ` - ${displayInfo.specifications}`}
-                  {memberName && ` - ${memberName}`}
-                </li>
-              );
-            })}
+          <ul className="flex flex-col gap-3 pl-0 list-none">
+            {selectedAssets.map((asset) => renderUnifiedAssetCard(asset))}
           </ul>
         </div>
       )}
@@ -448,77 +366,58 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} to sell
           </div>
-          <ul className="space-y-2 pl-5 text-gray-700 text-sm list-disc">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => {
-              const displayInfo = getAssetDisplayInfo(asset);
-              const assignment = getAssignmentInfo(asset);
-              const memberName =
-                assignment?.type === "employee"
-                  ? assignment.member
-                  : assignment?.type === "office"
-                  ? assignment.officeName
-                  : "";
               const buybackDetail = service.buybackDetails?.[asset._id];
-              return (
-                <li key={asset._id}>
-                  <div className="font-medium">
-                    {displayInfo?.displayName || asset.name || "Asset"}
-                    {displayInfo?.specifications &&
-                      ` - ${displayInfo.specifications}`}
-                    {memberName && ` - ${memberName}`}
-                  </div>
-                  {buybackDetail && (
-                    <div className="space-y-1 mt-1 text-gray-600 text-xs">
-                      {buybackDetail.generalFunctionality && (
-                        <div>
-                          <span className="font-medium">
-                            Overall condition:{" "}
+              return renderUnifiedAssetCard(
+                asset,
+                buybackDetail && (
+                  <div className="space-y-1 mt-1 text-gray-600 text-xs">
+                    {buybackDetail.generalFunctionality && (
+                      <div>
+                        <span className="font-medium">Overall condition: </span>
+                        {buybackDetail.generalFunctionality}
+                      </div>
+                    )}
+                    {buybackDetail.batteryCycles !== undefined && (
+                      <div>
+                        <span className="font-medium">Battery cycles: </span>
+                        {buybackDetail.batteryCycles}
+                      </div>
+                    )}
+                    {buybackDetail.aestheticDetails && (
+                      <div>
+                        <span className="font-medium">
+                          Cosmetic condition:{" "}
+                        </span>
+                        {buybackDetail.aestheticDetails}
+                      </div>
+                    )}
+                    <div>
+                      <span className="font-medium">Has charger: </span>
+                      {buybackDetail.hasCharger !== false ? "Yes" : "No"}
+                      {buybackDetail.hasCharger !== false &&
+                        buybackDetail.chargerWorks !== undefined && (
+                          <span>
+                            {" "}
+                            (
+                            {buybackDetail.chargerWorks
+                              ? "Works"
+                              : "Doesn't work"}
+                            )
                           </span>
-                          {buybackDetail.generalFunctionality}
-                        </div>
-                      )}
-                      {buybackDetail.batteryCycles !== undefined && (
-                        <div>
-                          <span className="font-medium">Battery cycles: </span>
-                          {buybackDetail.batteryCycles}
-                        </div>
-                      )}
-                      {buybackDetail.aestheticDetails && (
-                        <div>
-                          <span className="font-medium">
-                            Cosmetic condition:{" "}
-                          </span>
-                          {buybackDetail.aestheticDetails}
-                        </div>
-                      )}
-                      {buybackDetail.hasCharger !== undefined && (
-                        <div>
-                          <span className="font-medium">Has charger: </span>
-                          {buybackDetail.hasCharger ? "Yes" : "No"}
-                          {buybackDetail.hasCharger &&
-                            buybackDetail.chargerWorks !== undefined && (
-                              <span>
-                                {" "}
-                                (
-                                {buybackDetail.chargerWorks
-                                  ? "Works"
-                                  : "Doesn't work"}
-                                )
-                              </span>
-                            )}
-                        </div>
-                      )}
-                      {buybackDetail.additionalComments && (
-                        <div>
-                          <span className="font-medium">
-                            Additional comments:{" "}
-                          </span>
-                          {buybackDetail.additionalComments}
-                        </div>
-                      )}
+                        )}
                     </div>
-                  )}
-                </li>
+                    {buybackDetail.additionalComments && (
+                      <div>
+                        <span className="font-medium">
+                          Additional details:{" "}
+                        </span>
+                        {buybackDetail.additionalComments}
+                      </div>
+                    )}
+                  </div>
+                )
               );
             })}
           </ul>
@@ -540,86 +439,78 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} to wipe
           </div>
-          <ul className="space-y-3 pl-5 text-gray-700 text-sm list-disc">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => {
-              const displayInfo = getAssetDisplayInfo(asset);
-              const assignment = getAssignmentInfo(asset);
-              const memberName =
-                assignment?.type === "employee"
-                  ? assignment.member
-                  : assignment?.type === "office"
-                  ? assignment.officeName
-                  : "";
               const dataWipeDetail = service.dataWipeDetails?.[asset._id];
-
-              // Formatear fecha deseable - parsea YYYY-MM-DD directamente sin problemas de zona horaria
               const formatDate = (dateString?: string) => {
                 if (!dateString) return null;
                 try {
-                  // Parsear el string YYYY-MM-DD directamente para evitar problemas de zona horaria
                   const dateMatch = dateString.match(
                     /^(\d{4})-(\d{2})-(\d{2})/
                   );
                   if (!dateMatch) return dateString;
-
                   const [, year, month, day] = dateMatch;
-
-                  // Formatear como dd/MM/yyyy para coincidir con el formato del formulario
                   return `${day}/${month}/${year}`;
                 } catch {
                   return dateString;
                 }
               };
-
-              return (
-                <li key={asset._id}>
-                  <div className="mb-1 font-medium">
-                    {displayInfo?.displayName || asset.name || "Asset"}
-                    {displayInfo?.specifications &&
-                      ` - ${displayInfo.specifications}`}
-                    {asset.serialNumber && ` • SN: ${asset.serialNumber}`}
-                    {memberName && ` • ${memberName}`}
+              const dest = dataWipeDetail?.destination;
+              const destCountry =
+                dest?.member?.countryCode ||
+                dest?.office?.countryCode ||
+                dest?.warehouse?.countryCode;
+              const destLabel = dest
+                ? dest.destinationType === "Member" && dest.member
+                  ? dest.member.assignedMember ||
+                    dest.member.assignedEmail ||
+                    ""
+                  : dest.destinationType === "Office" && dest.office
+                    ? `Office ${dest.office.officeName || ""}`.trim()
+                    : dest.destinationType === "FP warehouse"
+                      ? "FP Warehouse"
+                      : ""
+                : "";
+              return renderUnifiedAssetCard(
+                asset,
+                dataWipeDetail && (
+                  <div className="space-y-1 mt-2 text-gray-600 text-xs">
+                    {dataWipeDetail.destination && (
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="font-medium">
+                          Return destination:{" "}
+                        </span>
+                        {destCountry && (
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={destCountry}
+                                    size={18}
+                                    className="rounded-sm"
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {(countriesByCode as Record<string, string>)[destCountry] || destCountry}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        <span>{destLabel}</span>
+                      </div>
+                    )}
+                    {dataWipeDetail.desirableDate && (
+                      <div>
+                        <span className="font-medium">
+                          Desirable delivery date:{" "}
+                        </span>
+                        {formatDate(dataWipeDetail.desirableDate)}
+                      </div>
+                    )}
                   </div>
-                  {dataWipeDetail && (
-                    <div className="space-y-1 mt-2 text-gray-600 text-xs">
-                      {dataWipeDetail.desirableDate && (
-                        <div>
-                          <span className="font-medium">Desirable date: </span>
-                          {formatDate(dataWipeDetail.desirableDate)}
-                        </div>
-                      )}
-                      {dataWipeDetail.destination && (
-                        <div>
-                          <span className="font-medium">
-                            Return destination:{" "}
-                          </span>
-                          {dataWipeDetail.destination.destinationType ===
-                            "Member" &&
-                            dataWipeDetail.destination.member && (
-                              <span>
-                                {
-                                  dataWipeDetail.destination.member
-                                    .assignedMember
-                                }
-                                {dataWipeDetail.destination.member
-                                  .assignedEmail &&
-                                  ` (${dataWipeDetail.destination.member.assignedEmail})`}
-                              </span>
-                            )}
-                          {dataWipeDetail.destination.destinationType ===
-                            "Office" &&
-                            dataWipeDetail.destination.office && (
-                              <span>
-                                {dataWipeDetail.destination.office.officeName}
-                              </span>
-                            )}
-                          {dataWipeDetail.destination.destinationType ===
-                            "FP warehouse" && <span>FP warehouse</span>}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </li>
+                )
               );
             })}
           </ul>
@@ -643,18 +534,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} to clean
           </div>
-          <ul className="space-y-1 pl-5 text-gray-700 text-sm list-disc">
-            {selectedAssets.map((asset) => {
-              const displayInfo = getAssetDisplayInfo(asset);
-              return (
-                <li key={asset._id}>
-                  {displayInfo?.displayName || asset.name || "Asset"}
-                  {displayInfo?.specifications &&
-                    ` - ${displayInfo.specifications}`}
-                  <span className="text-gray-500"> ({asset.category})</span>
-                </li>
-              );
-            })}
+          <ul className="flex flex-col gap-3 pl-0 list-none">
+            {selectedAssets.map((asset) => renderUnifiedAssetCard(asset))}
           </ul>
         </div>
       )}
@@ -699,91 +580,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} to donate
           </div>
-          <ul className="flex flex-col gap-3">
-            {selectedAssets.map((asset) => {
-              const title = getDonationAssetTitle(asset);
-              const assignment = getAssignmentInfo(asset);
-              const countryCode =
-                assignment && "country" in assignment ? assignment.country : "";
-              const countryName = countryCode
-                ? countriesByCode[countryCode] || countryCode
-                : "";
-              const assignedToLabel =
-                assignment?.type === "employee"
-                  ? assignment.member
-                  : assignment?.type === "office"
-                  ? assignment.officeName
-                  : assignment?.type === "warehouse"
-                  ? "FP warehouse"
-                  : "";
-              return (
-                <li
-                  key={asset._id}
-                  className="flex items-start gap-3 bg-gray-50 p-3 border border-gray-200 rounded-lg"
-                >
-                  <div className="flex-shrink-0 mt-0.5">
-                    <CategoryIcons products={[asset]} />
-                  </div>
-
-                  <div className="flex flex-col gap-1 min-w-0">
-                    <div className="font-semibold text-gray-900 text-sm truncate">
-                      {title}
-                    </div>
-
-                    {asset.serialNumber && (
-                      <div className="text-gray-600 text-xs">
-                        <span className="font-medium">SN:</span>{" "}
-                        {asset.serialNumber}
-                      </div>
-                    )}
-
-                    {assignment && (
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 text-xs">
-                        <span>
-                          <span className="font-medium">Location:</span>{" "}
-                          {assignment.location}
-                        </span>
-
-                        {countryCode ? (
-                          <span className="flex items-center gap-1">
-                            <CountryFlag countryName={countryCode} size={14} />
-                            <span className="truncate">
-                              {countryName}
-                              {assignedToLabel ? ` - ${assignedToLabel}` : ""}
-                            </span>
-                          </span>
-                        ) : (
-                          assignedToLabel && (
-                            <span className="truncate">{assignedToLabel}</span>
-                          )
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-
-      {/* Donations: Preparation options */}
-      {service.serviceType === "donations" && (
-        <div className="mb-3 text-sm">
-          <div className="mb-1 font-medium text-sm">Preparation options:</div>
-          <ul className="space-y-1 text-gray-700 text-sm list-disc list-inside">
-            <li>
-              Data wipe:{" "}
-              <span className="font-medium">
-                {service.donationDataWipe ? "Yes" : "No"}
-              </span>
-            </li>
-            <li>
-              Professional cleaning:{" "}
-              <span className="font-medium">
-                {service.donationProfessionalCleaning ? "Yes" : "No"}
-              </span>
-            </li>
+          <ul className="flex flex-col gap-3 pl-0 list-none">
+            {selectedAssets.map((asset) => renderUnifiedAssetCard(asset))}
           </ul>
         </div>
       )}
@@ -798,7 +596,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
         </div>
       )}
 
-      {/* Destruction & Recycling: Selected Assets (same card layout as Storage) */}
+      {/* Destruction & Recycling: Selected Assets */}
       {service.serviceType === "destruction-recycling" &&
         selectedAssets.length > 0 && (
           <div className="mb-3">
@@ -806,77 +604,8 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
               {selectedAssets.length} asset
               {selectedAssets.length !== 1 ? "s" : ""} for destruction
             </div>
-            <ul className="flex flex-col gap-3">
-              {selectedAssets.map((asset) => {
-                const title = getDonationAssetTitle(asset);
-                const assignment = getAssignmentInfo(asset);
-                const countryCode =
-                  assignment && "country" in assignment
-                    ? assignment.country
-                    : "";
-                const countryName = countryCode
-                  ? countriesByCode[countryCode] || countryCode
-                  : "";
-                const assignedToLabel =
-                  assignment?.type === "employee"
-                    ? assignment.member
-                    : assignment?.type === "office"
-                      ? assignment.officeName
-                      : assignment?.type === "warehouse"
-                        ? "FP warehouse"
-                        : "";
-                return (
-                  <li
-                    key={asset._id}
-                    className="flex items-start gap-3 bg-gray-50 p-3 border border-gray-200 rounded-lg"
-                  >
-                    <div className="flex-shrink-0 mt-0.5">
-                      <CategoryIcons products={[asset]} />
-                    </div>
-                    <div className="flex flex-col gap-1 min-w-0">
-                      <div className="font-semibold text-gray-900 text-sm truncate">
-                        {title}
-                      </div>
-                      {asset.serialNumber && (
-                        <div className="text-gray-600 text-xs">
-                          <span className="font-medium">SN:</span>{" "}
-                          {asset.serialNumber}
-                        </div>
-                      )}
-                      {assignment && (
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 text-xs">
-                          <span>
-                            <span className="font-medium">Location:</span>{" "}
-                            {"location" in assignment
-                              ? assignment.location
-                              : ""}
-                          </span>
-                          {countryCode ? (
-                            <span className="flex items-center gap-1">
-                              <CountryFlag
-                                countryName={countryCode}
-                                size={14}
-                              />
-                              <span className="truncate">
-                                {countryName}
-                                {assignedToLabel
-                                  ? ` - ${assignedToLabel}`
-                                  : ""}
-                              </span>
-                            </span>
-                          ) : (
-                            assignedToLabel && (
-                              <span className="truncate">
-                                {assignedToLabel}
-                              </span>
-                            )
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
+            <ul className="flex flex-col gap-3 pl-0 list-none">
+              {selectedAssets.map((asset) => renderUnifiedAssetCard(asset))}
             </ul>
             {service.requiresCertificate !== undefined && (
               <div className="mt-2 text-gray-700 text-sm">
@@ -888,7 +617,7 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             )}
             {service.comments && service.comments.trim() !== "" && (
               <div className="mt-2 text-gray-700 text-sm">
-                <span className="font-medium">Comments: </span>
+                <span className="font-medium">Additional details: </span>
                 {service.comments}
               </div>
             )}
@@ -901,170 +630,272 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
             {selectedAssets.length} asset
             {selectedAssets.length !== 1 ? "s" : ""} for storage
           </div>
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-3 pl-0 list-none">
             {selectedAssets.map((asset) => {
-              const title = getDonationAssetTitle(asset);
-              const assignment = getAssignmentInfo(asset);
               const storageDetail = service.storageDetails?.[asset._id];
-              const countryCode =
-                assignment && "country" in assignment ? assignment.country : "";
-              const countryName = countryCode
-                ? countriesByCode[countryCode] || countryCode
-                : "";
-              const assignedToLabel =
-                assignment?.type === "employee"
-                  ? assignment.member
-                  : assignment?.type === "office"
-                  ? assignment.officeName
-                  : assignment?.type === "warehouse"
-                  ? "FP warehouse"
-                  : "";
-              return (
-                <li
-                  key={asset._id}
-                  className="flex items-start gap-3 bg-gray-50 p-3 border border-gray-200 rounded-lg"
-                >
-                  <div className="flex-shrink-0 mt-0.5">
-                    <CategoryIcons products={[asset]} />
-                  </div>
-                  <div className="flex flex-col gap-1 min-w-0">
-                    <div className="font-semibold text-gray-900 text-sm truncate">
-                      {title}
-                    </div>
-                    {asset.serialNumber && (
-                      <div className="text-gray-600 text-xs">
-                        <span className="font-medium">SN:</span>{" "}
-                        {asset.serialNumber}
+              return renderUnifiedAssetCard(
+                asset,
+                (storageDetail?.approximateSize ||
+                  storageDetail?.approximateWeight ||
+                  storageDetail?.approximateStorageDays ||
+                  storageDetail?.additionalComments) && (
+                  <div className="space-y-0.5 mt-1 text-gray-600 text-xs">
+                    {storageDetail?.approximateSize && (
+                      <div>Size: {storageDetail.approximateSize}</div>
+                    )}
+                    {storageDetail?.approximateWeight && (
+                      <div>Weight: {storageDetail.approximateWeight}</div>
+                    )}
+                    {storageDetail?.approximateStorageDays && (
+                      <div>
+                        Duration: {storageDetail.approximateStorageDays}
                       </div>
                     )}
-                    {assignment && (
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-600 text-xs">
-                        <span>
-                          <span className="font-medium">Location:</span>{" "}
-                          {assignment.location}
+                    {storageDetail?.additionalComments && (
+                      <div>
+                        <span className="font-medium">
+                          Additional details:{" "}
                         </span>
-                        {countryCode ? (
-                          <span className="flex items-center gap-1">
-                            <CountryFlag countryName={countryCode} size={14} />
-                            <span className="truncate">
-                              {countryName}
-                              {assignedToLabel ? ` - ${assignedToLabel}` : ""}
-                            </span>
-                          </span>
-                        ) : (
-                          assignedToLabel && (
-                            <span className="truncate">{assignedToLabel}</span>
-                          )
-                        )}
-                      </div>
-                    )}
-                    {(storageDetail?.approximateSize ||
-                      storageDetail?.approximateWeight ||
-                      storageDetail?.approximateStorageDays ||
-                      storageDetail?.additionalComments) && (
-                      <div className="space-y-0.5 mt-1 text-gray-600 text-xs">
-                        {storageDetail.approximateSize && (
-                          <div>Size: {storageDetail.approximateSize}</div>
-                        )}
-                        {storageDetail.approximateWeight && (
-                          <div>Weight: {storageDetail.approximateWeight}</div>
-                        )}
-                        {storageDetail.approximateStorageDays && (
-                          <div>
-                            Duration: {storageDetail.approximateStorageDays}
-                          </div>
-                        )}
-                        {storageDetail.additionalComments && (
-                          <div className="italic">
-                            {storageDetail.additionalComments}
-                          </div>
-                        )}
+                        {storageDetail.additionalComments}
                       </div>
                     )}
                   </div>
-                </li>
+                )
               );
             })}
           </ul>
         </div>
       )}
 
-      {/* Asset (for IT Support) */}
+      {service.serviceType === "logistics" && selectedAssets.length > 0 && (
+        <div className="mb-3">
+          <div className="mb-2 font-medium text-sm">
+            {selectedAssets.length} asset
+            {selectedAssets.length !== 1 ? "s" : ""} to ship
+          </div>
+          <ul className="flex flex-col gap-3 pl-0 list-none">
+            {selectedAssets.map((asset) => {
+              const perAsset = service.logisticsDetailsPerAsset?.[asset._id];
+              const dest =
+                perAsset?.logisticsDestination ?? service.logisticsDestination;
+              const pickupDate =
+                perAsset?.desirablePickupDate ?? service.desirablePickupDate;
+              const deliveryDate =
+                perAsset?.desirableDeliveryDate ??
+                service.desirableDeliveryDate;
+              const shippingDetails =
+                dest || pickupDate || deliveryDate ? (
+                  <div className="flex flex-col gap-0.5 mt-2 pt-2 border-gray-200 border-t text-gray-700 text-xs">
+                    {pickupDate && (
+                      <div>
+                        <span className="font-medium">Pickup: </span>
+                        {pickupDate === "ASAP"
+                          ? "ASAP"
+                          : new Date(
+                              pickupDate + "T12:00:00"
+                            ).toLocaleDateString()}
+                      </div>
+                    )}
+                    {dest && (
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">Destination: </span>
+                        {(() => {
+                          // FP Warehouse no trae countryCode en dest; usar el del origen (asset)
+                          const originAssignment = getAssignmentInfo(asset);
+                          const destCountryCode =
+                            dest.type === "Warehouse"
+                              ? originAssignment?.country || dest.countryCode
+                              : dest.countryCode;
+                          const destCountryName = destCountryCode
+                            ? (countriesByCode as Record<string, string>)[destCountryCode] || destCountryCode
+                            : "";
+                          return destCountryCode ? (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <CountryFlag
+                                      countryName={destCountryCode}
+                                      size={18}
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {destCountryName}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : null;
+                        })()}
+                        <span>
+                          {dest.type === "Office" && `Office ${dest.officeName || ""}`.trim()}
+                          {dest.type === "Member" &&
+                            (dest.assignedMember || dest.assignedEmail)}
+                          {dest.type === "Warehouse" &&
+                            (dest.warehouseName || "FP Warehouse")}
+                        </span>
+                      </div>
+                    )}
+                    {deliveryDate && (
+                      <div>
+                        <span className="font-medium">Delivery: </span>
+                        {deliveryDate === "ASAP"
+                          ? "ASAP"
+                          : new Date(
+                              deliveryDate + "T12:00:00"
+                            ).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                ) : null;
+              return renderUnifiedAssetCard(asset, shippingDetails);
+            })}
+          </ul>
+          {service.additionalDetails &&
+            service.additionalDetails.trim() !== "" && (
+              <div className="mt-2 text-gray-700 text-sm">
+                <span className="font-medium">Additional details: </span>
+                {service.additionalDetails}
+              </div>
+            )}
+        </div>
+      )}
+
+      {/* Offboarding: Summary and assets */}
+      {service.serviceType === "offboarding" &&
+        service.memberId &&
+        selectedAssets.length > 0 && (
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <UserMinus className="w-4 h-4 text-gray-600" />
+              <span className="font-medium text-sm">
+                Offboarding{" "}
+                {(() => {
+                  const members = Array.isArray(membersData) ? membersData : [];
+                  const member = members.find(
+                    (m: any) => m._id === service.memberId
+                  );
+                  return member
+                    ? `${(member as any).firstName || ""} ${(member as any).lastName || ""}`.trim() ||
+                        (member as any).email
+                    : "—";
+                })()}{" "}
+                · {selectedAssets.length} asset
+                {selectedAssets.length !== 1 ? "s" : ""} to recover
+              </span>
+            </div>
+            {service.offboardingPickupDate && (
+              <div className="mb-2 text-gray-700 text-sm">
+                <span className="font-medium">Pickup date: </span>
+                {new Date(
+                  service.offboardingPickupDate + "T12:00:00"
+                ).toLocaleDateString()}
+              </div>
+            )}
+            <ul className="flex flex-col gap-3 pl-0 list-none">
+              {selectedAssets.map((asset) => {
+                const perAsset =
+                  service.offboardingDetailsPerAsset?.[asset._id];
+                const dest = perAsset?.logisticsDestination;
+                const deliveryDate = perAsset?.desirableDeliveryDate;
+                const destLabel = dest
+                  ? dest.type === "Office"
+                    ? `Office ${dest.officeName || ""}`.trim()
+                    : dest.type === "Member"
+                      ? dest.assignedMember || dest.assignedEmail
+                      : dest.type === "Warehouse"
+                        ? "FP Warehouse"
+                        : "—"
+                  : null;
+                // FP Warehouse no trae countryCode en dest; usar el del origen (asset)
+                const originAssignment = getAssignmentInfo(asset);
+                const destCountryCode =
+                  dest?.type === "Warehouse"
+                    ? originAssignment?.country || dest?.countryCode
+                    : dest?.countryCode;
+                const destCountryName = destCountryCode
+                  ? (countriesByCode as Record<string, string>)[destCountryCode] || destCountryCode
+                  : "";
+                return renderUnifiedAssetCard(
+                  asset,
+                  (destLabel || deliveryDate) && (
+                    <div className="flex flex-col gap-0.5 mt-2 pt-2 border-gray-200 border-t text-gray-700 text-xs">
+                      {destLabel && (
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">Destination: </span>
+                          {destCountryCode && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <CountryFlag
+                                      countryName={destCountryCode}
+                                      size={18}
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {destCountryName}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <span>{destLabel}</span>
+                        </div>
+                      )}
+                      {deliveryDate && (
+                        <div>
+                          <span className="font-medium">Delivery: </span>
+                          {new Date(
+                            deliveryDate + "T12:00:00"
+                          ).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  )
+                );
+              })}
+            </ul>
+            {(service.offboardingSensitiveSituation !== undefined ||
+              service.offboardingEmployeeAware !== undefined) && (
+              <div className="space-y-0.5 mt-2 text-gray-700 text-sm">
+                {service.offboardingSensitiveSituation !== undefined && (
+                  <div>
+                    <span className="font-medium">Sensitive situation: </span>
+                    {service.offboardingSensitiveSituation ? "Yes" : "No"}
+                  </div>
+                )}
+                {service.offboardingEmployeeAware !== undefined && (
+                  <div>
+                    <span className="font-medium">Employee aware: </span>
+                    {service.offboardingEmployeeAware ? "Yes" : "No"}
+                  </div>
+                )}
+              </div>
+            )}
+            {service.additionalComments &&
+              service.additionalComments.trim() !== "" && (
+                <div className="mt-2 text-gray-700 text-sm">
+                  <span className="font-medium">Additional details: </span>
+                  {service.additionalComments}
+                </div>
+              )}
+          </div>
+        )}
+
+      {/* Asset (for IT Support) - card unificada */}
       {selectedAsset &&
         service.serviceType !== "enrollment" &&
         service.serviceType !== "donations" &&
         service.serviceType !== "cleaning" &&
         service.serviceType !== "storage" &&
-        service.serviceType !== "destruction-recycling" && (
-          <div className="mb-3 text-sm">
-            <div className="mb-2 text-gray-700">
-              <span className="font-medium">Asset: </span>
-              {assetDisplayInfo?.displayName || selectedAsset.name || "Asset"}
-              {assetDisplayInfo?.specifications && (
-                <> ({assetDisplayInfo.specifications})</>
-              )}
-              {selectedAsset.serialNumber && (
-                <> • SN: {selectedAsset.serialNumber}</>
-              )}
-            </div>
-            {assignmentInfo && (
-              <div className="flex items-center gap-2 text-gray-600 text-sm">
-                {assignmentInfo.type === "employee" && (
-                  <>
-                    <span>{assignmentInfo.member}</span>
-                    {assignmentInfo.location && (
-                      <span>• {assignmentInfo.location}</span>
-                    )}
-                    {assignmentInfo.country && (
-                      <div className="flex items-center gap-1">
-                        <CountryFlag
-                          countryName={assignmentInfo.country}
-                          size={15}
-                        />
-                        <span>
-                          {countriesByCode[assignmentInfo.country] ||
-                            assignmentInfo.country}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
-                {assignmentInfo.type === "office" && (
-                  <>
-                    <span>Location: office {assignmentInfo.officeName}</span>
-                    {assignmentInfo.country && (
-                      <div className="flex items-center gap-1">
-                        <CountryFlag
-                          countryName={assignmentInfo.country}
-                          size={15}
-                        />
-                        <span>
-                          {countriesByCode[assignmentInfo.country] ||
-                            assignmentInfo.country}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
-                {assignmentInfo.type === "warehouse" && (
-                  <>
-                    <span>FP Warehouse</span>
-                    {assignmentInfo.country && (
-                      <div className="flex items-center gap-1">
-                        <CountryFlag
-                          countryName={assignmentInfo.country}
-                          size={15}
-                        />
-                        <span>
-                          {countriesByCode[assignmentInfo.country] ||
-                            assignmentInfo.country}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
+        service.serviceType !== "destruction-recycling" &&
+        service.serviceType !== "logistics" &&
+        service.serviceType !== "offboarding" && (
+          <div className="mb-3">
+            <ul className="flex flex-col gap-3 pl-0 list-none">
+              {renderUnifiedAssetCard(selectedAsset)}
+            </ul>
           </div>
         )}
 
@@ -1085,7 +916,10 @@ export const QuoteServiceCard: React.FC<QuoteServiceCardProps> = ({
 
       {/* Description */}
       {service.description && (
-        <div className="mb-3 text-gray-700 text-sm">{service.description}</div>
+        <div className="mb-3 text-gray-700 text-sm">
+          <span className="font-medium">Description: </span>
+          {service.description}
+        </div>
       )}
 
       {/* Impact Level */}

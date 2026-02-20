@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TooltipArrow } from "@radix-ui/react-tooltip";
 import { Button } from "@/shared";
 import {
@@ -14,7 +14,6 @@ import { StepServiceTypeSelection } from "../AddServiceModal/step-service-type-s
 import { StepSelectAsset } from "../AddServiceModal/step-select-asset";
 import { StepIssueTypeSelection } from "../AddServiceModal/step-issue-type-selection";
 import { StepIssueDetails } from "../AddServiceModal/step-issue-details";
-import { StepReviewAndSubmit } from "../AddServiceModal/step-review-and-submit";
 import { StepAdditionalDetails } from "../AddServiceModal/step-additional-details";
 import { StepBuybackDetails } from "../AddServiceModal/step-buyback-details";
 import { StepDataWipeDetails } from "../AddServiceModal/step-data-wipe-details";
@@ -22,7 +21,14 @@ import { StepCleaningDetails } from "../AddServiceModal/step-cleaning-details";
 import { StepDonationDetails } from "../AddServiceModal/step-donation-details";
 import { StepStorageDetails } from "../AddServiceModal/step-storage-details";
 import { StepDestructionOptions } from "../AddServiceModal/step-destruction-options";
+import { StepShippingDetails } from "../AddServiceModal/step-shipping-details";
+import { StepSelectMember } from "../AddServiceModal/step-select-member";
+import { StepOffboardingDetails } from "../AddServiceModal/step-offboarding-details";
 import { StepQuoteDetails } from "../AddProductModal/step-quote-details";
+import { useFetchMembers } from "@/features/members";
+import { useGetTableAssets, Product, CategoryIcons } from "@/features/assets";
+import { CountryFlag } from "@/shared";
+import { countriesByCode } from "@/shared/constants/country-codes";
 import type { QuoteService, QuoteProduct } from "../../types/quote.types";
 
 interface AddServiceFormProps {
@@ -48,7 +54,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     setEditingServiceId,
     setOnBack,
     setOnCancel,
+    setPresetServiceOpen,
   } = useQuoteStore();
+  const { data: membersData } = useFetchMembers();
 
   const onCancelRef = useRef(onCancel);
   useEffect(() => {
@@ -61,17 +69,80 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       .substr(2, 9)}`;
   };
 
-  const [serviceData, setServiceData] = useState<Partial<QuoteService>>({
-    id: generateId(),
-    impactLevel: "medium", // Preseleccionar "medium" por defecto
+  const [serviceData, setServiceData] = useState<Partial<QuoteService>>(() => {
+    const preset = useQuoteStore.getState().presetServiceOpen;
+    if (preset) {
+      const id = generateId();
+      const base: Partial<QuoteService> = {
+        id,
+        impactLevel: "medium",
+        serviceType: preset.serviceType,
+      };
+      if (preset.serviceType === "it-support" && preset.assetId) {
+        return { ...base, assetId: preset.assetId };
+      }
+      if (preset.assetIds && preset.assetIds.length > 0) {
+        const data: Partial<QuoteService> = { ...base, assetIds: preset.assetIds };
+        if (preset.serviceType === "cleaning") data.cleaningType = "Deep";
+        if (preset.serviceType === "destruction-recycling")
+          data.requiresCertificate = true;
+        if (preset.serviceType === "logistics") data.sameDetailsForAllAssets = false;
+        return data;
+      }
+    }
+    return { id: generateId(), impactLevel: "medium" };
   });
 
   const handleDataChange = (updates: Partial<QuoteService>) => {
     setServiceData((prev) => ({ ...prev, ...updates }));
   };
 
+  const { data: assetsData } = useGetTableAssets();
+
+  // Asset seleccionado para IT Support (steps 3 y 4)
+  const itSupportSelectedAsset = React.useMemo(() => {
+    const assetId = serviceData.assetId;
+    if (!assetId || !assetsData) return null;
+    for (const categoryGroup of assetsData) {
+      if (categoryGroup.products) {
+        const asset = categoryGroup.products.find((p) => p._id === assetId);
+        if (asset) return asset;
+      }
+    }
+    return null;
+  }, [serviceData.assetId, assetsData]);
+
+  const getAssetDisplayInfoForIT = (product: Product) => {
+    const brand = product.attributes?.find((a) => String(a.key).toLowerCase() === "brand")?.value || "";
+    const model = product.attributes?.find((a) => String(a.key).toLowerCase() === "model")?.value || "";
+    const parts: string[] = [];
+    if (brand) parts.push(brand);
+    if (model && model !== "Other") parts.push(model);
+    else if (model === "Other") parts.push("Other");
+    const displayName = parts.length > 0
+      ? (product.name ? `${parts.join(" ")} ${product.name}`.trim() : parts.join(" "))
+      : (product.name || "Asset");
+    return { displayName };
+  };
+
+  const getAssignmentInfoForIT = (product: Product) => {
+    const country = product.office?.officeCountryCode || product.country || product.countryCode || "";
+    if (product.assignedMember || product.assignedEmail)
+      return { country, assignedTo: product.assignedMember || product.assignedEmail || "Unassigned" };
+    if (product.location === "Our office") {
+      const officeName = product.office?.officeName || product.officeName || "Our office";
+      return { country, assignedTo: `Office ${officeName}` };
+    }
+    if (product.location === "FP warehouse") return { country, assignedTo: "FP Warehouse" };
+    if (product.location) return { country, assignedTo: product.location };
+    return null;
+  };
+
   useEffect(() => {
     setIsAddingService(true);
+
+    // Leer preset una sola vez (no poner presetServiceOpen en deps para no re-ejecutar al limpiarlo y caer en else → step 1)
+    const presetFromStore = useQuoteStore.getState().presetServiceOpen;
 
     // Si hay un servicio en edición, cargar datos y determinar el step inicial
     if (editingServiceId) {
@@ -92,7 +163,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               editingService.issueTypes &&
               editingService.issueTypes.length > 0
             ) {
-              initialStep = editingService.description ? 5 : 4;
+              initialStep = editingService.description ? 4 : 4;
             } else {
               initialStep = 3;
             }
@@ -106,7 +177,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           type === "cleaning" ||
           type === "donations" ||
           type === "storage" ||
-          type === "destruction-recycling"
+          type === "destruction-recycling" ||
+          type === "logistics"
         ) {
           // Servicios multi-asset: si ya hay datos del paso 3, arrancar en step 3, si no en step 2
           const hasAssets =
@@ -149,6 +221,36 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               (editingService.comments && editingService.comments.trim() !== "")
                 ? 3
                 : 2;
+          } else if (type === "logistics") {
+            const sameDetails = editingService.sameDetailsForAllAssets ?? false;
+            const perAsset = editingService.logisticsDetailsPerAsset || {};
+            const assetIds = editingService.assetIds || [];
+            const allHaveDestination = assetIds.every((id) => perAsset[id]?.logisticsDestination);
+            const hasDates = sameDetails
+              ? !!editingService.desirablePickupDate && !!editingService.desirableDeliveryDate
+              : assetIds.every(
+                  (id) => perAsset[id]?.desirablePickupDate && perAsset[id]?.desirableDeliveryDate
+                );
+            initialStep = allHaveDestination && hasDates ? 3 : 2;
+          } else if (type === "offboarding") {
+            const hasMember = !!editingService.memberId;
+            const hasAssets = !!editingService.assetIds && editingService.assetIds.length > 0;
+            const hasOffboardingDetails =
+              !!editingService.offboardingPickupDate &&
+              (editingService.offboardingSameDetailsForAllAssets
+                ? (editingService.offboardingDetailsPerAsset &&
+                    Object.keys(editingService.offboardingDetailsPerAsset).length > 0)
+                : (editingService.offboardingDetailsPerAsset &&
+                    editingService.assetIds?.every(
+                      (id) =>
+                        editingService.offboardingDetailsPerAsset?.[id]
+                          ?.logisticsDestination &&
+                        editingService.offboardingDetailsPerAsset?.[id]
+                          ?.desirableDeliveryDate
+                    )));
+            if (!hasMember) initialStep = 2;
+            else if (!hasAssets || !hasOffboardingDetails) initialStep = 3;
+            else initialStep = 3;
           }
         } else {
           // Otros servicios: default step 3 (quote details)
@@ -156,6 +258,32 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
         }
         setCurrentStep(initialStep);
       }
+    } else if (presetFromStore) {
+      // Abrir directamente en step 3 con asset(s) pre-seleccionados desde My Assets
+      const preset = presetFromStore;
+      const updates: Partial<QuoteService> = {
+        id: generateId(),
+        impactLevel: "medium",
+        serviceType: preset.serviceType,
+      };
+      if (preset.serviceType === "it-support" && preset.assetId) {
+        updates.assetId = preset.assetId;
+      } else if (preset.assetIds && preset.assetIds.length > 0) {
+        updates.assetIds = preset.assetIds;
+        if (preset.serviceType === "cleaning") {
+          updates.cleaningType = "Deep";
+        }
+        if (preset.serviceType === "destruction-recycling") {
+          updates.requiresCertificate = true;
+        }
+      }
+      if (preset.serviceType === "logistics") {
+        updates.sameDetailsForAllAssets = false;
+      }
+      setServiceData((prev) => ({ ...prev, ...updates }));
+      setCurrentServiceType(preset.serviceType);
+      setCurrentStep(3);
+      setPresetServiceOpen(null);
     } else {
       setCurrentStep(1);
       setCurrentServiceType(undefined); // Limpiar tipo de servicio cuando no hay edición
@@ -175,7 +303,9 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           serviceType === "cleaning" ||
           serviceType === "donations" ||
           serviceType === "storage" ||
-          serviceType === "destruction-recycling"
+          serviceType === "destruction-recycling" ||
+          serviceType === "logistics" ||
+          serviceType === "offboarding"
           ? 2
           : 3
         : 1;
@@ -190,9 +320,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
 
       if (currentStepValue > 1) {
         // Resetear datos del step actual antes de retroceder
-        if (currentStepValue === 5) {
-          // No resetear nada en step 5 (review), solo retroceder
-        } else if (currentStepValue === 4) {
+        if (currentStepValue === 4) {
           // Resetear datos del step 4 (issue details para IT Support)
           setServiceData((prev) => ({
             ...prev,
@@ -242,17 +370,34 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               requiresCertificate: undefined,
               comments: undefined,
             }));
+          } else if (serviceType === "logistics") {
+            setServiceData((prev) => ({
+              ...prev,
+              sameDetailsForAllAssets: false,
+              logisticsDestination: undefined,
+              desirablePickupDate: undefined,
+              desirableDeliveryDate: undefined,
+              logisticsDetailsPerAsset: undefined,
+              additionalDetails: undefined,
+            }));
           }
         } else if (currentStepValue === 2) {
-          // Resetear datos del step 2 (select asset)
-          if (
+          // Resetear datos del step 2 (select asset o select member)
+          if (serviceType === "offboarding") {
+            setServiceData((prev) => ({
+              ...prev,
+              memberId: undefined,
+              assetIds: undefined,
+            }));
+          } else if (
             serviceType === "enrollment" ||
             serviceType === "buyback" ||
             serviceType === "data-wipe" ||
             serviceType === "cleaning" ||
             serviceType === "donations" ||
             serviceType === "storage" ||
-            serviceType === "destruction-recycling"
+            serviceType === "destruction-recycling" ||
+            serviceType === "logistics"
           ) {
             setServiceData((prev) => ({
               ...prev,
@@ -289,7 +434,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       setOnCancel(undefined);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingServiceId, setServiceData, setCurrentServiceType]);
+  }, [editingServiceId]);
 
   const handleServiceTypeSelect = (serviceType: string) => {
     handleDataChange({ serviceType });
@@ -304,12 +449,18 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "cleaning" ||
       serviceType === "donations" ||
       serviceType === "storage" ||
-      serviceType === "destruction-recycling"
+      serviceType === "destruction-recycling" ||
+      serviceType === "logistics" ||
+      serviceType === "offboarding"
     ) {
       setCurrentStep(2);
     } else {
       setCurrentStep(3);
     }
+  };
+
+  const handleMemberSelect = (memberId: string | null) => {
+    handleDataChange({ memberId: memberId || undefined });
   };
 
   const handleAssetSelect = (assetIds: string[]) => {
@@ -321,9 +472,10 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       serviceType === "cleaning" ||
       serviceType === "donations" ||
       serviceType === "storage" ||
-      serviceType === "destruction-recycling"
+      serviceType === "destruction-recycling" ||
+      serviceType === "logistics"
     ) {
-      // Para Enrollment, Buyback, Data Wipe, Cleaning, Donations, Storage y Destruction & Recycling, guardar múltiples assets
+      // Para Enrollment, Buyback, Data Wipe, Cleaning, Donations, Storage, Destruction & Recycling y Logistics, guardar múltiples assets
       handleDataChange({ assetIds });
     } else {
       // Para IT Support, solo se permite un asset (single selection)
@@ -372,6 +524,25 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
         handleDataChange({ requiresCertificate: true });
       }
       setCurrentStep(3);
+    } else if (serviceType === "logistics") {
+      if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+      // Inicializar sameDetailsForAllAssets en false para que se muestren las cards por asset y no se exija tocar el toggle
+      handleDataChange({ sameDetailsForAllAssets: false });
+      setCurrentStep(3);
+    } else if (serviceType === "offboarding") {
+      if (!serviceData.memberId) return;
+      const members = Array.isArray(membersData) ? membersData : [];
+      const member = members.find((m: any) => m._id === serviceData.memberId);
+      if (!member?.products) {
+        setCurrentStep(3);
+        return;
+      }
+      const recoverableIds = (member.products as any[])
+        .filter((p: any) => p.recoverable === true)
+        .map((p: any) => p._id)
+        .filter(Boolean);
+      handleDataChange({ assetIds: recoverableIds });
+      setCurrentStep(3);
     } else {
       // Para IT Support, validar que hay un asset seleccionado
       if (!serviceData.assetId) return;
@@ -396,10 +567,44 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   };
 
   const handleContinueFromIssueDetails = () => {
-    // Validar que hay description (requerido)
-    if (!serviceData.description) return;
-    // Ir al step 5 (review & submit)
-    setCurrentStep(5);
+    // Validar que hay description (requerido) y guardar servicio (step 4 es el último para IT Support)
+    if (!serviceData.description || !serviceData.assetId) return;
+
+    if (editingServiceId) {
+      const updateData: Partial<QuoteService> = {
+        serviceType: serviceData.serviceType!,
+        assetId: serviceData.assetId,
+        issueTypes: serviceData.issueTypes,
+        description: serviceData.description,
+        issueStartDate: serviceData.issueStartDate,
+        impactLevel: serviceData.impactLevel,
+        country: serviceData.country || "",
+        city: serviceData.city,
+        requiredDeliveryDate: serviceData.requiredDeliveryDate,
+        additionalComments: serviceData.additionalComments,
+      };
+      updateService(editingServiceId, updateData);
+      setEditingServiceId(undefined);
+    } else {
+      const completeService: QuoteService = {
+        id: serviceData.id!,
+        serviceType: serviceData.serviceType!,
+        assetId: serviceData.assetId,
+        issueTypes: serviceData.issueTypes,
+        description: serviceData.description,
+        issueStartDate: serviceData.issueStartDate,
+        impactLevel: serviceData.impactLevel,
+        country: serviceData.country || "",
+        city: serviceData.city,
+        requiredDeliveryDate: serviceData.requiredDeliveryDate,
+        additionalComments: serviceData.additionalComments,
+      };
+      addService(completeService);
+    }
+    setServiceData({ id: generateId(), impactLevel: "medium" });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
   };
 
   const handleContinueFromAdditionalDetails = () => {
@@ -641,56 +846,108 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     onComplete();
   };
 
-  const handleNext = () => {
-    const serviceType = serviceData.serviceType || currentServiceType;
+  const handleContinueFromShippingDetails = () => {
+    const assetIds = serviceData.assetIds || [];
+    if (assetIds.length === 0) return;
+    const perAsset = serviceData.logisticsDetailsPerAsset || {};
+    const sameDetails = serviceData.sameDetailsForAllAssets ?? false;
+    const allHaveDestination = assetIds.every((id) => perAsset[id]?.logisticsDestination);
+    const allHaveData = sameDetails
+      ? allHaveDestination &&
+        !!serviceData.desirablePickupDate &&
+        !!serviceData.desirableDeliveryDate
+      : assetIds.every(
+          (id) =>
+            perAsset[id]?.logisticsDestination &&
+            perAsset[id]?.desirablePickupDate &&
+            perAsset[id]?.desirableDeliveryDate
+        );
+    if (!allHaveData) return;
 
-    if (currentStep === 5) {
-      // Validar campos requeridos del step 5 (review & submit) para IT Support
-      if (!serviceData.description || !serviceData.assetId) return;
+    const firstId = assetIds[0];
+    const firstDetail = firstId ? perAsset[firstId] : undefined;
 
-      // Si estamos editando, actualizar el servicio existente
-      if (editingServiceId) {
-        const updateData: Partial<QuoteService> = {
-          serviceType: serviceData.serviceType!,
-          assetId: serviceData.assetId,
-          issueTypes: serviceData.issueTypes,
-          description: serviceData.description,
-          issueStartDate: serviceData.issueStartDate,
-          impactLevel: serviceData.impactLevel,
-          country: serviceData.country || "",
-          city: serviceData.city,
-          requiredDeliveryDate: serviceData.requiredDeliveryDate,
-          additionalComments: serviceData.additionalComments,
-        };
-        updateService(editingServiceId, updateData);
-        setEditingServiceId(undefined);
-      } else {
-        // Si es nuevo servicio, agregarlo
-        const completeService: QuoteService = {
-          id: serviceData.id!,
-          serviceType: serviceData.serviceType!,
-          assetId: serviceData.assetId,
-          issueTypes: serviceData.issueTypes,
-          description: serviceData.description,
-          issueStartDate: serviceData.issueStartDate,
-          impactLevel: serviceData.impactLevel,
-          country: serviceData.country || "",
-          city: serviceData.city,
-          requiredDeliveryDate: serviceData.requiredDeliveryDate,
-          additionalComments: serviceData.additionalComments,
-        };
-        addService(completeService);
-      }
-      // Limpiar tipo de servicio, step y serviceData al completar
-      setServiceData({
-        id: generateId(),
-        impactLevel: "medium", // Preseleccionar "medium" por defecto
-      });
-      setCurrentServiceType(undefined);
-      setCurrentStep(1);
-      onComplete();
+    const completeService: QuoteService = {
+      id: serviceData.id!,
+      serviceType: serviceData.serviceType!,
+      assetIds,
+      sameDetailsForAllAssets: sameDetails,
+      logisticsDestination:
+        serviceData.logisticsDestination ?? firstDetail?.logisticsDestination,
+      desirablePickupDate:
+        serviceData.desirablePickupDate ?? firstDetail?.desirablePickupDate,
+      desirableDeliveryDate:
+        serviceData.desirableDeliveryDate ?? firstDetail?.desirableDeliveryDate,
+      logisticsDetailsPerAsset: perAsset,
+      additionalDetails: serviceData.additionalDetails,
+      country: serviceData.country || "",
+      city: serviceData.city,
+    };
+
+    if (editingServiceId) {
+      updateService(editingServiceId, completeService);
+      setEditingServiceId(undefined);
+    } else {
+      addService(completeService);
     }
+
+    setServiceData({
+      id: generateId(),
+      impactLevel: "medium",
+    });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
   };
+
+  const handleContinueFromOffboardingDetails = () => {
+    if (!serviceData.memberId) return;
+    if (!serviceData.assetIds || serviceData.assetIds.length === 0) return;
+    if (!serviceData.offboardingPickupDate) return;
+
+    const assetIds = serviceData.assetIds;
+    const perAsset = serviceData.offboardingDetailsPerAsset || {};
+    const allHaveDestinationAndDelivery = assetIds.every(
+      (id) =>
+        perAsset[id]?.logisticsDestination &&
+        perAsset[id]?.desirableDeliveryDate
+    );
+    if (!allHaveDestinationAndDelivery) return;
+
+    const completeService: QuoteService = {
+      id: serviceData.id!,
+      serviceType: "offboarding",
+      memberId: serviceData.memberId,
+      assetIds,
+      offboardingPickupDate: serviceData.offboardingPickupDate,
+      offboardingSameDetailsForAllAssets:
+        serviceData.offboardingSameDetailsForAllAssets ?? false,
+      offboardingDetailsPerAsset: serviceData.offboardingDetailsPerAsset || {},
+      offboardingSensitiveSituation:
+        serviceData.offboardingSensitiveSituation ?? false,
+      offboardingEmployeeAware: serviceData.offboardingEmployeeAware ?? true,
+      additionalComments: serviceData.additionalComments,
+      country: serviceData.country || "",
+      city: serviceData.city,
+    };
+
+    if (editingServiceId) {
+      updateService(editingServiceId, completeService);
+      setEditingServiceId(undefined);
+    } else {
+      addService(completeService);
+    }
+
+    setServiceData({
+      id: generateId(),
+      impactLevel: "medium",
+    });
+    setCurrentServiceType(undefined);
+    setCurrentStep(1);
+    onComplete();
+  };
+
+  const handleNext = () => {};
 
   const renderStep = () => {
     const serviceType = serviceData.serviceType || currentServiceType;
@@ -800,15 +1057,85 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           );
         }
+        if (serviceType === "logistics") {
+          return (
+            <StepSelectAsset
+              selectedAssetIds={serviceData.assetIds || []}
+              onAssetSelect={handleAssetSelect}
+              allowMultiple={true}
+              serviceType="logistics"
+            />
+          );
+        }
+        if (serviceType === "offboarding") {
+          return (
+            <StepSelectMember
+              selectedMemberId={serviceData.memberId || null}
+              onMemberSelect={handleMemberSelect}
+            />
+          );
+        }
         return null;
       case 3:
-        // Mostrar issue type si es IT Support
+        // Mostrar asset card + issue type si es IT Support
         if (isITSupport) {
+          const asset = itSupportSelectedAsset;
+          const assignment = asset ? getAssignmentInfoForIT(asset) : null;
+          const displayInfo = asset ? getAssetDisplayInfoForIT(asset) : null;
           return (
-            <StepIssueTypeSelection
-              selectedIssueTypes={serviceData.issueTypes || []}
-              onIssueTypeToggle={handleIssueTypeToggle}
-            />
+            <div className="flex flex-col gap-4">
+              {asset && (
+                <div>
+                  <div className="font-medium text-sm mb-2">Selected asset:</div>
+                  <div className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <CategoryIcons products={[asset]} />
+                    </div>
+                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                      <span className="font-semibold text-gray-900 text-sm">
+                        {displayInfo?.displayName}
+                      </span>
+                      {asset.serialNumber && (
+                        <span className="text-gray-600 text-xs">
+                          <span className="font-medium">SN:</span> {asset.serialNumber}
+                        </span>
+                      )}
+                      {assignment && (
+                        <div className="flex items-center gap-1 text-gray-600 text-xs">
+                          <span className="font-medium">Location:</span>
+                          {assignment.country && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <CountryFlag
+                                      countryName={assignment.country}
+                                      size={18}
+                                      className="rounded-sm"
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {(countriesByCode as Record<string, string>)[assignment.country] ||
+                                    assignment.country}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          {assignment.assignedTo && (
+                            <span>{assignment.assignedTo}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <StepIssueTypeSelection
+                selectedIssueTypes={serviceData.issueTypes || []}
+                onIssueTypeToggle={handleIssueTypeToggle}
+              />
+            </div>
           );
         }
         // Mostrar additional details si es Enrollment
@@ -912,6 +1239,47 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
             />
           );
         }
+        // Mostrar shipping details si es Logistics
+        if (serviceType === "logistics") {
+          return (
+            <StepShippingDetails
+              assetIds={serviceData.assetIds || []}
+              sameDetailsForAllAssets={serviceData.sameDetailsForAllAssets ?? false}
+              logisticsDestination={serviceData.logisticsDestination}
+              desirablePickupDate={serviceData.desirablePickupDate}
+              desirableDeliveryDate={serviceData.desirableDeliveryDate}
+              logisticsDetailsPerAsset={serviceData.logisticsDetailsPerAsset}
+              additionalDetails={serviceData.additionalDetails}
+              onDataChange={(updates) => {
+                handleDataChange(updates);
+              }}
+            />
+          );
+        }
+        // Mostrar offboarding details si es Offboarding
+        if (serviceType === "offboarding") {
+          return (
+            <StepOffboardingDetails
+              memberId={serviceData.memberId!}
+              assetIds={serviceData.assetIds || []}
+              offboardingPickupDate={serviceData.offboardingPickupDate}
+              offboardingSameDetailsForAllAssets={
+                serviceData.offboardingSameDetailsForAllAssets ?? false
+              }
+              offboardingDetailsPerAsset={serviceData.offboardingDetailsPerAsset}
+              offboardingSensitiveSituation={
+                serviceData.offboardingSensitiveSituation ?? false
+              }
+              offboardingEmployeeAware={
+                serviceData.offboardingEmployeeAware ?? true
+              }
+              additionalComments={serviceData.additionalComments}
+              onDataChange={(updates) => {
+                handleDataChange(updates);
+              }}
+            />
+          );
+        }
         // Para otros servicios, mostrar Quote Details directamente
         const productDataForDetailsOther: Partial<QuoteProduct> = {
           country: serviceData.country,
@@ -933,42 +1301,69 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           />
         );
       case 4:
-        // Solo mostrar issue details si es IT Support
+        // Mostrar asset card + issue details si es IT Support
         if (isITSupport) {
+          const asset = itSupportSelectedAsset;
+          const assignment = asset ? getAssignmentInfoForIT(asset) : null;
+          const displayInfo = asset ? getAssetDisplayInfoForIT(asset) : null;
           return (
-            <StepIssueDetails
-              description={serviceData.description || ""}
-              issueStartDate={serviceData.issueStartDate}
-              impactLevel={serviceData.impactLevel || "medium"}
-              onDataChange={(updates) => {
-                handleDataChange(updates);
-              }}
-            />
-          );
-        }
-        return null;
-      case 5:
-        // Solo mostrar review & submit si es IT Support
-        if (isITSupport) {
-          // Convertir serviceData a QuoteService completo para el review
-          const reviewServiceData: QuoteService = {
-            id: serviceData.id!,
-            serviceType: serviceData.serviceType!,
-            assetId: serviceData.assetId,
-            issueTypes: serviceData.issueTypes,
-            description: serviceData.description,
-            issueStartDate: serviceData.issueStartDate,
-            impactLevel: serviceData.impactLevel,
-            country: serviceData.country || "",
-            city: serviceData.city,
-            requiredDeliveryDate: serviceData.requiredDeliveryDate,
-            additionalComments: serviceData.additionalComments,
-          };
-          return (
-            <StepReviewAndSubmit
-              serviceData={reviewServiceData}
-              onSubmit={handleNext}
-            />
+            <div className="flex flex-col gap-4">
+              {asset && (
+                <div>
+                  <div className="font-medium text-sm mb-2">Selected asset:</div>
+                  <div className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <CategoryIcons products={[asset]} />
+                    </div>
+                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                      <span className="font-semibold text-gray-900 text-sm">
+                        {displayInfo?.displayName}
+                      </span>
+                      {asset.serialNumber && (
+                        <span className="text-gray-600 text-xs">
+                          <span className="font-medium">SN:</span> {asset.serialNumber}
+                        </span>
+                      )}
+                      {assignment && (
+                        <div className="flex items-center gap-1 text-gray-600 text-xs">
+                          <span className="font-medium">Location:</span>
+                          {assignment.country && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <CountryFlag
+                                      countryName={assignment.country}
+                                      size={18}
+                                      className="rounded-sm"
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-blue/80 text-white text-xs">
+                                  {(countriesByCode as Record<string, string>)[assignment.country] ||
+                                    assignment.country}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          {assignment.assignedTo && (
+                            <span>{assignment.assignedTo}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <StepIssueDetails
+                description={serviceData.description || ""}
+                issueStartDate={serviceData.issueStartDate}
+                impactLevel={serviceData.impactLevel || "medium"}
+                onDataChange={(updates) => {
+                  handleDataChange(updates);
+                }}
+              />
+            </div>
           );
         }
         return null;
@@ -1017,6 +1412,37 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     }
     if (currentStep === 2 && isDestructionRecycling) {
       return !!serviceData.assetIds && serviceData.assetIds.length > 0;
+    }
+    if (currentStep === 2 && serviceType === "logistics") {
+      return !!serviceData.assetIds && serviceData.assetIds.length > 0;
+    }
+    if (currentStep === 2 && serviceType === "offboarding") {
+      return !!serviceData.memberId;
+    }
+    if (currentStep === 3 && serviceType === "offboarding") {
+      if (!serviceData.offboardingPickupDate) return false;
+      const assetIds = serviceData.assetIds || [];
+      if (assetIds.length === 0) return false;
+      const perAsset = serviceData.offboardingDetailsPerAsset || {};
+      return assetIds.every(
+        (id) =>
+          perAsset[id]?.logisticsDestination &&
+          perAsset[id]?.desirableDeliveryDate
+      );
+    }
+    if (currentStep === 3 && serviceType === "logistics") {
+      const assetIds = serviceData.assetIds || [];
+      if (assetIds.length === 0) return false;
+      const perAsset = serviceData.logisticsDetailsPerAsset || {};
+      const sameDetails = serviceData.sameDetailsForAllAssets ?? false;
+      const allHaveDestination = assetIds.every((id) => perAsset[id]?.logisticsDestination);
+      if (!allHaveDestination) return false;
+      if (sameDetails) {
+        return !!serviceData.desirablePickupDate && !!serviceData.desirableDeliveryDate;
+      }
+      return assetIds.every(
+        (id) => perAsset[id]?.desirablePickupDate && perAsset[id]?.desirableDeliveryDate
+      );
     }
     if (currentStep === 3 && isITSupport) {
       // En step 3 para IT Support, se necesita seleccionar al menos un issue type
@@ -1071,7 +1497,8 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
       !isCleaning &&
       !isDonations &&
       !isStorage &&
-      !isDestructionRecycling
+      !isDestructionRecycling &&
+      serviceType !== "logistics"
     ) {
       // Para otros servicios, step 3 es Quote Details
       return !!serviceData.country;
@@ -1079,10 +1506,6 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
     if (currentStep === 4 && isITSupport) {
       // En step 4 para IT Support (Issue Details), se necesita description
       return !!serviceData.description;
-    }
-    if (currentStep === 5 && isITSupport) {
-      // En step 5 para IT Support (Review & Submit), siempre se puede proceder
-      return true;
     }
     return true;
   };
@@ -1097,6 +1520,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
   const isStorageForRender = serviceTypeForRender === "storage";
   const isDestructionRecyclingForRender =
     serviceTypeForRender === "destruction-recycling";
+  const isOffboardingForRender = serviceTypeForRender === "offboarding";
 
   return (
     <div className="flex justify-center w-full">
@@ -1136,7 +1560,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1151,7 +1575,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
                       disabled={!canProceed()}
                       variant="primary"
                       size="small"
-                      body="Submit Request"
+                      body="Save Service"
                     />
                   </div>
                 </TooltipTrigger>
@@ -1161,7 +1585,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
                     align="end"
                     className="z-50 bg-blue/80 p-2 rounded-md font-normal text-white text-xs"
                   >
-                    Overall condition is required for all assets to continue.
+                    Overall condition is required for all assets. See which products are missing it in the list above.
                     <TooltipArrow className="fill-blue/80" />
                   </TooltipContent>
                 )}
@@ -1176,7 +1600,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1187,7 +1611,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Cleaning Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1198,7 +1622,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1209,7 +1633,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Add Storage Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1220,7 +1644,29 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Submit Request"
+              body="Save Service"
+            />
+          </div>
+        )}
+        {currentStep === 3 && serviceTypeForRender === "logistics" && (
+          <div className="flex justify-end items-center pt-4 border-t">
+            <Button
+              onClick={handleContinueFromShippingDetails}
+              disabled={!canProceed()}
+              variant="primary"
+              size="small"
+              body="Save Service"
+            />
+          </div>
+        )}
+        {currentStep === 3 && isOffboardingForRender && (
+          <div className="flex justify-end items-center pt-4 border-t">
+            <Button
+              onClick={handleContinueFromOffboardingDetails}
+              disabled={!canProceed()}
+              variant="primary"
+              size="small"
+              body="Save Service"
             />
           </div>
         )}
@@ -1231,18 +1677,7 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
               disabled={!canProceed()}
               variant="primary"
               size="small"
-              body="Continue to Review"
-            />
-          </div>
-        )}
-        {currentStep === 5 && isITSupportForRender && (
-          <div className="flex justify-end items-center pt-4 border-t">
-            <Button
-              onClick={handleNext}
-              disabled={!canProceed()}
-              variant="primary"
-              size="small"
-              body="Submit Request"
+              body="Save Service"
             />
           </div>
         )}
@@ -1254,14 +1689,16 @@ export const AddServiceForm: React.FC<AddServiceFormProps> = ({
           !isCleaningForRender &&
           !isDonationsForRender &&
           !isStorageForRender &&
-          !isDestructionRecyclingForRender && (
+          !isDestructionRecyclingForRender &&
+          serviceTypeForRender !== "logistics" &&
+          !isOffboardingForRender && (
             <div className="flex justify-end items-center pt-4 border-t">
               <Button
                 onClick={handleNext}
                 disabled={!canProceed()}
                 variant="primary"
                 size="small"
-                body="Submit Request"
+                body="Save Service"
               />
             </div>
           )}

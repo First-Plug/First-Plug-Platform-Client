@@ -10,6 +10,8 @@ import {
   Gift,
   Package,
   Trash2,
+  Truck,
+  UserMinus,
 } from "lucide-react";
 import { cn } from "@/shared";
 
@@ -78,6 +80,20 @@ const serviceTypes: ServiceType[] = [
     icon: <Trash2 className="w-6 h-6" strokeWidth={2} />,
     enabled: true,
   },
+  {
+    id: "logistics",
+    name: "Logistics",
+    description: "Shipping and logistics services",
+    icon: <Truck className="w-6 h-6" strokeWidth={2} />,
+    enabled: true,
+  },
+  {
+    id: "offboarding",
+    name: "Offboarding",
+    description: "Recover equipment from departing employees",
+    icon: <UserMinus className="w-6 h-6" strokeWidth={2} />,
+    enabled: true,
+  },
 ];
 
 interface StepServiceTypeSelectionProps {
@@ -94,7 +110,7 @@ export const StepServiceTypeSelection: React.FC<
         What type of service do you need?
       </p>
 
-      <div className="gap-4 grid grid-cols-3 w-full max-w-2xl">
+      <div className="gap-4 grid grid-cols-4 w-full max-w-4xl">
         {serviceTypes.map((serviceType) => (
           <button
             key={serviceType.id}

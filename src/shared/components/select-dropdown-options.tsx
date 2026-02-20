@@ -27,6 +27,8 @@ interface SelectDropdownOptionsProps {
   required?: boolean;
   compact?: boolean;
   productFormStyle?: boolean;
+  /** Quotes flow: trigger and label match outline inputs / date pickers */
+  quotesFormStyle?: boolean;
   searchable?: boolean;
 }
 
@@ -42,6 +44,7 @@ export default function SelectDropdownOptions({
   required = false,
   compact = false,
   productFormStyle = false,
+  quotesFormStyle = false,
   searchable = false,
 }: SelectDropdownOptionsProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -164,11 +167,18 @@ export default function SelectDropdownOptions({
     <div className={`w-full ${className}`}>
       {label && (
         <label
-          className={`block font-sans text-dark-grey ${
-            productFormStyle ? "ml-2" : compact ? "ml-2" : "mb-2"
-          }`}
+          className={
+            quotesFormStyle
+              ? "block text-sm font-medium mb-2"
+              : `block font-sans text-dark-grey ${
+                  productFormStyle ? "ml-2" : compact ? "ml-2" : "mb-2"
+                }`
+          }
         >
           {label}
+          {quotesFormStyle && required && (
+            <span className="text-red-500 ml-0.5">*</span>
+          )}
         </label>
       )}
 
@@ -182,22 +192,28 @@ export default function SelectDropdownOptions({
                 e.stopPropagation();
               }
             }}
-            className={`relative w-full font-sans text-left border border-gray-300 ${
-              disabled
-                ? productFormStyle
-                  ? "cursor-not-allowed pointer-events-none bg-light-grey"
-                  : "text-disabled bg-light-grey cursor-not-allowed pointer-events-none"
-                : "text-black cursor-pointer"
-            } ${
-              productFormStyle
-                ? "h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border text-black p-4 focus:outline-none"
-                : "py-3 pr-12 pl-4 rounded-md"
-            }`}
+            className={
+              quotesFormStyle
+                ? `relative flex h-10 w-full items-center justify-start rounded-md border border-input bg-background pl-3 pr-10 text-left text-sm font-normal outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 ${
+                    !value ? "text-muted-foreground" : "text-foreground"
+                  }`
+                : `relative w-full font-sans text-left border border-gray-300 ${
+                    disabled
+                      ? productFormStyle
+                        ? "cursor-not-allowed pointer-events-none bg-light-grey"
+                        : "text-disabled bg-light-grey cursor-not-allowed pointer-events-none"
+                      : "text-black cursor-pointer"
+                  } ${
+                    productFormStyle
+                      ? "h-14 cursor-pointer py-2 pl-4 pr-12 rounded-xl border text-black p-4 focus:outline-none"
+                      : "py-3 pr-12 pl-4 rounded-md"
+                  }`
+            }
           >
             <div
               className={`flex items-center gap-2 ${
-                isSmall ? "text-sm" : "text-base"
-              } ${!value ? "text-grey" : "text-black"}`}
+                quotesFormStyle ? "text-sm" : isSmall ? "text-sm" : "text-base"
+              } ${!quotesFormStyle && !value ? "text-grey" : ""} ${quotesFormStyle && !value ? "text-muted-foreground" : ""} ${!quotesFormStyle && value ? "text-black" : ""}`}
             >
               {typeof displayValue === "string" ? (
                 <span>{displayValue}</span>

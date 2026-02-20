@@ -66,7 +66,7 @@ export const useQuotesTableColumns = ({
             badgeClasses = "bg-blue/10 text-blue border";
             displayType = "Product";
           } else if (hasService) {
-            badgeClasses = "bg-green/10 text-green border";
+            badgeClasses = "bg-emerald-100 text-emerald-700 border border-emerald-300";
             displayType = "Service";
           } else {
             badgeClasses = "bg-gray-50 text-gray-700 border border-gray-200";

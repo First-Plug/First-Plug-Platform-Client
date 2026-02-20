@@ -66,7 +66,7 @@ export const StepQuoteDetails: React.FC<StepQuoteDetailsProps> = ({
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="w-full text-muted-foreground text-left">
-        Provide the delivery details and any additional comments for your quote
+        Provide the delivery details and any additional details for your quote
         request.
       </p>
 
@@ -96,7 +96,7 @@ export const StepQuoteDetails: React.FC<StepQuoteDetailsProps> = ({
 
         {/* City */}
         <div className="flex flex-col gap-2">
-          <Label htmlFor="city">City (optional)</Label>
+          <Label htmlFor="city">City</Label>
           <Input
             id="city"
             type="text"
@@ -109,7 +109,7 @@ export const StepQuoteDetails: React.FC<StepQuoteDetailsProps> = ({
         {/* Required Delivery Date */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="delivery-date">
-            Required Delivery Date (optional)
+            Required Delivery Date
           </Label>
           <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
@@ -138,10 +138,10 @@ export const StepQuoteDetails: React.FC<StepQuoteDetailsProps> = ({
         </div>
       </div>
 
-      {/* Additional Comments */}
+      {/* Additional details */}
       <div className="flex flex-col gap-2 w-full">
         <Label htmlFor="additionalComments">
-          Additional Comments (optional)
+          Additional details
         </Label>
         <textarea
           id="additionalComments"

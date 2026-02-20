@@ -2,7 +2,16 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { SearchInput, Badge, CountryFlag, Button } from "@/shared";
+import {
+  SearchInput,
+  Badge,
+  CountryFlag,
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import {
   useGetTableAssets,
   Product,
@@ -101,60 +110,52 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
   }, [allProducts, searchQuery]);
 
   // Obtener información del producto para mostrar
+  // Formato estandarizado: Brand Model (Name)
   const getProductDisplayInfo = (product: Product) => {
     const brand =
       product.attributes?.find((attr) => attr.key === "brand")?.value || "";
     const model =
       product.attributes?.find((attr) => attr.key === "model")?.value || "";
-    const storage =
-      product.attributes?.find((attr) => attr.key === "storage")?.value || "";
 
     let displayName = "";
     if (product.category === "Merchandising") {
       displayName = product.name || "No name";
     } else {
-      if (brand && model) {
-        displayName =
-          model === "Other"
-            ? `${brand} Other ${product.name || ""}`.trim()
-            : `${brand} ${model}`;
+      const parts: string[] = [];
+      if (brand) parts.push(brand);
+      if (model && model !== "Other") parts.push(model);
+      else if (model === "Other") parts.push("Other");
+
+    if (parts.length > 0) {
+      displayName = product.name
+        ? `${parts.join(" ")} ${product.name}`.trim()
+        : parts.join(" ");
       } else {
         displayName = product.name || "No name";
       }
     }
 
-    let specifications = "";
-    if (product.category === "Merchandising") {
-      const color =
-        product.attributes?.find((attr) => attr.key === "color")?.value || "";
-      specifications = color
-        ? `${product.name}${color ? ` (${color})` : ""}`
-        : product.name || "";
-    } else {
-      const parts: string[] = [];
-      if (brand) parts.push(brand);
-      if (model) parts.push(model);
-      if (storage) parts.push(storage);
-      specifications = parts.join(" • ");
-    }
-
-    return { displayName, specifications };
+    return { displayName };
   };
 
   // Obtener información de asignación
+  // Formato estandarizado: Location: Bandera País Assigned to (nombre empleado o office y name o FP Warehouse)
   const getAssignmentInfo = (product: Product) => {
+    const country =
+      product.office?.officeCountryCode ||
+      product.country ||
+      product.countryCode ||
+      "";
+
     // Si está asignado a un empleado
     if (product.assignedMember || product.assignedEmail) {
       const member =
         product.assignedMember || product.assignedEmail || "Unassigned";
-      const location = product.location || product.officeName || "";
-      const country = product.country || product.countryCode || "";
 
       return {
         type: "employee" as const,
-        member,
-        location: location ? `${location}` : "",
         country,
+        assignedTo: member,
       };
     }
 
@@ -162,26 +163,20 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
     if (product.location === "Our office") {
       const officeName =
         product.office?.officeName || product.officeName || "Our office";
-      const country =
-        product.office?.officeCountryCode ||
-        product.country ||
-        product.countryCode ||
-        "";
 
       return {
         type: "office" as const,
-        officeName,
         country,
+        assignedTo: `Office ${officeName}`,
       };
     }
 
     // Si está en FP warehouse
     if (product.location === "FP warehouse") {
-      const country = product.country || product.countryCode || "";
-
       return {
         type: "warehouse" as const,
         country,
+        assignedTo: "FP Warehouse",
       };
     }
 
@@ -189,7 +184,8 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
     if (product.location) {
       return {
         type: "other" as const,
-        location: product.location,
+        country,
+        assignedTo: product.location,
       };
     }
 
@@ -235,7 +231,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
       {/* Search Input */}
       <div className="w-full">
         <SearchInput
-          placeholder="Buscar por nombre, marca, modelo o número de serie..."
+          placeholder="Search by name, brand, model, or serial number"
           onSearch={setSearchQuery}
         />
       </div>
@@ -267,7 +263,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
       </div>
 
       {/* Assets List */}
-      <div className="flex flex-col gap-3 pr-2 max-h-[500px] overflow-y-auto">
+      <div className="flex flex-col gap-3 pr-2 max-h-[340px] overflow-y-auto">
         {filteredProducts.length === 0 ? (
           <div className="flex flex-col justify-center items-center gap-4 py-8">
             <p className="text-muted-foreground">
@@ -293,8 +289,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
           </div>
         ) : (
           filteredProducts.map((product) => {
-            const { displayName, specifications } =
-              getProductDisplayInfo(product);
+            const { displayName } = getProductDisplayInfo(product);
             const assignment = getAssignmentInfo(product);
             const isSelected = selectedAssetIds.includes(product._id);
             // Verificar si el asset tiene countryCode null o undefined
@@ -324,7 +319,7 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
               <div
                 key={product._id}
                 className={cn(
-                  "flex flex-col gap-3 p-4 border-2 rounded-lg transition-all",
+                  "flex flex-col gap-2 p-4 border-2 rounded-lg transition-all",
                   hasMissingCountryCode
                     ? "border-red-500 bg-red-50/50"
                     : isSelected
@@ -337,107 +332,75 @@ export const StepSelectAsset: React.FC<StepSelectAssetProps> = ({
                   onClick={handleCardClick}
                   disabled={hasMissingCountryCode && !isSelected}
                   className={cn(
-                    "flex items-center gap-4 w-full text-left transition-all",
+                    "flex items-start gap-4 w-full text-left transition-all",
                     hasMissingCountryCode &&
                       !isSelected &&
                       "cursor-not-allowed opacity-75"
                   )}
                 >
                   {/* Icon or Check - Dinámico según selección */}
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 mt-0.5">
                     {isSelected ? (
                       <div className="flex justify-center items-center bg-blue rounded-full w-8 h-8">
                         <Check className="w-6 h-6 text-white" strokeWidth={3} />
                       </div>
                     ) : (
-                      getCategoryIcon(product)
+                      <TooltipProvider>
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                              {getCategoryIcon(product)}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-blue/80 text-white text-xs">
+                            {product.category || "Asset"}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </div>
 
-                  {/* Main Content */}
-                  <div className="flex flex-col flex-1 gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-base">{displayName}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {product.category}
-                      </Badge>
-                    </div>
+                  {/* Main Content - Standardized format */}
+                  <div className="flex flex-col flex-1 gap-1">
+                    {/* Line 1: Brand Model (Name) */}
+                    <span className="font-bold text-sm">{displayName}</span>
 
-                    <div className="text-gray-700 text-sm">
-                      {specifications}
-                    </div>
+                    {/* Line 2: SN: serial number */}
+                    {product.serialNumber && (
+                      <div className="text-gray-600 text-xs">
+                        <span className="font-medium">SN:</span>{" "}
+                        {product.serialNumber}
+                      </div>
+                    )}
 
+                    {/* Line 3: Location: Flag (tooltip país) + office/member/FP Warehouse */}
                     {assignment && (
-                      <div className="flex items-center gap-2 text-gray-600 text-sm">
-                        {assignment.type === "employee" && (
-                          <>
-                            <span>Assigned to: {assignment.member}</span>
-                            {assignment.location && (
-                              <span>• {assignment.location}</span>
-                            )}
-                            {assignment.country && (
-                              <div className="flex items-center gap-1">
-                                <CountryFlag
-                                  countryName={assignment.country}
-                                  size={15}
-                                />
-                                <span>
-                                  {countriesByCode[assignment.country] ||
-                                    assignment.country}
+                      <div className="flex items-center gap-1 text-gray-600 text-xs">
+                        <span className="font-medium">Location:</span>
+                        {assignment.country && (
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <CountryFlag
+                                    countryName={assignment.country}
+                                    size={18}
+                                  />
                                 </span>
-                              </div>
-                            )}
-                          </>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-blue/80 text-white text-xs">
+                                {countriesByCode[assignment.country] ||
+                                  assignment.country}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
-                        {assignment.type === "office" && (
-                          <>
-                            <span>
-                              Location: office {assignment.officeName}
-                            </span>
-                            {assignment.country && (
-                              <div className="flex items-center gap-1">
-                                <CountryFlag
-                                  countryName={assignment.country}
-                                  size={15}
-                                />
-                                <span>
-                                  {countriesByCode[assignment.country] ||
-                                    assignment.country}
-                                </span>
-                              </div>
-                            )}
-                          </>
-                        )}
-                        {assignment.type === "warehouse" && (
-                          <>
-                            <span>Location: FP warehouse</span>
-                            {assignment.country && (
-                              <div className="flex items-center gap-1">
-                                <CountryFlag
-                                  countryName={assignment.country}
-                                  size={15}
-                                />
-                                <span>
-                                  {countriesByCode[assignment.country] ||
-                                    assignment.country}
-                                </span>
-                              </div>
-                            )}
-                          </>
-                        )}
-                        {assignment.type === "other" && (
-                          <span>Location: {assignment.location}</span>
+                        {assignment.assignedTo && (
+                          <span>{assignment.assignedTo}</span>
                         )}
                       </div>
                     )}
                   </div>
-
-                  {/* Serial Number */}
-                  {product.serialNumber && (
-                    <div className="flex-shrink-0 text-gray-600 text-sm">
-                      SN: {product.serialNumber}
-                    </div>
-                  )}
                 </button>
 
                 {/* Mensaje informativo si falta countryCode */}

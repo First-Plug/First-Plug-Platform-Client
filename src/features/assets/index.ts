@@ -21,8 +21,11 @@ export { ProductImage } from "./components/product-image";
 export { ProductDetail } from "./components/product-details";
 export { ProductConditionCard } from "./components/product-condition-card";
 export { TableStockActions } from "./components/table-stock-actions";
+export { TableStockButtons } from "./components/table-stock-buttons";
+export { AssetActionsDropdown } from "./components/asset-actions-dropdown";
 export { ProductsDetailsTable } from "./components/products-details-table";
 export { CountryFilter } from "./components/country-filter";
+export { SerialFilter } from "./components/serial-filter";
 
 export {
   BulkCreateValidator,

@@ -1,5 +1,16 @@
 import React from "react";
-import { HeadSet, LapTop, Gift, MonitorIcon, Mouse, Other } from "@/shared";
+import {
+  HeadSet,
+  LapTop,
+  Gift,
+  MonitorIcon,
+  Mouse,
+  Other,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared";
 import { Product } from "@/features/assets";
 
 const categoryToIconMap = {
@@ -11,13 +22,22 @@ const categoryToIconMap = {
   other: () => <Other />,
 };
 
+const categoryToLabel: Record<string, string> = {
+  audio: "Audio",
+  computer: "Computer",
+  merchandising: "Merchandising",
+  monitor: "Monitor",
+  peripherals: "Peripherals",
+  other: "Other",
+};
+
 interface CategoryIconsProps {
   products: Product[];
 }
 
 export const CategoryIcons: React.FC<CategoryIconsProps> = ({ products }) => {
   const uniqueCategories = Array.from(
-    new Set(products.map((product) => product.category.toLowerCase()))
+    new Set(products.map((product) => product.category?.toLowerCase() ?? "other"))
   );
 
   // Orden específico de categorías (de izquierda a derecha)
@@ -37,20 +57,22 @@ export const CategoryIcons: React.FC<CategoryIconsProps> = ({ products }) => {
 
   return (
     <div className="flex gap-2">
-      {categoriesWithProducts.map((category, index) => {
+      {categoriesWithProducts.map((category) => {
         const IconComponent = categoryToIconMap[category] || Other;
-        const isLast = index === categoriesWithProducts.length - 1;
+        const label = categoryToLabel[category] || category.charAt(0).toUpperCase() + category.slice(1);
         return (
-          <div className="group relative" key={category}>
-            <IconComponent />
-            <span
-              className={`hidden group-hover:block -top-8 z-50 absolute bg-gray-800 mt-2 px-2 py-1 rounded-md text-white text-xs whitespace-nowrap ${
-                isLast ? "right-0" : "left-1/2 -translate-x-1/2 transform"
-              }`}
-            >
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </span>
-          </div>
+          <TooltipProvider key={category}>
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <span className="inline-flex cursor-default">
+                  <IconComponent />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-blue/80 text-white text-xs">
+                {label}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         );
       })}
     </div>

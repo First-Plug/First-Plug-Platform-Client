@@ -8,13 +8,12 @@ import {
   useProductStore,
   ProductServices,
   CountryFilter,
+  SerialFilter,
 } from "@/features/assets";
 
 export const TableStockActions = () => {
   const router = useRouter();
   const { setAside } = useAsideStore();
-
-  const handleFilter = () => setOnlyAvailable(!onlyAvailable);
 
   const handleExportCsv = async () => {
     try {
@@ -26,26 +25,12 @@ export const TableStockActions = () => {
 
   const { data } = useSession();
 
-  const { setOnlyAvailable, onlyAvailable } = useProductStore();
-
   return (
-    <div className="flex justify-between items-center w-full h-full">
-      <div className="flex items-center gap-1">
-        <input
-          id="onlyAvailable"
-          type="checkbox"
-          checked={onlyAvailable}
-          onChange={handleFilter}
-        />
-        <label htmlFor="onlyAvailable" className="text-gray-500 text-md">
-          Show only available products
-        </label>
-      </div>
-
-      <div className="flex flex-1 justify-center">
+    <div className="flex justify-between items-center w-full flex-1">
+      <div className="flex items-center gap-4">
         <CountryFilter />
+        <SerialFilter />
       </div>
-
       <div className="flex gap-2">
         <Button
           size="small"

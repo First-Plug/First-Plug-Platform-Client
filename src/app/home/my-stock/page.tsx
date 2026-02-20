@@ -11,14 +11,22 @@ import {
   useGetTableAssets,
   useAssetsTable,
   useAssetsTableColumns,
-  TableStockActions,
+  CountryFilter,
+  SerialFilter,
+  TableStockButtons,
   useSubtableLogic,
   useProductStore,
 } from "@/features/assets";
 
 export default function MyAssets() {
   const { data: assets, isLoading } = useGetTableAssets();
-  const { setSelectedCountry, selectedSerialNumber, setSelectedSerialNumber } = useProductStore();
+  const {
+    setSelectedCountry,
+    selectedSerialNumber,
+    setSelectedSerialNumber,
+    onlyAvailable,
+    setOnlyAvailable,
+  } = useProductStore();
   const prevSelectedSerialNumberRef = useRef<string | null>(null);
 
   const {
@@ -85,17 +93,38 @@ export default function MyAssets() {
 
       {!isLoading && assets && assets.length > 0 ? (
         <div className="flex flex-col h-full max-h-full">
-          <div className="flex items-center mb-4 max-h-[50%]">
-            <Button
-              onClick={handleClearAllFiltersExtended}
-              variant="secondary"
-              size="small"
-              className="mr-2 w-36"
-            >
-              Clear All Filters
-            </Button>
+          <div className="flex flex-col gap-3 mb-5 w-full">
+            {/* Fila 1: Clear All Filters + Filtros + Botones */}
+            <div className="flex items-center gap-4 w-full">
+              <Button
+                onClick={handleClearAllFiltersExtended}
+                variant="secondary"
+                size="small"
+                className="w-36 flex-shrink-0"
+              >
+                Clear All Filters
+              </Button>
+              <CountryFilter />
+              <SerialFilter />
+              <div className="flex-1" />
+              <TableStockButtons />
+            </div>
 
-            <TableStockActions />
+            {/* Fila 2: Show only available products */}
+            <div className="flex items-center gap-1">
+              <input
+                id="onlyAvailable"
+                type="checkbox"
+                checked={onlyAvailable}
+                onChange={() => setOnlyAvailable(!onlyAvailable)}
+              />
+              <label
+                htmlFor="onlyAvailable"
+                className="text-gray-500 text-md"
+              >
+                Show only available products
+              </label>
+            </div>
           </div>
 
           {filteredAssets.length > 0 ? (
