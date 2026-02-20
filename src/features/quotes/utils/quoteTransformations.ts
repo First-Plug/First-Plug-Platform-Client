@@ -2090,11 +2090,22 @@ export function transformServiceToBackendFormat(
         );
       }
 
-      return {
+      const detail = perAsset[asset._id];
+      let desirableDeliveryDate = detail?.desirableDeliveryDate;
+      if (desirableDeliveryDate?.includes("T")) {
+        desirableDeliveryDate = desirableDeliveryDate.split("T")[0];
+      }
+
+      const product: any = {
         productId: asset._id,
         productSnapshot: removeUndefinedFields(productSnapshot),
         destination,
       };
+      if (desirableDeliveryDate) {
+        product.desirableDeliveryDate = desirableDeliveryDate;
+      }
+
+      return product;
     });
 
     offboardingPayload = {
