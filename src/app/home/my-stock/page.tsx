@@ -93,42 +93,37 @@ export default function MyAssets() {
 
       {!isLoading && assets && assets.length > 0 ? (
         <div className="flex flex-col h-full max-h-full">
-          <div className="flex items-center gap-4 mb-5 w-full">
-            {/* Div 1: Left - Clear All Filters y Show only en columna */}
-            <div className="flex flex-col gap-3 flex-shrink-0">
+          <div className="flex flex-col gap-3 mb-5 w-full">
+            {/* Fila 1: Clear All Filters + Filtros + Botones */}
+            <div className="flex items-center gap-4 w-full">
               <Button
                 onClick={handleClearAllFiltersExtended}
                 variant="secondary"
                 size="small"
-                className="w-36"
+                className="w-36 flex-shrink-0"
               >
                 Clear All Filters
               </Button>
-              <div className="flex items-center gap-1">
-                <input
-                  id="onlyAvailable"
-                  type="checkbox"
-                  checked={onlyAvailable}
-                  onChange={() => setOnlyAvailable(!onlyAvailable)}
-                />
-                <label
-                  htmlFor="onlyAvailable"
-                  className="text-gray-500 text-md"
-                >
-                  Show only available products
-                </label>
-              </div>
-            </div>
-
-            {/* Div 2: Centro - Filtros */}
-            <div className="flex-1 flex justify-center items-center gap-4">
               <CountryFilter />
               <SerialFilter />
+              <div className="flex-1" />
+              <TableStockButtons />
             </div>
 
-            {/* Div 3: Derecha - Botones */}
-            <div className="flex-shrink-0">
-              <TableStockButtons />
+            {/* Fila 2: Show only available products */}
+            <div className="flex items-center gap-1">
+              <input
+                id="onlyAvailable"
+                type="checkbox"
+                checked={onlyAvailable}
+                onChange={() => setOnlyAvailable(!onlyAvailable)}
+              />
+              <label
+                htmlFor="onlyAvailable"
+                className="text-gray-500 text-md"
+              >
+                Show only available products
+              </label>
             </div>
           </div>
 
