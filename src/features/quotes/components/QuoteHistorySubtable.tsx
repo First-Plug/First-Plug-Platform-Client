@@ -21,6 +21,8 @@ import type {
 } from "../types/quote.types";
 import { countriesByCode } from "@/shared/constants/country-codes";
 import { normalizeCountryCode } from "@/shared/utils/countryCodeNormalizer";
+import { QuoteLocationBlock } from "./QuoteLocationBlock";
+import { formatBrandModelName } from "../utils/quoteDisplayFormatters";
 
 interface QuoteHistorySubtableProps {
   products?: QuoteHistoryProduct[];
@@ -489,742 +491,257 @@ export const QuoteHistorySubtable = ({
                         <span className="font-semibold">
                           {(row as any).data.category}
                         </span>
-                        {((row as any).data.brand ||
-                          (row as any).data.model) && (
-                          <span className="text-gray-700">
-                            {(row as any).data.brand}
-                            {(row as any).data.brand &&
-                              (row as any).data.model &&
-                              " - "}
-                            {(row as any).data.model}
-                          </span>
-                        )}
-                        {(row as any).data.name && (
-                          <span className="text-gray-600 italic">
-                            {(row as any).data.name}
-                          </span>
-                        )}
+                        {formatBrandModelName((row as any).data)}
                         <span className="text-gray-600">
                           SN: {(row as any).data.serialNumber}
                         </span>
-                        <span className="text-gray-600">
-                          {(row as any).data.assignedTo} (
-                          {(row as any).data.location})
-                        </span>
-                        <QuoteLocationWithCountry
-                          country={(row as any).data.countryCode}
+                        <QuoteLocationBlock
+                          variant="location"
+                          data={{
+                            location: (row as any).data.location,
+                            assignedTo: (row as any).data.assignedTo,
+                            countryCode: (row as any).data.countryCode,
+                          }}
                         />
-                        {(row as any).data.additionalDetails && (
-                          <span className="text-gray-500 text-xs italic">
-                            {(row as any).data.additionalDetails}
-                          </span>
-                        )}
                       </>
                     ) : isITSupport ? (
                       <>
                         <span className="font-semibold">
                           {(row as any).data.category}
                         </span>
-                        {((row as any).data.brand ||
-                          (row as any).data.model) && (
-                          <span className="text-gray-700">
-                            {(row as any).data.brand}
-                            {(row as any).data.brand &&
-                              (row as any).data.model &&
-                              " - "}
-                            {(row as any).data.model}
-                          </span>
-                        )}
-                        {(row as any).data.name && (
-                          <span className="text-gray-600 italic">
-                            {(row as any).data.name}
-                          </span>
-                        )}
+                        {formatBrandModelName((row as any).data)}
                         <span className="text-gray-600">
                           SN: {(row as any).data.serialNumber}
                         </span>
-                        <span className="text-gray-600">
-                          {(row as any).data.assignedTo} (
-                          {(row as any).data.location})
-                        </span>
-                        <QuoteLocationWithCountry
-                          country={(row as any).data.countryCode}
+                        <QuoteLocationBlock
+                          variant="location"
+                          data={{
+                            location: (row as any).data.location,
+                            assignedTo: (row as any).data.assignedTo,
+                            countryCode: (row as any).data.countryCode,
+                          }}
                         />
-                        {(row as any).issues &&
-                          (row as any).issues.length > 0 && (
-                            <>
-                              <span className="text-gray-600">
-                                Issues: {(row as any).issues.join(", ")}
-                              </span>
-                              {(row as any).issueStartDate && (
-                                <span className="text-gray-600">
-                                  Started:{" "}
-                                  {formatDate((row as any).issueStartDate)}
-                                </span>
-                              )}
-                            </>
-                          )}
+                        {(row as any).impactLevel && (
+                          <span className="text-gray-600">
+                            Impact level: {(row as any).impactLevel}
+                          </span>
+                        )}
                       </>
                     ) : isBuyback ? (
                       <>
                         <span className="font-semibold">
                           {(row as any).data.category}
                         </span>
-                        {((row as any).data.brand ||
-                          (row as any).data.model) && (
-                          <span className="text-gray-700">
-                            {(row as any).data.brand}
-                            {(row as any).data.brand &&
-                              (row as any).data.model &&
-                              " - "}
-                            {(row as any).data.model}
-                          </span>
-                        )}
-                        {(row as any).data.name && (
-                          <span className="text-gray-600 italic">
-                            {(row as any).data.name}
-                          </span>
-                        )}
+                        {formatBrandModelName((row as any).data)}
                         {(row as any).data.serialNumber && (
                           <span className="text-gray-600">
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600">
-                          {(row as any).data.assignedTo} (
-                          {(row as any).data.location})
-                        </span>
-                        <QuoteLocationWithCountry
-                          country={(row as any).data.countryCode}
+                        <QuoteLocationBlock
+                          variant="location"
+                          data={{
+                            location: (row as any).data.location,
+                            assignedTo: (row as any).data.assignedTo,
+                            countryCode: (row as any).data.countryCode,
+                          }}
                         />
-                        {(row as any).buybackDetails && (
-                          <div className="space-y-0.5 mt-1 pt-1 border-gray-200 border-t">
-                            {(row as any).buybackDetails
-                              .generalFunctionality && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Overall condition:{" "}
-                                </span>
-                                {
-                                  (row as any).buybackDetails
-                                    .generalFunctionality
-                                }
-                              </span>
-                            )}
-                            {(row as any).buybackDetails.batteryCycles !==
-                              undefined && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Battery cycles:{" "}
-                                </span>
-                                {(row as any).buybackDetails.batteryCycles}
-                              </span>
-                            )}
-                            {(row as any).buybackDetails.aestheticDetails && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Cosmetic condition:{" "}
-                                </span>
-                                {(row as any).buybackDetails.aestheticDetails}
-                              </span>
-                            )}
-                            {(row as any).buybackDetails.hasCharger !==
-                              undefined && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Has charger:{" "}
-                                </span>
-                                {(row as any).buybackDetails.hasCharger
-                                  ? "Yes"
-                                  : "No"}
-                                {(row as any).buybackDetails.hasCharger &&
-                                  (row as any).buybackDetails.chargerWorks !==
-                                    undefined && (
-                                    <span>
-                                      {" "}
-                                      (
-                                      {(row as any).buybackDetails.chargerWorks
-                                        ? "Works"
-                                        : "Doesn't work"}
-                                      )
-                                    </span>
-                                  )}
-                              </span>
-                            )}
-                            {(row as any).buybackDetails.additionalComments && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Additional details:{" "}
-                                </span>
-                                {(row as any).buybackDetails.additionalComments}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        {(row as any).additionalInfo &&
-                          (row as any).index === 0 && (
-                            <div className="mt-1 pt-1 border-gray-200 border-t">
-                              <span className="block text-gray-500 text-xs italic">
-                                <span className="font-medium">
-                                  Additional info:{" "}
-                                </span>
-                                {(row as any).additionalInfo}
-                              </span>
-                            </div>
-                          )}
                       </>
                     ) : isDataWipe ? (
                       <>
                         <span className="font-semibold">
                           {(row as any).data.category}
                         </span>
-                        {((row as any).data.brand ||
-                          (row as any).data.model) && (
-                          <span className="text-gray-700">
-                            {(row as any).data.brand}
-                            {(row as any).data.brand &&
-                              (row as any).data.model &&
-                              " - "}
-                            {(row as any).data.model}
-                          </span>
-                        )}
-                        {(row as any).data.name && (
-                          <span className="text-gray-600 italic">
-                            {(row as any).data.name}
-                          </span>
-                        )}
+                        {formatBrandModelName((row as any).data)}
                         {(row as any).data.serialNumber && (
                           <span className="text-gray-600">
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600">
-                          {(row as any).data.assignedTo} (
-                          {(row as any).data.location})
-                        </span>
-                        <QuoteLocationWithCountry
-                          country={(row as any).data.countryCode}
+                        <QuoteLocationBlock
+                          variant="location"
+                          data={{
+                            location: (row as any).data.location,
+                            assignedTo: (row as any).data.assignedTo,
+                            countryCode: (row as any).data.countryCode,
+                          }}
                         />
-                        {(row as any).dataWipeAsset && (
-                          <div className="space-y-0.5 mt-1 pt-1 border-gray-200 border-t">
-                            {(row as any).dataWipeAsset.desirableDate && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Desirable date:{" "}
-                                </span>
-                                {formatDate(
-                                  (row as any).dataWipeAsset.desirableDate
-                                )}
-                              </span>
-                            )}
-                            {(row as any).dataWipeAsset.currentLocation && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Current location:{" "}
-                                </span>
-                                {(row as any).dataWipeAsset.currentLocation}
-                              </span>
-                            )}
-                            {(row as any).dataWipeAsset.currentMember && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Current member:{" "}
-                                </span>
-                                {
-                                  (row as any).dataWipeAsset.currentMember
-                                    .assignedMember
-                                }
-                                {(row as any).dataWipeAsset.currentMember
-                                  .assignedEmail &&
-                                  ` (${
-                                    (row as any).dataWipeAsset.currentMember
-                                      .assignedEmail
-                                  })`}
-                              </span>
-                            )}
-                            {(row as any).dataWipeAsset.currentOffice && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Current office:{" "}
-                                </span>
-                                {
-                                  (row as any).dataWipeAsset.currentOffice
-                                    .officeName
-                                }
-                                {(row as any).dataWipeAsset.currentOffice
-                                  .countryCode && (
-                                  <>
-                                    {" "}
-                                    <QuoteLocationWithCountry
-                                      country={
-                                        (row as any).dataWipeAsset.currentOffice
-                                          .countryCode
-                                      }
-                                    />
-                                  </>
-                                )}
-                              </span>
-                            )}
-                            {(row as any).dataWipeAsset.currentWarehouse && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Current warehouse:{" "}
-                                </span>
-                                FP warehouse
-                                {(row as any).dataWipeAsset.currentWarehouse
-                                  .countryCode && (
-                                  <>
-                                    {" "}
-                                    <QuoteLocationWithCountry
-                                      country={
-                                        (row as any).dataWipeAsset
-                                          .currentWarehouse.countryCode
-                                      }
-                                    />
-                                  </>
-                                )}
-                              </span>
-                            )}
-                            {(row as any).dataWipeAsset.destination && (
-                              <span className="block text-gray-500 text-xs">
-                                <span className="font-medium">
-                                  Return destination:{" "}
-                                </span>
-                                {(row as any).dataWipeAsset.destination
-                                  .destinationType === "Employee" &&
-                                  (row as any).dataWipeAsset.destination
-                                    .member && (
-                                    <span>
-                                      {
-                                        (row as any).dataWipeAsset.destination
-                                          .member.assignedMember
-                                      }
-                                      {(row as any).dataWipeAsset.destination
-                                        .member.assignedEmail &&
-                                        ` (${
-                                          (row as any).dataWipeAsset.destination
-                                            .member.assignedEmail
-                                        })`}
-                                    </span>
-                                  )}
-                                {(row as any).dataWipeAsset.destination
-                                  .destinationType === "Our office" &&
-                                  (row as any).dataWipeAsset.destination
-                                    .office && (
-                                    <span>
-                                      {
-                                        (row as any).dataWipeAsset.destination
-                                          .office.officeName
-                                      }
-                                    </span>
-                                  )}
-                                {(row as any).dataWipeAsset.destination
-                                  .destinationType === "FP warehouse" && (
-                                  <span>FP warehouse</span>
-                                )}
-                              </span>
-                            )}
-                          </div>
+                        {(row as any).dataWipeAsset?.destination && (
+                          <>
+                            <span className="text-gray-600 text-xs">
+                              Return destination:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="destination"
+                              data={(row as any).dataWipeAsset.destination}
+                            />
+                          </>
                         )}
-                        {(row as any).additionalDetails &&
-                          (row as any).index === 0 && (
-                            <div className="mt-1 pt-1 border-gray-200 border-t">
-                              <span className="block text-gray-500 text-xs italic">
-                                <span className="font-medium">
-                                  Additional details:{" "}
-                                </span>
-                                {(row as any).additionalDetails}
-                              </span>
-                            </div>
-                          )}
                       </>
                     ) : isCleaning ? (
                       <>
                         <span className="font-semibold">
                           {(row as any).data.category}
                         </span>
-                        {((row as any).data.brand ||
-                          (row as any).data.model) && (
-                          <span className="text-gray-700">
-                            {(row as any).data.brand}
-                            {(row as any).data.brand &&
-                              (row as any).data.model &&
-                              " - "}
-                            {(row as any).data.model}
-                          </span>
-                        )}
-                        {(row as any).data.name && (
-                          <span className="text-gray-600 italic">
-                            {(row as any).data.name}
-                          </span>
-                        )}
+                        {formatBrandModelName((row as any).data)}
                         {(row as any).data.serialNumber && (
                           <span className="text-gray-600">
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600">
-                          {(row as any).data.assignedTo} (
-                          {(row as any).data.location})
-                        </span>
-                        <QuoteLocationWithCountry
-                          country={(row as any).data.countryCode}
+                        <QuoteLocationBlock
+                          variant="location"
+                          data={{
+                            location: (row as any).data.location,
+                            assignedTo: (row as any).data.assignedTo,
+                            countryCode: (row as any).data.countryCode,
+                          }}
                         />
-                        {(row as any).cleaningProduct?.cleaningType && (
-                          <span className="block text-gray-600">
-                            {(row as any).cleaningProduct.cleaningType} Cleaning
-                          </span>
-                        )}
-                        {(row as any).additionalDetails && (
-                          <div className="mt-1 pt-1 border-gray-200 border-t">
-                            <span className="block text-gray-500 text-xs italic">
-                              <span className="font-medium">
-                                Additional details:{" "}
-                              </span>
-                              {(row as any).additionalDetails}
-                            </span>
-                          </div>
-                        )}
                       </>
                     ) : isDonate ? (
                       <>
                         <span className="font-semibold">
                           {(row as any).data.category}
                         </span>
-                        {((row as any).data.brand ||
-                          (row as any).data.model) && (
-                          <span className="text-gray-700">
-                            {(row as any).data.brand}
-                            {(row as any).data.brand &&
-                              (row as any).data.model &&
-                              " - "}
-                            {(row as any).data.model}
-                          </span>
-                        )}
-                        {(row as any).data.name && (
-                          <span className="text-gray-600 italic">
-                            {(row as any).data.name}
-                          </span>
-                        )}
+                        {formatBrandModelName((row as any).data)}
                         {(row as any).data.serialNumber && (
                           <span className="text-gray-600">
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600">
-                          {(row as any).data.assignedTo} (
-                          {(row as any).data.location})
-                        </span>
-                        <QuoteLocationWithCountry
-                          country={(row as any).data.countryCode}
+                        <QuoteLocationBlock
+                          variant="location"
+                          data={{
+                            location: (row as any).data.location,
+                            assignedTo: (row as any).data.assignedTo,
+                            countryCode: (row as any).data.countryCode,
+                          }}
                         />
-                        {((row as any).donateProduct?.needsDataWipe ||
-                          (row as any).donateProduct?.needsCleaning) && (
-                          <>
-                            {(row as any).donateProduct?.needsDataWipe && (
-                              <span className="text-gray-600 text-xs">
-                                ✓ Needs Data Wipe
-                              </span>
-                            )}
-                            {(row as any).donateProduct?.needsCleaning && (
-                              <span className="text-gray-600 text-xs">
-                                ✓ Needs Cleaning
-                              </span>
-                            )}
-                          </>
-                        )}
-                        {/* Compatibilidad: si viene comments, mostrar solo si no duplica additionalDetails */}
-                        {(row as any).donateProduct?.comments &&
-                          (row as any).donateProduct.comments !==
-                            (row as any).additionalDetails && (
-                            <span className="text-gray-500 text-xs italic">
-                              {(row as any).donateProduct.comments}
-                            </span>
-                          )}
-                        {(row as any).additionalDetails && (
-                          <div className="mt-1 pt-1 border-gray-200 border-t">
-                            <span className="block text-gray-500 text-xs italic">
-                              <span className="font-medium">
-                                Additional details:{" "}
-                              </span>
-                              {(row as any).additionalDetails}
-                            </span>
-                          </div>
-                        )}
                       </>
                     ) : isStorage ? (
                       <>
                         <span className="font-semibold">
                           {(row as any).data.category}
                         </span>
-                        {((row as any).data.brand ||
-                          (row as any).data.model) && (
-                          <span className="text-gray-700">
-                            {(row as any).data.brand}
-                            {(row as any).data.brand &&
-                              (row as any).data.model &&
-                              " - "}
-                            {(row as any).data.model}
-                          </span>
-                        )}
-                        {(row as any).data.name && (
-                          <span className="text-gray-600 italic">
-                            {(row as any).data.name}
-                          </span>
-                        )}
+                        {formatBrandModelName((row as any).data)}
                         {(row as any).data.serialNumber && (
                           <span className="text-gray-600">
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600">
-                          {(row as any).data.assignedTo} (
-                          {(row as any).data.location})
-                        </span>
-                        <QuoteLocationWithCountry
-                          country={(row as any).data.countryCode}
+                        <QuoteLocationBlock
+                          variant="location"
+                          data={{
+                            location: (row as any).data.location,
+                            assignedTo: (row as any).data.assignedTo,
+                            countryCode: (row as any).data.countryCode,
+                          }}
                         />
-                        {(row as any).storageProduct?.approximateSize && (
-                          <span className="block text-gray-600 text-xs">
-                            Size: {(row as any).storageProduct.approximateSize}
-                          </span>
-                        )}
-                        {(row as any).storageProduct?.approximateWeight && (
-                          <span className="block text-gray-600 text-xs">
-                            Weight:{" "}
-                            {(row as any).storageProduct.approximateWeight}
-                          </span>
-                        )}
-                        {(row as any).storageProduct
-                          ?.approximateStorageDays && (
-                          <span className="block text-gray-600 text-xs">
-                            Duration:{" "}
-                            {(row as any).storageProduct.approximateStorageDays}
-                          </span>
-                        )}
-                        {(row as any).storageProduct?.additionalComments && (
-                          <span className="block text-gray-500 text-xs italic">
-                            {(row as any).storageProduct.additionalComments}
-                          </span>
-                        )}
-                        {(row as any).additionalDetails && (
-                          <div className="mt-1 pt-1 border-gray-200 border-t">
-                            <span className="block text-gray-500 text-xs italic">
-                              <span className="font-medium">
-                                Additional details:{" "}
-                              </span>
-                              {(row as any).additionalDetails}
-                            </span>
-                          </div>
-                        )}
                       </>
                     ) : isDestructionRecycling ? (
                       <>
                         <span className="font-semibold">
                           {(row as any).data.category}
                         </span>
-                        {((row as any).data.brand ||
-                          (row as any).data.model) && (
-                          <span className="text-gray-700">
-                            {(row as any).data.brand}
-                            {(row as any).data.brand &&
-                              (row as any).data.model &&
-                              " - "}
-                            {(row as any).data.model}
-                          </span>
-                        )}
-                        {(row as any).data.name && (
-                          <span className="text-gray-600 italic">
-                            {(row as any).data.name}
-                          </span>
-                        )}
+                        {formatBrandModelName((row as any).data)}
                         {(row as any).data.serialNumber && (
                           <span className="text-gray-600">
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600">
-                          {(row as any).data.assignedTo} (
-                          {(row as any).data.location})
-                        </span>
-                        {(row as any).data.countryCode && (
-                          <QuoteLocationWithCountry
-                            country={(row as any).data.countryCode}
-                          />
-                        )}
-                        {(row as any).requiresCertificate && (
-                          <span className="font-semibold text-gray-600">
-                            ✓ Certificate Required
-                          </span>
-                        )}
-                        {(row as any).comments && (
-                          <span className="text-gray-500 text-xs italic">
-                            {(row as any).comments}
-                          </span>
-                        )}
+                        <QuoteLocationBlock
+                          variant="location"
+                          data={{
+                            location: (row as any).data.location,
+                            assignedTo: (row as any).data.assignedTo,
+                            countryCode: (row as any).data.countryCode,
+                          }}
+                        />
                       </>
                     ) : isOffboarding ? (
                       <>
-                        <span className="font-semibold">Offboarding</span>
-                        {"originMember" in row && (row as any).originMember && (
-                          <span className="text-gray-600 text-xs">
-                            From: {(row as any).originMember.firstName}{" "}
-                            {(row as any).originMember.lastName}
-                            {(row as any).originMember.countryCode && (
-                              <>
-                                {" "}
-                                <QuoteLocationWithCountry
-                                  country={(row as any).originMember.countryCode}
-                                />
-                              </>
-                            )}
-                          </span>
-                        )}
-                        <span className="font-semibold text-gray-700">
+                        <span className="font-semibold">
                           {(row as any).data?.category}
                         </span>
-                        {((row as any).data?.brand || (row as any).data?.model) && (
-                          <span className="text-gray-700">
-                            {(row as any).data.brand}
-                            {(row as any).data.brand &&
-                              (row as any).data.model &&
-                              " - "}
-                            {(row as any).data.model}
-                          </span>
-                        )}
-                        {(row as any).data?.name && (
-                          <span className="text-gray-600 italic">
-                            {(row as any).data.name}
-                          </span>
-                        )}
+                        {formatBrandModelName((row as any).data)}
                         <span className="text-gray-600">
                           SN: {(row as any).data?.serialNumber || "N/A"}
                         </span>
+                        {!("originMember" in row && (row as any).originMember) && (
+                          <QuoteLocationBlock
+                            variant="location"
+                            data={{
+                              location: (row as any).data?.location,
+                              assignedTo: (row as any).data?.assignedTo,
+                              countryCode: (row as any).data?.countryCode,
+                            }}
+                          />
+                        )}
+                        {"originMember" in row && (row as any).originMember && (
+                          <>
+                            <span className="text-gray-600 text-xs">
+                              From:{" "}
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                assignedTo: `${(row as any).originMember.firstName || ""} ${(row as any).originMember.lastName || ""}`.trim(),
+                                countryCode: (row as any).originMember.countryCode,
+                              }}
+                            />
+                          </>
+                        )}
                         {"offboardingProduct" in row &&
                           (row as any).offboardingProduct?.destination && (
                             <>
-                              <span className="font-semibold text-gray-700">
-                                To:{" "}
-                                {(row as any).offboardingProduct.destination
-                                  .type === "Member"
-                                  ? (row as any).offboardingProduct.destination
-                                      .assignedMember
-                                  : (row as any).offboardingProduct.destination
-                                      .type === "Office"
-                                    ? (row as any).offboardingProduct
-                                        .destination.officeName
-                                    : (row as any).offboardingProduct
-                                        .destination.warehouseName}
-                              </span>
                               <span className="text-gray-600 text-xs">
-                                {(row as any).offboardingProduct.destination
-                                  .type}
-                                {(row as any).offboardingProduct.destination
-                                  .countryCode && (
-                                  <>
-                                    {" "}
-                                    <QuoteLocationWithCountry
-                                      country={
-                                        (row as any).offboardingProduct
-                                          .destination.countryCode
-                                      }
-                                    />
-                                  </>
-                                )}
+                                To:{" "}
                               </span>
+                              <QuoteLocationBlock
+                                variant="destination"
+                                data={(row as any).offboardingProduct.destination}
+                              />
                             </>
                           )}
                         {"isSensitiveSituation" in row &&
                           (row as any).isSensitiveSituation && (
-                            <span className="text-red-600 font-semibold text-xs">
-                              ⚠️ Sensitive Situation
+                            <span className="text-gray-600 text-xs">
+                              Sensitive situation: Yes
                             </span>
                           )}
                         {"employeeKnows" in row &&
                           (row as any).employeeKnows !== undefined && (
                             <span className="text-gray-600 text-xs">
-                              Employee Knows:{" "}
-                              {(row as any).employeeKnows ? "✓ Yes" : "✗ No"}
+                              Employee knows:{" "}
+                              {(row as any).employeeKnows ? "Yes" : "No"}
                             </span>
                           )}
-                        {(row as any).additionalDetails && (
-                          <span className="text-gray-500 text-xs italic">
-                            {(row as any).additionalDetails}
-                          </span>
-                        )}
                       </>
                     ) : isLogistics ? (
                       <>
-                        <span className="font-semibold text-gray-700">
-                          {(row as any).data.category}
-                        </span>
-                        {((row as any).data.brand ||
-                          (row as any).data.model) && (
-                          <span className="text-gray-700">
-                            {(row as any).data.brand}
-                            {(row as any).data.brand &&
-                              (row as any).data.model &&
-                              " - "}
-                            {(row as any).data.model}
-                          </span>
-                        )}
-                        {(row as any).data.name && (
-                          <span className="text-gray-600 italic">
-                            {(row as any).data.name}
-                          </span>
-                        )}
+                        {formatBrandModelName((row as any).data)}
                         <span className="text-gray-600">
-                          SN:{" "}
-                          {(row as any).data.serialNumber}
+                          SN: {(row as any).data.serialNumber}
                         </span>
-                        <span className="text-gray-600">
-                          From:{" "}
-                          {(row as any).data.assignedTo} (
-                          {(row as any).data.location})
-                        </span>
-                        {(row as any).data.countryCode && (
-                          <QuoteLocationWithCountry
-                            country={(row as any).data.countryCode}
-                          />
-                        )}
+                        <QuoteLocationBlock
+                          variant="location"
+                          data={{
+                            location: (row as any).data.location,
+                            assignedTo: (row as any).data.assignedTo,
+                            countryCode: (row as any).data.countryCode,
+                          }}
+                        />
                         {(row as any).logisticsProduct?.destination && (
                           <>
-                            <span className="font-semibold text-gray-700">
-                              To:{" "}
-                              {(row as any).logisticsProduct.destination
-                                .type === "Member"
-                                ? (row as any).logisticsProduct.destination
-                                    .assignedMember
-                                : (row as any).logisticsProduct.destination
-                                    .type === "Office"
-                                  ? (row as any).logisticsProduct.destination
-                                      .officeName
-                                  : (row as any).logisticsProduct.destination
-                                      .warehouseName || "FP Warehouse"}
-                            </span>
                             <span className="text-gray-600 text-xs">
-                              {(row as any).logisticsProduct.destination.type}
-                              {(row as any).logisticsProduct.destination
-                                .countryCode && (
-                                <>
-                                  {" "}
-                                  <QuoteLocationWithCountry
-                                    country={
-                                      (row as any).logisticsProduct
-                                        .destination.countryCode
-                                    }
-                                  />
-                                </>
-                              )}
+                              Destination:{" "}
                             </span>
+                            <QuoteLocationBlock
+                              variant="destination"
+                              data={(row as any).logisticsProduct.destination}
+                            />
                           </>
                         )}
-                        {(row as any).additionalDetails &&
-                          (row as any).index === 0 && (
-                            <span className="text-gray-500 text-xs italic">
-                              {(row as any).additionalDetails}
-                            </span>
-                          )}
                       </>
                     ) : null}
                   </div>

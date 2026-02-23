@@ -1,0 +1,10 @@
+---
+description: Git commit message conventions
+alwaysApply: true
+---
+
+# Commit Messages
+
+- Write all commit messages in **English**.
+- Use conventional commits format: `feat:`, `fix:`, `chore:`, etc.
+- Keep the first line concise (≤72 chars); add details in the body if needed.
