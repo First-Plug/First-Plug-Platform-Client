@@ -8,6 +8,7 @@ import {
 } from "@/shared";
 import { formatDate } from "@/shared";
 import { QuoteLocationWithCountry } from "./QuoteLocationWithCountry";
+import { QuoteLocationBlock } from "@/features/quotes/components/QuoteLocationBlock";
 
 interface QuoteProduct {
   category: string;
@@ -512,8 +513,13 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                           <span className="text-gray-600">
                             {row.dataWipeAsset.productSnapshot.category}
                           </span>
-                          <span className="text-gray-600">
-                            SN: {row.dataWipeAsset.productSnapshot.serialNumber}
+                          {row.dataWipeAsset.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN: {row.dataWipeAsset.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           {row.dataWipeAsset.currentMember ? (
                             <>
@@ -635,12 +641,17 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.destructionProduct.productSnapshot.name}
                             </span>
                           )}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {
-                              row.destructionProduct.productSnapshot
-                                .serialNumber
-                            }
+                          {row.destructionProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {
+                                row.destructionProduct.productSnapshot
+                                  .serialNumber
+                              }
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <span className="text-gray-600">
                             {row.destructionProduct.productSnapshot.assignedTo}{" "}
@@ -686,9 +697,14 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.buybackProduct.productSnapshot.name}
                             </span>
                           )}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {row.buybackProduct.productSnapshot.serialNumber}
+                          {row.buybackProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {row.buybackProduct.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <span className="text-gray-600">
                             {row.buybackProduct.productSnapshot.assignedTo} (
@@ -777,8 +793,13 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.donateProduct.productSnapshot.name}
                             </span>
                           )}
-                          <span className="text-gray-600">
-                            SN: {row.donateProduct.productSnapshot.serialNumber}
+                          {row.donateProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN: {row.donateProduct.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <span className="text-gray-600">
                             {row.donateProduct.productSnapshot.assignedTo} (
@@ -838,9 +859,14 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.cleaningProduct.productSnapshot.name}
                             </span>
                           )}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {row.cleaningProduct.productSnapshot.serialNumber}
+                          {row.cleaningProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {row.cleaningProduct.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <span className="text-gray-600">
                             {row.cleaningProduct.productSnapshot.assignedTo} (
@@ -887,9 +913,14 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.storageProduct.productSnapshot.name}
                             </span>
                           )}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {row.storageProduct.productSnapshot.serialNumber}
+                          {row.storageProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {row.storageProduct.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <span className="text-gray-600">
                             {row.storageProduct.productSnapshot.assignedTo} (
@@ -964,13 +995,15 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.offboardingProduct.productSnapshot.name}
                             </span>
                           )}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {
-                              row.offboardingProduct.productSnapshot
-                                .serialNumber
-                            }
-                          </span>
+                          {row.offboardingProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {
+                                row.offboardingProduct.productSnapshot
+                                  .serialNumber
+                              }
+                            </span>
+                          )}
                           {row.offboardingProduct.destination && (
                             <>
                               <span className="font-semibold text-gray-700">
@@ -1041,22 +1074,23 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.logisticsProduct.productSnapshot.name}
                             </span>
                           )}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {row.logisticsProduct.productSnapshot.serialNumber}
-                          </span>
-                          <span className="text-gray-600">
-                            From:{" "}
-                            {row.logisticsProduct.productSnapshot.assignedTo} (
-                            {row.logisticsProduct.productSnapshot.location})
-                          </span>
-                          {row.logisticsProduct.productSnapshot.countryCode && (
-                            <QuoteLocationWithCountry
-                              country={
-                                row.logisticsProduct.productSnapshot.countryCode
-                              }
-                            />
+                          {row.logisticsProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {row.logisticsProduct.productSnapshot.serialNumber}
+                            </span>
                           )}
+                          <span className="text-gray-600 text-xs">
+                            From:{" "}
+                          </span>
+                          <QuoteLocationBlock
+                            variant="location"
+                            data={{
+                              location: row.logisticsProduct.productSnapshot.location,
+                              assignedTo: row.logisticsProduct.productSnapshot.assignedTo,
+                              countryCode: row.logisticsProduct.productSnapshot.countryCode,
+                            }}
+                          />
                           {row.logisticsProduct.destination && (
                             <>
                               <span className="font-semibold text-gray-700">
@@ -1115,8 +1149,13 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.enrolledDevice.name}
                             </span>
                           )}
-                          <span className="text-gray-600">
-                            SN: {row.enrolledDevice.serialNumber}
+                          {row.enrolledDevice.serialNumber && (
+                            <span className="text-gray-600">
+                              SN: {row.enrolledDevice.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <span className="text-gray-600">
                             {row.enrolledDevice.assignedTo} (
@@ -1148,8 +1187,13 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.productSnapshot.model}
                             </span>
                           )}
-                          <span className="text-gray-600">
-                            SN: {row.productSnapshot.serialNumber}
+                          {row.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN: {row.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <span className="text-gray-600">
                             {row.productSnapshot.assignedTo} (

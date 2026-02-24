@@ -492,8 +492,13 @@ export const QuoteHistorySubtable = ({
                           {(row as any).data.category}
                         </span>
                         {formatBrandModelName((row as any).data)}
-                        <span className="text-gray-600">
-                          SN: {(row as any).data.serialNumber}
+                        {(row as any).data.serialNumber && (
+                          <span className="text-gray-600">
+                            SN: {(row as any).data.serialNumber}
+                          </span>
+                        )}
+                        <span className="text-gray-600 text-xs">
+                          Location:
                         </span>
                         <QuoteLocationBlock
                           variant="location"
@@ -510,8 +515,13 @@ export const QuoteHistorySubtable = ({
                           {(row as any).data.category}
                         </span>
                         {formatBrandModelName((row as any).data)}
-                        <span className="text-gray-600">
-                          SN: {(row as any).data.serialNumber}
+                        {(row as any).data.serialNumber && (
+                          <span className="text-gray-600">
+                            SN: {(row as any).data.serialNumber}
+                          </span>
+                        )}
+                        <span className="text-gray-600 text-xs">
+                          Location:
                         </span>
                         <QuoteLocationBlock
                           variant="location"
@@ -538,6 +548,9 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
+                        <span className="text-gray-600 text-xs">
+                          Location:
+                        </span>
                         <QuoteLocationBlock
                           variant="location"
                           data={{
@@ -558,6 +571,9 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
+                        <span className="text-gray-600 text-xs">
+                          Location:
+                        </span>
                         <QuoteLocationBlock
                           variant="location"
                           data={{
@@ -589,6 +605,9 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
+                        <span className="text-gray-600 text-xs">
+                          Location:
+                        </span>
                         <QuoteLocationBlock
                           variant="location"
                           data={{
@@ -597,6 +616,11 @@ export const QuoteHistorySubtable = ({
                             countryCode: (row as any).data.countryCode,
                           }}
                         />
+                        {(row as any).cleaningProduct?.cleaningType && (
+                          <span className="text-gray-600">
+                            {(row as any).cleaningProduct.cleaningType} Cleaning
+                          </span>
+                        )}
                       </>
                     ) : isDonate ? (
                       <>
@@ -609,6 +633,9 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
+                        <span className="text-gray-600 text-xs">
+                          Location:
+                        </span>
                         <QuoteLocationBlock
                           variant="location"
                           data={{
@@ -617,6 +644,21 @@ export const QuoteHistorySubtable = ({
                             countryCode: (row as any).data.countryCode,
                           }}
                         />
+                        {((row as any).donateProduct?.needsDataWipe ||
+                          (row as any).donateProduct?.needsCleaning) && (
+                          <>
+                            {(row as any).donateProduct?.needsDataWipe && (
+                              <span className="text-gray-600 text-xs">
+                                ✓ Needs Data Wipe
+                              </span>
+                            )}
+                            {(row as any).donateProduct?.needsCleaning && (
+                              <span className="text-gray-600 text-xs">
+                                ✓ Needs Cleaning
+                              </span>
+                            )}
+                          </>
+                        )}
                       </>
                     ) : isStorage ? (
                       <>
@@ -629,6 +671,9 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
+                        <span className="text-gray-600 text-xs">
+                          Location:
+                        </span>
                         <QuoteLocationBlock
                           variant="location"
                           data={{
@@ -637,6 +682,24 @@ export const QuoteHistorySubtable = ({
                             countryCode: (row as any).data.countryCode,
                           }}
                         />
+                        {(row as any).storageProduct?.approximateSize && (
+                          <span className="text-gray-600 text-xs">
+                            Size: {(row as any).storageProduct.approximateSize}
+                          </span>
+                        )}
+                        {(row as any).storageProduct?.approximateWeight && (
+                          <span className="text-gray-600 text-xs">
+                            Weight:{" "}
+                            {(row as any).storageProduct.approximateWeight}
+                          </span>
+                        )}
+                        {(row as any).storageProduct
+                          ?.approximateStorageDays && (
+                          <span className="text-gray-600 text-xs">
+                            Duration:{" "}
+                            {(row as any).storageProduct.approximateStorageDays}
+                          </span>
+                        )}
                       </>
                     ) : isDestructionRecycling ? (
                       <>
@@ -649,6 +712,9 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
+                        <span className="text-gray-600 text-xs">
+                          Location:
+                        </span>
                         <QuoteLocationBlock
                           variant="location"
                           data={{
@@ -657,6 +723,11 @@ export const QuoteHistorySubtable = ({
                             countryCode: (row as any).data.countryCode,
                           }}
                         />
+                        {(row as any).requiresCertificate && (
+                          <span className="text-gray-600">
+                            ✓ Certificate Required
+                          </span>
+                        )}
                       </>
                     ) : isOffboarding ? (
                       <>
@@ -664,9 +735,11 @@ export const QuoteHistorySubtable = ({
                           {(row as any).data?.category}
                         </span>
                         {formatBrandModelName((row as any).data)}
-                        <span className="text-gray-600">
-                          SN: {(row as any).data?.serialNumber || "N/A"}
-                        </span>
+                        {(row as any).data?.serialNumber && (
+                          <span className="text-gray-600">
+                            SN: {(row as any).data.serialNumber}
+                          </span>
+                        )}
                         {!("originMember" in row && (row as any).originMember) && (
                           <QuoteLocationBlock
                             variant="location"
@@ -719,9 +792,17 @@ export const QuoteHistorySubtable = ({
                       </>
                     ) : isLogistics ? (
                       <>
+                        <span className="font-semibold">
+                          {(row as any).data.category}
+                        </span>
                         {formatBrandModelName((row as any).data)}
-                        <span className="text-gray-600">
-                          SN: {(row as any).data.serialNumber}
+                        {(row as any).data.serialNumber && (
+                          <span className="text-gray-600">
+                            SN: {(row as any).data.serialNumber}
+                          </span>
+                        )}
+                        <span className="text-gray-600 text-xs">
+                          From:{" "}
                         </span>
                         <QuoteLocationBlock
                           variant="location"

@@ -516,8 +516,13 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                       {row.dataWipeAsset ? (
                         <>
                           {formatBrandModelName(row.dataWipeAsset.productSnapshot)}
-                          <span className="text-gray-600">
-                            SN: {row.dataWipeAsset.productSnapshot.serialNumber}
+                          {row.dataWipeAsset.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN: {row.dataWipeAsset.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <QuoteLocationBlock
                             variant="location"
@@ -545,12 +550,17 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             {row.destructionProduct.productSnapshot.category}
                           </span>
                           {formatBrandModelName(row.destructionProduct.productSnapshot)}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {
-                              row.destructionProduct.productSnapshot
-                                .serialNumber
-                            }
+                          {row.destructionProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {
+                                row.destructionProduct.productSnapshot
+                                  .serialNumber
+                              }
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <QuoteLocationBlock
                             variant="location"
@@ -567,9 +577,14 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             {row.buybackProduct.productSnapshot.category}
                           </span>
                           {formatBrandModelName(row.buybackProduct.productSnapshot)}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {row.buybackProduct.productSnapshot.serialNumber}
+                          {row.buybackProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {row.buybackProduct.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <QuoteLocationBlock
                             variant="location"
@@ -586,8 +601,13 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             {row.donateProduct.productSnapshot.category}
                           </span>
                           {formatBrandModelName(row.donateProduct.productSnapshot)}
-                          <span className="text-gray-600">
-                            SN: {row.donateProduct.productSnapshot.serialNumber}
+                          {row.donateProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN: {row.donateProduct.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <QuoteLocationBlock
                             variant="location"
@@ -604,9 +624,14 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             {row.cleaningProduct.productSnapshot.category}
                           </span>
                           {formatBrandModelName(row.cleaningProduct.productSnapshot)}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {row.cleaningProduct.productSnapshot.serialNumber}
+                          {row.cleaningProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {row.cleaningProduct.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <QuoteLocationBlock
                             variant="location"
@@ -623,9 +648,14 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             {row.storageProduct.productSnapshot.category}
                           </span>
                           {formatBrandModelName(row.storageProduct.productSnapshot)}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {row.storageProduct.productSnapshot.serialNumber}
+                          {row.storageProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {row.storageProduct.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <QuoteLocationBlock
                             variant="location"
@@ -642,21 +672,15 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             {row.offboardingProduct.productSnapshot.category}
                           </span>
                           {formatBrandModelName(row.offboardingProduct.productSnapshot)}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {
-                              row.offboardingProduct.productSnapshot
-                                .serialNumber
-                            }
-                          </span>
-                          <QuoteLocationBlock
-                            variant="location"
-                            data={{
-                              location: row.offboardingProduct.productSnapshot.location,
-                              assignedTo: row.offboardingProduct.productSnapshot.assignedTo,
-                              countryCode: row.offboardingProduct.productSnapshot.countryCode,
-                            }}
-                          />
+                          {row.offboardingProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {
+                                row.offboardingProduct.productSnapshot
+                                  .serialNumber
+                              }
+                            </span>
+                          )}
                           {row.originMember && (
                             <>
                               <span className="text-gray-600 text-xs">
@@ -686,9 +710,14 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                       ) : row.logisticsProduct ? (
                         <>
                           {formatBrandModelName(row.logisticsProduct.productSnapshot)}
-                          <span className="text-gray-600">
-                            SN:{" "}
-                            {row.logisticsProduct.productSnapshot.serialNumber}
+                          {row.logisticsProduct.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN:{" "}
+                              {row.logisticsProduct.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            From:{" "}
                           </span>
                           <QuoteLocationBlock
                             variant="location"
@@ -716,8 +745,13 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             {row.enrolledDevice.category}
                           </span>
                           {formatBrandModelName(row.enrolledDevice)}
-                          <span className="text-gray-600">
-                            SN: {row.enrolledDevice.serialNumber}
+                          {row.enrolledDevice.serialNumber && (
+                            <span className="text-gray-600">
+                              SN: {row.enrolledDevice.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <QuoteLocationBlock
                             variant="location"
@@ -734,8 +768,13 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                             {row.productSnapshot.category}
                           </span>
                           {formatBrandModelName(row.productSnapshot)}
-                          <span className="text-gray-600">
-                            SN: {row.productSnapshot.serialNumber}
+                          {row.productSnapshot.serialNumber && (
+                            <span className="text-gray-600">
+                              SN: {row.productSnapshot.serialNumber}
+                            </span>
+                          )}
+                          <span className="text-gray-600 text-xs">
+                            Location:
                           </span>
                           <QuoteLocationBlock
                             variant="location"
