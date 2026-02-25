@@ -497,17 +497,19 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600 text-xs">
-                          Location:
-                        </span>
-                        <QuoteLocationBlock
-                          variant="location"
-                          data={{
-                            location: (row as any).data.location,
-                            assignedTo: (row as any).data.assignedTo,
-                            countryCode: (row as any).data.countryCode,
-                          }}
-                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-gray-600 text-xs">
+                            Location:
+                          </span>
+                          <QuoteLocationBlock
+                            variant="location"
+                            data={{
+                              location: (row as any).data.location,
+                              assignedTo: (row as any).data.assignedTo,
+                              countryCode: (row as any).data.countryCode,
+                            }}
+                          />
+                        </div>
                       </>
                     ) : isITSupport ? (
                       <>
@@ -520,17 +522,19 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600 text-xs">
-                          Location:
-                        </span>
-                        <QuoteLocationBlock
-                          variant="location"
-                          data={{
-                            location: (row as any).data.location,
-                            assignedTo: (row as any).data.assignedTo,
-                            countryCode: (row as any).data.countryCode,
-                          }}
-                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-gray-600 text-xs">
+                            Location:
+                          </span>
+                          <QuoteLocationBlock
+                            variant="location"
+                            data={{
+                              location: (row as any).data.location,
+                              assignedTo: (row as any).data.assignedTo,
+                              countryCode: (row as any).data.countryCode,
+                            }}
+                          />
+                        </div>
                         {(row as any).impactLevel && (
                           <span className="text-gray-600">
                             Impact level: {(row as any).impactLevel}
@@ -548,17 +552,19 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600 text-xs">
-                          Location:
-                        </span>
-                        <QuoteLocationBlock
-                          variant="location"
-                          data={{
-                            location: (row as any).data.location,
-                            assignedTo: (row as any).data.assignedTo,
-                            countryCode: (row as any).data.countryCode,
-                          }}
-                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-gray-600 text-xs">
+                            Location:
+                          </span>
+                          <QuoteLocationBlock
+                            variant="location"
+                            data={{
+                              location: (row as any).data.location,
+                              assignedTo: (row as any).data.assignedTo,
+                              countryCode: (row as any).data.countryCode,
+                            }}
+                          />
+                        </div>
                       </>
                     ) : isDataWipe ? (
                       <>
@@ -571,17 +577,19 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600 text-xs">
-                          Location:
-                        </span>
-                        <QuoteLocationBlock
-                          variant="location"
-                          data={{
-                            location: (row as any).data.location,
-                            assignedTo: (row as any).data.assignedTo,
-                            countryCode: (row as any).data.countryCode,
-                          }}
-                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-gray-600 text-xs">
+                            Location:
+                          </span>
+                          <QuoteLocationBlock
+                            variant="location"
+                            data={{
+                              location: (row as any).data.location,
+                              assignedTo: (row as any).data.assignedTo,
+                              countryCode: (row as any).data.countryCode,
+                            }}
+                          />
+                        </div>
                         {(row as any).dataWipeAsset?.destination && (
                           <>
                             <span className="text-gray-600 text-xs">
@@ -605,17 +613,19 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600 text-xs">
-                          Location:
-                        </span>
-                        <QuoteLocationBlock
-                          variant="location"
-                          data={{
-                            location: (row as any).data.location,
-                            assignedTo: (row as any).data.assignedTo,
-                            countryCode: (row as any).data.countryCode,
-                          }}
-                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-gray-600 text-xs">
+                            Location:
+                          </span>
+                          <QuoteLocationBlock
+                            variant="location"
+                            data={{
+                              location: (row as any).data.location,
+                              assignedTo: (row as any).data.assignedTo,
+                              countryCode: (row as any).data.countryCode,
+                            }}
+                          />
+                        </div>
                         {(row as any).cleaningProduct?.cleaningType && (
                           <span className="text-gray-600">
                             {(row as any).cleaningProduct.cleaningType} Cleaning
@@ -633,17 +643,19 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600 text-xs">
-                          Location:
-                        </span>
-                        <QuoteLocationBlock
-                          variant="location"
-                          data={{
-                            location: (row as any).data.location,
-                            assignedTo: (row as any).data.assignedTo,
-                            countryCode: (row as any).data.countryCode,
-                          }}
-                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-gray-600 text-xs">
+                            Location:
+                          </span>
+                          <QuoteLocationBlock
+                            variant="location"
+                            data={{
+                              location: (row as any).data.location,
+                              assignedTo: (row as any).data.assignedTo,
+                              countryCode: (row as any).data.countryCode,
+                            }}
+                          />
+                        </div>
                         {((row as any).donateProduct?.needsDataWipe ||
                           (row as any).donateProduct?.needsCleaning) && (
                           <>
@@ -671,17 +683,19 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600 text-xs">
-                          Location:
-                        </span>
-                        <QuoteLocationBlock
-                          variant="location"
-                          data={{
-                            location: (row as any).data.location,
-                            assignedTo: (row as any).data.assignedTo,
-                            countryCode: (row as any).data.countryCode,
-                          }}
-                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-gray-600 text-xs">
+                            Location:
+                          </span>
+                          <QuoteLocationBlock
+                            variant="location"
+                            data={{
+                              location: (row as any).data.location,
+                              assignedTo: (row as any).data.assignedTo,
+                              countryCode: (row as any).data.countryCode,
+                            }}
+                          />
+                        </div>
                         {(row as any).storageProduct?.approximateSize && (
                           <span className="text-gray-600 text-xs">
                             Size: {(row as any).storageProduct.approximateSize}
@@ -712,17 +726,19 @@ export const QuoteHistorySubtable = ({
                             SN: {(row as any).data.serialNumber}
                           </span>
                         )}
-                        <span className="text-gray-600 text-xs">
-                          Location:
-                        </span>
-                        <QuoteLocationBlock
-                          variant="location"
-                          data={{
-                            location: (row as any).data.location,
-                            assignedTo: (row as any).data.assignedTo,
-                            countryCode: (row as any).data.countryCode,
-                          }}
-                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-gray-600 text-xs">
+                            Location:
+                          </span>
+                          <QuoteLocationBlock
+                            variant="location"
+                            data={{
+                              location: (row as any).data.location,
+                              assignedTo: (row as any).data.assignedTo,
+                              countryCode: (row as any).data.countryCode,
+                            }}
+                          />
+                        </div>
                         {(row as any).requiresCertificate && (
                           <span className="text-gray-600">
                             ✓ Certificate Required
@@ -741,14 +757,19 @@ export const QuoteHistorySubtable = ({
                           </span>
                         )}
                         {!("originMember" in row && (row as any).originMember) && (
-                          <QuoteLocationBlock
-                            variant="location"
-                            data={{
-                              location: (row as any).data?.location,
-                              assignedTo: (row as any).data?.assignedTo,
-                              countryCode: (row as any).data?.countryCode,
-                            }}
-                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: (row as any).data?.location,
+                                assignedTo: (row as any).data?.assignedTo,
+                                countryCode: (row as any).data?.countryCode,
+                              }}
+                            />
+                          </div>
                         )}
                         {"originMember" in row && (row as any).originMember && (
                           <>

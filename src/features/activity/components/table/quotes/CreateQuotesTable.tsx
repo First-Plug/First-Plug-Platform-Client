@@ -521,17 +521,19 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                               SN: {row.dataWipeAsset.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <QuoteLocationBlock
-                            variant="location"
-                            data={{
-                              location: row.dataWipeAsset.productSnapshot.location,
-                              assignedTo: row.dataWipeAsset.productSnapshot.assignedTo,
-                              countryCode: row.dataWipeAsset.productSnapshot.countryCode,
-                            }}
-                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.dataWipeAsset.productSnapshot.location,
+                                assignedTo: row.dataWipeAsset.productSnapshot.assignedTo,
+                                countryCode: row.dataWipeAsset.productSnapshot.countryCode,
+                              }}
+                            />
+                          </div>
                           {row.dataWipeAsset.destination && (
                             <>
                               <span className="text-gray-600 text-xs">
@@ -559,17 +561,19 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                               }
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <QuoteLocationBlock
-                            variant="location"
-                            data={{
-                              location: row.destructionProduct.productSnapshot.location,
-                              assignedTo: row.destructionProduct.productSnapshot.assignedTo,
-                              countryCode: row.destructionProduct.productSnapshot.countryCode,
-                            }}
-                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.destructionProduct.productSnapshot.location,
+                                assignedTo: row.destructionProduct.productSnapshot.assignedTo,
+                                countryCode: row.destructionProduct.productSnapshot.countryCode,
+                              }}
+                            />
+                          </div>
                         </>
                       ) : row.buybackProduct ? (
                         <>
@@ -583,17 +587,19 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                               {row.buybackProduct.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <QuoteLocationBlock
-                            variant="location"
-                            data={{
-                              location: row.buybackProduct.productSnapshot.location,
-                              assignedTo: row.buybackProduct.productSnapshot.assignedTo,
-                              countryCode: row.buybackProduct.productSnapshot.countryCode,
-                            }}
-                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.buybackProduct.productSnapshot.location,
+                                assignedTo: row.buybackProduct.productSnapshot.assignedTo,
+                                countryCode: row.buybackProduct.productSnapshot.countryCode,
+                              }}
+                            />
+                          </div>
                         </>
                       ) : row.donateProduct ? (
                         <>
@@ -606,17 +612,19 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                               SN: {row.donateProduct.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <QuoteLocationBlock
-                            variant="location"
-                            data={{
-                              location: row.donateProduct.productSnapshot.location,
-                              assignedTo: row.donateProduct.productSnapshot.assignedTo,
-                              countryCode: row.donateProduct.productSnapshot.countryCode,
-                            }}
-                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.donateProduct.productSnapshot.location,
+                                assignedTo: row.donateProduct.productSnapshot.assignedTo,
+                                countryCode: row.donateProduct.productSnapshot.countryCode,
+                              }}
+                            />
+                          </div>
                         </>
                       ) : row.cleaningProduct ? (
                         <>
@@ -630,17 +638,19 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                               {row.cleaningProduct.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <QuoteLocationBlock
-                            variant="location"
-                            data={{
-                              location: row.cleaningProduct.productSnapshot.location,
-                              assignedTo: row.cleaningProduct.productSnapshot.assignedTo,
-                              countryCode: row.cleaningProduct.productSnapshot.countryCode,
-                            }}
-                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.cleaningProduct.productSnapshot.location,
+                                assignedTo: row.cleaningProduct.productSnapshot.assignedTo,
+                                countryCode: row.cleaningProduct.productSnapshot.countryCode,
+                              }}
+                            />
+                          </div>
                         </>
                       ) : row.storageProduct ? (
                         <>
@@ -654,17 +664,19 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                               {row.storageProduct.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <QuoteLocationBlock
-                            variant="location"
-                            data={{
-                              location: row.storageProduct.productSnapshot.location,
-                              assignedTo: row.storageProduct.productSnapshot.assignedTo,
-                              countryCode: row.storageProduct.productSnapshot.countryCode,
-                            }}
-                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.storageProduct.productSnapshot.location,
+                                assignedTo: row.storageProduct.productSnapshot.assignedTo,
+                                countryCode: row.storageProduct.productSnapshot.countryCode,
+                              }}
+                            />
+                          </div>
                         </>
                       ) : row.offboardingProduct ? (
                         <>
@@ -709,6 +721,9 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                         </>
                       ) : row.logisticsProduct ? (
                         <>
+                          <span className="font-semibold">
+                            {row.logisticsProduct.productSnapshot.category}
+                          </span>
                           {formatBrandModelName(row.logisticsProduct.productSnapshot)}
                           {row.logisticsProduct.productSnapshot.serialNumber && (
                             <span className="text-gray-600">
@@ -750,17 +765,19 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                               SN: {row.enrolledDevice.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <QuoteLocationBlock
-                            variant="location"
-                            data={{
-                              location: row.enrolledDevice.location,
-                              assignedTo: row.enrolledDevice.assignedTo,
-                              countryCode: row.enrolledDevice.countryCode,
-                            }}
-                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.enrolledDevice.location,
+                                assignedTo: row.enrolledDevice.assignedTo,
+                                countryCode: row.enrolledDevice.countryCode,
+                              }}
+                            />
+                          </div>
                         </>
                       ) : row.productSnapshot ? (
                         <>
@@ -773,17 +790,19 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                               SN: {row.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <QuoteLocationBlock
-                            variant="location"
-                            data={{
-                              location: row.productSnapshot.location,
-                              assignedTo: row.productSnapshot.assignedTo,
-                              countryCode: row.productSnapshot.countryCode,
-                            }}
-                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.productSnapshot.location,
+                                assignedTo: row.productSnapshot.assignedTo,
+                                countryCode: row.productSnapshot.countryCode,
+                              }}
+                            />
+                          </div>
                         </>
                       ) : null}
                     </div>

@@ -518,39 +518,34 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               SN: {row.dataWipeAsset.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
                           {row.dataWipeAsset.currentMember ? (
-                            <>
-                              <span className="text-gray-600">
-                                {row.dataWipeAsset.productSnapshot.location} (
-                                {row.dataWipeAsset.currentMember.assignedMember}
-                                )
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-gray-600 text-xs">
+                                Location:
                               </span>
-                              {row.dataWipeAsset.currentMember.countryCode && (
-                                <QuoteLocationWithCountry
-                                  country={
-                                    row.dataWipeAsset.currentMember.countryCode
-                                  }
-                                />
-                              )}
-                            </>
+                              <QuoteLocationBlock
+                                variant="location"
+                                data={{
+                                  location: row.dataWipeAsset.productSnapshot.location,
+                                  assignedTo: row.dataWipeAsset.currentMember.assignedMember,
+                                  countryCode: row.dataWipeAsset.currentMember.countryCode,
+                                }}
+                              />
+                            </div>
                           ) : (
-                            <>
-                              <span className="text-gray-600">
-                                {row.dataWipeAsset.productSnapshot.location}
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-gray-600 text-xs">
+                                Location:
                               </span>
-                              {row.dataWipeAsset.productSnapshot
-                                .countryCode && (
-                                <QuoteLocationWithCountry
-                                  country={
-                                    row.dataWipeAsset.productSnapshot
-                                      .countryCode
-                                  }
-                                />
-                              )}
-                            </>
+                              <QuoteLocationBlock
+                                variant="location"
+                                data={{
+                                  location: row.dataWipeAsset.productSnapshot.location,
+                                  assignedTo: row.dataWipeAsset.productSnapshot.assignedTo,
+                                  countryCode: row.dataWipeAsset.productSnapshot.countryCode,
+                                }}
+                              />
+                            </div>
                           )}
                           {row.dataWipeAsset.destination && (
                             <>
@@ -650,27 +645,19 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               }
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <span className="text-gray-600">
-                            {row.destructionProduct.productSnapshot.assignedTo}{" "}
-                            ({row.destructionProduct.productSnapshot.location})
-                          </span>
-                          {row.destructionProduct.productSnapshot
-                            .countryCode && (
-                            <QuoteLocationWithCountry
-                              country={
-                                row.destructionProduct.productSnapshot
-                                  .countryCode
-                              }
-                            />
-                          )}
-                          {row.requiresCertificate && (
-                            <span className="text-gray-600 font-semibold">
-                              ✓ Certificate Required
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
                             </span>
-                          )}
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.destructionProduct.productSnapshot.location,
+                                assignedTo: row.destructionProduct.productSnapshot.assignedTo,
+                                countryCode: row.destructionProduct.productSnapshot.countryCode,
+                              }}
+                            />
+                          </div>
                           {row.comments && (
                             <span className="text-gray-500 text-xs italic">
                               {row.comments}
@@ -703,20 +690,19 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.buybackProduct.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <span className="text-gray-600">
-                            {row.buybackProduct.productSnapshot.assignedTo} (
-                            {row.buybackProduct.productSnapshot.location})
-                          </span>
-                          {row.buybackProduct.productSnapshot.countryCode && (
-                            <QuoteLocationWithCountry
-                              country={
-                                row.buybackProduct.productSnapshot.countryCode
-                              }
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.buybackProduct.productSnapshot.location,
+                                assignedTo: row.buybackProduct.productSnapshot.assignedTo,
+                                countryCode: row.buybackProduct.productSnapshot.countryCode,
+                              }}
                             />
-                          )}
+                          </div>
                           {row.buybackProduct.buybackDetails && (
                             <>
                               {row.buybackProduct.buybackDetails
@@ -798,35 +784,19 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               SN: {row.donateProduct.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <span className="text-gray-600">
-                            {row.donateProduct.productSnapshot.assignedTo} (
-                            {row.donateProduct.productSnapshot.location})
-                          </span>
-                          {row.donateProduct.productSnapshot.countryCode && (
-                            <QuoteLocationWithCountry
-                              country={
-                                row.donateProduct.productSnapshot.countryCode
-                              }
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.donateProduct.productSnapshot.location,
+                                assignedTo: row.donateProduct.productSnapshot.assignedTo,
+                                countryCode: row.donateProduct.productSnapshot.countryCode,
+                              }}
                             />
-                          )}
-                          {(row.donateProduct.needsDataWipe ||
-                            row.donateProduct.needsCleaning) && (
-                            <>
-                              {row.donateProduct.needsDataWipe && (
-                                <span className="text-gray-600 text-xs">
-                                  ✓ Needs Data Wipe
-                                </span>
-                              )}
-                              {row.donateProduct.needsCleaning && (
-                                <span className="text-gray-600 text-xs">
-                                  ✓ Needs Cleaning
-                                </span>
-                              )}
-                            </>
-                          )}
+                          </div>
                           {row.donateProduct.comments &&
                             row.donateProduct.comments !== row.additionalDetails && (
                               <span className="text-gray-500 text-xs italic">
@@ -865,25 +835,19 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.cleaningProduct.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <span className="text-gray-600">
-                            {row.cleaningProduct.productSnapshot.assignedTo} (
-                            {row.cleaningProduct.productSnapshot.location})
-                          </span>
-                          {row.cleaningProduct.productSnapshot.countryCode && (
-                            <QuoteLocationWithCountry
-                              country={
-                                row.cleaningProduct.productSnapshot.countryCode
-                              }
-                            />
-                          )}
-                          {row.cleaningProduct.cleaningType && (
-                            <span className="text-gray-600">
-                              {row.cleaningProduct.cleaningType} Cleaning
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
                             </span>
-                          )}
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.cleaningProduct.productSnapshot.location,
+                                assignedTo: row.cleaningProduct.productSnapshot.assignedTo,
+                                countryCode: row.cleaningProduct.productSnapshot.countryCode,
+                              }}
+                            />
+                          </div>
                           {row.additionalDetails && (
                             <span className="text-gray-500 text-xs italic">
                               <span className="font-medium">
@@ -919,36 +883,19 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               {row.storageProduct.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <span className="text-gray-600">
-                            {row.storageProduct.productSnapshot.assignedTo} (
-                            {row.storageProduct.productSnapshot.location})
-                          </span>
-                          {row.storageProduct.productSnapshot.countryCode && (
-                            <QuoteLocationWithCountry
-                              country={
-                                row.storageProduct.productSnapshot.countryCode
-                              }
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.storageProduct.productSnapshot.location,
+                                assignedTo: row.storageProduct.productSnapshot.assignedTo,
+                                countryCode: row.storageProduct.productSnapshot.countryCode,
+                              }}
                             />
-                          )}
-                          {row.storageProduct.approximateSize && (
-                            <span className="text-gray-600 text-xs">
-                              Size: {row.storageProduct.approximateSize}
-                            </span>
-                          )}
-                          {row.storageProduct.approximateWeight && (
-                            <span className="text-gray-600 text-xs">
-                              Weight: {row.storageProduct.approximateWeight}
-                            </span>
-                          )}
-                          {row.storageProduct.approximateStorageDays && (
-                            <span className="text-gray-600 text-xs">
-                              Storage Days:{" "}
-                              {row.storageProduct.approximateStorageDays}
-                            </span>
-                          )}
+                          </div>
                           {row.storageProduct.additionalComments && (
                             <span className="text-gray-500 text-xs italic">
                               {row.storageProduct.additionalComments}
@@ -1154,18 +1101,19 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               SN: {row.enrolledDevice.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <span className="text-gray-600">
-                            {row.enrolledDevice.assignedTo} (
-                            {row.enrolledDevice.location})
-                          </span>
-                          {row.enrolledDevice.countryCode && (
-                            <QuoteLocationWithCountry
-                              country={row.enrolledDevice.countryCode}
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.enrolledDevice.location,
+                                assignedTo: row.enrolledDevice.assignedTo,
+                                countryCode: row.enrolledDevice.countryCode,
+                              }}
                             />
-                          )}
+                          </div>
                           {row.additionalDetails && (
                             <span className="text-gray-500 text-xs italic">
                               {row.additionalDetails}
@@ -1192,18 +1140,19 @@ const CancelQuotesTable: React.FC<CancelQuotesTableProps> = ({ data }) => {
                               SN: {row.productSnapshot.serialNumber}
                             </span>
                           )}
-                          <span className="text-gray-600 text-xs">
-                            Location:
-                          </span>
-                          <span className="text-gray-600">
-                            {row.productSnapshot.assignedTo} (
-                            {row.productSnapshot.location})
-                          </span>
-                          {row.productSnapshot.countryCode && (
-                            <QuoteLocationWithCountry
-                              country={row.productSnapshot.countryCode}
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-600 text-xs">
+                              Location:
+                            </span>
+                            <QuoteLocationBlock
+                              variant="location"
+                              data={{
+                                location: row.productSnapshot.location,
+                                assignedTo: row.productSnapshot.assignedTo,
+                                countryCode: row.productSnapshot.countryCode,
+                              }}
                             />
-                          )}
+                          </div>
                         </>
                       ) : null}
                       {row.issues && row.issues.length > 0 && (
