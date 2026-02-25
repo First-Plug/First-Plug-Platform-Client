@@ -540,6 +540,16 @@ export const QuoteHistorySubtable = ({
                             Impact level: {(row as any).impactLevel}
                           </span>
                         )}
+                        {(row as any).issues && (row as any).issues.length > 0 && (
+                          <span className="text-gray-600 text-xs">
+                            Issues: {(row as any).issues.join(", ")}
+                          </span>
+                        )}
+                        {(row as any).issueStartDate && (
+                          <span className="text-gray-600 text-xs">
+                            Started: {formatDate((row as any).issueStartDate)}
+                          </span>
+                        )}
                       </>
                     ) : isBuyback ? (
                       <>
@@ -565,6 +575,35 @@ export const QuoteHistorySubtable = ({
                             }}
                           />
                         </div>
+                        {(row as any).buybackDetails && (
+                          <>
+                            {(row as any).buybackDetails.generalFunctionality && (
+                              <span className="text-gray-600 text-xs">
+                                Overall condition:{" "}
+                                {(row as any).buybackDetails.generalFunctionality}
+                              </span>
+                            )}
+                            {(row as any).buybackDetails.batteryCycles !== undefined && (
+                              <span className="text-gray-600 text-xs">
+                                Battery:{" "}
+                                {(row as any).buybackDetails.batteryCycles}
+                              </span>
+                            )}
+                            {(row as any).buybackDetails.aestheticDetails && (
+                              <span className="text-gray-600 text-xs">
+                                Cosmetic:{" "}
+                                {(row as any).buybackDetails.aestheticDetails}
+                              </span>
+                            )}
+                            {(row as any).buybackDetails.hasCharger && (
+                              <span className="text-gray-600 text-xs">
+                                Charger: Has charger
+                                {(row as any).buybackDetails.chargerWorks !== undefined &&
+                                  ` (${(row as any).buybackDetails.chargerWorks ? "Works" : "Doesn't work"})`}
+                              </span>
+                            )}
+                          </>
+                        )}
                       </>
                     ) : isDataWipe ? (
                       <>

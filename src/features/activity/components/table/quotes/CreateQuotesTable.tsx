@@ -515,6 +515,9 @@ const CreateQuotesTable: React.FC<CreateQuotesTableProps> = ({ data }) => {
                     <div className="flex flex-col gap-1">
                       {row.dataWipeAsset ? (
                         <>
+                          <span className="font-semibold">
+                            {row.dataWipeAsset.productSnapshot.category}
+                          </span>
                           {formatBrandModelName(row.dataWipeAsset.productSnapshot)}
                           {row.dataWipeAsset.productSnapshot.serialNumber && (
                             <span className="text-gray-600">

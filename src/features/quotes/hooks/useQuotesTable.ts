@@ -65,7 +65,7 @@ export function useQuotesTable() {
   const startDate = startOfDay(selectedDates.startDate).toISOString();
   const endDate = endOfDay(selectedDates.endDate).toISOString();
 
-  const { data, isLoading } = useFetchQuotesHistory(
+  const { data, isLoading, isFetching } = useFetchQuotesHistory(
     currentPage,
     pageSize,
     startDate,
@@ -95,6 +95,7 @@ export function useQuotesTable() {
     tableData,
     totalCount,
     isLoading,
+    isFetching,
     tableContainerRef,
     useQuotesTableFilterStore,
   };
