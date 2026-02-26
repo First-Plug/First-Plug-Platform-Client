@@ -1,7 +1,7 @@
 <a name="home"></a>
 
 <!-- INTRODUCTION -->
-a
+
 <div align="center">
   <a href="#">
     <img src="./public/Isotipo.png" alt="First Plug" width="300">
