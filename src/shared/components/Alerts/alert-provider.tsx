@@ -591,7 +591,7 @@ export const AlertProvider = () => {
       description: "Your quote has been successfully submitted.",
       closeAction: () => {
         setAlert(undefined);
-        router.push("/home/quotes/history");
+        router.push("/home/quotes/history?fromSubmit=1");
       },
     },
   };

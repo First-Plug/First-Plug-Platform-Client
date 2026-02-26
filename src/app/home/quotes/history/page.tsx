@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   PageLayout,
   BarLoader,
@@ -17,6 +20,10 @@ import {
 } from "@/features/quotes";
 
 export default function QuoteHistoryPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
   const {
     pageIndex,
     pageSize,
@@ -27,9 +34,35 @@ export default function QuoteHistoryPage() {
     tableData,
     totalCount,
     isLoading,
+    isFetching,
     tableContainerRef,
     useQuotesTableFilterStore,
   } = useQuotesTable();
+
+  // Cuando venimos de submit exitoso: refetch, reset a página 1, y expandir la primera fila (la nueva quote)
+  // Esperamos a que termine el refetch (!isFetching) para tener datos frescos; si no, expandiríamos la fila que era primera con datos cacheados
+  useEffect(() => {
+    if (searchParams.get("fromSubmit") !== "1") return;
+
+    queryClient.invalidateQueries({ queryKey: ["quotes-history"] });
+    handlePageChange(0);
+
+    if (!isLoading && !isFetching && tableData.length > 0) {
+      const firstRowId = tableData[0]._id;
+      useQuotesTableFilterStore.getState().setExpandedRows({
+        [firstRowId]: true,
+      });
+      router.replace("/home/quotes/history", { scroll: false });
+    }
+  }, [
+    searchParams,
+    queryClient,
+    handlePageChange,
+    router,
+    tableData,
+    isLoading,
+    isFetching,
+  ]);
 
   const { getRowCanExpand, renderSubComponent, getRowId } =
     useQuotesSubtableLogic();
