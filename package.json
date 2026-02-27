@@ -8,7 +8,11 @@
     "start": "next start",
     "start2": "npm run build && npm start",
     "lint": "next lint",
-    "start:prod": "cross-env NODE_ENV=production next start"
+    "start:prod": "cross-env NODE_ENV=production next start",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.1",
@@ -65,18 +69,26 @@
     "zustand": "^5.0.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tanstack/eslint-plugin-query": "^5.59.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/file-saver": "^2.0.7",
     "@types/node": "20.8.9",
     "@types/papaparse": "^5.3.14",
     "@types/react": "18.2.33",
     "@types/react-simple-maps": "^3.0.6",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^2.1.9",
     "autoprefixer": "^10.4.15",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.1",
     "eslint-config-next": "13.4.19",
+    "jsdom": "^28.1.0",
     "postcss": "^8.4.30",
     "tailwindcss": "^3.3.3",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "vitest": "^2.1.9"
   }
 }
