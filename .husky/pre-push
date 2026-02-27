@@ -1,0 +1,8 @@
+#!/bin/sh
+
+branch=$(git symbolic-ref HEAD | sed 's|refs/heads/||')
+
+if [ "$branch" = "develop" ] || [ "$branch" = "main" ]; then
+  echo "Running tests before push to $branch..."
+  npm run test:run -- --passWithNoTests
+fi
