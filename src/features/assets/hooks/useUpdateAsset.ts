@@ -80,14 +80,9 @@ export const useUpdateAsset = () => {
         }
       }
 
-      // Invalidar y refetchear inmediatamente para forzar la actualización
       await queryClient.invalidateQueries({
         queryKey: ["assets"],
         refetchType: "active",
-      });
-      await queryClient.refetchQueries({
-        queryKey: ["assets"],
-        type: "active",
       });
 
       queryClient.invalidateQueries({ queryKey: ["members"] });
